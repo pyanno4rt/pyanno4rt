@@ -1,0 +1,176 @@
+"""CT dictionary generation from DICOM (.dcm) file."""
+
+# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+
+# %% External package import
+
+from numpy import array, clip, dstack, prod
+from pydicom.pixel_data_handlers.util import apply_modality_lut
+from scipy.interpolate import interp1d
+from scipy.ndimage import zoom
+
+# %% Internal package import
+
+from pyanno4rt.tools import arange_with_endpoint
+
+# %% Function definition
+
+
+def generate_ct_from_dcm(data, resolution):
+    """
+    Generate the CT dictionary.
+
+    Parameters
+    ----------
+    data : tuple
+        Tuple of 'FileDataset' instances with information on the CT slices.
+
+    resolution : None or list
+        Imaging resolution for post-processing interpolation of the CT and \
+        segmentation data.
+
+    Returns
+    -------
+    computed_tomography : dict
+        Dictionary with information on the CT images.
+    """
+
+    # Specify the Hounsfield lookup table (HU to RED/RSP)
+    hlut = ((-1024.0, 200.0, 449.0, 2000.0, 2048.0, 3071.0),
+            (0.00324, 1.2, 1.20001, 2.49066, 2.5306, 2.53061))
+
+    def check_ct_data():
+        """Check the CT data from the DICOM files."""
+
+        # Check if the grid resolutions are inconsistent
+        if tuple(len(set(resolutions)) for resolutions in zip(
+                *((file.PixelSpacing._list[1].real,
+                   file.PixelSpacing._list[0].real,
+                   file.SpacingBetweenSlices.real)
+                  for file in data))) != (1, 1, 1):
+
+            # Raise an error to indicate an inconsistency
+            raise ValueError(
+                "The grid resolution is found to be inconsistent across "
+                "the CT slices!")
+
+        # Check if the image positions are inconsistent
+        if tuple(len(set(positions)) for positions in zip(
+                *((file.ImagePositionPatient._list[1].real,
+                   file.ImagePositionPatient._list[0].real)
+                  for file in data))) != (1, 1):
+
+            # Raise an error to indicate an inconsistency
+            raise ValueError(
+                "The imaging position of the patient is found to be "
+                "inconsistent across the CT slices!")
+
+        # Check if the dimensionalities are inconsistent
+        if tuple(len(set(dimensions)) for dimensions in zip(
+                *((file.Columns.real, file.Rows.real)
+                  for file in data))) != (1, 1):
+
+            # Raise an error to indicate an inconsistency
+            raise ValueError(
+                "The number of rows/columns is found to be inconsistent "
+                "across the CT slices!")
+
+    def calculate_3d_cube():
+        """Calculate the CT cube from the pixel arrays."""
+
+        # Generate the 3D cube with HU values
+        cube_hounsfield = dstack(tuple(
+            apply_modality_lut(file.pixel_array, file) for file in data))
+
+        # Clip the HU values before interpolation
+        clip(cube_hounsfield, a_min=cube_hounsfield.min(),
+             a_max=cube_hounsfield.max(), out=cube_hounsfield)
+
+        # Initialize the interpolator
+        interpolator = interp1d(hlut[0], hlut[1], 'linear')
+
+        return interpolator(cube_hounsfield)
+
+    def interpolate_ct_dictionary():
+        """Interpolate the CT dictionary values to a resolution."""
+
+        # Get the current cube dimensions
+        old_dimensions = computed_tomography['cube_dimensions']
+
+        # Update the grid resolution
+        computed_tomography['resolution'] = dict(
+            zip(('x', 'y', 'z'), resolution))
+
+        # Loop over the grid axes
+        for index, axis in enumerate(('x', 'y', 'z')):
+
+            # Update the grid points on the current axis
+            computed_tomography[axis] = arange_with_endpoint(
+                computed_tomography[axis][0],
+                computed_tomography[axis][-1],
+                resolution[index])
+
+        # Update the cube dimensions
+        computed_tomography['cube_dimensions'] = array([
+            len(computed_tomography[axis]) for axis in ('y', 'x', 'z')])
+
+        # Get the zoom factors for all cube dimensions
+        zooms = (new_length / old_length for new_length, old_length in zip(
+            computed_tomography['cube_dimensions'], old_dimensions))
+
+        # Interpolate the CT cube to the target resolution
+        computed_tomography['cube'] = zoom(
+            computed_tomography['cube'], zooms, order=1)
+
+        # Update the number of voxels
+        computed_tomography['number_of_voxels'] = prod(
+            computed_tomography['cube_dimensions'])
+
+        return computed_tomography
+
+    # Check the CT data
+    check_ct_data()
+
+    # Initialize the dictionary
+    computed_tomography = {}
+
+    # Add the interpolated RED/RSP cube to the dictionary
+    computed_tomography['cube'] = calculate_3d_cube()
+
+    # Add the grid resolution to the dictionary
+    computed_tomography['resolution'] = {
+        'x': data[0].PixelSpacing._list[1].real,
+        'y': data[0].PixelSpacing._list[0].real,
+        'z': data[0].SpacingBetweenSlices.real}
+
+    # Add the grid points in x to the dictionary
+    computed_tomography['x'] = array([
+        data[0].ImagePositionPatient._list[0]
+        + factor*data[0].PixelSpacing._list[1].real
+        for factor in range(data[0].Columns.real)])
+
+    # Add the grid points in y to the dictionary
+    computed_tomography['y'] = array([
+        data[0].ImagePositionPatient._list[1]
+        + factor*data[0].PixelSpacing._list[0].real
+        for factor in range(data[0].Rows.real)])
+
+    # Add the grid points in z to the dictionary
+    computed_tomography['z'] = array([
+        file.ImagePositionPatient._list[2] for file in data])
+
+    # Add the cube dimensions to the dictionary
+    computed_tomography['cube_dimensions'] = array(
+        computed_tomography['cube'].shape)
+
+    # Add the number of voxels to the dictionary
+    computed_tomography['number_of_voxels'] = prod(
+        computed_tomography['cube_dimensions'])
+
+    # Check if a target resolution has been passed
+    if resolution:
+
+        # Return the interpolated CT dictionary
+        return interpolate_ct_dictionary()
+
+    return computed_tomography

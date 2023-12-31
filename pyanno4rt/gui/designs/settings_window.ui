@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>settings_window</class>
+ <widget class="QMainWindow" name="settings_window">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>730</width>
+    <height>320</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>730</width>
+    <height>320</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>730</width>
+    <height>320</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Settings</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+  </property>
+  <widget class="QWidget" name="settings_widget">
+   <property name="styleSheet">
+    <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+   </property>
+   <widget class="Line" name="general_settings_line">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>50</y>
+      <width>321</width>
+      <height>2</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>2</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>16777215</width>
+      <height>2</height>
+     </size>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-color: rgb(0, 0, 0);</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="light_mode_cbox">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>140</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+    </property>
+    <item>
+     <property name="text">
+      <string>Dark</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/special_icons/icons_special/moon-svgrepo-com.svg</normaloff>:/special_icons/icons_special/moon-svgrepo-com.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Light</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/special_icons/icons_special/sun-2-svgrepo-com.svg</normaloff>:/special_icons/icons_special/sun-2-svgrepo-com.svg</iconset>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="general_settings_label">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 0px solid;</string>
+    </property>
+    <property name="text">
+     <string>General</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="resolution_label">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>200</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>Display resolution of the application</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 0px solid;</string>
+    </property>
+    <property name="text">
+     <string>Display resolution</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="language_label">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>80</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>Frontend main language</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 0px solid;</string>
+    </property>
+    <property name="text">
+     <string>Language</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="language_cbox">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>80</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <item>
+     <property name="text">
+      <string>Deutsch</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/special_icons/icons_special/flag-for-flag-germany-svgrepo-com.svg</normaloff>:/special_icons/icons_special/flag-for-flag-germany-svgrepo-com.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>English</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/special_icons/icons_special/united-kingdom-uk-svgrepo-com.svg</normaloff>:/special_icons/icons_special/united-kingdom-uk-svgrepo-com.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Español</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/special_icons/icons_special/flag-for-flag-spain-svgrepo-com.svg</normaloff>:/special_icons/icons_special/flag-for-flag-spain-svgrepo-com.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Français</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/special_icons/icons_special/flag-for-flag-france-svgrepo-com.svg</normaloff>:/special_icons/icons_special/flag-for-flag-france-svgrepo-com.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Italiano</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/special_icons/icons_special/flag-for-flag-italy-svgrepo-com.svg</normaloff>:/special_icons/icons_special/flag-for-flag-italy-svgrepo-com.svg</iconset>
+     </property>
+    </item>
+   </widget>
+   <widget class="QCheckBox" name="incl_dij_check">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>110</y>
+      <width>231</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string>Include the dose-influence matrix file in the snapshot folder</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 0px;
+color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>Include dose-influence matrix</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="reset_pbutton">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>280</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string>Reset to default settings</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+    </property>
+    <property name="text">
+     <string>Reset</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="light_model_label">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>140</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>Display light mode for the application</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 0px solid;</string>
+    </property>
+    <property name="text">
+     <string>Light mode</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="incl_patData_check">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>80</y>
+      <width>231</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string>Include the CT and segmentation data file(s) in the snapshot folder</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 0px;
+color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>Include patient data</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="resolution_cbox">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>200</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <item>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/green_icons/icons_green/eye.svg</normaloff>:/green_icons/icons_green/eye.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>1024x768</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>1280x720</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>1280x1024</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>1366x768</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>1440x900</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>1920x1080</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>2560x1440</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>3840x2160</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../assets/resources.qrc">
+       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
+     </property>
+    </item>
+   </widget>
+   <widget class="QCheckBox" name="incl_model_data_check">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>140</y>
+      <width>231</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string>Include the model training data file(s) in the snapshot folder</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 0px;
+color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>Include model data</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="save_tpi_label">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>20</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 0px solid;</string>
+    </property>
+    <property name="text">
+     <string>Save TPI</string>
+    </property>
+   </widget>
+   <widget class="Line" name="save_tpi_line">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>50</y>
+      <width>321</width>
+      <height>2</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>2</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>16777215</width>
+      <height>2</height>
+     </size>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-color: rgb(0, 0, 0);</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="save_pbutton">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>280</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string>Save changes, apply them and close the settings window</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(243, 243, 243);
+background-color: rgb(196, 92, 38);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+    </property>
+    <property name="text">
+     <string>Save</string>
+    </property>
+   </widget>
+   <zorder>light_mode_cbox</zorder>
+   <zorder>general_settings_label</zorder>
+   <zorder>resolution_label</zorder>
+   <zorder>language_label</zorder>
+   <zorder>language_cbox</zorder>
+   <zorder>incl_dij_check</zorder>
+   <zorder>reset_pbutton</zorder>
+   <zorder>light_model_label</zorder>
+   <zorder>incl_patData_check</zorder>
+   <zorder>resolution_cbox</zorder>
+   <zorder>incl_model_data_check</zorder>
+   <zorder>save_tpi_label</zorder>
+   <zorder>save_tpi_line</zorder>
+   <zorder>save_pbutton</zorder>
+   <zorder>general_settings_line</zorder>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../assets/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

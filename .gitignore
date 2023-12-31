@@ -1,0 +1,12 @@
+# Ignore local files
+script.py
+
+# Ignore local folders
+external/
+coinhsl/
+snaps/
+
+# Ignore unwanted file types
+*.odg
+.ipynb_checkpoints/
+__pycache__

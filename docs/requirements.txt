@@ -1,0 +1,5 @@
+jupyter==1.0.0
+sphinx==7.2.6
+myst-nb==1.0.0
+sphinx-rtd-theme==2.0.0
+sphinx-autoapi==3.0.0
