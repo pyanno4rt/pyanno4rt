@@ -1,7 +1,7 @@
 # pyanno4rt CI/CD workflow
 
 # Name of the workflow
-name: pyanno4rt CI/CD
+name: CI/CD
 
 # Set the trigger events
 on:
@@ -108,9 +108,16 @@ jobs:
         key: "tool.poetry.version"
         value: "${{ env.VERSION }}"
     
-    # Build the the package distribution files with poetry
+    # Build the package distribution files with poetry
     - name: Build the package distribution files with poetry
       run: poetry build
+
+    # Publish the package to PyPI
+    - name: Publish the package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
       
     # Check out the release changes
     - name: Check out the release changes
@@ -134,6 +141,19 @@ jobs:
         draft: false
         prerelease: false
     
+    # Commit and push the updated pyproject.toml / CHANGELOG.md
+    - name: Commit and push the updated pyproject.toml / CHANGELOG.md
+      env: 
+        CI_COMMIT_MESSAGE: CI/CD build artifacts
+        CI_COMMIT_AUTHOR: git log -n 1 --pretty=format:%an
+        CI_COMMIT_MAIL: git log -n 1 --pretty=format:%ae
+      run: |
+        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+        git config --global user.email "${{ env.CI_COMMIT_MAIL }}"
+        git add pyproject.toml CHANGELOG.md
+        git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
+        git push
+        
     # Generate the changelog file
     - name: Generate the changelog file
       uses: orhun/git-cliff-action@v2
@@ -143,30 +163,9 @@ jobs:
       env:
         OUTPUT: CHANGELOG.md
     
-    # Commit and push the updated pyproject.toml / CHANGELOG.md to GIT
-    - name: Commit and push the updated pyproject.toml / CHANGELOG.md to GIT
-      env: 
-        CI_COMMIT_MESSAGE: CI/CD build artifacts
-        CI_COMMIT_AUTHOR: Tim Ortkamp
-        CI_COMMIT_MAIL: tim.ortkamp@kit.edu
-      run: |
-        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-        git config --global user.email "${{ env.CI_COMMIT_MAIL }}"
-        git add pyproject.toml CHANGELOG.md
-        git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
-        git push
-    
     # Build the documentation for Read the Docs
     - name: Build the documentation for Read the Docs
       run: poetry run make html --directory docs/
-
-    # Publish the package to TestPyPI
-    - name: Publish the package to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.TEST_PYPI_TOKEN }}
-        repository-url: https://test.pypi.org/legacy/
   
   deploy-test:
   
@@ -188,10 +187,7 @@ jobs:
       with:
         python-version: 3.11.6
   
-    # Test the installation from TestPyPI
-    - name: Test the installation from TestPyPI
+    # Test the installation from PyPI
+    - name: Test the installation from PyPI
       run: |
-          pip install \
-          --index-url https://test.pypi.org/simple/ \
-          --extra-index-url https://pypi.org/simple \
-          pyanno4rt
+          pip install pyanno4rt

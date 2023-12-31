@@ -1,10 +1,10 @@
-[![pyanno4rt CI/CD](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml)
+[![CI/CD](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml)
 ![Read the Docs](https://img.shields.io/readthedocs/pyanno4rt)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyanno4rt)
 [![Coverage Status](https://coveralls.io/repos/github/pyanno4rt/pyanno4rt/badge.svg)](https://coveralls.io/github/pyanno4rt/pyanno4rt)
 [![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
 [![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 
 ![GitHub Repo stars](https://img.shields.io/github/stars/pyanno4rt/pyanno4rt)
-![GitHub Repo Size](https://img.shields.io/github/repo-size/pyanno4rt/pyanno4rt)
 [![GitHub Discussions](https://img.shields.io/github/discussions/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/discussions)
 [![GitHub Issues](https://img.shields.io/github/issues/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/issues)
 [![GitHub Contributors](https://img.shields.io/github/contributors/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/graphs/contributors)
@@ -54,10 +54,8 @@
 			<li> Dose-volume and outcome prediction model-based optimization functions </li>
 				<br>
 				<ul>
-					<li> 9 dose-volume objectives, e.g. squared deviation and squared overdosing </li>
-					<li> 4 dose-volume constraints, e.g. minimum DVH and maximum DVH </li>
-					<li> 9 outcome prediction model-based objectives, e.g. logistic regression and artificial neural networks </li>
-					<li> 2 outcome prediction model-based constraints, minimum TCP and maximum NTCP </li>
+					<li> 16-type objective catalogue, e.g. squared deviation, squared overdosing, logistic regression NTCP, ... </li>
+					<li> 6-type constraint catalogue, e.g. minimum DVH, maximum DVH, maximum NTCP, ... </li>
 				</ul>
 				<br>
 			<li> Dose-fluence projections </li>
@@ -92,7 +90,7 @@
 			<li> Dataset import and preprocessing </li>
 			<li> Automatic feature map generation </li>
 			<li> 27-type feature catalog for iterative (re)calculation to support model integration into optimization </li>
-			<li> 8 highly customizable internal model classes </li>
+			<li> 3 highly customizable internal model classes </li>
 				<br>
 				<ul> 
 					<li> Individual preprocessing, inspection and evaluation units </li>  
@@ -131,25 +129,12 @@
 				<br>
 		</ul>
 </ul>
-This package integrates external local and global solvers to perform the optimization, where the L-BFGS-B algorithm from SciPy acts as default and fallback if IPOPT is not available to import. You will find comprehensive instructions on how to (optionally) install and configure IPOPT for Linux in the corresponding folder.
-<br><br>
-The project has been started in April 2022 by Tim Ortkamp<sup>1,</sup><sup>2,</sup><sup>3</sup> and since then has been enriched by the collaboration of
-<br><br>
-<ul>
-	<li> Moritz Müller </li>
-</ul>
-<br>
-
-<sub>
-<sup>1</sup>Scientific Computing Center (SCC), Karlsruhe Institute of Technology (KIT), Karlsruhe, Germany <br>
-<sup>2</sup>Medical Physics in Radiation Oncology (E040), German Cancer Research Center (DKFZ), Heidelberg, Germany <br>
-<sup>3</sup>HIDSS4Health - Helmholtz Information and Data Science School for Health, Karlsruhe/Heidelberg, Germany
-</sub>
-<br><br>
 
 # Installation
 
-<h3>User installation</h3>
+<h3>Python distribution</h3>
+
+You can install the latest distribution via:
 
 ```bash
 pip install pyanno4rt
@@ -167,13 +152,15 @@ git clone https://github.com/pyanno4rt/pyanno4rt.git
 <br>
 <h3>Usage</h3>
 
-Base class import for CLI/IDE:
+pyanno4rt has two main classes which provide a code-based and an UI-based interface:
+
+<i>Base class import for CLI/IDE</i>
 
 ```python
 from pyanno4rt.base import TreatmentPlan
 ```
 
-GUI import:
+<i>GUI import</i>
 
 ```python
 from pyanno4rt.gui import GraphicalUserInterface
@@ -207,8 +194,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> pyqtgraph (>=0.13.3) </li>
 	<li> ipython (>=8.19.0) </li>
 </ul>
-We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. IPOPT is the only (optional) third-party dependency (you can find the respective tarballs for installation under pyanno4rt/optimization/solvers).
-<br><br>
+We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default and fallback if IPOPT is not available to import. IPOPT is the only (optional) third-party dependency (you can find the respective tarballs and instructions for installation under pyanno4rt/optimization/solvers). <br><br>
 
 # Development
 
@@ -216,19 +202,24 @@ We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for develop
 
 <ul>
 	<li> Official source code repo: https://github.com/pyanno4rt/pyanno4rt </li>
+	<li> Download releases: https://pypi.org/project/pyanno4rt/
 	<li> Issue tracker: https://github.com/pyanno4rt/pyanno4rt/issues </li>
 	
 </ul>
 
-Note: our package includes .mat files with CT, segmentation and dose information for an example head-and-neck cancer patient, stored with Git Large File Storage (LFS). You need to install LFS before checking out the source code to be able to access these files.
-<br><br>
+<br>
+<h3>Contributing</h3>
+
+pyanno4rt is open for new contributors of all experience levels. Please get in contact with us (see options below) to discuss the format of your contribution.
+
+Note: the 'docs' folder includes example files with CT, segmentation and dose-influence matrix data for an example head-and-neck patient, which can be used for development. The example files are stored with Git Large File Storage (LFS), which you need to install before checking out the source code to be able to access them. <br><br>
 
 # Help and support
 
 <h3>Contact</h3>
 
 <ul>
-	<li> Mail: <a href="mailto:tim.ortkamp@kit.edu">tim.ortkamp@kit.edu</a> </li>
+	<li> Mail: <a href="mailto:tim.ortkamp@kit.edu?subject=Request on pyanno4rt">tim.ortkamp@kit.edu</a> </li>
 	<li> Github Discussions: https://github.com/pyanno4rt/pyanno4rt/discussions </li>
 	<li> LinkedIn: https://www.linkedin.com/in/tim-ortkamp/
 	
@@ -242,8 +233,7 @@ To cite this repository:
 @software{pyanno4rt2024,
   author = {Tim Ortkamp},
   title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
-  url = {http://github.com/pyanno4rt/pyanno4rt},
-  version = {0.0.1},
+  url = {https://github.com/pyanno4rt/pyanno4rt},
   year = {2024},
 }
 ```
