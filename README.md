@@ -243,7 +243,6 @@ To cite this repository:
   author = {Tim Ortkamp},
   title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
   url = {http://github.com/pyanno4rt/pyanno4rt},
-  version = {0.0.1},
   year = {2024},
 }
 ```

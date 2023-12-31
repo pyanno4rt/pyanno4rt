@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyanno4rt"
-version = "0.1.17"
+version = "0.0.1"
 description = "A package for Python-based advanced numerical nonlinear optimization in radiotherapy."
 license = "LICENSE"
 authors = [ "Tim Ortkamp <tim.ortkamp@kit.edu>" ]
