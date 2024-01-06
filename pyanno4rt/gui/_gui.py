@@ -121,6 +121,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Build the UI main window
         self.setupUi(self)
 
+        # Set the window icon
+        self.setWindowIcon(QIcon('./logo/logo_black_icon.png'))
+
         # Initialize the GUI plans dictionary
         self.plans = {}
 
@@ -193,8 +196,11 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Connect the event signals
         self.connect_signals()
 
+        # Set the initial window size
+        self.resize(1920, 1080)
+
         # Show the GUI
-        self.showMaximized()
+        self.show()
 
     def connect_signals(self):
         """Connect the event signals to the GUI elements."""
@@ -348,6 +354,35 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.update_optimization_pbutton.setEnabled(True)
             self.update_evaluation_pbutton.setEnabled(True)
 
+            # Disable the workflow buttons
+            self.optimize_pbutton.setEnabled(False)
+            self.evaluate_pbutton.setEnabled(False)
+            self.visualize_pbutton.setEnabled(False)
+
+            # Clear the console text
+            self.console_tedit.clear()
+
+            # 
+            self.slice_widget.reset_images()
+
+            # 
+            self.dvh_widget.reset_dvh()
+
+            # 
+            if (self.plans[self.plan_ledit.text()].datahub and
+                isinstance(
+                    self.plans[self.plan_ledit.text()].datahub.histogram,
+                    dict)):
+
+                # 
+                self.dvh_widget.add_style_and_data(
+                    self.plans[self.plan_ledit.text()].datahub.histogram)
+                self.dvh_widget.update_dvh()
+
+                # 
+                self.evaluate_pbutton.setEnabled(True)
+                self.visualize_pbutton.setEnabled(True)
+
         else:
 
             # Change the treatment plan label to the default (empty)
@@ -363,19 +398,19 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.update_optimization_pbutton.setEnabled(False)
             self.update_evaluation_pbutton.setEnabled(False)
 
-        # Disable the workflow buttons
-        self.optimize_pbutton.setEnabled(False)
-        self.evaluate_pbutton.setEnabled(False)
-        self.visualize_pbutton.setEnabled(False)
+            # Disable the workflow buttons
+            self.optimize_pbutton.setEnabled(False)
+            self.evaluate_pbutton.setEnabled(False)
+            self.visualize_pbutton.setEnabled(False)
 
-        # Clear the console text
-        self.console_tedit.clear()
+            # Clear the console text
+            self.console_tedit.clear()
 
-        # Reset the slice image
-        self.slice_widget.reset_images()
+            # Reset the slice image
+            self.slice_widget.reset_images()
 
-        # Reset the DVH plot
-        self.dvh_widget.reset_dvh()
+            # Reset the DVH plot
+            self.dvh_widget.reset_dvh()
 
     def open_settings(self):
         """Open the settings window."""
@@ -698,6 +733,11 @@ class MainWindow(QMainWindow, Ui_main_window):
         # 
         self.set_configuration()
 
+        # 
+        self.optimize_pbutton.setEnabled(False)
+        self.evaluate_pbutton.setEnabled(False)
+        self.visualize_pbutton.setEnabled(False)
+
     def update_optimization(self):
         """Update the optimization parameters."""
 
@@ -708,6 +748,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         # 
         self.set_optimization()
 
+        # 
+        self.evaluate_pbutton.setEnabled(False)
+        self.visualize_pbutton.setEnabled(False)
+
     def update_evaluation(self):
         """Update the evaluation parameters."""
 
@@ -717,6 +761,9 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # 
         self.set_evaluation()
+
+        # 
+        self.visualize_pbutton.setEnabled(False)
 
     def reset_configuration(self):
         """Reset the configuration parameters."""
@@ -997,7 +1044,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Set the display segments
         self.display_segments_ledit.setText(
-            str(evaluation['display_segments']))
+            str(evaluation['display_segments']).replace("\'", ''))
 
         # Loop over the display metrics
         for index in range(self.display_metrics_lwidget.count()):
@@ -1186,20 +1233,22 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.ref_vol_ledit.text(), 0)
         reference_dose = self.make_list_string(
             self.ref_dose_ledit.text(), 0)
-        display_segments = self.make_list_string(
-            self.display_segments_ledit.text(), 0)
+        display_segments = self.display_segments_ledit.text()
 
         # Create the evaluation dictionary from the input fields
         evaluation = {
             'dvh_type': self.dvh_type_cbox.currentText(),
             'number_of_points': self.n_points_sbox.value(),
             'reference_volume': ([2, 5, 50, 95, 98]
-                                 if reference_volume == ''
+                                 if reference_volume in ('', '[]')
                                  else loads(reference_volume)),
-            'reference_dose': [] if reference_dose == ''
-            else loads(reference_dose),
-            'display_segments': [] if display_segments == ''
-            else loads(display_segments),
+            'reference_dose': ([]
+                               if reference_dose in ('', '[]')
+                               else loads(reference_dose)),
+            'display_segments': ([]
+                                 if display_segments in ('', '[]')
+                                 else display_segments.strip(
+                                     '][').split(', ')),
             'display_metrics': [
                 self.display_metrics_lwidget.item(index).text()
                 for index in range(self.display_metrics_lwidget.count())
@@ -1509,6 +1558,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                     event.curve.setPen(mkPen(color=pen.color(),
                                              style=pen.style(),
                                              width=2))
+                    self.segment_ledit.clear()
+                    self.mean_ledit.clear()
+                    self.std_ledit.clear()
+                    self.maximum_ledit.clear()
+                    self.minimum_ledit.clear()
             else:
                 item.curve.setPen(mkPen(color=pen.color(),
                                         style=pen.style(),
@@ -1537,7 +1591,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.dvh_widget.plot_graph.setTitle(
                     "<span style='color: #FFAE42; "
                     "font-size: 11pt'>dose/fx: "
-                    "%0.1f</span>, <span style='color: #FFAE42; "
+                    "%0.2f</span>, <span style='color: #FFAE42; "
                     "font-size: 11pt'>vRel: %0.1f</span>"
                     % (mouse_point.x(), mouse_point.y()))
 
@@ -1754,11 +1808,6 @@ class DVHWidget(QWidget):
         self.plot_graph.addItem(self.vertical_line, ignoreBounds=True)
         self.plot_graph.addItem(self.horizontal_line, ignoreBounds=True)
 
-        # Set the signal proxy to update the crosshair at mouse moves
-        self.crosshair_update = SignalProxy(
-            self.plot_graph.scene().sigMouseMoved, rateLimit=60,
-            slot=self.parent.update_crosshair)
-
     def add_style_and_data(self, histogram):
         """."""
 
@@ -1795,9 +1844,14 @@ class DVHWidget(QWidget):
         self.plot_graph.setXRange(0, maximum_x)
         self.plot_graph.setYRange(0, 105)
 
+        # Set the signal proxy to update the crosshair at mouse moves
+        self.crosshair_update = SignalProxy(
+            self.plot_graph.scene().sigMouseMoved, rateLimit=60,
+            slot=self.parent.update_crosshair)
+
         # Set the graph title
         self.plot_graph.setTitle("<span style='color: #FFAE42; "
-                                 "font-size: 11pt'>dose/fx: %0.1f</span>, "
+                                 "font-size: 11pt'>dose/fx: %0.2f</span>, "
                                  "<span style='color: #FFAE42; "
                                  "font-size: 11pt'>vRel: %0.1f</span>"
                                  % (0, 0.0))
@@ -1826,6 +1880,9 @@ class DVHWidget(QWidget):
         self.plot_graph.clear()
         self.plot_graph.getPlotItem().hideAxis('bottom')
         self.plot_graph.getPlotItem().hideAxis('left')
+        self.plot_graph.setTitle(None)
+        if hasattr(self, 'crosshair_update'):
+            delattr(self, 'crosshair_update')
         self.parent.segment_ledit.clear()
         self.parent.mean_ledit.clear()
         self.parent.std_ledit.clear()
@@ -1927,8 +1984,20 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         # 
         self.current = self.get_fields()
 
-        # 
-        self.parent.resize(*self.current[2])
+        #
+        if self.parent.isMaximized():
+
+            # Show the main window in normal mode
+            self.parent.showNormal()
+
+            # Resize the main window
+            self.parent.resize(*self.current[2])
+
+        elif (self.current[2][0] >=
+              self.parent.application.primaryScreen().size().width()):
+
+            # 
+            self.parent.showMaximized()
 
         # 
         self.hide()

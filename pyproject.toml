@@ -1,6 +1,7 @@
 [tool.poetry]
 name = "pyanno4rt"
-version = "0.0.1"
+# version = 0.2.0.1 # TestPyPI
+version = "0.0.1" # PyPI
 description = "A package for Python-based advanced numerical nonlinear optimization in radiotherapy."
 license = "LICENSE"
 authors = [ "Tim Ortkamp <tim.ortkamp@kit.edu>" ]
@@ -13,6 +14,7 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: Healthcare Industry",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Topic :: Scientific/Engineering",
