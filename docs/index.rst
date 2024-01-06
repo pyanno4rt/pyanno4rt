@@ -12,6 +12,7 @@
 
    installation.md
    development.md
+   contributing.md
    help_support.md
    example.ipynb
    autoapi/index

@@ -39,6 +39,9 @@ extensions = [
 	'sphinx.ext.viewcode'
 ]
 
+# Myst NB settings
+nb_execution_mode = 'off'
+
 # AutoAPI settings
 autoapi_dirs = ["../pyanno4rt"]
 autoapi_type = "python"

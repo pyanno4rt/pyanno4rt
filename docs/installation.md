@@ -1,17 +1,40 @@
 # Installation
 
-<h3>User installation</h3>
+<h3>Python distribution</h3>
+
+You can install the latest distribution via:
 
 ```bash
 pip install pyanno4rt
 ```
 
+<br>
 <h3>Source code</h3>
+
+You can check the latest source code via:
 
 ```bash
 git clone https://github.com/pyanno4rt/pyanno4rt.git
 ```
 
+<br>
+<h3>Usage</h3>
+
+pyanno4rt has two main classes which provide a code-based and an UI-based interface:
+
+<i>Base class import for CLI/IDE</i>
+
+```python
+from pyanno4rt.base import TreatmentPlan
+```
+
+<i>GUI import</i>
+
+```python
+from pyanno4rt.gui import GraphicalUserInterface
+```
+
+<br>
 <h3>Dependencies</h3>
 
 <ul>
@@ -39,4 +62,4 @@ git clone https://github.com/pyanno4rt/pyanno4rt.git
 	<li> pyqtgraph (>=0.13.3) </li>
 	<li> ipython (>=8.19.0) </li>
 </ul>
-We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. IPOPT is the only (optional) third-party dependency (you can find the respective tarballs for installation under pyanno4rt/optimization/solvers).<br/><br/>
+We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default and fallback if IPOPT is not available to import. IPOPT is the only (optional) third-party dependency (you can find the respective tarballs and instructions for installation under pyanno4rt/optimization/solvers). <br><br>
