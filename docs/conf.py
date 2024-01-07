@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('.'))
 # -- Project information -----------------------------------------------------
 
 project = 'pyanno4rt'
-copyright = '2024, Karlsruhe Institute of Technology'
+copyright = '2024, Tim Ortkamp'
 author = 'Tim Ortkamp'
 
 # The full version, including alpha/beta/rc tags
