@@ -76,9 +76,9 @@ class TreatmentPlan():
             treatment scheme;
         - ``imaging_path`` : string, path to the CT and segmentation data;
 
-        .. note:: It is assumed that both CT and segmentation data are \
-            included in a single file (.mat or .p) or a series of files \
-            (.dcm), whose content must obey the pyanno4rt data structure.
+        .. note:: It is assumed that CT and segmentation data are included in \
+            a single file (.mat or .p) or a series of files (.dcm), whose \
+            content obeys the pyanno4rt data structure.
 
         - ``target_imaging_resolution`` : None or list, default = None, \
             imaging resolution for post-processing interpolation of the CT \
@@ -91,8 +91,8 @@ class TreatmentPlan():
     optimization : dict
         Dictionary with the treatment plan optimization parameters:
 
-        - ``components`` : dict, optimization components for each segmented \
-            structure, i.e., objective functions and constraints;
+        - ``components`` : dict, optimization components for each segment of \
+            interest, i.e., objective functions and constraints;
 
         .. note:: The declaration scheme for a single component is
 

@@ -152,7 +152,7 @@ git clone https://github.com/pyanno4rt/pyanno4rt.git
 <br>
 <h3>Usage</h3>
 
-pyanno4rt has two main classes which provide a code-based and an UI-based interface:
+pyanno4rt has two main classes which provide a code-based and a UI-based interface:  <br><br>
 
 <i>Base class import for CLI/IDE</i>
 
@@ -210,7 +210,7 @@ We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for develop
 <br>
 <h3>Contributing</h3>
 
-pyanno4rt is open for new contributors of all experience levels. Please get in contact with us (see options below) to discuss the format of your contribution.
+pyanno4rt is open for new contributors of all experience levels. Please get in contact with us (see "Help and support") to discuss the format of your contribution.
 
 Note: the 'docs' folder includes example files with CT, segmentation and dose-influence matrix data for an example head-and-neck patient, which can be used for development. The example files are stored with Git Large File Storage (LFS), which you need to install before checking out the source code to be able to access them. <br><br>
 

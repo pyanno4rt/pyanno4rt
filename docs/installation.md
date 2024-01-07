@@ -20,7 +20,7 @@ git clone https://github.com/pyanno4rt/pyanno4rt.git
 <br>
 <h3>Usage</h3>
 
-pyanno4rt has two main classes which provide a code-based and an UI-based interface:
+pyanno4rt has two main classes which provide a code-based and a UI-based interface:  <br><br>
 
 <i>Base class import for CLI/IDE</i>
 
