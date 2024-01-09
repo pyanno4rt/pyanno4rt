@@ -70,7 +70,7 @@
 			<li> Dataset import and preprocessing </li>
 			<li> Automatic feature map generation </li>
 			<li> 27-type feature catalog for iterative (re)calculation to support model integration into optimization </li>
-			<li> 3 highly customizable internal model classes </li>
+			<li> 3 highly customizable internal model classes for logistic regression, neural network and support vector machine </li>
 				<br>
 				<ul> 
 					<li> Individual preprocessing, inspection and evaluation units </li>  

@@ -350,9 +350,9 @@ idna==3.6 ; python_version >= "3.10" and python_version < "3.12" \
 imageio==2.33.1 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:78722d40b137bd98f5ec7312119f8aea9ad2049f76f434748eb306b6937cc1ce \
     --hash=sha256:c5094c48ccf6b2e6da8b4061cd95e1209380afafcbeae4a4e280938cce227e1d
-ipython==8.19.0 ; python_version >= "3.10" and python_version < "3.12" \
-    --hash=sha256:2f55d59370f59d0d2b2212109fe0e6035cfea436b1c0e6150ad2244746272ec5 \
-    --hash=sha256:ac4da4ecf0042fb4e0ce57c60430c2db3c719fa8bdf92f8631d6bd8a5785d1f0
+ipython==8.20.0 ; python_version >= "3.10" and python_version < "3.12" \
+    --hash=sha256:2f21bd3fc1d51550c89ee3944ae04bbc7bc79e129ea0937da6e6c68bfdbf117a \
+    --hash=sha256:bc9716aad6f29f36c449e30821c9dd0c1c1a7b59ddcc26931685b87b4c569619
 jax==0.4.23 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:2a229a5a758d1b803891b2eaed329723f6b15b4258b14dc0ccb1498c84963685 \
     --hash=sha256:a7a07ccd1577111e3b82378c79a8ed0f9d6613b1e98fb6bf3c0b459198f73eaa

@@ -60,6 +60,6 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> pyqt5-qt5 (==5.15.2) </li>
 	<li> pyqt5 (==5.15.10) </li>
 	<li> pyqtgraph (>=0.13.3) </li>
-	<li> ipython (>=8.19.0) </li>
+	<li> ipython (>=8.20.0) </li>
 </ul>
 We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default and fallback if IPOPT is not available to import. IPOPT is the only (optional) third-party dependency (you can find the respective tarballs and instructions for installation under pyanno4rt/optimization/solvers). <br><br>

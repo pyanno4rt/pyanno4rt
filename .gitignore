@@ -1,4 +1,5 @@
 # Ignore local files
+launcher.sh
 script.py
 
 # Ignore local folders

@@ -122,7 +122,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.setupUi(self)
 
         # Set the window icon
-        self.setWindowIcon(QIcon('./logo/logo_black_icon.png'))
+        self.setWindowIcon(QIcon('./logo/logo_white_icon.png'))
 
         # Initialize the GUI plans dictionary
         self.plans = {}

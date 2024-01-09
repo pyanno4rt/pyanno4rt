@@ -24,13 +24,13 @@ files = [
 
 [[package]]
 name = "alabaster"
-version = "0.7.13"
-description = "A configurable sidebar-enabled Sphinx theme"
+version = "0.7.15"
+description = "A light, configurable Sphinx theme"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.9"
 files = [
-    {file = "alabaster-0.7.13-py3-none-any.whl", hash = "sha256:1ee19aca801bbabb5ba3f5f258e4422dfa86f82f3e9cefb0859b283cdd7f62a3"},
-    {file = "alabaster-0.7.13.tar.gz", hash = "sha256:a27a4a084d5e690e16e01e03ad2b2e552c61a65469419b907243193de1a84ae2"},
+    {file = "alabaster-0.7.15-py3-none-any.whl", hash = "sha256:d99c6fd0f7a86fca68ecc5231c9de45227991c10ee6facfb894cf6afb953b142"},
+    {file = "alabaster-0.7.15.tar.gz", hash = "sha256:0127f4b1db0afc914883f930e3d40763131aebac295522fc4a04d9e77c703705"},
 ]
 
 [[package]]
@@ -1804,13 +1804,13 @@ test = ["flaky", "ipyparallel", "pre-commit", "pytest (>=7.0)", "pytest-asyncio"
 
 [[package]]
 name = "ipython"
-version = "8.19.0"
+version = "8.20.0"
 description = "IPython: Productive Interactive Computing"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "ipython-8.19.0-py3-none-any.whl", hash = "sha256:2f55d59370f59d0d2b2212109fe0e6035cfea436b1c0e6150ad2244746272ec5"},
-    {file = "ipython-8.19.0.tar.gz", hash = "sha256:ac4da4ecf0042fb4e0ce57c60430c2db3c719fa8bdf92f8631d6bd8a5785d1f0"},
+    {file = "ipython-8.20.0-py3-none-any.whl", hash = "sha256:bc9716aad6f29f36c449e30821c9dd0c1c1a7b59ddcc26931685b87b4c569619"},
+    {file = "ipython-8.20.0.tar.gz", hash = "sha256:2f21bd3fc1d51550c89ee3944ae04bbc7bc79e129ea0937da6e6c68bfdbf117a"},
 ]
 
 [package.dependencies]
@@ -2287,13 +2287,13 @@ test = ["flaky", "pexpect", "pytest"]
 
 [[package]]
 name = "jupyter-core"
-version = "5.7.0"
+version = "5.7.1"
 description = "Jupyter core package. A base package on which Jupyter projects rely."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jupyter_core-5.7.0-py3-none-any.whl", hash = "sha256:16eea462f7dad23ba9f86542bdf17f830804e2028eb48d609b6134d91681e983"},
-    {file = "jupyter_core-5.7.0.tar.gz", hash = "sha256:cb8d3ed92144d2463a3c5664fdd686a3f0c1442ea45df8babb1c1a9e6333fe03"},
+    {file = "jupyter_core-5.7.1-py3-none-any.whl", hash = "sha256:c65c82126453a723a2804aa52409930434598fd9d35091d63dfb919d2b765bb7"},
+    {file = "jupyter_core-5.7.1.tar.gz", hash = "sha256:de61a9d7fc71240f688b2fb5ab659fbb56979458dc66a71decd098e03c79e218"},
 ]
 
 [package.dependencies]
@@ -3117,13 +3117,13 @@ dev = ["absl-py", "pyink", "pylint (>=2.6.0)", "pytest", "pytest-xdist"]
 
 [[package]]
 name = "more-itertools"
-version = "10.1.0"
+version = "10.2.0"
 description = "More routines for operating on iterables, beyond itertools"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "more-itertools-10.1.0.tar.gz", hash = "sha256:626c369fa0eb37bac0291bce8259b332fd59ac792fa5497b59837309cd5b114a"},
-    {file = "more_itertools-10.1.0-py3-none-any.whl", hash = "sha256:64e0735fcfdc6f3464ea133afe8ea4483b1c5fe3a3d69852e6503b43a0b222e6"},
+    {file = "more-itertools-10.2.0.tar.gz", hash = "sha256:8fccb480c43d3e99a00087634c06dd02b0d50fbf088b380de5a41a015ec239e1"},
+    {file = "more_itertools-10.2.0-py3-none-any.whl", hash = "sha256:686b06abe565edfab151cb8fd385a05651e1fdf8f0a14191e4439283421f8684"},
 ]
 
 [[package]]
@@ -5903,6 +5903,57 @@ sphinx = ">=6.1.0"
 docs = ["furo", "sphinx", "sphinx-design"]
 
 [[package]]
+name = "sphinx-copybutton"
+version = "0.5.2"
+description = "Add a copy button to each of your code cells."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "sphinx-copybutton-0.5.2.tar.gz", hash = "sha256:4cf17c82fb9646d1bc9ca92ac280813a3b605d8c421225fd9913154103ee1fbd"},
+    {file = "sphinx_copybutton-0.5.2-py3-none-any.whl", hash = "sha256:fb543fd386d917746c9a2c50360c7905b605726b9355cd26e9974857afeae06e"},
+]
+
+[package.dependencies]
+sphinx = ">=1.8"
+
+[package.extras]
+code-style = ["pre-commit (==2.12.1)"]
+rtd = ["ipython", "myst-nb", "sphinx", "sphinx-book-theme", "sphinx-examples"]
+
+[[package]]
+name = "sphinx-favicon"
+version = "1.0.1"
+description = "Sphinx Extension adding support for custom favicons"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "sphinx-favicon-1.0.1.tar.gz", hash = "sha256:df796de32125609c1b4a8964db74270ebf4502089c27cd53f542354dc0b57e8e"},
+    {file = "sphinx_favicon-1.0.1-py3-none-any.whl", hash = "sha256:7c93d6b634cb4c9687ceab67a8526f05d3b02679df94e273e51a43282e6b034c"},
+]
+
+[package.dependencies]
+sphinx = ">=3.4"
+
+[package.extras]
+dev = ["nox", "pre-commit"]
+doc = ["pydata-sphinx-theme", "sphinx (<6)", "sphinx-copybutton", "sphinx-design"]
+test = ["beautifulsoup4", "pytest", "pytest-cov"]
+
+[[package]]
+name = "sphinx-last-updated-by-git"
+version = "0.3.6"
+description = "Get the \"last updated\" time for each Sphinx page from Git"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "sphinx-last-updated-by-git-0.3.6.tar.gz", hash = "sha256:8f1f5c52740b14ff8481b25a2162eb0e4b144dbf871ca357ff341858390aa17c"},
+    {file = "sphinx_last_updated_by_git-0.3.6-py3-none-any.whl", hash = "sha256:bc1890ec80f84607d9f77e144e26330a2c901154e7e77a2dad964f6a4bdd6329"},
+]
+
+[package.dependencies]
+sphinx = ">=1.8"
+
+[[package]]
 name = "sphinx-rtd-theme"
 version = "2.0.0"
 description = "Read the Docs theme for Sphinx"
@@ -7111,4 +7162,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <3.12"
-content-hash = "6f48aa8a1a61644e192b281d58447af08eb6290042662079b38571e0298f797c"
+content-hash = "026d5e3cbb6128a1071f44c17d72a066d9a56870068349cf44cfd263031acee2"
