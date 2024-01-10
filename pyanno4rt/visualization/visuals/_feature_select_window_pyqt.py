@@ -644,9 +644,9 @@ class FeatureSelectWindowPyQt(QMainWindow):
         def add_logo(layout):
             """Create and add the pyanno4rt logo."""
             logo = QLabel(self)
-            pixmap = QtGui.QPixmap('./logo/logo_white.png')
-            pixmap = pixmap.scaled(int(pixmap.width()/10),
-                                   int(pixmap.height()/10))
+            pixmap = QtGui.QPixmap('./logo/logo_white_512.png')
+            pixmap = pixmap.scaled(int(pixmap.width()/2),
+                                   int(pixmap.height()/2))
             logo.setPixmap(pixmap)
             logo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             logo.setAlignment(Qt.AlignCenter)

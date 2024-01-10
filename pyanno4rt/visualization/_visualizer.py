@@ -130,9 +130,9 @@ class MainWindow(QMainWindow):
         def add_logo(layout):
             """Create and add the pyanno4rt logo."""
             logo = QLabel(self)
-            pixmap = QtGui.QPixmap('./logo/logo_white.png')
-            pixmap = pixmap.scaled(int(pixmap.width()/10),
-                                   int(pixmap.height()/10))
+            pixmap = QtGui.QPixmap('./logo/logo_white_512.png')
+            pixmap = pixmap.scaled(int(pixmap.width()/2),
+                                   int(pixmap.height()/2))
             logo.setPixmap(pixmap)
             logo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             logo.setAlignment(Qt.AlignCenter)
@@ -214,12 +214,12 @@ class MainWindow(QMainWindow):
                 button.setEnabled(False)
 
             # Disable the permutation importance button if no inspector is used
-            if (len(hub.model_inspections) == 0 and subclass.name in (
+            if (hub.model_inspections and subclass.name in (
                     'permutation_importance_plotter',)):
                 button.setEnabled(False)
 
             # Disable the metrics tables and graphs if no evaluator is used
-            if (len(hub.model_evaluations) == 0 and subclass.name in (
+            if (hub.model_evaluations and subclass.name in (
                     'metrics_graphs_plotter', 'metrics_tables_plotter')):
                 button.setEnabled(False)
 

@@ -103,8 +103,8 @@ class ScrollBar(QWidget):
                                  QLabel
                                      {
                                          color: #FBFAF5;
-                                         font-size: 8pt;
-                                         max-height: 8%;
+                                         font-size: 9pt;
+                                         max-height: 10%;
                                      }
                                  ''')
         scrollbar_layout.addWidget(self.label)
@@ -617,9 +617,9 @@ class CtDoseSlicingWindowPyQt(QMainWindow):
         def add_logo(layout):
             """Create and add the pyanno4rt logo."""
             logo = QLabel(self)
-            pixmap = QtGui.QPixmap('./logo/logo_white.png')
-            pixmap = pixmap.scaled(int(pixmap.width()/10),
-                                   int(pixmap.height()/10))
+            pixmap = QtGui.QPixmap('./logo/logo_white_512.png')
+            pixmap = pixmap.scaled(int(pixmap.width()/2),
+                                   int(pixmap.height()/2))
             logo.setPixmap(pixmap)
             logo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             logo.setAlignment(Qt.AlignCenter)

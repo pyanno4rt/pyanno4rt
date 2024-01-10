@@ -102,6 +102,13 @@ class DataModelHandler():
         # Initialize the datahub
         hub = Datahub()
 
+        # Initialize the data model-related dictionaries
+        hub.datasets = {}
+        hub.feature_maps = {}
+        hub.model_instances = {}
+        hub.model_inspections = {}
+        hub.model_evaluations = {}
+
         # Get the model label from the argument
         self.model_label = model_label
 

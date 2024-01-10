@@ -93,7 +93,7 @@ autoapi_options = [
     'imported-members',
 ]
 
-autoapi_ignore = ['*/resources_rc.py', '*/main_window.py', '*/info_window.py', '*/settings_window.py']
+autoapi_ignore = ['*/resources_rc.py', '*/main_window.py', '*/info_window.py', '*/log_window.py', '*/settings_window.py']
 
 # -- Custom auto_summary() macro ---------------------------------------------------
 

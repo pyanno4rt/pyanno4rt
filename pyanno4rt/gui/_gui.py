@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from os.path import dirname
+from os.path import dirname, expanduser
 from itertools import islice, cycle
 from json import loads
 from json import load as jload
@@ -25,9 +25,10 @@ from pyqtgraph import (colormap, GraphicsLayoutWidget, ImageItem, InfiniteLine,
 
 from pyanno4rt.base import TreatmentPlan
 from pyanno4rt.gui.assets import resources_rc
+from pyanno4rt.gui.windows.info_window import Ui_info_window
+from pyanno4rt.gui.windows.log_window import Ui_log_window
 from pyanno4rt.gui.windows.main_window import Ui_main_window
 from pyanno4rt.gui.windows.settings_window import Ui_settings_window
-from pyanno4rt.gui.windows.info_window import Ui_info_window
 from pyanno4rt.tools import copycat, snapshot
 
 # %% Set options
@@ -135,6 +136,42 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.base_optimization = self.transform_optimization_to_dict()
         self.base_evaluation = self.transform_evaluation_to_dict()
 
+        # Set the stylesheet for the update/reset buttons
+        qbutton_style_composer = ('''
+                                  QPushButton {
+                                      color: rgb(0, 0, 0);
+                                      background-color: rgb(238, 238, 236);
+                                      border: 1px solid;
+                                      border-color: rgb(186, 189, 182);
+                                      }
+                                  QPushButton:disabled {
+                                      color: rgb(153, 153, 153);
+                                      }
+                                  ''')
+
+        # Set the stylesheet for the workflow buttons
+        qbutton_style_workflow = ('''
+                                  QPushButton {
+                                      color: rgb(0, 0, 0);
+                                      background-color: rgb(211, 215, 207);
+                                      border: 1px solid;
+                                      border-color: rgb(186, 189, 182);
+                                      }
+                                  QPushButton:disabled {
+                                      color: rgb(153, 153, 153);
+                                      }
+                                  ''')
+
+        # 
+        self.update_configuration_pbutton.setStyleSheet(qbutton_style_composer)
+        self.update_optimization_pbutton.setStyleSheet(qbutton_style_composer)
+        self.update_evaluation_pbutton.setStyleSheet(qbutton_style_composer)
+
+        # 
+        self.optimize_pbutton.setStyleSheet(qbutton_style_workflow)
+        self.evaluate_pbutton.setStyleSheet(qbutton_style_workflow)
+        self.visualize_pbutton.setStyleSheet(qbutton_style_workflow)
+
         # Disable the update buttons initially
         self.update_configuration_pbutton.setEnabled(False)
         self.update_optimization_pbutton.setEnabled(False)
@@ -144,6 +181,13 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.optimize_pbutton.setEnabled(False)
         self.evaluate_pbutton.setEnabled(False)
         self.visualize_pbutton.setEnabled(False)
+
+        # Disable the toolbox buttons
+        self.show_log_tbutton.setEnabled(False)
+        self.show_plan_tbutton.setEnabled(False)
+        self.show_img_data_tbutton.setEnabled(False)
+        self.show_maps_tbutton.setEnabled(False)
+        self.show_model_data_tbutton.setEnabled(False)
 
         # Initialize the slice widget
         self.slice_widget = SliceWidget(self)
@@ -163,38 +207,34 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Initialize the information window
         self.info_window = InfoWindow(self)
 
-        # Set the scrollbar stylesheet for the console output
-        self.console_tedit.verticalScrollBar().setStyleSheet('''
-                                  QScrollBar
-                                      {
-                                          color: black;
-                                          background-color: #d3d7cf;
-                                      }
-                                 QScrollBar::sub-page
-                                     {
-                                         background: black;
-                                         border: 1px solid #d3d7cf;
-                                     }
-                                 QScrollBar::add-page
-                                     {
-                                         background: black;
-                                         border: 1px solid #d3d7cf;
-                                     }
-                                 ''')
+        # Initialize the logging window
+        self.log_window = LogWindow(self)
+
+        # 
+        # self.plan_window = PlanWindow(self)
+
+        # 
+        # self.imaging_window = ImagingWindow(self)
+
+        # 
+        # self.feature_map_window = FeatureMapWindow(self)
+
+        # 
+        # self.model_data_window = ModelDataWindow(self)
 
         # Set the tab indices to ensure consistency of the starting window
         self.composer_widget.setCurrentIndex(0)
         self.tab_workflow.setCurrentIndex(0)
         self.viewer_widget.setCurrentIndex(0)
 
+        # Connect the event signals
+        self.connect_signals()
+
         # Check if an initial treatment plan has been specified
         if treatment_plan:
 
             # Activate the treatment plan in the GUI
             self.activate(treatment_plan)
-
-        # Connect the event signals
-        self.connect_signals()
 
         # Set the initial window size
         self.resize(1920, 1080)
@@ -214,8 +254,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.save_pbutton.clicked.connect(self.save_tpi)
         self.drop_pbutton.clicked.connect(self.open_drop_tpi_dialog)
         self.plan_select_cbox.currentTextChanged.connect(self.select_plan)
-        self.settings_pbutton.clicked.connect(self.open_settings)
-        self.info_pbutton.clicked.connect(self.open_info)
+        self.settings_pbutton.clicked.connect(self.open_settings_window)
+        self.info_pbutton.clicked.connect(self.open_info_window)
         self.exit_pbutton.clicked.connect(self.exit_window)
 
         # Connect the workflow buttons
@@ -224,6 +264,14 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.evaluate_pbutton.clicked.connect(self.evaluate)
         self.visualize_pbutton.clicked.connect(self.visualize)
         self.compose_pbutton.clicked.connect(self.compose)
+
+        # Connect the toolbox buttons
+        self.show_log_tbutton.clicked.connect(self.open_log_window)
+        # self.show_plan_tbutton.clicked.connect(self.open_plan_window)
+        # self.show_img_data_tbutton.clicked.connect(self.open_imaging_window)
+        # self.show_maps_tbutton.clicked.connect(self.open_maps_window)
+        # self.show_model_data_tbutton.clicked.connect(
+        #     self.open_model_data_window)
 
         # Connect the configuration buttons
         self.img_path_tbutton.clicked.connect(self.add_imaging_path)
@@ -285,7 +333,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the loading folder path
         path = QFileDialog.getExistingDirectory(
-            self, 'Select a directory for loading')
+            self, 'Select a directory for loading', expanduser("~"))
 
         # Check if the folder name exists (user has not stopped the loading)
         if path:
@@ -301,7 +349,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the saving folder path
         path = QFileDialog.getExistingDirectory(
-            self, 'Select a directory for saving')
+            self, 'Select a directory for saving', expanduser("~"))
 
         # Check if the folder name exists (user has not stopped the saving)
         if path:
@@ -338,11 +386,17 @@ class MainWindow(QMainWindow, Ui_main_window):
     def select_plan(self):
         """Select a treatment plan."""
 
+        # 
+        selection = self.plan_select_cbox.currentText()
+
         # Check if the selector text is not set to default
-        if self.plan_select_cbox.currentText() != '':
+        if selection != '':
 
             # Change the treatment plan label to the instance label
-            self.plan_ledit.setText(self.plan_select_cbox.currentText())
+            self.plan_ledit.setText(selection)
+
+            # 
+            label = self.plan_ledit.text()
 
             # Set the configuration, optimization and evaluation tab fields
             self.set_configuration()
@@ -359,9 +413,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.evaluate_pbutton.setEnabled(False)
             self.visualize_pbutton.setEnabled(False)
 
-            # Clear the console text
-            self.console_tedit.clear()
-
             # 
             self.slice_widget.reset_images()
 
@@ -369,29 +420,84 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.dvh_widget.reset_dvh()
 
             # 
-            if (self.plans[self.plan_ledit.text()].datahub and
-                isinstance(
-                    self.plans[self.plan_ledit.text()].datahub.histogram,
+            if (self.plans[label].datahub and all(isinstance(getattr(
+                    self.plans[label].datahub, unit), dict)
+                    for unit in ('computed_tomography', 'segmentation'))):
+
+                # Get the CT dictionary
+                computed_tomography = (
+                    self.plans[label].datahub.computed_tomography)
+
+                # Get the segmentation dictionary
+                segmentation = self.plans[label].datahub.segmentation
+
+                # Set the scrollbar range
+                self.slice_selection_sbar.setRange(
+                    0, computed_tomography['cube_dimensions'][2]-1)
+
+                # Set the scrollbar value
+                self.slice_selection_sbar.setValue(
+                    int((computed_tomography['cube_dimensions'][2]-1)/2))
+
+                # Add the CT image to the widget
+                self.slice_widget.add_ct(computed_tomography['cube'])
+
+                # Add the segments to the widget
+                self.slice_widget.add_segments(computed_tomography,
+                                               segmentation)
+
+                # 
+                self.optimize_pbutton.setEnabled(True)
+
+                # 
+                if isinstance(self.plans[label].datahub.optimization, dict):
+
+                    # Get the optimized dose array
+                    optimized_dose = self.plans[label].datahub.optimization[
+                        'optimized_dose']
+
+                    # Add the dose image to the widget
+                    self.slice_widget.add_dose(optimized_dose)
+
+                    # 
+                    self.evaluate_pbutton.setEnabled(True)
+
+                # Update the slice image
+                self.slice_widget.update_images()
+
+            # 
+            if (self.plans[label].datahub and isinstance(
+                    self.plans[label].datahub.histogram,
                     dict)):
 
                 # 
                 self.dvh_widget.add_style_and_data(
-                    self.plans[self.plan_ledit.text()].datahub.histogram)
+                    self.plans[label].datahub.histogram)
+
+                # 
                 self.dvh_widget.update_dvh()
 
                 # 
-                self.evaluate_pbutton.setEnabled(True)
                 self.visualize_pbutton.setEnabled(True)
+
+            # 
+            if self.plans[label].datahub and self.plans[label].datahub.logger:
+
+                # Update the log output
+                self.log_window.update_log_output()
+
+                # Enable the log window button
+                self.show_log_tbutton.setEnabled(True)
 
         else:
 
             # Change the treatment plan label to the default (empty)
             self.plan_ledit.setText('')
 
-            # Reset the configuration, optimization and evaluation tab fields
-            self.reset_configuration()
-            self.reset_optimization()
-            self.reset_evaluation()
+            # Clear the configuration, optimization and evaluation tab fields
+            self.clear_configuration()
+            self.clear_optimization()
+            self.clear_evaluation()
 
             # Disable the update buttons
             self.update_configuration_pbutton.setEnabled(False)
@@ -403,8 +509,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.evaluate_pbutton.setEnabled(False)
             self.visualize_pbutton.setEnabled(False)
 
-            # Clear the console text
-            self.console_tedit.clear()
+            # Disable the toolbox buttons
+            self.show_log_tbutton.setEnabled(False)
 
             # Reset the slice image
             self.slice_widget.reset_images()
@@ -412,7 +518,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Reset the DVH plot
             self.dvh_widget.reset_dvh()
 
-    def open_settings(self):
+    def open_settings_window(self):
         """Open the settings window."""
 
         # 
@@ -428,7 +534,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         # 
         self.settings_window.show()
 
-    def open_info(self):
+    def open_info_window(self):
         """Open the information window."""
 
         # 
@@ -475,9 +581,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Change the selector text to the configured instance
             self.plan_select_cbox.setCurrentText(self.plan_ledit.text())
 
-            # Update the console text for the new instance
-            self.update_console_output()
-
             # Get the CT dictionary
             computed_tomography = (self.plans[self.plan_ledit.text()]
                                    .datahub.computed_tomography)
@@ -508,6 +611,12 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Enable the optimization button
             self.optimize_pbutton.setEnabled(True)
+
+            # Update the log output
+            self.log_window.update_log_output()
+
+            # Enable the log window button
+            self.show_log_tbutton.setEnabled(True)
 
             # Reset back to the arrow cursor
             QApplication.restoreOverrideCursor()
@@ -541,9 +650,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Append the current treatment plan to the optimized plans list
             self.optimized_plans.append(self.plan_ledit.text())
 
-            # Update the console text
-            self.update_console_output()
-
             # Get the optimized dose array
             optimized_dose = instance.datahub.optimization['optimized_dose']
 
@@ -552,6 +658,9 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Update the slice image
             self.slice_widget.update_images()
+
+            # Update the log output
+            self.log_window.update_log_output()
 
             # Enable the evaluation button
             self.evaluate_pbutton.setEnabled(True)
@@ -578,9 +687,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Run the evaluate method of the instance
             self.plans[self.plan_ledit.text()].evaluate()
 
-            # Update the console text
-            self.update_console_output()
-
             # 
             self.dvh_widget.reset_dvh()
 
@@ -597,6 +703,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Enable the visualization button
             self.visualize_pbutton.setEnabled(True)
 
+            # Update the log output
+            self.log_window.update_log_output()
+
             # Reset back to the arrow cursor
             QApplication.restoreOverrideCursor()
 
@@ -611,18 +720,15 @@ class MainWindow(QMainWindow, Ui_main_window):
     def visualize(self):
         """Visualize the treatment plan."""
 
-        try:
+        # try:
 
-            # Run the visualize method of the instance
-            self.plans[self.plan_ledit.text()].visualize(parent=self)
+        # Run the visualize method of the instance
+        self.plans[self.plan_ledit.text()].visualize(parent=self)
 
-            # Update the console text
-            self.update_console_output()
+        # except Exception as error:
 
-        except Exception as error:
-
-            # 
-            QMessageBox.warning(self, "pyanno4rt", str(error))
+        #     # 
+        #     QMessageBox.warning(self, "pyanno4rt", str(error))
 
     def compose(self):
         """Compose the treatment plan."""
@@ -637,6 +743,15 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.optimize()
             self.evaluate()
             self.visualize()
+
+    def open_log_window(self):
+        """Open the log window."""
+
+        # 
+        self.log_window.position()
+
+        # 
+        self.log_window.show()
 
     def add_imaging_path(self):
         """Add the CT and segmentation data from a folder."""
@@ -765,8 +880,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         # 
         self.visualize_pbutton.setEnabled(False)
 
-    def reset_configuration(self):
-        """Reset the configuration parameters."""
+    def clear_configuration(self):
+        """Clear the configuration parameters."""
 
         # Reset the treatment plan label
         self.plan_ledit.setText(self.base_configuration['label'])
@@ -795,8 +910,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.dose_res_ledit.setText(
             self.base_configuration['dose_resolution'])
 
-    def reset_optimization(self):
-        """Reset the optimization parameters."""
+    def clear_optimization(self):
+        """Clear the optimization parameters."""
 
         # Reset the components
         self.components_lwidget.clear()
@@ -832,8 +947,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Reset the maximum CPU time
         self.max_cpu_ledit.setText(str(self.base_optimization['max_cpu_time']))
 
-    def reset_evaluation(self):
-        """Reset the evaluation parameters."""
+    def clear_evaluation(self):
+        """Clear the evaluation parameters."""
 
         # Reset the DVH type
         self.dvh_type_cbox.setCurrentText(self.base_evaluation['dvh_type'])
@@ -1429,14 +1544,14 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # 
         message = ("Resetting will change all configuration tab fields to the "
-                   "default values. Are you sure you want to proceed?")
+                   "last saved state. Are you sure you want to proceed?")
 
         # 
         if (QMessageBox.question(self, "pyanno4rt ", message)
                 == QMessageBox.Yes):
 
             # 
-            self.reset_configuration()
+            self.set_configuration()
 
         else:
 
@@ -1447,14 +1562,14 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # 
         message = ("Resetting will change all optimization tab fields to the "
-                   "default values. Are you sure you want to proceed?")
+                   "last saved state. Are you sure you want to proceed?")
 
         # 
         if (QMessageBox.question(self, "pyanno4rt ", message)
                 == QMessageBox.Yes):
 
             # 
-            self.reset_optimization()
+            self.set_optimization()
 
         else:
 
@@ -1465,36 +1580,18 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # 
         message = ("Resetting will change all evaluation tab fields to the "
-                   "default values. Are you sure you want to proceed?")
+                   "last saved state. Are you sure you want to proceed?")
 
         # 
         if (QMessageBox.question(self, "pyanno4rt ", message)
                 == QMessageBox.Yes):
 
             # 
-            self.reset_evaluation()
+            self.set_evaluation()
 
         else:
 
             pass
-
-    def update_console_output(self):
-        """."""
-
-        # 
-        self.console_tedit.clear()
-
-        # 
-        instance = self.plans[self.plan_ledit.text()]
-
-        # 
-        stream_value = instance.logger.logger.handlers[1].stream.getvalue()
-
-        # 
-        stream_value = stream_value.replace('\n', '\n\n')
-
-        # 
-        self.console_tedit.setText(stream_value)
 
     def change_dose_opacity(self):
         """."""
@@ -1790,7 +1887,6 @@ class DVHWidget(QWidget):
         self.plot_graph.getPlotItem().hideAxis('bottom')
         self.plot_graph.getPlotItem().hideAxis('left')
         self.plot_graph.getPlotItem().hideButtons()
-        self.plot_graph.getPlotItem().setMouseEnabled(y=False)
 
         self.segments = None
         self.histogram = None
@@ -1832,17 +1928,12 @@ class DVHWidget(QWidget):
         self.segment_styles = dict(
             zip(self.segments, tuple(zip(colors, line_styles))))
 
-        # 
-        maximum_x = max(histogram['evaluation_points'])
-
         self.plot_graph.getPlotItem().showAxis('bottom')
         self.plot_graph.getPlotItem().showAxis('left')
 
         self.plot_graph.showGrid(x=True, y=True, alpha=0.3)
         self.plot_graph.setLabels(left="Relative volume [%]",
                                   bottom="Dose per fraction [Gy]")
-        self.plot_graph.setXRange(0, maximum_x)
-        self.plot_graph.setYRange(0, 105)
 
         # Set the signal proxy to update the crosshair at mouse moves
         self.crosshair_update = SignalProxy(
@@ -1856,8 +1947,10 @@ class DVHWidget(QWidget):
                                  "font-size: 11pt'>vRel: %0.1f</span>"
                                  % (0, 0.0))
 
-        self.plot_graph.plotItem.vb.setLimits(xMin=0, xMax=maximum_x,
-                                              yMin=0, yMax=101)
+        self.plot_graph.plotItem.vb.setLimits(
+            xMin=0, xMax=max(histogram['evaluation_points']), yMin=0, yMax=101)
+
+        self.plot_graph.plotItem.vb.enableAutoRange()
 
     def update_dvh(self):
         """."""
@@ -1985,7 +2078,7 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         self.current = self.get_fields()
 
         #
-        if self.parent.isMaximized():
+        if self.parent.isMaximized() and self.current[2][0] <= 1440:
 
             # Show the main window in normal mode
             self.parent.showNormal()
@@ -1998,6 +2091,11 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
             # 
             self.parent.showMaximized()
+
+        else:
+
+            # Resize the main window
+            self.parent.resize(*self.current[2])
 
         # 
         self.hide()
@@ -2044,3 +2142,83 @@ class InfoWindow(QMainWindow, Ui_info_window):
 
         # 
         self.hide()
+
+
+class LogWindow(QMainWindow, Ui_log_window):
+    """
+    Log window for the application.
+
+    This class creates the log window for the graphical user interface, \
+    including the output of the logger.
+    """
+
+    def __init__(
+            self,
+            parent=None):
+
+        # Get the application from the argument
+        self.parent = parent
+
+        # Run the constructor from the superclass
+        super().__init__()
+
+        # Build the UI main window
+        self.setupUi(self)
+
+        # 
+        self.close_pbutton.clicked.connect(self.close)
+
+    def position(self):
+        """."""
+
+        # Get the window geometry
+        geometry = self.geometry()
+
+        # Move the geometry center towards the parent
+        geometry.moveCenter(self.parent.geometry().center())
+
+        # Set the shifted geometry
+        self.setGeometry(geometry)
+
+    def update_log_output(self):
+        """."""
+
+        # 
+        self.log_tedit.clear()
+
+        # 
+        instance = self.parent.plans[self.parent.plan_ledit.text()]
+
+        # 
+        stream_value = instance.logger.logger.handlers[1].stream.getvalue()
+
+        # 
+        stream_value = stream_value.replace('\n', '\n\n')
+
+        # 
+        self.log_tedit.setText(stream_value)
+
+    def close(self):
+        """."""
+
+        # 
+        self.hide()
+
+# Set the scrollbar stylesheet for the console output
+# self.console_tedit.verticalScrollBar().setStyleSheet('''
+#                           QScrollBar
+#                               {
+#                                   color: black;
+#                                   background-color: #d3d7cf;
+#                               }
+#                          QScrollBar::sub-page
+#                              {
+#                                  background: black;
+#                                  border: 1px solid #d3d7cf;
+#                              }
+#                          QScrollBar::add-page
+#                              {
+#                                  background: black;
+#                                  border: 1px solid #d3d7cf;
+#                              }
+#                          ''')

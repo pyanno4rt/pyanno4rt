@@ -103,12 +103,12 @@ class Datahub():
     segmentation = None
     plan_configuration = None
     dose_information = None
-    optimization = {}
-    datasets = {}
-    feature_maps = {}
-    model_instances = {}
-    model_inspections = {}
-    model_evaluations = {}
+    optimization = None
+    datasets = None
+    feature_maps = None
+    model_instances = None
+    model_inspections = None
+    model_evaluations = None
     histogram = None
     dosimetrics = None
 

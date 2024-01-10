@@ -159,6 +159,9 @@ class FluenceOptimizer():
         # Log a message about the initialization of the class
         hub.logger.display_info("Initializing fluence optimizer ...")
 
+        # Initialize the optimization dictionary
+        hub.optimization = {}
+
         # Start the constructor runtime recording
         start_time = time()
 
