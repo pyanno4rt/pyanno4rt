@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1162</width>
+    <width>1024</width>
     <height>768</height>
    </rect>
   </property>
@@ -18,8 +18,8 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>3840</width>
-    <height>2160</height>
+    <width>2560</width>
+    <height>1440</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -567,7 +567,7 @@ color: rgb(0, 0, 0);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="iconSize">
            <size>
@@ -630,19 +630,23 @@ border-color: rgb(211, 215, 207);</string>
                   <number>0</number>
                  </property>
                  <property name="leftMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="topMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="rightMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
                  <item>
-                  <layout class="QVBoxLayout" name="image_layout"/>
+                  <layout class="QVBoxLayout" name="image_layout">
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                  </layout>
                  </item>
                 </layout>
                </widget>
@@ -660,13 +664,13 @@ border-color: rgb(211, 215, 207);</string>
                 </property>
                 <layout class="QGridLayout" name="image_options_layout">
                  <property name="leftMargin">
-                  <number>6</number>
+                  <number>10</number>
                  </property>
                  <property name="topMargin">
                   <number>0</number>
                  </property>
                  <property name="rightMargin">
-                  <number>6</number>
+                  <number>10</number>
                  </property>
                  <property name="bottomMargin">
                   <number>16</number>
@@ -706,13 +710,13 @@ border-color: rgb(211, 215, 207);</string>
                   <widget class="QSpinBox" name="opacity_sbox">
                    <property name="minimumSize">
                     <size>
-                     <width>100</width>
+                     <width>120</width>
                      <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>120</width>
                      <height>30</height>
                     </size>
                    </property>
@@ -849,21 +853,28 @@ border-color: rgb(211, 215, 207);</string>
                  <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                 </property>
-                <layout class="QVBoxLayout" name="image_meta_layout_3">
-                 <property name="leftMargin">
+                <layout class="QVBoxLayout" name="dvh_meta_layout">
+                 <property name="spacing">
                   <number>0</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>10</number>
                  </property>
                  <property name="topMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="rightMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
                  <item>
-                  <layout class="QVBoxLayout" name="dvh_layout"/>
+                  <layout class="QVBoxLayout" name="dvh_layout">
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                  </layout>
                  </item>
                 </layout>
                </widget>
@@ -881,13 +892,13 @@ border-color: rgb(211, 215, 207);</string>
                 </property>
                 <layout class="QGridLayout" name="dvh_options_layout">
                  <property name="leftMargin">
-                  <number>6</number>
+                  <number>10</number>
                  </property>
                  <property name="topMargin">
                   <number>0</number>
                  </property>
                  <property name="rightMargin">
-                  <number>6</number>
+                  <number>10</number>
                  </property>
                  <property name="bottomMargin">
                   <number>16</number>
@@ -898,17 +909,119 @@ border-color: rgb(211, 215, 207);</string>
                  <property name="verticalSpacing">
                   <number>3</number>
                  </property>
+                 <item row="1" column="5">
+                  <widget class="QLineEdit" name="minimum_ledit">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>50</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>180</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="3">
+                  <widget class="QLineEdit" name="std_ledit">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>50</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>180</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="4">
+                  <widget class="QLineEdit" name="maximum_ledit">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>50</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>180</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="4">
                   <widget class="QLabel" name="maximum_label">
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
+                     <width>50</width>
                      <height>25</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>180</width>
                      <height>25</height>
                     </size>
                    </property>
@@ -926,17 +1039,17 @@ border-color: rgb(211, 215, 207);</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="6">
-                  <widget class="QLabel" name="minimum_label">
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="mean_label">
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
+                     <width>50</width>
                      <height>25</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>180</width>
                      <height>25</height>
                     </size>
                    </property>
@@ -947,30 +1060,58 @@ border-color: rgb(211, 215, 207);</string>
                     </font>
                    </property>
                    <property name="text">
-                    <string>Min</string>
+                    <string>Mean</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="4">
-                  <widget class="QLineEdit" name="maximum_ledit">
+                 <item row="0" column="1">
+                  <widget class="QLabel" name="segment_label">
+                   <property name="minimumSize">
+                    <size>
+                     <width>80</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>400</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Segment</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QLineEdit" name="mean_ledit">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
+                     <width>50</width>
                      <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>180</width>
                      <height>30</height>
                     </size>
                    </property>
@@ -992,13 +1133,13 @@ border-color: rgb(186, 189, 182);</string>
                   <widget class="QLabel" name="std_label">
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
+                     <width>50</width>
                      <height>25</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>180</width>
                      <height>25</height>
                     </size>
                    </property>
@@ -1016,17 +1157,17 @@ border-color: rgb(186, 189, 182);</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="mean_label">
+                 <item row="0" column="5">
+                  <widget class="QLabel" name="minimum_label">
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
+                     <width>50</width>
                      <height>25</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>180</width>
                      <height>25</height>
                     </size>
                    </property>
@@ -1037,7 +1178,7 @@ border-color: rgb(186, 189, 182);</string>
                     </font>
                    </property>
                    <property name="text">
-                    <string>Mean</string>
+                    <string>Min</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -1047,150 +1188,20 @@ border-color: rgb(186, 189, 182);</string>
                  <item row="1" column="1">
                   <widget class="QLineEdit" name="segment_ledit">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>80</width>
+                     <width>140</width>
                      <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>200</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="6">
-                  <widget class="QLineEdit" name="minimum_ledit">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>60</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLabel" name="segment_label">
-                   <property name="minimumSize">
-                    <size>
-                     <width>80</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>200</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Segment</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="3">
-                  <widget class="QLineEdit" name="std_ledit">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>60</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QLineEdit" name="mean_ledit">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>60</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
+                     <width>400</width>
                      <height>30</height>
                     </size>
                    </property>
@@ -1315,14 +1326,17 @@ border-color: rgb(211, 215, 207);</string>
                       <property name="spacing">
                        <number>0</number>
                       </property>
+                      <property name="leftMargin">
+                       <number>10</number>
+                      </property>
                       <property name="topMargin">
-                       <number>9</number>
+                       <number>10</number>
                       </property>
                       <property name="rightMargin">
-                       <number>9</number>
+                       <number>10</number>
                       </property>
                       <property name="bottomMargin">
-                       <number>9</number>
+                       <number>10</number>
                       </property>
                       <item>
                        <widget class="QPushButton" name="configure_pbutton">
@@ -1804,45 +1818,7 @@ border-color: rgb(0, 0, 0);</string>
                             <number>5</number>
                            </property>
                            <item>
-                            <widget class="QToolButton" name="show_log_tbutton">
-                             <property name="minimumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="maximumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="cursor">
-                              <cursorShape>PointingHandCursor</cursorShape>
-                             </property>
-                             <property name="toolTip">
-                              <string>Show the log file</string>
-                             </property>
-                             <property name="styleSheet">
-                              <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                             </property>
-                             <property name="icon">
-                              <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/activity.svg</normaloff>:/black_icons/icons_black/activity.svg</iconset>
-                             </property>
-                             <property name="iconSize">
-                              <size>
-                               <width>20</width>
-                               <height>20</height>
-                              </size>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QToolButton" name="show_plan_tbutton">
+                            <widget class="QToolButton" name="show_parameter_tbutton">
                              <property name="minimumSize">
                               <size>
                                <width>40</width>
@@ -1880,7 +1856,7 @@ border-color: rgb(186, 189, 182);</string>
                             </widget>
                            </item>
                            <item>
-                            <widget class="QToolButton" name="show_img_data_tbutton">
+                            <widget class="QToolButton" name="show_plan_tbutton">
                              <property name="minimumSize">
                               <size>
                                <width>40</width>
@@ -1897,7 +1873,7 @@ border-color: rgb(186, 189, 182);</string>
                               <cursorShape>PointingHandCursor</cursorShape>
                              </property>
                              <property name="toolTip">
-                              <string>Show the imaging data</string>
+                              <string>Show the plan data</string>
                              </property>
                              <property name="styleSheet">
                               <string notr="true">color: rgb(0, 0, 0);
@@ -1907,45 +1883,7 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="icon">
                               <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/user.svg</normaloff>:/black_icons/icons_black/user.svg</iconset>
-                             </property>
-                             <property name="iconSize">
-                              <size>
-                               <width>20</width>
-                               <height>20</height>
-                              </size>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QToolButton" name="show_maps_tbutton">
-                             <property name="minimumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="maximumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="cursor">
-                              <cursorShape>PointingHandCursor</cursorShape>
-                             </property>
-                             <property name="toolTip">
-                              <string>Show the feature maps</string>
-                             </property>
-                             <property name="styleSheet">
-                              <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                             </property>
-                             <property name="icon">
-                              <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/map.svg</normaloff>:/black_icons/icons_black/map.svg</iconset>
+                               <normaloff>:/black_icons/icons_black/clipboard.svg</normaloff>:/black_icons/icons_black/clipboard.svg</iconset>
                              </property>
                              <property name="iconSize">
                               <size>
@@ -1984,6 +1922,82 @@ border-color: rgb(186, 189, 182);</string>
                              <property name="icon">
                               <iconset resource="../assets/resources.qrc">
                                <normaloff>:/black_icons/icons_black/database.svg</normaloff>:/black_icons/icons_black/database.svg</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>20</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QToolButton" name="show_fmap_tbutton">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="toolTip">
+                              <string>Show the feature maps</string>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="icon">
+                              <iconset resource="../assets/resources.qrc">
+                               <normaloff>:/black_icons/icons_black/map.svg</normaloff>:/black_icons/icons_black/map.svg</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>20</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QToolButton" name="show_log_tbutton">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="toolTip">
+                              <string>Show the log file</string>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="icon">
+                              <iconset resource="../assets/resources.qrc">
+                               <normaloff>:/black_icons/icons_black/activity.svg</normaloff>:/black_icons/icons_black/activity.svg</iconset>
                              </property>
                              <property name="iconSize">
                               <size>
@@ -2148,8 +2162,8 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>438</width>
-                 <height>906</height>
+                 <width>369</width>
+                 <height>912</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_configuration_meta_layout">
@@ -3393,6 +3407,22 @@ border-color: rgb(186, 189, 182);</string>
                     </item>
                    </layout>
                   </item>
+                  <item>
+                   <spacer name="bottom_vspacer_configuration">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
                  </layout>
                 </item>
                </layout>
@@ -3442,8 +3472,8 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>438</width>
-                 <height>1132</height>
+                 <width>418</width>
+                 <height>1138</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_optimization_meta_layout">
@@ -5338,6 +5368,19 @@ border-color: rgb(186, 189, 182);</string>
                     </item>
                    </layout>
                   </item>
+                  <item>
+                   <spacer name="bottom_vspacer_optimization">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
                  </layout>
                 </item>
                </layout>
@@ -5387,8 +5430,8 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>438</width>
-                 <height>790</height>
+                 <width>369</width>
+                 <height>796</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_evaluation_meta_layout">
@@ -6245,20 +6288,20 @@ border-color: rgb(186, 189, 182);</string>
                     </item>
                    </layout>
                   </item>
+                  <item>
+                   <spacer name="bottom_vspacer_evaluation">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
                  </layout>
-                </item>
-                <item>
-                 <spacer name="bottom_vspacer">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
                 </item>
                </layout>
               </widget>

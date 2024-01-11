@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>log_window</class>
- <widget class="QMainWindow" name="log_window">
+ <class>text_window</class>
+ <widget class="QMainWindow" name="text_window">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -9,30 +9,30 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>640</height>
+    <width>400</width>
+    <height>250</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>720</width>
-    <height>640</height>
+    <width>400</width>
+    <height>250</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>720</width>
-    <height>640</height>
+    <width>400</width>
+    <height>250</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>Logging</string>
+   <string>Text Viewer</string>
   </property>
   <property name="styleSheet">
    <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(211, 215, 207);</string>
   </property>
-  <widget class="QWidget" name="log_widget">
+  <widget class="QWidget" name="body_widget">
    <property name="styleSheet">
     <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(211, 215, 207);
@@ -42,8 +42,8 @@ border-color: rgb(186, 189, 182);</string>
    <widget class="QPushButton" name="close_pbutton">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>600</y>
+      <x>320</x>
+      <y>210</y>
       <width>71</width>
       <height>31</height>
      </rect>
@@ -61,13 +61,13 @@ border-color: rgb(186, 189, 182);</string>
      <string>Close</string>
     </property>
    </widget>
-   <widget class="QTextEdit" name="log_tedit">
+   <widget class="QTextEdit" name="text_tedit">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>701</width>
-      <height>581</height>
+      <width>381</width>
+      <height>191</height>
      </rect>
     </property>
     <property name="styleSheet">

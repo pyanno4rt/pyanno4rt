@@ -15,8 +15,9 @@ from numpy import (nan, ndarray, rot90, transpose, unravel_index, zeros)
 from pickle import load
 from PyQt5.QtCore import QDir, Qt
 from PyQt5.QtGui import QCursor, QIcon, QPixmap
-from PyQt5.QtWidgets import (QApplication, QFileDialog, QListWidgetItem,
-                             QMainWindow, QMessageBox, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QApplication, QFileDialog, QHeaderView,
+                             QListWidgetItem, QMainWindow, QMessageBox,
+                             QTreeWidgetItem, QVBoxLayout, QWidget)
 from pyqtgraph import (colormap, GraphicsLayoutWidget, ImageItem, InfiniteLine,
                        IsocurveItem, mkQApp, mkColor, mkPen, PlotWidget,
                        setConfigOptions, SignalProxy)
@@ -29,6 +30,8 @@ from pyanno4rt.gui.windows.info_window import Ui_info_window
 from pyanno4rt.gui.windows.log_window import Ui_log_window
 from pyanno4rt.gui.windows.main_window import Ui_main_window
 from pyanno4rt.gui.windows.settings_window import Ui_settings_window
+from pyanno4rt.gui.windows.text_window import Ui_text_window
+from pyanno4rt.gui.windows.tree_window import Ui_tree_window
 from pyanno4rt.tools import copycat, snapshot
 
 # %% Set options
@@ -183,11 +186,11 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.visualize_pbutton.setEnabled(False)
 
         # Disable the toolbox buttons
-        self.show_log_tbutton.setEnabled(False)
+        self.show_parameter_tbutton.setEnabled(False)
         self.show_plan_tbutton.setEnabled(False)
-        self.show_img_data_tbutton.setEnabled(False)
-        self.show_maps_tbutton.setEnabled(False)
+        self.show_fmap_tbutton.setEnabled(False)
         self.show_model_data_tbutton.setEnabled(False)
+        self.show_log_tbutton.setEnabled(False)
 
         # Initialize the slice widget
         self.slice_widget = SliceWidget(self)
@@ -207,25 +210,39 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Initialize the information window
         self.info_window = InfoWindow(self)
 
+        # 
+        self.parameter_window = TreeWindow(self)
+
+        # 
+        self.plan_window = TreeWindow(self)
+
+        # 
+        self.model_data_window = TreeWindow(self)
+
+        # 
+        self.feature_map_window = TreeWindow(self)
+
         # Initialize the logging window
         self.log_window = LogWindow(self)
-
-        # 
-        # self.plan_window = PlanWindow(self)
-
-        # 
-        # self.imaging_window = ImagingWindow(self)
-
-        # 
-        # self.feature_map_window = FeatureMapWindow(self)
-
-        # 
-        # self.model_data_window = ModelDataWindow(self)
 
         # Set the tab indices to ensure consistency of the starting window
         self.composer_widget.setCurrentIndex(0)
         self.tab_workflow.setCurrentIndex(0)
         self.viewer_widget.setCurrentIndex(0)
+
+        # 
+        tab_style = (
+            """
+            QTabBar::tab:selected
+            {
+                background-color: rgb(25, 25, 25);
+            }
+            """)
+
+        # 
+        self.composer_widget.tabBar().setStyleSheet(tab_style)
+        self.tab_workflow.tabBar().setStyleSheet(tab_style)
+        self.viewer_widget.tabBar().setStyleSheet(tab_style)
 
         # Connect the event signals
         self.connect_signals()
@@ -266,12 +283,12 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.compose_pbutton.clicked.connect(self.compose)
 
         # Connect the toolbox buttons
+        self.show_parameter_tbutton.clicked.connect(self.open_parameter_window)
+        self.show_plan_tbutton.clicked.connect(self.open_plan_window)
+        self.show_model_data_tbutton.clicked.connect(
+            self.open_model_data_window)
+        self.show_fmap_tbutton.clicked.connect(self.open_fmap_window)
         self.show_log_tbutton.clicked.connect(self.open_log_window)
-        # self.show_plan_tbutton.clicked.connect(self.open_plan_window)
-        # self.show_img_data_tbutton.clicked.connect(self.open_imaging_window)
-        # self.show_maps_tbutton.clicked.connect(self.open_maps_window)
-        # self.show_model_data_tbutton.clicked.connect(
-        #     self.open_model_data_window)
 
         # Connect the configuration buttons
         self.img_path_tbutton.clicked.connect(self.add_imaging_path)
@@ -483,11 +500,34 @@ class MainWindow(QMainWindow, Ui_main_window):
             # 
             if self.plans[label].datahub and self.plans[label].datahub.logger:
 
+                # 
+                self.show_parameter_tbutton.setEnabled(True)
+
+                # 
+                self.show_plan_tbutton.setEnabled(True)
+
                 # Update the log output
                 self.log_window.update_log_output()
 
                 # Enable the log window button
                 self.show_log_tbutton.setEnabled(True)
+
+            # 
+            if self.plans[label].datahub and all((
+                    self.plans[label].datahub.datasets,
+                    self.plans[label].datahub.model_instances,
+                    self.plans[label].datahub.model_inspections,
+                    self.plans[label].datahub.model_evaluations)):
+
+                # 
+                self.show_model_data_tbutton.setEnabled(True)
+
+            # 
+            if (self.plans[label].datahub and
+                    self.plans[label].datahub.feature_maps):
+
+                # 
+                self.show_fmap_tbutton.setEnabled(True)
 
         else:
 
@@ -510,6 +550,10 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.visualize_pbutton.setEnabled(False)
 
             # Disable the toolbox buttons
+            self.show_parameter_tbutton.setEnabled(False)
+            self.show_plan_tbutton.setEnabled(False)
+            self.show_model_data_tbutton.setEnabled(False)
+            self.show_fmap_tbutton.setEnabled(False)
             self.show_log_tbutton.setEnabled(False)
 
             # Reset the slice image
@@ -612,6 +656,12 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Enable the optimization button
             self.optimize_pbutton.setEnabled(True)
 
+            # Enable the parameter window button
+            self.show_parameter_tbutton.setEnabled(True)
+
+            # Enable the plan window button
+            self.show_plan_tbutton.setEnabled(True)
+
             # Update the log output
             self.log_window.update_log_output()
 
@@ -658,6 +708,23 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Update the slice image
             self.slice_widget.update_images()
+
+            # 
+            if all((instance.datahub,
+                    instance.datahub.datasets,
+                    instance.datahub.model_instances,
+                    instance.datahub.model_inspections,
+                    instance.datahub.model_evaluations)):
+
+                # 
+                self.show_model_data_tbutton.setEnabled(True)
+
+            # 
+            if all((instance.datahub,
+                    instance.datahub.feature_maps)):
+
+                # 
+                self.show_fmap_tbutton.setEnabled(True)
 
             # Update the log output
             self.log_window.update_log_output()
@@ -743,6 +810,123 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.optimize()
             self.evaluate()
             self.visualize()
+
+    def open_parameter_window(self):
+        """Open the plan parameters window."""
+
+        # 
+        instance = self.plans[self.plan_ledit.text()]
+
+        # 
+        self.parameter_window.tree_widget.clear()
+
+        # 
+        self.parameter_window.position()
+
+        # 
+        self.parameter_window.create_tree_from_dict(
+            data={
+                'configuration': instance.configuration,
+                'optimization': instance.optimization,
+                'evaluation': instance.evaluation
+                },
+            parent=self.parameter_window.tree_widget)
+
+        # 
+        self.parameter_window.tree_widget.header().setSectionResizeMode(
+            0, QHeaderView.Stretch)
+
+        # 
+        self.parameter_window.show()
+
+    def open_plan_window(self):
+        """Open the plan data window."""
+
+        # 
+        instance = self.plans[self.plan_ledit.text()]
+
+        # 
+        self.plan_window.tree_widget.clear()
+
+        # 
+        self.plan_window.position()
+
+        # 
+        self.plan_window.create_tree_from_dict(
+            data={
+                'computed_tomography': instance.datahub.computed_tomography,
+                'segmentation': instance.datahub.segmentation,
+                'plan_configuration': instance.datahub.plan_configuration,
+                'dose_information': instance.datahub.dose_information,
+                'optimization': instance.datahub.optimization,
+                'histogram': instance.datahub.histogram,
+                'dosimetrics': instance.datahub.dosimetrics
+                },
+            parent=self.plan_window.tree_widget)
+
+        # 
+        self.plan_window.tree_widget.header().setSectionResizeMode(
+            0, QHeaderView.Stretch)
+        self.plan_window.tree_widget.header().setSectionResizeMode(
+            1, QHeaderView.Stretch)
+
+        # 
+        self.plan_window.show()
+
+    def open_model_data_window(self):
+        """Open the model data window."""
+
+        # 
+        instance = self.plans[self.plan_ledit.text()]
+
+        # 
+        self.model_data_window.tree_widget.clear()
+
+        # 
+        self.model_data_window.position()
+
+        # 
+        self.model_data_window.create_tree_from_dict(
+            data={
+                'datasets': instance.datahub.datasets,
+                'model_instances': instance.datahub.model_instances,
+                'model_inspections': instance.datahub.model_inspections,
+                'model_evaluations': instance.datahub.model_evaluations
+                },
+            parent=self.model_data_window.tree_widget)
+
+        # 
+        self.model_data_window.tree_widget.header().setSectionResizeMode(
+            0, QHeaderView.Stretch)
+
+        # 
+        self.model_data_window.show()
+
+    def open_fmap_window(self):
+        """Open the feature map window."""
+
+        # 
+        instance = self.plans[self.plan_ledit.text()]
+
+        # 
+        self.fmap_window.tree_widget.clear()
+
+        # 
+        self.fmap_window.position()
+
+        # 
+        self.fmap_window.create_tree_from_dict(
+            data={
+                'feature_maps': instance.datahub.feature_maps,
+                },
+            parent=self.fmap_window.tree_widget)
+
+        # 
+        self.fmap_window.tree_widget.header().setSectionResizeMode(
+            0, QHeaderView.Stretch)
+
+        # 
+        self.fmap_window.show()
 
     def open_log_window(self):
         """Open the log window."""
@@ -1707,6 +1891,7 @@ class SliceWidget(QWidget):
 
         # Set the vertical layout for the slice widget
         slice_layout = QVBoxLayout(self)
+        slice_layout.setContentsMargins(10, 10, 10, 0)
 
         # Create an image window, set its size, and add it to the slice layout
         image_window = GraphicsLayoutWidget()
@@ -1877,6 +2062,7 @@ class DVHWidget(QWidget):
 
         # Set the vertical layout for the DVH widget
         dvh_layout = QVBoxLayout(self)
+        dvh_layout.setContentsMargins(10, 10, 10, 0)
 
         # 
         self.plot_graph = PlotWidget()
@@ -1947,9 +2133,11 @@ class DVHWidget(QWidget):
                                  "font-size: 11pt'>vRel: %0.1f</span>"
                                  % (0, 0.0))
 
+        # 
         self.plot_graph.plotItem.vb.setLimits(
             xMin=0, xMax=max(histogram['evaluation_points']), yMin=0, yMax=101)
 
+        # 
         self.plot_graph.plotItem.vb.enableAutoRange()
 
     def update_dvh(self):
@@ -2042,7 +2230,7 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
             map(loads, self.resolution_cbox.currentText().split('x')))
 
         # 
-        includes = (self.incl_patData_check.isChecked(),
+        includes = (self.incl_img_data_check.isChecked(),
                     self.incl_dij_check.isChecked(),
                     self.incl_model_data_check.isChecked())
 
@@ -2062,7 +2250,7 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         self.resolution_cbox.setCurrentText('x'.join(map(str, settings[2])))
 
         # 
-        self.incl_patData_check.setCheckState(2*settings[3][0])
+        self.incl_img_data_check.setCheckState(2*settings[3][0])
         self.incl_dij_check.setCheckState(2*settings[3][1])
         self.incl_model_data_check.setCheckState(2*settings[3][2])
 
@@ -2204,21 +2392,149 @@ class LogWindow(QMainWindow, Ui_log_window):
         # 
         self.hide()
 
-# Set the scrollbar stylesheet for the console output
-# self.console_tedit.verticalScrollBar().setStyleSheet('''
-#                           QScrollBar
-#                               {
-#                                   color: black;
-#                                   background-color: #d3d7cf;
-#                               }
-#                          QScrollBar::sub-page
-#                              {
-#                                  background: black;
-#                                  border: 1px solid #d3d7cf;
-#                              }
-#                          QScrollBar::add-page
-#                              {
-#                                  background: black;
-#                                  border: 1px solid #d3d7cf;
-#                              }
-#                          ''')
+
+class TreeWindow(QMainWindow, Ui_tree_window):
+    """
+    Tree view window for the application.
+
+    This class creates a tree view window for the graphical user interface,
+    including a table-based view for dictionaries.
+    """
+
+    def __init__(
+            self,
+            parent=None):
+
+        # Get the application from the argument
+        self.parent = parent
+
+        # Run the constructor from the superclass
+        super().__init__()
+
+        # Build the UI main window
+        self.setupUi(self)
+
+        # 
+        self.text_window = TextWindow(self)
+
+        # 
+        self.tree_widget.itemDoubleClicked.connect(self.show_item_text)
+
+        # 
+        self.expand_pbutton.clicked.connect(self.expand_all)
+
+        # 
+        self.collapse_pbutton.clicked.connect(self.collapse_all)
+
+        # 
+        self.close_pbutton.clicked.connect(self.close)
+
+    def position(self):
+        """."""
+
+        # Get the window geometry
+        geometry = self.geometry()
+
+        # Move the geometry center towards the parent
+        geometry.moveCenter(self.parent.geometry().center())
+
+        # Set the shifted geometry
+        self.setGeometry(geometry)
+
+    def create_tree_from_dict(self, data=None, parent=None):
+        """."""
+
+        # 
+        for key, value in data.items():
+
+            # 
+            item = QTreeWidgetItem(parent)
+
+            # 
+            item.setText(0, key)
+
+            # 
+            if isinstance(value, dict):
+
+                # 
+                self.create_tree_from_dict(data=value, parent=item)
+
+            else:
+                item.setText(1, type(value).__name__)
+                item.setText(2, str(value))
+
+    def show_item_text(self, tree, item):
+        """."""
+
+        # 
+        self.text_window.text_tedit.clear()
+
+        # 
+        self.text_window.position()
+
+        # 
+        self.text_window.text_tedit.setText(tree.text(item))
+
+        # 
+        self.text_window.show()
+
+    def expand_all(self):
+        """."""
+
+        # 
+        self.tree_widget.expandAll()
+
+    def collapse_all(self):
+        """."""
+
+        # 
+        self.tree_widget.collapseAll()
+
+    def close(self):
+        """."""
+
+        # 
+        self.hide()
+
+
+class TextWindow(QMainWindow, Ui_text_window):
+    """
+    Text view window for the application.
+
+    This class creates a text view window for the graphical user interface, \
+    including a scrollable text box for display.
+    """
+
+    def __init__(
+            self,
+            parent=None):
+
+        # Get the application from the argument
+        self.parent = parent
+
+        # Run the constructor from the superclass
+        super().__init__()
+
+        # Build the UI main window
+        self.setupUi(self)
+
+        # 
+        self.close_pbutton.clicked.connect(self.close)
+
+    def position(self):
+        """."""
+
+        # Get the window geometry
+        geometry = self.geometry()
+
+        # Move the geometry center towards the parent
+        geometry.moveCenter(self.parent.geometry().center())
+
+        # Set the shifted geometry
+        self.setGeometry(geometry)
+
+    def close(self):
+        """."""
+
+        # 
+        self.hide()
