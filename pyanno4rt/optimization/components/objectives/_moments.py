@@ -25,7 +25,7 @@ class Moments(ObjectiveClass):
 
     Parameters
     ----------
-    exponents : list, default = [1.0, 1.0, 1.0]
+    exponents : list
         Exponents.
 
     embedding : {'active', 'passive'}, default = 'active'
@@ -70,15 +70,9 @@ class Moments(ObjectiveClass):
         Value of the objective parameters.
     """
 
-    name = 'Moment Objective'
-    parameter_name = ['exponents']
-    parameter_category = ['vector']
-    parameter_value = [1.0, 1.0, 1.0]
-    weight = 1.0
-
     def __init__(
             self,
-            exponents=[1.0, 1.0, 1.0],
+            exponents,
             embedding='active',
             weight=1.0,
             link=None,

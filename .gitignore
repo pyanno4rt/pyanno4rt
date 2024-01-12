@@ -1,6 +1,7 @@
 # Ignore local files
 launcher.sh
 script.py
+demo.ipynb
 
 # Ignore local folders
 external/

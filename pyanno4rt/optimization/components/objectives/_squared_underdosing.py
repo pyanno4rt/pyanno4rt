@@ -25,7 +25,7 @@ class SquaredUnderdosing(ObjectiveClass):
 
     Parameters
     ----------
-    minimum_dose : int or float, default = 0.0
+    minimum_dose : int or float
         Minimum value for the dose.
 
     embedding : {'active', 'passive'}, default = 'active'
@@ -72,7 +72,7 @@ class SquaredUnderdosing(ObjectiveClass):
 
     def __init__(
             self,
-            minimum_dose=0.0,
+            minimum_dose,
             embedding='active',
             weight=1.0,
             link=None,

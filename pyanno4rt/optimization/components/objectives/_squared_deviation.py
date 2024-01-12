@@ -25,7 +25,7 @@ class SquaredDeviation(ObjectiveClass):
 
     Parameters
     ----------
-    target_dose : int or float, default = 60.0
+    target_dose : int or float
         Target value for the dose.
 
     embedding : {'active', 'passive'}, default = 'active'
@@ -72,7 +72,7 @@ class SquaredDeviation(ObjectiveClass):
 
     def __init__(
             self,
-            target_dose=60.0,
+            target_dose,
             embedding='active',
             weight=1.0,
             link=None,

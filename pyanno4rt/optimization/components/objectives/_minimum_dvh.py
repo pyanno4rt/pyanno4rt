@@ -25,10 +25,10 @@ class MinimumDVH(ObjectiveClass):
 
     Parameters
     ----------
-    target_dose : int or float, default = 60.0
+    target_dose : int or float
         Minimum value for the dose.
 
-    minimum_volume : int or float, default = 95.0
+    minimum_volume : int or float
         Minimum volume level for computing the nearest dose quantile.
 
     embedding : {'active', 'passive'}, default = 'active'
@@ -75,8 +75,8 @@ class MinimumDVH(ObjectiveClass):
 
     def __init__(
             self,
-            target_dose=60.0,
-            minimum_volume=95.0,
+            target_dose,
+            minimum_volume,
             embedding='active',
             weight=1.0,
             link=None,

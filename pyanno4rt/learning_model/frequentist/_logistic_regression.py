@@ -432,7 +432,8 @@ class LogisticRegressionModel():
             shuffle=True)
 
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps)
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
 
         # Map the score labels to the score functions
         scorers = {'Logloss': log_loss,
@@ -600,7 +601,8 @@ class LogisticRegressionModel():
             n_splits=oof_splits, random_state=4, shuffle=True)
 
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps)
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
 
         # Compute the returns (indices and labels) across all folds
         fold_returns = ThreadPoolExecutor().map(
@@ -763,11 +765,6 @@ class LogisticRegressionModel():
         """
         Read the logistic regression outcome prediction model hyperparameters \
         from the hyperparameter file path.
-
-        Parameters
-        ----------
-        verbose : bool
-            Indicator for displaying logging information.
 
         Returns
         -------

@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from os.path import dirname, expanduser
+from os.path import dirname
 from itertools import islice, cycle
 from json import loads
 from json import load as jload
@@ -250,8 +250,20 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Check if an initial treatment plan has been specified
         if treatment_plan:
 
-            # Activate the treatment plan in the GUI
-            self.activate(treatment_plan)
+            # 
+            if isinstance(treatment_plan, TreatmentPlan):
+
+                # Activate the treatment plan in the GUI
+                self.activate(treatment_plan)
+
+            # 
+            elif isinstance(treatment_plan, list):
+
+                # 
+                for plan in treatment_plan:
+
+                    # Activate the treatment plan in the GUI
+                    self.activate(plan)
 
         # Set the initial window size
         self.resize(1920, 1080)
@@ -287,7 +299,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.show_plan_tbutton.clicked.connect(self.open_plan_window)
         self.show_model_data_tbutton.clicked.connect(
             self.open_model_data_window)
-        self.show_fmap_tbutton.clicked.connect(self.open_fmap_window)
+        self.show_fmap_tbutton.clicked.connect(self.open_feature_map_window)
         self.show_log_tbutton.clicked.connect(self.open_log_window)
 
         # Connect the configuration buttons
@@ -350,7 +362,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the loading folder path
         path = QFileDialog.getExistingDirectory(
-            self, 'Select a directory for loading', expanduser("~"))
+            self, 'Select a directory for loading')
 
         # Check if the folder name exists (user has not stopped the loading)
         if path:
@@ -366,7 +378,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the saving folder path
         path = QFileDialog.getExistingDirectory(
-            self, 'Select a directory for saving', expanduser("~"))
+            self, 'Select a directory for saving')
 
         # Check if the folder name exists (user has not stopped the saving)
         if path:
@@ -512,6 +524,17 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Enable the log window button
                 self.show_log_tbutton.setEnabled(True)
 
+            else:
+
+                # 
+                self.show_parameter_tbutton.setEnabled(False)
+
+                # 
+                self.show_plan_tbutton.setEnabled(False)
+
+                # 
+                self.show_log_tbutton.setEnabled(False)
+
             # 
             if self.plans[label].datahub and all((
                     self.plans[label].datahub.datasets,
@@ -522,12 +545,22 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # 
                 self.show_model_data_tbutton.setEnabled(True)
 
+            else:
+
+                # 
+                self.show_model_data_tbutton.setEnabled(False)
+
             # 
             if (self.plans[label].datahub and
                     self.plans[label].datahub.feature_maps):
 
                 # 
                 self.show_fmap_tbutton.setEnabled(True)
+
+            else:
+
+                # 
+                self.show_fmap_tbutton.setEnabled(False)
 
         else:
 
@@ -902,31 +935,31 @@ class MainWindow(QMainWindow, Ui_main_window):
         # 
         self.model_data_window.show()
 
-    def open_fmap_window(self):
+    def open_feature_map_window(self):
         """Open the feature map window."""
 
         # 
         instance = self.plans[self.plan_ledit.text()]
 
         # 
-        self.fmap_window.tree_widget.clear()
+        self.feature_map_window.tree_widget.clear()
 
         # 
-        self.fmap_window.position()
+        self.feature_map_window.position()
 
         # 
-        self.fmap_window.create_tree_from_dict(
+        self.feature_map_window.create_tree_from_dict(
             data={
                 'feature_maps': instance.datahub.feature_maps,
                 },
-            parent=self.fmap_window.tree_widget)
+            parent=self.feature_map_window.tree_widget)
 
         # 
-        self.fmap_window.tree_widget.header().setSectionResizeMode(
+        self.feature_map_window.tree_widget.header().setSectionResizeMode(
             0, QHeaderView.Stretch)
 
         # 
-        self.fmap_window.show()
+        self.feature_map_window.show()
 
     def open_log_window(self):
         """Open the log window."""
@@ -1233,39 +1266,84 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Add the pixmap to the icon
             icon.addPixmap(QPixmap(icon_path), QIcon.Normal, QIcon.Off)
 
-            # Get the component class name
-            class_name = component['instance']['class']
+            # Check if the component instance is not a list
+            if isinstance(component['instance'], dict):
 
-            # Get the component identifier
-            if 'identifier' in component['instance']['parameters']:
-                identifier = component['instance']['parameters']['identifier']
+                # Get the component class name
+                class_name = component['instance']['class']
+
+                # Get the component identifier
+                if 'identifier' in component['instance']['parameters']:
+                    identifier = component['instance']['parameters'][
+                        'identifier']
+                else:
+                    identifier = None
+
+                # 
+                if 'embedding' in component['instance']['parameters']:
+                    embedding = ''.join(
+                        ('embedding: ',
+                         str(component['instance']['parameters']['embedding'])
+                         ))
+                else:
+                    embedding = 'embedding: active'
+
+                # 
+                if 'weight' in component['instance']['parameters']:
+                    weight = ''.join(
+                        ('weight: ',
+                         str(component['instance']['parameters']['weight'])))
+                else:
+                    weight = 'weight: 1'
+
+                # Join the segment and class name
+                component_string = ' - '.join((parameter for parameter in (
+                    segment, class_name, identifier, embedding, weight)
+                    if parameter))
+
+                # Add the item to the list
+                self.components_lwidget.addItem(
+                    QListWidgetItem(icon, component_string))
+
             else:
-                identifier = None
 
-            # 
-            if 'embedding' in component['instance']['parameters']:
-                embedding = ''.join(
-                    ('embedding: ',
-                     str(component['instance']['parameters']['embedding'])))
-            else:
-                embedding = 'embedding: active'
+                # Loop over the instances
+                for instance in component['instance']:
 
-            # 
-            if 'weight' in component['instance']['parameters']:
-                weight = ''.join(
-                    ('weight: ',
-                     str(component['instance']['parameters']['weight'])))
-            else:
-                weight = 'weight: 1'
+                    # Get the component class name
+                    class_name = instance['class']
 
-            # Join the segment and class name
-            component_string = ' - '.join((parameter for parameter in (
-                segment, class_name, identifier, embedding, weight)
-                if parameter))
+                    # Get the component identifier
+                    if 'identifier' in instance['parameters']:
+                        identifier = instance['parameters']['identifier']
+                    else:
+                        identifier = None
 
-            # Add the item to the list
-            self.components_lwidget.addItem(
-                QListWidgetItem(icon, component_string))
+                    # 
+                    if 'embedding' in instance['parameters']:
+                        embedding = ''.join(
+                            ('embedding: ',
+                             str(instance['parameters']['embedding'])
+                             ))
+                    else:
+                        embedding = 'embedding: active'
+
+                    # 
+                    if 'weight' in instance['parameters']:
+                        weight = ''.join(
+                            ('weight: ',
+                             str(instance['parameters']['weight'])))
+                    else:
+                        weight = 'weight: 1'
+
+                    # Join the segment and class name
+                    component_string = ' - '.join((parameter for parameter in (
+                        segment, class_name, identifier, embedding, weight)
+                        if parameter))
+
+                    # Add the item to the list
+                    self.components_lwidget.addItem(
+                        QListWidgetItem(icon, component_string))
 
         # Set the optimization method
         self.method_cbox.setCurrentText(optimization['method'])

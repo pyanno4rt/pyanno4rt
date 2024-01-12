@@ -52,27 +52,22 @@ class ModelObjectiveClass(metaclass=ABCMeta):
                 'feature_filter', {'features': [], 'filter_mode': 'remove'}),
             'label_viewpoint': model_parameters.get(
                 'label_viewpoint', 'long-term'),
-            'label_bounds': model_parameters.get(
-                'label_bounds', [1.5, inf]),
+            'label_bounds': model_parameters.get('label_bounds', [1, 1]),
             'fuzzy_matching': model_parameters.get('fuzzy_matching', True),
             'preprocessing_steps': model_parameters.get(
                 'preprocessing_steps', ('Equalizer',)),
             'architecture': model_parameters.get(
                 'architecture', 'input-convex'),
-            'max_hidden_layers': model_parameters.get('max_hidden_layers', 4),
+            'max_hidden_layers': model_parameters.get('max_hidden_layers', 2),
             'tune_space': model_parameters.get('tune_space', {}),
-            'tune_evaluations': model_parameters.get(
-                'tune_evaluations', 250),
+            'tune_evaluations': model_parameters.get('tune_evaluations', 250),
             'tune_score': model_parameters.get('tune_score', 'log_loss'),
             'tune_splits': model_parameters.get('tune_splits', 5),
             'inspect_model': model_parameters.get('inspect_model', False),
-            'evaluate_model': model_parameters.get(
-                'evaluate_model', False),
+            'evaluate_model': model_parameters.get('evaluate_model', False),
             'oof_splits': model_parameters.get('oof_splits', 5),
-            'write_features': model_parameters.get(
-                'write_features', True),
-            'write_gradients': model_parameters.get(
-                'write_gradients', False),
+            'write_features': model_parameters.get('write_features', True),
+            'write_gradients': model_parameters.get('write_gradients', False),
             'display_options': model_parameters.get(
                 'display_options', {'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
                                     'kpis': ['Logloss', 'Brier score',

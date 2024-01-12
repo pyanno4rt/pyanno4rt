@@ -25,10 +25,10 @@ class EquivalentUniformDose(ObjectiveClass):
 
     Parameters
     ----------
-    target_eud : int or float, default = 0.0
+    target_eud : int or float
         Target value for the EUD.
 
-    volume_parameter : int or float, default = 3.5
+    volume_parameter : int or float
         Exponent parameter for the dose-volume effect.
 
     embedding : {'active', 'passive'}, default = 'active'
@@ -75,8 +75,8 @@ class EquivalentUniformDose(ObjectiveClass):
 
     def __init__(
             self,
-            target_eud=0.0,
-            volume_parameter=3.5,
+            target_eud,
+            volume_parameter,
             embedding='active',
             weight=1.0,
             link=None,

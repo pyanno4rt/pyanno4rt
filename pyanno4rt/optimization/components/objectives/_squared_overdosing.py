@@ -25,7 +25,7 @@ class SquaredOverdosing(ObjectiveClass):
 
     Parameters
     ----------
-    maximum_dose : int or float, default = 100000.0
+    maximum_dose : int or float
         Maximum value for the dose.
 
     embedding : {'active', 'passive'}, default = 'active'
@@ -72,7 +72,7 @@ class SquaredOverdosing(ObjectiveClass):
 
     def __init__(
             self,
-            maximum_dose=100000.0,
+            maximum_dose,
             embedding='active',
             weight=1.0,
             link=None,

@@ -25,7 +25,7 @@ class MaximumDVH(ObjectiveClass):
 
     Parameters
     ----------
-    target_dose : int or float, default = 30.0
+    target_dose : int or float
         Reference value for the dose.
 
     maximum_volume : int or float, default = 95.0
@@ -75,8 +75,8 @@ class MaximumDVH(ObjectiveClass):
 
     def __init__(
             self,
-            target_dose=30.0,
-            maximum_volume=95.0,
+            target_dose,
+            maximum_volume,
             embedding='active',
             weight=1.0,
             link=None,
@@ -144,12 +144,9 @@ class MaximumDVH(ObjectiveClass):
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the parameter term
-        max_volume = self.parameter_value[1]
-
         # Compute the dose quantile
         dose_quantile = [quantile(
-            dose_sorted, max_volume, interpolation='lower')
+            dose_sorted, self.parameter_value[1], interpolation='lower')
             for dose_sorted in [sort(dose)[::-1] for dose in args[0]]]
 
         return differentiate(args[0], self.parameter_value, dose_quantile,
