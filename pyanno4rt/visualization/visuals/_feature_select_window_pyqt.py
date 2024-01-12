@@ -553,7 +553,7 @@ class FeatureWidget(QWidget):
 
         # Get the corresponding values from the feature history
         values = tuple(feature_history[
-            self.combo_box.feature_box.currentText()][index-1]
+            self.combo_box_feature.feature_box.currentText()][index-1]
             for index in indices)
 
         # Overlay the plot points with a red circle
