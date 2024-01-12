@@ -351,7 +351,7 @@ class FluenceOptimizer():
         for segment in components:
 
             # Get the component category and element
-            category, element = components[segment]
+            category, element = components[segment].values()
 
             # Check if the element is a dictionary
             if isinstance(element, dict):

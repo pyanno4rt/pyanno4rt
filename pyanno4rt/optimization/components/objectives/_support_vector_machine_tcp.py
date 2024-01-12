@@ -36,10 +36,11 @@ class SupportVectorMachineTCP(ModelObjectiveClass):
 
         - ``data_path`` : string, path to the data set used for fitting the \
             support vector machine model;
-        - ``feature_filter`` : tuple, default = ((), 'remove'), (sub)set \
-            of the feature names as a tuple and a value from `{'retain', \
-            'remove'} as an indicator for retaining or removing the (sub)set \
-            prior to fitting the support vector machine model;
+        - ``feature_filter`` : dict, default = {'features': [], \
+            'filter_mode': 'remove'}, (sub)set of the feature names as a list \
+            and a value from `{'retain', 'remove'} as an indicator for \
+            retaining or removing the (sub)set prior to fitting the support \
+            vector machine model;
         - ``label_viewpoint`` : {'early', 'late', 'long-term', \
             'longitudinal', 'profile'}, default = 'long-term', time of \
             observation for the presence of tumor control and/or normal \

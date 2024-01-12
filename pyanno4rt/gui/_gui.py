@@ -1212,7 +1212,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         for segment, component in optimization['components'].items():
 
             # Get the component type
-            component_type = component[0]
+            component_type = component['type']
 
             # Check if the component is an objective
             if component_type == 'objective':
@@ -1234,26 +1234,27 @@ class MainWindow(QMainWindow, Ui_main_window):
             icon.addPixmap(QPixmap(icon_path), QIcon.Normal, QIcon.Off)
 
             # Get the component class name
-            class_name = component[1]['class']
+            class_name = component['instance']['class']
 
             # Get the component identifier
-            if 'identifier' in component[1]['parameters']:
-                identifier = component[1]['parameters']['identifier']
+            if 'identifier' in component['instance']['parameters']:
+                identifier = component['instance']['parameters']['identifier']
             else:
                 identifier = None
 
             # 
-            if 'embedding' in component[1]['parameters']:
+            if 'embedding' in component['instance']['parameters']:
                 embedding = ''.join(
                     ('embedding: ',
-                     str(component[1]['parameters']['embedding'])))
+                     str(component['instance']['parameters']['embedding'])))
             else:
                 embedding = 'embedding: active'
 
             # 
-            if 'weight' in component[1]['parameters']:
+            if 'weight' in component['instance']['parameters']:
                 weight = ''.join(
-                    ('weight: ', str(component[1]['parameters']['weight'])))
+                    ('weight: ',
+                     str(component['instance']['parameters']['weight'])))
             else:
                 weight = 'weight: 1'
 
@@ -1469,31 +1470,56 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Create the optimization dictionary from the input fields
         optimization = {
             'components': {
-                'PAROTID_LT': ['objective',
-                               {'class': 'Squared Overdosing',
-                                'parameters': {'maximum_dose': 25,
-                                               'weight': 100}}
-                               ],
-                'PAROTID_RT': ['objective',
-                               {'class': 'Squared Overdosing',
-                                'parameters': {'maximum_dose': 25,
-                                               'weight': 100}}
-                               ],
-                'PTV63': ['objective',
-                          {'class': 'Squared Deviation',
-                           'parameters': {'target_dose': 63,
-                                          'weight': 1000}}
-                          ],
-                'PTV70': ['objective',
-                          {'class': 'Squared Deviation',
-                           'parameters': {'target_dose': 70,
-                                          'weight': 1000}}
-                          ],
-                'SKIN': ['objective',
-                         {'class': 'Squared Overdosing',
-                          'parameters': {'maximum_dose': 30,
-                                         'weight': 800}}
-                         ],
+                'PAROTID_LT': {
+                    'type': 'objective',
+                    'instance': {
+                        'class': 'Squared Overdosing',
+                        'parameters': {
+                            'maximum_dose': 25,
+                            'weight': 100
+                            }
+                        }
+                    },
+                'PAROTID_RT': {
+                    'type': 'objective',
+                    'instance': {
+                        'class': 'Squared Overdosing',
+                        'parameters': {
+                            'maximum_dose': 25,
+                            'weight': 100
+                            }
+                        }
+                    },
+                'PTV63': {
+                    'type': 'objective',
+                    'instance': {
+                        'class': 'Squared Deviation',
+                        'parameters': {
+                            'target_dose': 63,
+                            'weight': 1000
+                            }
+                        }
+                    },
+                'PTV70': {
+                    'type': 'objective',
+                    'instance': {
+                        'class': 'Squared Deviation',
+                        'parameters': {
+                            'target_dose': 70,
+                            'weight': 1000
+                            }
+                        }
+                    },
+                'SKIN': {
+                    'type': 'objective',
+                    'instance': {
+                        'class': 'Squared Overdosing',
+                        'parameters': {
+                            'maximum_dose': 30,
+                            'weight': 800
+                            }
+                        }
+                    }
                 },
             'method': self.method_cbox.currentText(),
             'solver': self.solver_cbox.currentText(),
@@ -2194,7 +2220,7 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
         # 
         self.default = ('English', 'Dark', (1920, 1080), (False, False, False))
-        self.current = None
+        self.current = self.default
 
         # Temporarily disable combo boxes
         self.language_cbox.setEnabled(False)

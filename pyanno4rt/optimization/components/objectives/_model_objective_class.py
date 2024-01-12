@@ -49,7 +49,7 @@ class ModelObjectiveClass(metaclass=ABCMeta):
             'model_folder_path': model_parameters.get('model_folder_path'),
             'data_path': model_parameters.get('data_path'),
             'feature_filter': model_parameters.get(
-                'feature_filter', [[], 'remove']),
+                'feature_filter', {'features': [], 'filter_mode': 'remove'}),
             'label_viewpoint': model_parameters.get(
                 'label_viewpoint', 'long-term'),
             'label_bounds': model_parameters.get(

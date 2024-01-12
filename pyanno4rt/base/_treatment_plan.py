@@ -96,7 +96,8 @@ class TreatmentPlan():
 
         .. note:: The declaration scheme for a single component is
 
-            {<segment>: [<1>, {'class': <2>, 'parameters': <3>}]}
+            {<segment>: {'type': <1>, 'instance': {'class': <2>, \
+                                                   'parameters': <3>}
 
             - <1>: 'objective' or 'constraint';
             - <2>: component label (see note below);
@@ -110,11 +111,8 @@ class TreatmentPlan():
 
             *Objectives*
 
-            - 'Decision Tree NTCP'
             - 'Dose Uniformity'
             - 'Equivalent Uniform Dose'
-            - 'Extreme Gradient Boosting NTCP'
-            - 'K-Nearest Neighbors NTCP'
             - 'Logistic Regression NTCP'
             - 'Logistic Regression TCP'
             - 'Lyman-Kutcher-Burman NTCP'
@@ -122,10 +120,8 @@ class TreatmentPlan():
             - 'Mean Dose'
             - 'Minimum DVH'
             - 'Moment Objective'
-            - 'Naive Bayes NTCP'
             - 'Neural Network NTCP'
             - 'Neural Network TCP'
-            - 'Random Forest NTCP'
             - 'Squared Deviation'
             - 'Squared Overdosing'
             - 'Squared Underdosing'

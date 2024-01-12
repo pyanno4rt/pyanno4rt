@@ -6,15 +6,16 @@
 
 
 def check_feature_filter(key, value, subfunctions):
-    """Check the optimization components."""
-    # Check if the first element is not a tuple or a list
-    subfunctions[0](key, value[0])
+    """Check the feature filter."""
 
-    # Check if any subvalue in the first element is not a string
-    subfunctions[1](key, value[0])
+    # Check if 'features' and 'filter_mode' are no keys
+    subfunctions[0](key, value)
 
-    # Check if the second element is not a string
-    subfunctions[2](key, value[1])
+    # Check if 'features' is not a list
+    subfunctions[1](key, value['features'])
 
-    # Check if the second element is not 'retain' or 'remove'
-    subfunctions[3](key, value[1])
+    # Check if any element in 'features' is not a string
+    subfunctions[2](key, value['features'])
+
+    # Check if 'retain' or 'remove' are no keys
+    subfunctions[3](key, value['filter_mode'])

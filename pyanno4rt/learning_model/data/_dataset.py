@@ -29,11 +29,10 @@ class Dataset():
         Path to the data set used for fitting the learning models, needs to \
         be a .csv file.
 
-    feature_filter : tuple
-        A feature (sub)set as an iterable and a value from {'retain', \
-        'remove'} as an indicator for retaining or removing the (sub)set \
-        prior to the modeling process, all features are retained if no value \
-        is passed.
+    feature_filter : dict
+        A feature (sub)set as a list and a value from {'retain', 'remove'} as \
+        an indicator for retaining or removing the (sub)set prior to the \
+        modeling process, all features are retained if no value is passed.
 
     label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', 'profile'}
         Time of observation for the presence of tumor control and/or normal \
@@ -61,7 +60,7 @@ class Dataset():
     data_path : string
         See 'Parameters'.
 
-    feature_filter : tuple
+    feature_filter : dict
         See 'Parameters'.
 
     label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', 'profile'}
@@ -136,7 +135,7 @@ class Dataset():
         data = read_csv(self.data_path)
 
         # Select/Drop the features according to the filtering list
-        if self.feature_filter[1] == 'retain':
+        if self.feature_filter['filter_mode'] == 'retain':
             data = self.retain_features(data)
         else:
             data = self.remove_features(data)
@@ -177,7 +176,7 @@ class Dataset():
             Filtered tabular data with the features to be retained.
         """
         return data.drop(data.columns.difference(
-            self.feature_filter[0]), axis=1, inplace=False)
+            self.feature_filter['features']), axis=1, inplace=False)
 
     def remove_features(
             self,
@@ -196,7 +195,8 @@ class Dataset():
         DataFrame
             Filtered tabular data without the features to be removed.
         """
-        return data.drop(self.feature_filter[0], axis=1, inplace=False)
+        return data.drop(self.feature_filter['features'], axis=1,
+                         inplace=False)
 
     def modulate_data(
             self,

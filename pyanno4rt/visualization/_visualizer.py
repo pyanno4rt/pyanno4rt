@@ -214,13 +214,14 @@ class MainWindow(QMainWindow):
                 button.setEnabled(False)
 
             # Disable the permutation importance button if no inspector is used
-            if (hub.model_inspections and subclass.name in (
-                    'permutation_importance_plotter',)):
+            if ((not hub.model_inspections or len(hub.model_inspections) == 0) and
+                    subclass.name in ('permutation_importance_plotter',)):
                 button.setEnabled(False)
 
             # Disable the metrics tables and graphs if no evaluator is used
-            if (hub.model_evaluations and subclass.name in (
-                    'metrics_graphs_plotter', 'metrics_tables_plotter')):
+            if ((not hub.model_evaluations or len(hub.model_evaluations) == 0) and
+                    subclass.name in ('metrics_graphs_plotter',
+                                      'metrics_tables_plotter')):
                 button.setEnabled(False)
 
         # Run the constructor from the superclass

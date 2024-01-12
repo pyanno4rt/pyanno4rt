@@ -102,12 +102,15 @@ class DataModelHandler():
         # Initialize the datahub
         hub = Datahub()
 
-        # Initialize the data model-related dictionaries
-        hub.datasets = {}
-        hub.feature_maps = {}
-        hub.model_instances = {}
-        hub.model_inspections = {}
-        hub.model_evaluations = {}
+        # Loop over the data-related attributes in the datahub
+        for attribute in ('datasets', 'feature_maps', 'model_instances',
+                          'model_inspections', 'model_evaluations'):
+
+            # Check if the attribute is not yet initialized
+            if not getattr(hub, attribute):
+
+                # Initialize the attribute
+                setattr(hub, attribute, {})
 
         # Get the model label from the argument
         self.model_label = model_label

@@ -9,8 +9,8 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.input_check.check_functions import (
-    check_components, check_key_in_dict, check_length, check_subtype,
-    check_type, check_value, check_value_in_set)
+    check_components, check_key_in_dict, check_subtype, check_type,
+    check_value, check_value_in_set)
 
 # %% Map definition
 
@@ -19,12 +19,9 @@ optimization_map = {
     'components': (
         partial(check_type, key_type=dict),
         partial(check_components, subfunctions=(
-            partial(check_length, reference=0, sign='>'),
-            partial(check_type, key_type=list),
-            partial(check_length, reference=2, sign='=='),
+            partial(check_key_in_dict, key_choices=('type', 'instance')),
             partial(check_value_in_set, options=('objective', 'constraint')),
             partial(check_type, key_type=(dict, list)),
-            partial(check_subtype, key_type=dict),
             partial(check_key_in_dict, key_choices=('class', 'parameters')),
             partial(check_value_in_set, options=(
                 'Decision Tree NTCP', 'Dose Uniformity',
@@ -38,7 +35,8 @@ optimization_map = {
                 'Squared Deviation', 'Squared Overdosing',
                 'Squared Underdosing', 'Support Vector Machine NTCP',
                 'Support Vector Machine TCP')),
-            partial(check_type, key_type=dict)
+            partial(check_type, key_type=dict),
+            partial(check_subtype, key_type=dict)
             ))
         ),
     'method': (

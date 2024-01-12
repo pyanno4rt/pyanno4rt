@@ -61,7 +61,8 @@ def copycat(base_class, path):
                             'data_path'] = ''.join((inputs[0], '/', filename))
 
         # Get the component(s)
-        component = treatment_plan.optimization['components'][inputs[1]][1]
+        component = treatment_plan.optimization[
+            'components'][inputs[1]]['instance']
 
         # Check if the component is a list
         if isinstance(component, list):

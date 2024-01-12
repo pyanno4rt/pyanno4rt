@@ -9,8 +9,8 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.input_check.check_functions import (
-    check_extension, check_feature_filter, check_length, check_subtype,
-    check_type, check_value, check_value_in_set)
+    check_extension, check_feature_filter, check_key_in_dict, check_length,
+    check_subtype, check_type, check_value, check_value_in_set)
 
 # %% Map definition
 
@@ -27,12 +27,12 @@ model_map = {
         partial(check_extension, extensions=('.csv',))
         ),
     'feature_filter': (
-        partial(check_type, key_type=list),
-        partial(check_length, reference=2, sign='=='),
+        partial(check_type, key_type=dict),
         partial(check_feature_filter, subfunctions=(
+            partial(
+                check_key_in_dict, key_choices=('features', 'filter_mode')),
             partial(check_type, key_type=list),
             partial(check_subtype, key_type=str),
-            partial(check_type, key_type=str),
             partial(check_value_in_set, options=('remove', 'retain'))
             ))
         ),
