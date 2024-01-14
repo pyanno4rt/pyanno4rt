@@ -51,7 +51,7 @@ class NTCPGraphPlotterMPL():
     # Set the class attributes for the visual interface integration
     category = "Optimization problem analysis"
     name = "ntcp_plotter"
-    label = "Iterative (N)TCP value plot (matplotlib)"
+    label = "Iterative (N)TCP value plot"
 
     def view(self):
         """Open the full-screen view on the iterative (N)TCP value plot."""

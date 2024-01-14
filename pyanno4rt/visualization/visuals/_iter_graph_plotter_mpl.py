@@ -45,7 +45,7 @@ class IterGraphPlotterMPL():
     # Set the class attributes for the visual interface integration
     category = "Optimization problem analysis"
     name = "iterations_plotter"
-    label = "Iterative objective value plot (matplotlib)"
+    label = "Iterative objective value plot"
 
     def view(self):
         """Open the full-screen view on the iterative objective value plot."""

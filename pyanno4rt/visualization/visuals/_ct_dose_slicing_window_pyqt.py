@@ -599,7 +599,7 @@ class CtDoseSlicingWindowPyQt(QMainWindow):
     # Set the class attributes for the visual interface integration
     category = "Treatment plan evaluation"
     name = "ct_dose_plotter"
-    label = "CT/Dose slice plot (pyqtgraph)"
+    label = "CT/Dose slice plot"
 
     def view(self):
         """Open the full-screen view on the CT/dose slicing window."""

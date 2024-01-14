@@ -48,7 +48,7 @@ class ModelInspector():
             hyperparameters=None):
 
         # Log a message about the initialization of the model inspector
-        Datahub().logger.display_info("nitializing model inspector ...")
+        Datahub().logger.display_info("Initializing model inspector ...")
 
         # Get the instance attributes from the arguments
         self.model_name = model_name

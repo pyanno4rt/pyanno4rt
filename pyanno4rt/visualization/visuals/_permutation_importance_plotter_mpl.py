@@ -54,7 +54,7 @@ class PermutationImportancePlotterMPL():
     # Set the class attributes for the visual interface integration
     category = "Data-driven model review"
     name = "permutation_importance_plotter"
-    label = "Permutation importance boxplots (matplotlib)"
+    label = "Permutation importance boxplots"
 
     def view(self):
         """Open the full-screen view on the permutation importance plot."""

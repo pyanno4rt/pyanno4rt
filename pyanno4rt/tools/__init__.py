@@ -13,6 +13,8 @@ from ._apply import apply
 from ._arange_with_endpoint import arange_with_endpoint
 from ._copycat import copycat
 from ._flatten import flatten
+from ._load_list_from_file import load_list_from_file
+from ._make_list_string import make_list_string
 from ._non_decreasing import non_decreasing
 from ._non_increasing import non_increasing
 from ._get_model_objectives import get_model_objectives
@@ -28,6 +30,8 @@ __all__ = ['apply',
            'arange_with_endpoint',
            'copycat',
            'flatten',
+           'load_list_from_file',
+           'make_list_string',
            'non_decreasing',
            'non_increasing',
            'get_model_objectives',

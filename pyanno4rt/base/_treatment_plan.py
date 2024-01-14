@@ -478,13 +478,13 @@ class TreatmentPlan():
         """Initialize the visualization interface and launch it."""
 
         # Check if any required attribute is missing
-        if any(getattr(self, attribute) is None for attribute in (
+        if all(getattr(self, attribute) is None for attribute in (
                 'fluence_optimizer', 'histogram', 'dosimetrics')):
 
             # Raise an error to indicate a missing attribute
             raise AttributeError(
-                "Please optimize and evaluate the treatment plan before "
-                "launching the visualization interface!")
+                "Please optimize and (optionally) evaluate the treatment plan \
+                before launching the visualization interface!")
 
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration['label']

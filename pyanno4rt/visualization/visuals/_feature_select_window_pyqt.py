@@ -622,7 +622,7 @@ class FeatureSelectWindowPyQt(QMainWindow):
     # Set the class attributes for the visual interface integration
     category = "Optimization problem analysis"
     name = "features_plotter"
-    label = "Iterative feature calculation plot (pyqtgraph)"
+    label = "Iterative feature calculation plot"
 
     def view(self):
         """Open the full-screen view on the feature selection window."""

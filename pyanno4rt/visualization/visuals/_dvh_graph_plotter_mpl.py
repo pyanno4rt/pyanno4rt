@@ -45,7 +45,7 @@ class DVHGraphPlotterMPL():
     # Set the class attributes for the visual interface integration
     category = "Treatment plan evaluation"
     name = "dvh_plotter"
-    label = "Dose-volume histogram (matplotlib)"
+    label = "Dose-volume histogram"
 
     def view(self):
         """Open the full-screen view on the dose-volume histogram."""

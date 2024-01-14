@@ -51,7 +51,7 @@ class MetricsGraphsPlotterMPL():
     # Set the class attributes for the visual interface integration
     category = "Data-driven model review"
     name = "metrics_graphs_plotter"
-    label = "Evaluation metrics graphs (matplotlib)"
+    label = "Evaluation metrics graphs"
 
     def view(self):
         """Open the full-screen view on the metrics plot."""

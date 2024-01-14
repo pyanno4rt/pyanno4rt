@@ -219,13 +219,13 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="styleSheet">
-           <string notr="true">background-color: rgb(211, 215, 207);
+           <string notr="true">background-color: rgb(0, 0, 0);
 border: 0px solid;
 border-color: rgb(186, 189, 182);</string>
           </property>
           <layout class="QHBoxLayout" name="menu_left_layout">
            <property name="spacing">
-            <number>0</number>
+            <number>2</number>
            </property>
            <property name="leftMargin">
             <number>0</number>
@@ -257,7 +257,8 @@ border-color: rgb(186, 189, 182);</string>
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
              <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
 border: 1px solid;
 color: rgb(0, 0, 0);</string>
              </property>
@@ -294,7 +295,8 @@ color: rgb(0, 0, 0);</string>
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
              <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
 border: 1px solid;
 color: rgb(0, 0, 0);</string>
              </property>
@@ -331,7 +333,8 @@ color: rgb(0, 0, 0);</string>
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
              <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
 border: 1px solid;
 color: rgb(0, 0, 0);</string>
              </property>
@@ -368,13 +371,13 @@ color: rgb(0, 0, 0);</string>
            </size>
           </property>
           <property name="styleSheet">
-           <string notr="true">background-color: rgb(211, 215, 207);
+           <string notr="true">background-color: rgb(0, 0, 0);
 border: 0px solid;
 border-color: rgb(186, 189, 182);</string>
           </property>
           <layout class="QHBoxLayout" name="menu_right_layout">
            <property name="spacing">
-            <number>0</number>
+            <number>2</number>
            </property>
            <property name="leftMargin">
             <number>0</number>
@@ -406,7 +409,8 @@ border-color: rgb(186, 189, 182);</string>
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
              <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
 border: 1px solid;
 color: rgb(0, 0, 0);</string>
              </property>
@@ -443,7 +447,8 @@ color: rgb(0, 0, 0);</string>
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
              <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
 border: 1px solid;
 color: rgb(0, 0, 0);</string>
              </property>
@@ -480,7 +485,8 @@ color: rgb(0, 0, 0);</string>
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
              <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
 border: 1px solid;
 color: rgb(0, 0, 0);</string>
              </property>
@@ -1339,6 +1345,86 @@ border-color: rgb(211, 215, 207);</string>
                        <number>10</number>
                       </property>
                       <item>
+                       <widget class="QPushButton" name="initialize_pbutton">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>INITIALIZE</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/black_icons/icons_black/play.svg</normaloff>:/black_icons/icons_black/play.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="chevron_init_conf">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;
+border-color: rgb(0, 0, 0);</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/white_icons/icons_white/chevrons-down.svg</normaloff>:/white_icons/icons_white/chevrons-down.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
                        <widget class="QPushButton" name="configure_pbutton">
                         <property name="sizePolicy">
                          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -1629,86 +1715,6 @@ border-color: rgb(186, 189, 182);</string>
                        </widget>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="empty_vis_comp">
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">border: 0px solid;
-border-color: rgb(0, 0, 0);</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/white_icons/icons_white/circle.svg</normaloff>:/white_icons/icons_white/circle.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>14</width>
-                          <height>14</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="compose_pbutton">
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="font">
-                         <font>
-                          <weight>75</weight>
-                          <bold>true</bold>
-                         </font>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string> COMPOSE</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/black_icons/icons_black/music.svg</normaloff>:/black_icons/icons_black/music.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
                        <widget class="QPushButton" name="toolbox_spacer_top">
                         <property name="sizePolicy">
                          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -1987,7 +1993,7 @@ border-color: rgb(186, 189, 182);</string>
                               <cursorShape>PointingHandCursor</cursorShape>
                              </property>
                              <property name="toolTip">
-                              <string>Show the log file</string>
+                              <string>Show the logging</string>
                              </property>
                              <property name="styleSheet">
                               <string notr="true">color: rgb(0, 0, 0);
@@ -2016,16 +2022,16 @@ border-color: rgb(186, 189, 182);</string>
                      <zorder>chevron_conf_opt</zorder>
                      <zorder>chevron_opt_eval</zorder>
                      <zorder>chevron_eval_vis</zorder>
-                     <zorder>empty_vis_comp</zorder>
                      <zorder>toolbox_spacer_top</zorder>
                      <zorder>toolbox_widget</zorder>
-                     <zorder>visualize_pbutton</zorder>
-                     <zorder>evaluate_pbutton</zorder>
-                     <zorder>optimize_pbutton</zorder>
-                     <zorder>configure_pbutton</zorder>
-                     <zorder>compose_pbutton</zorder>
                      <zorder>toolbox_spacer_bottom</zorder>
                      <zorder>toolbox_line</zorder>
+                     <zorder>chevron_init_conf</zorder>
+                     <zorder>configure_pbutton</zorder>
+                     <zorder>initialize_pbutton</zorder>
+                     <zorder>optimize_pbutton</zorder>
+                     <zorder>evaluate_pbutton</zorder>
+                     <zorder>visualize_pbutton</zorder>
                     </widget>
                    </item>
                   </layout>
@@ -2107,7 +2113,7 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="iconSize">
            <size>
@@ -2345,7 +2351,7 @@ background-color: rgb(211, 215, 207);</string>
                       </property>
                       <property name="minimumSize">
                        <size>
-                        <width>150</width>
+                        <width>110</width>
                         <height>30</height>
                        </size>
                       </property>
@@ -2796,7 +2802,7 @@ border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="sizeHint" stdset="0">
                        <size>
-                        <width>10</width>
+                        <width>5</width>
                         <height>30</height>
                        </size>
                       </property>
@@ -3081,7 +3087,7 @@ border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="sizeHint" stdset="0">
                        <size>
-                        <width>10</width>
+                        <width>5</width>
                         <height>30</height>
                        </size>
                       </property>
@@ -3304,14 +3310,14 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="update_configuration_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
@@ -3339,7 +3345,7 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="configuration_bottom_hspacer_center">
+                     <spacer name="configuration_bottom_hspacer_center_left">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -3358,14 +3364,14 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="reset_configuration_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
@@ -3382,7 +3388,61 @@ border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="icon">
                        <iconset resource="../assets/resources.qrc">
-                        <normaloff>:/red_icons/icons_red/rotate-ccw.svg</normaloff>:/red_icons/icons_red/rotate-ccw.svg</iconset>
+                        <normaloff>:/goldIcons/icons_gold/rotate-ccw.svg</normaloff>:/goldIcons/icons_gold/rotate-ccw.svg</iconset>
+                      </property>
+                      <property name="iconSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="configuration_bottom_hspacer_center_right">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Fixed</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>10</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clear_configuration_pbutton">
+                      <property name="minimumSize">
+                       <size>
+                        <width>95</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>120</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="cursor">
+                       <cursorShape>PointingHandCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                      </property>
+                      <property name="text">
+                       <string>Clear</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../assets/resources.qrc">
+                        <normaloff>:/red_icons/icons_red/x.svg</normaloff>:/red_icons/icons_red/x.svg</iconset>
                       </property>
                       <property name="iconSize">
                        <size>
@@ -5265,14 +5325,14 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="update_optimization_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
@@ -5300,7 +5360,7 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="optimization_bottom_hspacer_center">
+                     <spacer name="optimization_bottom_hspacer_center_left">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -5319,14 +5379,14 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="reset_optimization_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
@@ -5344,6 +5404,60 @@ border-color: rgb(186, 189, 182);</string>
                       <property name="icon">
                        <iconset resource="../assets/resources.qrc">
                         <normaloff>:/red_icons/icons_red/rotate-ccw.svg</normaloff>:/red_icons/icons_red/rotate-ccw.svg</iconset>
+                      </property>
+                      <property name="iconSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="optimization_bottom_hspacer_center_right">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Fixed</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>10</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clear_optimization_pbutton">
+                      <property name="minimumSize">
+                       <size>
+                        <width>95</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>120</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="cursor">
+                       <cursorShape>PointingHandCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                      </property>
+                      <property name="text">
+                       <string>Clear</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../assets/resources.qrc">
+                        <normaloff>:/red_icons/icons_red/x.svg</normaloff>:/red_icons/icons_red/x.svg</iconset>
                       </property>
                       <property name="iconSize">
                        <size>
@@ -6169,7 +6283,7 @@ border-color: rgb(186, 189, 182);</string>
                   <item>
                    <layout class="QHBoxLayout" name="evaluation_content_bottom_layout">
                     <item>
-                     <spacer name="evaluation_content_bottom_hspacer_left">
+                     <spacer name="evaluation_bottom_hspacer_left">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -6185,14 +6299,14 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="update_evaluation_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
@@ -6220,7 +6334,7 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="evaluation_content_bottom_hspacer_center">
+                     <spacer name="evaluation_bottom_hspacer_center_left">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -6239,14 +6353,14 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="reset_evaluation_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
@@ -6274,7 +6388,61 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="evaluation_content_bottom_hspacer_right">
+                     <spacer name="evaluation_bottom_hspacer_center_right">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Fixed</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>10</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clear_evaluation_pbutton">
+                      <property name="minimumSize">
+                       <size>
+                        <width>95</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>120</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="cursor">
+                       <cursorShape>PointingHandCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                      </property>
+                      <property name="text">
+                       <string>Clear</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../assets/resources.qrc">
+                        <normaloff>:/red_icons/icons_red/x.svg</normaloff>:/red_icons/icons_red/x.svg</iconset>
+                      </property>
+                      <property name="iconSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="evaluation_bottom_hspacer_right">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>

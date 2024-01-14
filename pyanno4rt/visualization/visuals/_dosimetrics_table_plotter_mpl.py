@@ -46,7 +46,7 @@ class DosimetricsTablePlotterMPL():
     # Set the class attributes for the visual interface integration
     category = "Treatment plan evaluation"
     name = "dosimetrics_plotter"
-    label = "Dosimetric value table (matplotlib)"
+    label = "Dosimetric value table"
 
     def view(self):
         """Open the full-screen view on the dosimetrics table."""
