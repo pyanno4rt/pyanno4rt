@@ -39,7 +39,7 @@ background-color: rgb(211, 215, 207);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
    </property>
-   <widget class="QPushButton" name="close_pbutton">
+   <widget class="QPushButton" name="close_tree_pbutton">
     <property name="geometry">
      <rect>
       <x>640</x>
@@ -107,7 +107,7 @@ border-color: rgb(186, 189, 182);</string>
      </property>
     </column>
    </widget>
-   <widget class="QPushButton" name="collapse_pbutton">
+   <widget class="QPushButton" name="collapse_tree_pbutton">
     <property name="geometry">
      <rect>
       <x>560</x>
@@ -129,7 +129,7 @@ border-color: rgb(186, 189, 182);</string>
      <string>Collapse</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="expand_pbutton">
+   <widget class="QPushButton" name="expand_tree_pbutton">
     <property name="geometry">
      <rect>
       <x>480</x>

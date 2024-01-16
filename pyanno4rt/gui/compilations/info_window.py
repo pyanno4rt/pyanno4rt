@@ -68,21 +68,21 @@ class Ui_info_window(object):
         self.thanks_tbrowser.setStyleSheet("border: 0px;")
         self.thanks_tbrowser.setReadOnly(True)
         self.thanks_tbrowser.setObjectName("thanks_tbrowser")
-        self.close_pbutton = QtWidgets.QPushButton(self.info_widget)
-        self.close_pbutton.setGeometry(QtCore.QRect(640, 600, 71, 31))
-        self.close_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.close_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.close_info_pbutton = QtWidgets.QPushButton(self.info_widget)
+        self.close_info_pbutton.setGeometry(QtCore.QRect(640, 600, 71, 31))
+        self.close_info_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.close_info_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.close_pbutton.setObjectName("close_pbutton")
+        self.close_info_pbutton.setObjectName("close_info_pbutton")
         self.about_label.raise_()
         self.about_line.raise_()
         self.about_tbrowser.raise_()
         self.thanks_label.raise_()
         self.thanks_line.raise_()
         self.thanks_tbrowser.raise_()
-        self.close_pbutton.raise_()
+        self.close_info_pbutton.raise_()
         info_window.setCentralWidget(self.info_widget)
 
         self.retranslateUi(info_window)
@@ -115,4 +115,4 @@ class Ui_info_window(object):
 "<li style=\" margin-top:0px; margin-bottom:6px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"> <span style=\" font-weight:600;\">My colleagues at KIT, DKFZ and HIDSS4Health</span>, who helped me with valuable discussions, feedbacks and their engagement in software testing.</li>\n"
 "<li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"> <span style=\" font-weight:600;\">Moritz Müller</span>, who collaborated with me as student assistant.</li></ul>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"> Many thanks for all your contributions!</p></body></html>"))
-        self.close_pbutton.setText(_translate("info_window", "Close"))
+        self.close_info_pbutton.setText(_translate("info_window", "Close"))

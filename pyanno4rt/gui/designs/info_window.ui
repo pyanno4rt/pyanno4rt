@@ -199,7 +199,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; Many thanks for all your contributions!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="close_pbutton">
+   <widget class="QPushButton" name="close_info_pbutton">
     <property name="geometry">
      <rect>
       <x>640</x>
@@ -227,7 +227,7 @@ border-color: rgb(186, 189, 182);</string>
    <zorder>thanks_label</zorder>
    <zorder>thanks_line</zorder>
    <zorder>thanks_tbrowser</zorder>
-   <zorder>close_pbutton</zorder>
+   <zorder>close_info_pbutton</zorder>
   </widget>
  </widget>
  <resources>

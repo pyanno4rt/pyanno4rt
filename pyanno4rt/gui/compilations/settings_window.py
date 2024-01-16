@@ -101,14 +101,14 @@ class Ui_settings_window(object):
         self.incl_dij_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
         self.incl_dij_check.setObjectName("incl_dij_check")
-        self.reset_pbutton = QtWidgets.QPushButton(self.settings_widget)
-        self.reset_pbutton.setGeometry(QtCore.QRect(560, 280, 71, 31))
-        self.reset_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.reset_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.reset_settings_pbutton = QtWidgets.QPushButton(self.settings_widget)
+        self.reset_settings_pbutton.setGeometry(QtCore.QRect(560, 280, 71, 31))
+        self.reset_settings_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.reset_settings_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.reset_pbutton.setObjectName("reset_pbutton")
+        self.reset_settings_pbutton.setObjectName("reset_settings_pbutton")
         self.light_model_label = QtWidgets.QLabel(self.settings_widget)
         self.light_model_label.setGeometry(QtCore.QRect(40, 140, 141, 31))
         font = QtGui.QFont()
@@ -144,7 +144,6 @@ class Ui_settings_window(object):
         self.resolution_cbox.addItem(icon8, "")
         self.resolution_cbox.addItem(icon8, "")
         self.resolution_cbox.addItem(icon8, "")
-        self.resolution_cbox.addItem(icon8, "")
         self.incl_model_data_check = QtWidgets.QCheckBox(self.settings_widget)
         self.incl_model_data_check.setGeometry(QtCore.QRect(410, 140, 231, 23))
         self.incl_model_data_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -167,28 +166,28 @@ class Ui_settings_window(object):
         self.save_tpi_line.setStyleSheet("border-color: rgb(0, 0, 0);")
         self.save_tpi_line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.save_tpi_line.setObjectName("save_tpi_line")
-        self.save_pbutton = QtWidgets.QPushButton(self.settings_widget)
-        self.save_pbutton.setGeometry(QtCore.QRect(640, 280, 71, 31))
-        self.save_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.save_pbutton.setStyleSheet("color: rgb(243, 243, 243);\n"
-"background-color: rgb(196, 92, 38);\n"
+        self.save_settings_pbutton = QtWidgets.QPushButton(self.settings_widget)
+        self.save_settings_pbutton.setGeometry(QtCore.QRect(640, 280, 71, 31))
+        self.save_settings_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.save_settings_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+"background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.save_pbutton.setObjectName("save_pbutton")
+        self.save_settings_pbutton.setObjectName("save_settings_pbutton")
         self.light_mode_cbox.raise_()
         self.general_settings_label.raise_()
         self.resolution_label.raise_()
         self.language_label.raise_()
         self.language_cbox.raise_()
         self.incl_dij_check.raise_()
-        self.reset_pbutton.raise_()
+        self.reset_settings_pbutton.raise_()
         self.light_model_label.raise_()
         self.incl_img_data_check.raise_()
         self.resolution_cbox.raise_()
         self.incl_model_data_check.raise_()
         self.save_tpi_label.raise_()
         self.save_tpi_line.raise_()
-        self.save_pbutton.raise_()
+        self.save_settings_pbutton.raise_()
         self.general_settings_line.raise_()
         settings_window.setCentralWidget(self.settings_widget)
 
@@ -211,7 +210,7 @@ class Ui_settings_window(object):
         self.language_cbox.setItemText(3, _translate("settings_window", "Français"))
         self.language_cbox.setItemText(4, _translate("settings_window", "Italiano"))
         self.incl_dij_check.setText(_translate("settings_window", "Include dose-influence matrix"))
-        self.reset_pbutton.setText(_translate("settings_window", "Reset"))
+        self.reset_settings_pbutton.setText(_translate("settings_window", "Reset"))
         self.light_model_label.setText(_translate("settings_window", "Light mode"))
         self.incl_img_data_check.setText(_translate("settings_window", "Include CT/segmentation data"))
         self.resolution_cbox.setItemText(1, _translate("settings_window", "1024x768"))
@@ -221,7 +220,6 @@ class Ui_settings_window(object):
         self.resolution_cbox.setItemText(5, _translate("settings_window", "1440x900"))
         self.resolution_cbox.setItemText(6, _translate("settings_window", "1920x1080"))
         self.resolution_cbox.setItemText(7, _translate("settings_window", "2560x1440"))
-        self.resolution_cbox.setItemText(8, _translate("settings_window", "3840x2160"))
         self.incl_model_data_check.setText(_translate("settings_window", "Include model training data"))
         self.save_tpi_label.setText(_translate("settings_window", "Save TPI"))
-        self.save_pbutton.setText(_translate("settings_window", "Save"))
+        self.save_settings_pbutton.setText(_translate("settings_window", "Save"))

@@ -39,7 +39,7 @@ background-color: rgb(211, 215, 207);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
    </property>
-   <widget class="QPushButton" name="close_pbutton">
+   <widget class="QPushButton" name="close_log_pbutton">
     <property name="geometry">
      <rect>
       <x>640</x>

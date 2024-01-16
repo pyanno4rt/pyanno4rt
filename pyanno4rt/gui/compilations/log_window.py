@@ -24,14 +24,14 @@ class Ui_log_window(object):
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.log_widget.setObjectName("log_widget")
-        self.close_pbutton = QtWidgets.QPushButton(self.log_widget)
-        self.close_pbutton.setGeometry(QtCore.QRect(640, 600, 71, 31))
-        self.close_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.close_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.close_log_pbutton = QtWidgets.QPushButton(self.log_widget)
+        self.close_log_pbutton.setGeometry(QtCore.QRect(640, 600, 71, 31))
+        self.close_log_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.close_log_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.close_pbutton.setObjectName("close_pbutton")
+        self.close_log_pbutton.setObjectName("close_log_pbutton")
         self.log_tedit = QtWidgets.QTextEdit(self.log_widget)
         self.log_tedit.setGeometry(QtCore.QRect(10, 10, 701, 581))
         self.log_tedit.setStyleSheet("color: rgb(0, 0, 0);\n"
@@ -48,7 +48,7 @@ class Ui_log_window(object):
     def retranslateUi(self, log_window):
         _translate = QtCore.QCoreApplication.translate
         log_window.setWindowTitle(_translate("log_window", "Logging"))
-        self.close_pbutton.setText(_translate("log_window", "Close"))
+        self.close_log_pbutton.setText(_translate("log_window", "Close"))
         self.log_tedit.setHtml(_translate("log_window", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"

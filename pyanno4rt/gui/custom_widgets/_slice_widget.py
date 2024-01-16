@@ -20,11 +20,11 @@ class SliceWidget(QWidget):
 
     def __init__(self, parent=None):
 
-        # 
-        self.parent = parent
-
         # Call the superclass constructor
         super().__init__()
+
+        # 
+        self.parent = parent
 
         # Set the vertical layout for the slice widget
         slice_layout = QVBoxLayout(self)
@@ -61,7 +61,14 @@ class SliceWidget(QWidget):
         self.segment_contours = None
 
     def add_ct(self, ct_cube):
+        """."""
+
+        # 
         self.ct_cube = rot90(transpose(ct_cube, (0, 1, 2)), 3)
+
+        # 
+        self.positions = self.parent.plans[
+            self.parent.plan_ledit.text()].datahub.computed_tomography['z']
 
     def add_dose(self, dose_cube):
 
@@ -181,6 +188,8 @@ class SliceWidget(QWidget):
             self.segment_masks = None
             self.segment_contours = None
 
+        self.parent.slice_selection_pos.clear()
+
     def update_images(self):
         """Update the images when scrolling."""
 
@@ -211,3 +220,7 @@ class SliceWidget(QWidget):
 
                 # Update the segment contour lines
                 contour.setData(mask[:, :, self.slice])
+
+        # 
+        self.parent.slice_selection_pos.setText(
+            ''.join(('z = ', str(self.positions[self.slice]), ' mm')))

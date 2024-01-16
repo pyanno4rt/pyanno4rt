@@ -24,14 +24,14 @@ class Ui_tree_window(object):
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.body_widget.setObjectName("body_widget")
-        self.close_pbutton = QtWidgets.QPushButton(self.body_widget)
-        self.close_pbutton.setGeometry(QtCore.QRect(640, 600, 71, 31))
-        self.close_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.close_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.close_tree_pbutton = QtWidgets.QPushButton(self.body_widget)
+        self.close_tree_pbutton.setGeometry(QtCore.QRect(640, 600, 71, 31))
+        self.close_tree_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.close_tree_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.close_pbutton.setObjectName("close_pbutton")
+        self.close_tree_pbutton.setObjectName("close_tree_pbutton")
         self.tree_widget = QtWidgets.QTreeWidget(self.body_widget)
         self.tree_widget.setGeometry(QtCore.QRect(10, 10, 701, 581))
         self.tree_widget.setStyleSheet("color: rgb(0, 0, 0);\n"
@@ -44,22 +44,22 @@ class Ui_tree_window(object):
         self.tree_widget.setUniformRowHeights(True)
         self.tree_widget.setColumnCount(3)
         self.tree_widget.setObjectName("tree_widget")
-        self.collapse_pbutton = QtWidgets.QPushButton(self.body_widget)
-        self.collapse_pbutton.setGeometry(QtCore.QRect(560, 600, 71, 31))
-        self.collapse_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.collapse_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.collapse_tree_pbutton = QtWidgets.QPushButton(self.body_widget)
+        self.collapse_tree_pbutton.setGeometry(QtCore.QRect(560, 600, 71, 31))
+        self.collapse_tree_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.collapse_tree_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.collapse_pbutton.setObjectName("collapse_pbutton")
-        self.expand_pbutton = QtWidgets.QPushButton(self.body_widget)
-        self.expand_pbutton.setGeometry(QtCore.QRect(480, 600, 71, 31))
-        self.expand_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.expand_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.collapse_tree_pbutton.setObjectName("collapse_tree_pbutton")
+        self.expand_tree_pbutton = QtWidgets.QPushButton(self.body_widget)
+        self.expand_tree_pbutton.setGeometry(QtCore.QRect(480, 600, 71, 31))
+        self.expand_tree_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.expand_tree_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.expand_pbutton.setObjectName("expand_pbutton")
+        self.expand_tree_pbutton.setObjectName("expand_tree_pbutton")
         tree_window.setCentralWidget(self.body_widget)
 
         self.retranslateUi(tree_window)
@@ -68,9 +68,9 @@ class Ui_tree_window(object):
     def retranslateUi(self, tree_window):
         _translate = QtCore.QCoreApplication.translate
         tree_window.setWindowTitle(_translate("tree_window", "Tree Viewer"))
-        self.close_pbutton.setText(_translate("tree_window", "Close"))
+        self.close_tree_pbutton.setText(_translate("tree_window", "Close"))
         self.tree_widget.headerItem().setText(0, _translate("tree_window", "Key"))
         self.tree_widget.headerItem().setText(1, _translate("tree_window", "Type"))
         self.tree_widget.headerItem().setText(2, _translate("tree_window", "Value"))
-        self.collapse_pbutton.setText(_translate("tree_window", "Collapse"))
-        self.expand_pbutton.setText(_translate("tree_window", "Expand"))
+        self.collapse_tree_pbutton.setText(_translate("tree_window", "Collapse"))
+        self.expand_tree_pbutton.setText(_translate("tree_window", "Expand"))

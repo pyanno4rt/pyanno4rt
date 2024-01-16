@@ -46,13 +46,13 @@ class TreeWindow(QMainWindow, Ui_tree_window):
         self.tree_widget.itemDoubleClicked.connect(self.show_item_text)
 
         # 
-        self.expand_pbutton.clicked.connect(self.expand_all)
+        self.expand_tree_pbutton.clicked.connect(self.expand_all)
 
         # 
-        self.collapse_pbutton.clicked.connect(self.collapse_all)
+        self.collapse_tree_pbutton.clicked.connect(self.collapse_all)
 
         # 
-        self.close_pbutton.clicked.connect(self.close)
+        self.close_tree_pbutton.clicked.connect(self.close)
 
     def position(self):
         """."""

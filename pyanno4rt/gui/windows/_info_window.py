@@ -35,7 +35,7 @@ class InfoWindow(QMainWindow, Ui_info_window):
         self.setupUi(self)
 
         # 
-        self.close_pbutton.clicked.connect(self.close)
+        self.close_info_pbutton.clicked.connect(self.close)
 
     def position(self):
         """."""

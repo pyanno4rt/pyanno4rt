@@ -24,14 +24,14 @@ class Ui_text_window(object):
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.body_widget.setObjectName("body_widget")
-        self.close_pbutton = QtWidgets.QPushButton(self.body_widget)
-        self.close_pbutton.setGeometry(QtCore.QRect(320, 210, 71, 31))
-        self.close_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.close_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.close_text_pbutton = QtWidgets.QPushButton(self.body_widget)
+        self.close_text_pbutton.setGeometry(QtCore.QRect(320, 210, 71, 31))
+        self.close_text_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.close_text_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.close_pbutton.setObjectName("close_pbutton")
+        self.close_text_pbutton.setObjectName("close_text_pbutton")
         self.text_tedit = QtWidgets.QTextEdit(self.body_widget)
         self.text_tedit.setGeometry(QtCore.QRect(10, 10, 381, 191))
         self.text_tedit.setStyleSheet("color: rgb(0, 0, 0);\n"
@@ -48,7 +48,7 @@ class Ui_text_window(object):
     def retranslateUi(self, text_window):
         _translate = QtCore.QCoreApplication.translate
         text_window.setWindowTitle(_translate("text_window", "Text Viewer"))
-        self.close_pbutton.setText(_translate("text_window", "Close"))
+        self.close_text_pbutton.setText(_translate("text_window", "Close"))
         self.text_tedit.setHtml(_translate("text_window", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"

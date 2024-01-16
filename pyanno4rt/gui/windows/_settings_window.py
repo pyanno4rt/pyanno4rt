@@ -44,8 +44,8 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         self.light_mode_cbox.setEnabled(False)
 
         # 
-        self.reset_pbutton.clicked.connect(self.reset)
-        self.save_pbutton.clicked.connect(self.save_apply_close)
+        self.reset_settings_pbutton.clicked.connect(self.reset)
+        self.save_settings_pbutton.clicked.connect(self.save_apply_close)
 
     def position(self):
         """."""

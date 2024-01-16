@@ -38,11 +38,11 @@ class GraphicalUserInterface():
 
     def launch(
             self,
-            treatment_plan=None):
+            plan=None):
         """Launch the graphical user interface."""
 
         # Initialize the main window for the GUI
-        self.main_window = MainWindow(treatment_plan, self.application)
+        self.main_window = MainWindow(plan, self.application)
 
         # Run the application
         self.main_window.application.exec_()

@@ -257,7 +257,7 @@ color: rgb(0, 0, 0);</string>
      <string>Include dose-influence matrix</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="reset_pbutton">
+   <widget class="QPushButton" name="reset_settings_pbutton">
     <property name="geometry">
      <rect>
       <x>560</x>
@@ -414,15 +414,6 @@ border-color: rgb(186, 189, 182);</string>
        <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
      </property>
     </item>
-    <item>
-     <property name="text">
-      <string>3840x2160</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../assets/resources.qrc">
-       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
-     </property>
-    </item>
    </widget>
    <widget class="QCheckBox" name="incl_model_data_check">
     <property name="geometry">
@@ -492,7 +483,7 @@ color: rgb(0, 0, 0);</string>
      <string notr="true">border-color: rgb(0, 0, 0);</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="save_pbutton">
+   <widget class="QPushButton" name="save_settings_pbutton">
     <property name="geometry">
      <rect>
       <x>640</x>
@@ -505,8 +496,8 @@ color: rgb(0, 0, 0);</string>
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: rgb(243, 243, 243);
-background-color: rgb(196, 92, 38);
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
     </property>
@@ -520,14 +511,14 @@ border-color: rgb(186, 189, 182);</string>
    <zorder>language_label</zorder>
    <zorder>language_cbox</zorder>
    <zorder>incl_dij_check</zorder>
-   <zorder>reset_pbutton</zorder>
+   <zorder>reset_settings_pbutton</zorder>
    <zorder>light_model_label</zorder>
    <zorder>incl_img_data_check</zorder>
    <zorder>resolution_cbox</zorder>
    <zorder>incl_model_data_check</zorder>
    <zorder>save_tpi_label</zorder>
    <zorder>save_tpi_line</zorder>
-   <zorder>save_pbutton</zorder>
+   <zorder>save_settings_pbutton</zorder>
    <zorder>general_settings_line</zorder>
   </widget>
  </widget>

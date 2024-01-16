@@ -35,7 +35,7 @@ class TextWindow(QMainWindow, Ui_text_window):
         self.setupUi(self)
 
         # 
-        self.close_pbutton.clicked.connect(self.close)
+        self.close_text_pbutton.clicked.connect(self.close)
 
     def position(self):
         """."""
