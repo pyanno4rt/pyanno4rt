@@ -18,10 +18,10 @@ from pyanno4rt.base import TreatmentPlan
 from pyanno4rt.gui.compilations.main_window import Ui_main_window
 from pyanno4rt.gui.custom_widgets import DVHWidget, SliceWidget
 from pyanno4rt.gui.styles._custom_styles import (
-    cbox, ledit, pbutton_menu, pbutton_composer, pbutton_workflow, tab,
-    tbutton_composer, tbutton_workflow)
+    cbox, ledit, pbutton_menu, pbutton_composer, pbutton_workflow, selector,
+    tab, tbutton_composer, tbutton_workflow)
 from pyanno4rt.gui.windows import (
-    InfoWindow, LogWindow, SettingsWindow, TreeWindow)
+    InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow, TreeWindow)
 from pyanno4rt.tools import (
     apply, copycat, load_list_from_file, make_list_string, snapshot)
 
@@ -72,7 +72,11 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Initialize the GUI optimization components
         self.plan_components = {}
 
-        # Initialize the child window
+        # 
+        self.last_selection = ''
+
+        # Initialize the child windows
+        self.plan_creation_window = PlanCreationWindow(self)
         self.settings_window = SettingsWindow(self)
         self.info_window = InfoWindow(self)
         self.parameter_window = TreeWindow('Plan parameters', self)
@@ -108,6 +112,11 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Install the custom event filters
             getattr(self, box).installEventFilter(self)
+
+        # Install the custom event filter in the plan creation window
+        getattr(self.plan_creation_window,
+                'new_plan_ref_cbox').installEventFilter(
+                    self.plan_creation_window)
 
         # Loop over the QComboBox elements in the settings window
         for box in ('language_cbox', 'light_mode_cbox', 'resolution_cbox'):
@@ -150,6 +159,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'load_pbutton': pbutton_menu,
                          'save_pbutton': pbutton_menu,
                          'drop_pbutton': pbutton_menu,
+                         'plan_select_cbox': selector,
                          'settings_pbutton': pbutton_menu,
                          'info_pbutton': pbutton_menu,
                          'exit_pbutton': pbutton_menu,
@@ -187,7 +197,10 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'reset_settings_pbutton': pbutton_composer,
                          'save_settings_pbutton': pbutton_composer,
                          'close_text_pbutton': pbutton_composer,
-                         'close_info_pbutton': pbutton_composer})
+                         'close_info_pbutton': pbutton_composer,
+                         'create_plan_pbutton': pbutton_composer,
+                         'close_plan_pbutton': pbutton_composer,
+                         'new_plan_ref_cbox': cbox})
 
         # Connect the event signals
         self.connect_signals()
@@ -277,10 +290,14 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Connect the 'valueChanged' events
             getattr(self, key).valueChanged.connect(value)
 
-        #
-        self.components_lwidget.currentItemChanged.connect(
-            lambda: self.set_enabled(('components_minus_tbutton',
-                                      'components_edit_tbutton')))
+        # Loop over the fieldnames with 'currentItemChanged' events
+        for key, value in {
+                'components_lwidget': (lambda: self.set_enabled((
+                    'components_minus_tbutton', 'components_edit_tbutton')))
+                }.items():
+
+            # Connect the 'currentItemChanged' events
+            getattr(self, key).currentItemChanged.connect(value)
 
     def eventFilter(
             self,
@@ -412,7 +429,8 @@ class MainWindow(QMainWindow, Ui_main_window):
                            'collapse_tree_pbutton', 'close_tree_pbutton',
                            'close_log_pbutton', 'reset_settings_pbutton',
                            'save_settings_pbutton', 'close_text_pbutton',
-                           'close_info_pbutton'):
+                           'close_info_pbutton', 'create_plan_pbutton',
+                           'close_plan_pbutton', 'new_plan_ref_cbox'):
 
                 # Get the attribute and set the stylesheet
                 getattr(self, key).setStyleSheet(value)
@@ -456,6 +474,12 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Get the attribute and set the stylesheet
                 getattr(self.info_window, key).setStyleSheet(value)
 
+            elif key in ('create_plan_pbutton', 'close_plan_pbutton',
+                         'new_plan_ref_cbox'):
+
+                # Get the attribute and set the stylesheet
+                getattr(self.plan_creation_window, key).setStyleSheet(value)
+
     def activate(
             self,
             treatment_plan):
@@ -479,13 +503,29 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.plans[label] = treatment_plan
 
             # Add the loaded instance label to the selector
-            self.plan_select_cbox.addItem(label)
+            self.plan_select_cbox.insertItem(0, label)
+
+            # 
+            self.plan_select_cbox.removeItem(self.plan_select_cbox.count()-1)
 
             # Select the loaded instance label
             self.plan_select_cbox.setCurrentText(label)
 
             # Sort the items in the selector alphabetically
             self.plan_select_cbox.model().sort(0)
+
+            # Set the icon path on the red frame
+            icon_path = (":/lightred_icons/icons_lightred/plus-square.svg")
+
+            # Initialize the icon object 
+            icon = QIcon()
+
+            # Add the pixmap to the icon 
+            icon.addPixmap(QPixmap(icon_path), QIcon.Normal, QIcon.Off)
+
+            # 
+            self.plan_select_cbox.insertItem(
+                self.plan_select_cbox.count(), icon, 'Create new plan')
 
     def load_tpi(self):
         """Load the treatment plan from a snapshot folder."""
@@ -532,12 +572,25 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Delete the instance from the plan dictionary
             del self.plans[label]
 
-            # Remove the instance item from the selector
-            self.plan_select_cbox.removeItem(
-                self.plan_select_cbox.currentIndex())
-
             # Reset the selector index to the default
             self.plan_select_cbox.setCurrentIndex(-1)
+
+            # 
+            for i in range(self.plan_select_cbox.count()):
+
+                if label == self.plan_select_cbox.itemText(i):
+
+                    # Remove the instance item from the selector
+                    self.plan_select_cbox.removeItem(i)
+
+            # 
+            if self.plan_select_cbox.itemText(0) == 'Create new plan':
+
+                # 
+                self.plan_select_cbox.insertItem(0, '')
+
+                # Reset the selector index to the default
+                self.plan_select_cbox.setCurrentIndex(0)
 
             # Check if the label is included in the optimized plans list
             if label in self.optimized_plans:
@@ -551,11 +604,43 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Get the selected plan
         selection = self.plan_select_cbox.currentText()
 
+        # 
+        if selection == 'Create new plan':
+
+            # 
+            if self.last_selection == '':
+
+                # 
+                self.plan_select_cbox.setCurrentIndex(-1)
+
+            else:
+
+                # 
+                self.plan_select_cbox.setCurrentText(self.last_selection)
+
+            # 
+            self.open_plan_creation_window()
+
         # Check if the selector is not set to default
-        if selection != '':
+        elif selection != '':
+
+            # 
+            for i in range(self.plan_select_cbox.count()):
+
+                # 
+                if self.plan_select_cbox.itemText(i) == '':
+
+                    # 
+                    self.plan_select_cbox.removeItem(i)
+
+            # 
+            self.last_selection = selection
 
             # Change the treatment plan label to the instance label
             self.plan_ledit.setText(selection)
+
+            # 
+            self.plan_ledit.setReadOnly(True)
 
             # Get the treatment plan instance
             instance = self.plans[selection]
@@ -673,6 +758,12 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         else:
 
+            # 
+            self.last_selection = ''
+
+            # 
+            self.plan_ledit.setReadOnly(False)
+
             # Clear the configuration, optimization and evaluation tab fields
             self.clear_configuration()
             self.clear_optimization()
@@ -723,8 +814,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             QApplication.restoreOverrideCursor()
 
             # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", ': '.join((
-                type(error).__name__, str(error))))
+            QMessageBox.warning(self, "pyanno4rt", str(error))
 
             return False
 
@@ -792,8 +882,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             QApplication.restoreOverrideCursor()
 
             # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", ': '.join((
-                type(error).__name__, str(error))))
+            QMessageBox.warning(self, "pyanno4rt", str(error))
 
             return False
 
@@ -854,8 +943,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             QApplication.restoreOverrideCursor()
 
             # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", ': '.join((
-                type(error).__name__, str(error))))
+            QMessageBox.warning(self, "pyanno4rt", str(error))
 
             return False
 
@@ -922,8 +1010,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             QApplication.restoreOverrideCursor()
 
             # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", ': '.join((
-                type(error).__name__, str(error))))
+            QMessageBox.warning(self, "pyanno4rt", str(error))
 
             return False
 
@@ -962,8 +1049,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         except Exception as error:
 
             # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", ': '.join((
-                type(error).__name__, str(error))))
+            QMessageBox.warning(self, "pyanno4rt", str(error))
 
             return False
 
@@ -1310,8 +1396,16 @@ class MainWindow(QMainWindow, Ui_main_window):
     def clear_configuration(self):
         """Clear the configuration parameters."""
 
-        # Reset the treatment plan label
-        self.plan_ledit.setText(self.base_configuration['label'])
+        # 
+        if self.plan_ledit.text() not in (
+                self.plan_select_cbox.itemText(i)
+                for i in range(self.plan_select_cbox.count())):
+
+            # Reset the treatment plan label
+            self.plan_ledit.setText(self.base_configuration['label'])
+
+            # 
+            self.plan_ledit.setReadOnly(False)
 
         # Reset the minimum logging level
         self.log_level_cbox.setCurrentText(
@@ -1519,6 +1613,49 @@ class MainWindow(QMainWindow, Ui_main_window):
             }
 
         return evaluation
+
+    def open_plan_creation_window(self):
+        """Open the plan creation window."""
+
+        # Set the position of the window
+        self.plan_creation_window.position()
+
+        # 
+        if [self.plan_select_cbox.itemText(i) for i in range(
+                self.plan_select_cbox.count())] != ['', 'Create new plan']:
+
+            # 
+            self.plan_creation_window.new_plan_ref_cbox.setEnabled(True)
+
+        else:
+
+            # 
+            self.plan_creation_window.new_plan_ref_cbox.setEnabled(False)
+
+        # 
+        self.plan_creation_window.new_plan_ledit.clear()
+
+        # 
+        self.plan_creation_window.new_plan_ref_cbox.clear()
+
+        # 
+        self.plan_creation_window.new_plan_ref_cbox.addItem('None')
+
+        # 
+        for plan in (self.plan_select_cbox.itemText(i)
+                     for i in range(self.plan_select_cbox.count())):
+
+            # 
+            if plan not in ('', 'Create new plan'):
+
+                # 
+                self.plan_creation_window.new_plan_ref_cbox.addItem(plan)
+
+        # Sort the items in the selector alphabetically
+        self.plan_creation_window.new_plan_ref_cbox.model().sort(0)
+
+        # Show the window
+        self.plan_creation_window.show()
 
     def open_settings_window(self):
         """Open the settings window."""
@@ -1838,32 +1975,18 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.upper_var_ledit.setCursorPosition(0)
 
     def update_by_plan_label(self):
-        """Update the GUI by the plan label."""
+        """."""
 
-        # Check if the plan label is included in the selector
-        if self.plan_ledit.text() in (
-                self.plan_select_cbox.itemText(i)
-                for i in range(self.plan_select_cbox.count())):
+        # 
+        if self.plan_ledit.text() != '':
 
-            # Enable specific fields
-            self.set_enabled((
-                'update_configuration_pbutton', 'update_optimization_pbutton',
-                'update_evaluation_pbutton', 'reset_configuration_pbutton',
-                'reset_optimization_pbutton', 'reset_evaluation_pbutton'))
-
-            # Disable the 'initialize' push button
-            self.initialize_pbutton.setEnabled(False)
+            # 
+            self.initialize_pbutton.setEnabled(True)
 
         else:
 
-            # Disable specific fields
-            self.set_disabled((
-                'update_configuration_pbutton', 'update_optimization_pbutton',
-                'update_evaluation_pbutton', 'reset_configuration_pbutton',
-                'reset_optimization_pbutton', 'reset_evaluation_pbutton'))
-
-            # Enable the 'initialize' push button
-            self.initialize_pbutton.setEnabled(True)
+            # 
+            self.initialize_pbutton.setEnabled(False)
 
     def update_by_initial_strategy(self):
         """Update the GUI by the initial strategy."""

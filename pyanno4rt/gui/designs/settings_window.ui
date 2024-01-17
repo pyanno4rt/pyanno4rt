@@ -342,6 +342,9 @@ border-color: rgb(186, 189, 182);</string>
     <property name="currentIndex">
      <number>0</number>
     </property>
+    <property name="frame">
+     <bool>false</bool>
+    </property>
     <item>
      <property name="text">
       <string/>

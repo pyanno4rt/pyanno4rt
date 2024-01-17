@@ -53,6 +53,9 @@ class SliceWidget(QWidget):
         self.slice = None
 
         # 
+        self.positions = None
+
+        # 
         self.ct_cube = None
         self.dose_cube = None
         self.dose_cube_with_nan = None
@@ -222,5 +225,7 @@ class SliceWidget(QWidget):
                 contour.setData(mask[:, :, self.slice])
 
         # 
-        self.parent.slice_selection_pos.setText(
-            ''.join(('z = ', str(self.positions[self.slice]), ' mm')))
+        if self.positions:
+
+            self.parent.slice_selection_pos.setText(
+                ''.join(('z = ', str(self.positions[self.slice]), ' mm')))

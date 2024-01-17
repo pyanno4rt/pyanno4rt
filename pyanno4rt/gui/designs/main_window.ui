@@ -189,7 +189,7 @@ background-color: rgb(0, 0, 0);</string>
            <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="styleSheet">
-           <string notr="true">color: rgb(251,90,91);
+           <string notr="true">color: rgb(211, 50, 50);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
           </property>
@@ -199,9 +199,26 @@ border-color: rgb(186, 189, 182);</string>
           <property name="sizeAdjustPolicy">
            <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
           </property>
-          <property name="frame">
-           <bool>false</bool>
+          <property name="iconSize">
+           <size>
+            <width>18</width>
+            <height>18</height>
+           </size>
           </property>
+          <item>
+           <property name="text">
+            <string/>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Create new plan</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../assets/resources.qrc">
+             <normaloff>:/lightred_icons/icons_lightred/plus-square.svg</normaloff>:/lightred_icons/icons_lightred/plus-square.svg</iconset>
+           </property>
+          </item>
          </widget>
         </item>
         <item row="2" column="0">
@@ -1412,7 +1429,7 @@ border-color: rgb(186, 189, 182);</string>
                         </property>
                         <property name="icon">
                          <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/black_icons/icons_black/play.svg</normaloff>:/black_icons/icons_black/play.svg</iconset>
+                          <normaloff>:/black_icons/icons_black/play-circle.svg</normaloff>:/black_icons/icons_black/play-circle.svg</iconset>
                         </property>
                         <property name="iconSize">
                          <size>
@@ -2141,7 +2158,7 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="iconSize">
            <size>
@@ -2196,7 +2213,7 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>368</width>
+                 <width>369</width>
                  <height>912</height>
                 </rect>
                </property>
@@ -5575,7 +5592,7 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>368</width>
+                 <width>369</width>
                  <height>796</height>
                 </rect>
                </property>

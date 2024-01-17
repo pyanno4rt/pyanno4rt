@@ -78,13 +78,18 @@ class Ui_main_window(object):
         font.setWeight(75)
         self.plan_select_cbox.setFont(font)
         self.plan_select_cbox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.plan_select_cbox.setStyleSheet("color: rgb(251,90,91);\n"
+        self.plan_select_cbox.setStyleSheet("color: rgb(211, 50, 50);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.plan_select_cbox.setInsertPolicy(QtWidgets.QComboBox.InsertAlphabetically)
         self.plan_select_cbox.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContentsOnFirstShow)
-        self.plan_select_cbox.setFrame(False)
+        self.plan_select_cbox.setIconSize(QtCore.QSize(18, 18))
         self.plan_select_cbox.setObjectName("plan_select_cbox")
+        self.plan_select_cbox.addItem("")
+        self.plan_select_cbox.setItemText(0, "")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/lightred_icons/icons_lightred/plus-square.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.plan_select_cbox.addItem(icon, "")
         self.widget_layout.addWidget(self.plan_select_cbox, 2, 1, 1, 1)
         self.menu_left_widget = QtWidgets.QWidget(self.central_widget)
         self.menu_left_widget.setMinimumSize(QtCore.QSize(0, 40))
@@ -112,9 +117,9 @@ class Ui_main_window(object):
 "border-color: rgb(186, 189, 182);\n"
 "border: 1px solid;\n"
 "color: rgb(0, 0, 0);")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/upload.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.load_pbutton.setIcon(icon)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/upload.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.load_pbutton.setIcon(icon1)
         self.load_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.load_pbutton.setObjectName("load_pbutton")
         self.menu_left_layout.addWidget(self.load_pbutton)
@@ -133,9 +138,9 @@ class Ui_main_window(object):
 "border-color: rgb(186, 189, 182);\n"
 "border: 1px solid;\n"
 "color: rgb(0, 0, 0);")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/save.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.save_pbutton.setIcon(icon1)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/save.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.save_pbutton.setIcon(icon2)
         self.save_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.save_pbutton.setObjectName("save_pbutton")
         self.menu_left_layout.addWidget(self.save_pbutton)
@@ -154,9 +159,9 @@ class Ui_main_window(object):
 "border-color: rgb(186, 189, 182);\n"
 "border: 1px solid;\n"
 "color: rgb(0, 0, 0);")
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/trash-2.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.drop_pbutton.setIcon(icon2)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/trash-2.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.drop_pbutton.setIcon(icon3)
         self.drop_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.drop_pbutton.setObjectName("drop_pbutton")
         self.menu_left_layout.addWidget(self.drop_pbutton)
@@ -187,9 +192,9 @@ class Ui_main_window(object):
 "border-color: rgb(186, 189, 182);\n"
 "border: 1px solid;\n"
 "color: rgb(0, 0, 0);")
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/settings.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.settings_pbutton.setIcon(icon3)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/settings.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.settings_pbutton.setIcon(icon4)
         self.settings_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.settings_pbutton.setObjectName("settings_pbutton")
         self.menu_right_layout.addWidget(self.settings_pbutton)
@@ -208,9 +213,9 @@ class Ui_main_window(object):
 "border-color: rgb(186, 189, 182);\n"
 "border: 1px solid;\n"
 "color: rgb(0, 0, 0);")
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/info.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.info_pbutton.setIcon(icon4)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/info.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.info_pbutton.setIcon(icon5)
         self.info_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.info_pbutton.setObjectName("info_pbutton")
         self.menu_right_layout.addWidget(self.info_pbutton)
@@ -229,9 +234,9 @@ class Ui_main_window(object):
 "border-color: rgb(186, 189, 182);\n"
 "border: 1px solid;\n"
 "color: rgb(0, 0, 0);")
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/log-out.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.exit_pbutton.setIcon(icon5)
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/log-out.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.exit_pbutton.setIcon(icon6)
         self.exit_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.exit_pbutton.setObjectName("exit_pbutton")
         self.menu_right_layout.addWidget(self.exit_pbutton)
@@ -361,9 +366,9 @@ class Ui_main_window(object):
         self.image_options_layout.addWidget(self.slice_selection_sbar, 1, 1, 1, 2)
         self.tab_slices_layout.addWidget(self.image_options_widget)
         self.tab_slices_meta_layout.addLayout(self.tab_slices_layout)
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/i-imaging-root-category-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.viewer_widget.addTab(self.tab_slices, icon6, "")
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/i-imaging-root-category-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.viewer_widget.addTab(self.tab_slices, icon7, "")
         self.tab_dvh = QtWidgets.QWidget()
         self.tab_dvh.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);\n"
@@ -531,9 +536,9 @@ class Ui_main_window(object):
         self.dvh_options_layout.addWidget(self.segment_ledit, 1, 1, 1, 1)
         self.tab_dvh_layout.addWidget(self.dvh_options_widget)
         self.tab_dvh_meta_layout.addLayout(self.tab_dvh_layout)
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/decrease-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.viewer_widget.addTab(self.tab_dvh, icon7, "")
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/decrease-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.viewer_widget.addTab(self.tab_dvh, icon8, "")
         self.widget_layout.addWidget(self.viewer_widget, 7, 2, 1, 1)
         self.workflow_widget = QtWidgets.QWidget(self.central_widget)
         self.workflow_widget.setMinimumSize(QtCore.QSize(250, 0))
@@ -587,9 +592,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/play.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.initialize_pbutton.setIcon(icon8)
+        icon9 = QtGui.QIcon()
+        icon9.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/play-circle.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.initialize_pbutton.setIcon(icon9)
         self.initialize_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.initialize_pbutton.setObjectName("initialize_pbutton")
         self.actions_layout.addWidget(self.initialize_pbutton)
@@ -602,9 +607,9 @@ class Ui_main_window(object):
         self.chevron_init_conf.setMinimumSize(QtCore.QSize(0, 40))
         self.chevron_init_conf.setStyleSheet("border: 0px solid;\n"
 "border-color: rgb(0, 0, 0);")
-        icon9 = QtGui.QIcon()
-        icon9.addPixmap(QtGui.QPixmap(":/white_icons/icons_white/chevrons-down.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.chevron_init_conf.setIcon(icon9)
+        icon10 = QtGui.QIcon()
+        icon10.addPixmap(QtGui.QPixmap(":/white_icons/icons_white/chevrons-down.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.chevron_init_conf.setIcon(icon10)
         self.chevron_init_conf.setIconSize(QtCore.QSize(18, 18))
         self.chevron_init_conf.setObjectName("chevron_init_conf")
         self.actions_layout.addWidget(self.chevron_init_conf)
@@ -625,9 +630,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon10 = QtGui.QIcon()
-        icon10.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/box.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.configure_pbutton.setIcon(icon10)
+        icon11 = QtGui.QIcon()
+        icon11.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/box.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.configure_pbutton.setIcon(icon11)
         self.configure_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.configure_pbutton.setObjectName("configure_pbutton")
         self.actions_layout.addWidget(self.configure_pbutton)
@@ -640,7 +645,7 @@ class Ui_main_window(object):
         self.chevron_conf_opt.setMinimumSize(QtCore.QSize(0, 40))
         self.chevron_conf_opt.setStyleSheet("border: 0px solid;\n"
 "border-color: rgb(0, 0, 0);")
-        self.chevron_conf_opt.setIcon(icon9)
+        self.chevron_conf_opt.setIcon(icon10)
         self.chevron_conf_opt.setIconSize(QtCore.QSize(18, 18))
         self.chevron_conf_opt.setObjectName("chevron_conf_opt")
         self.actions_layout.addWidget(self.chevron_conf_opt)
@@ -661,9 +666,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon11 = QtGui.QIcon()
-        icon11.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/star.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.optimize_pbutton.setIcon(icon11)
+        icon12 = QtGui.QIcon()
+        icon12.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/star.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.optimize_pbutton.setIcon(icon12)
         self.optimize_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.optimize_pbutton.setObjectName("optimize_pbutton")
         self.actions_layout.addWidget(self.optimize_pbutton)
@@ -676,7 +681,7 @@ class Ui_main_window(object):
         self.chevron_opt_eval.setMinimumSize(QtCore.QSize(0, 40))
         self.chevron_opt_eval.setStyleSheet("border: 0px solid;\n"
 "border-color: rgb(0, 0, 0);")
-        self.chevron_opt_eval.setIcon(icon9)
+        self.chevron_opt_eval.setIcon(icon10)
         self.chevron_opt_eval.setIconSize(QtCore.QSize(18, 18))
         self.chevron_opt_eval.setObjectName("chevron_opt_eval")
         self.actions_layout.addWidget(self.chevron_opt_eval)
@@ -697,9 +702,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon12 = QtGui.QIcon()
-        icon12.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/award.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.evaluate_pbutton.setIcon(icon12)
+        icon13 = QtGui.QIcon()
+        icon13.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/award.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.evaluate_pbutton.setIcon(icon13)
         self.evaluate_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.evaluate_pbutton.setObjectName("evaluate_pbutton")
         self.actions_layout.addWidget(self.evaluate_pbutton)
@@ -712,7 +717,7 @@ class Ui_main_window(object):
         self.chevron_eval_vis.setMinimumSize(QtCore.QSize(0, 40))
         self.chevron_eval_vis.setStyleSheet("border: 0px solid;\n"
 "border-color: rgb(0, 0, 0);")
-        self.chevron_eval_vis.setIcon(icon9)
+        self.chevron_eval_vis.setIcon(icon10)
         self.chevron_eval_vis.setIconSize(QtCore.QSize(18, 18))
         self.chevron_eval_vis.setObjectName("chevron_eval_vis")
         self.actions_layout.addWidget(self.chevron_eval_vis)
@@ -733,9 +738,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon13 = QtGui.QIcon()
-        icon13.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/image.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.visualize_pbutton.setIcon(icon13)
+        icon14 = QtGui.QIcon()
+        icon14.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/image.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.visualize_pbutton.setIcon(icon14)
         self.visualize_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.visualize_pbutton.setObjectName("visualize_pbutton")
         self.actions_layout.addWidget(self.visualize_pbutton)
@@ -794,9 +799,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon14 = QtGui.QIcon()
-        icon14.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/sliders.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.show_parameter_tbutton.setIcon(icon14)
+        icon15 = QtGui.QIcon()
+        icon15.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/sliders.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.show_parameter_tbutton.setIcon(icon15)
         self.show_parameter_tbutton.setIconSize(QtCore.QSize(20, 20))
         self.show_parameter_tbutton.setObjectName("show_parameter_tbutton")
         self.toolbox_layout.addWidget(self.show_parameter_tbutton)
@@ -808,9 +813,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon15 = QtGui.QIcon()
-        icon15.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/clipboard.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.show_plan_tbutton.setIcon(icon15)
+        icon16 = QtGui.QIcon()
+        icon16.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/clipboard.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.show_plan_tbutton.setIcon(icon16)
         self.show_plan_tbutton.setIconSize(QtCore.QSize(20, 20))
         self.show_plan_tbutton.setObjectName("show_plan_tbutton")
         self.toolbox_layout.addWidget(self.show_plan_tbutton)
@@ -822,9 +827,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon16 = QtGui.QIcon()
-        icon16.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/database.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.show_model_data_tbutton.setIcon(icon16)
+        icon17 = QtGui.QIcon()
+        icon17.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/database.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.show_model_data_tbutton.setIcon(icon17)
         self.show_model_data_tbutton.setIconSize(QtCore.QSize(20, 20))
         self.show_model_data_tbutton.setObjectName("show_model_data_tbutton")
         self.toolbox_layout.addWidget(self.show_model_data_tbutton)
@@ -836,9 +841,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon17 = QtGui.QIcon()
-        icon17.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/map.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.show_fmap_tbutton.setIcon(icon17)
+        icon18 = QtGui.QIcon()
+        icon18.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/map.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.show_fmap_tbutton.setIcon(icon18)
         self.show_fmap_tbutton.setIconSize(QtCore.QSize(20, 20))
         self.show_fmap_tbutton.setObjectName("show_fmap_tbutton")
         self.toolbox_layout.addWidget(self.show_fmap_tbutton)
@@ -850,9 +855,9 @@ class Ui_main_window(object):
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon18 = QtGui.QIcon()
-        icon18.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/activity.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.show_log_tbutton.setIcon(icon18)
+        icon19 = QtGui.QIcon()
+        icon19.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/activity.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.show_log_tbutton.setIcon(icon19)
         self.show_log_tbutton.setIconSize(QtCore.QSize(20, 20))
         self.show_log_tbutton.setObjectName("show_log_tbutton")
         self.toolbox_layout.addWidget(self.show_log_tbutton)
@@ -873,9 +878,9 @@ class Ui_main_window(object):
         self.visualize_pbutton.raise_()
         self.tab_actions_layout.addWidget(self.actions_widget)
         self.tab_actions_meta_layout.addLayout(self.tab_actions_layout)
-        icon19 = QtGui.QIcon()
-        icon19.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/schedule-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tab_workflow.addTab(self.tab_actions, icon19, "")
+        icon20 = QtGui.QIcon()
+        icon20.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/schedule-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.tab_workflow.addTab(self.tab_actions, icon20, "")
         self.workflow_layout.addWidget(self.tab_workflow)
         self.workflow_widget_layout.addLayout(self.workflow_layout)
         self.widget_layout.addWidget(self.workflow_widget, 7, 1, 1, 1)
@@ -923,7 +928,7 @@ class Ui_main_window(object):
         self.scroll_configuration.setWidgetResizable(True)
         self.scroll_configuration.setObjectName("scroll_configuration")
         self.scroll_configuration_content = QtWidgets.QWidget()
-        self.scroll_configuration_content.setGeometry(QtCore.QRect(0, 0, 368, 912))
+        self.scroll_configuration_content.setGeometry(QtCore.QRect(0, 0, 369, 912))
         self.scroll_configuration_content.setObjectName("scroll_configuration_content")
         self.scroll_configuration_meta_layout = QtWidgets.QVBoxLayout(self.scroll_configuration_content)
         self.scroll_configuration_meta_layout.setContentsMargins(10, 10, 10, 10)
@@ -1139,9 +1144,9 @@ class Ui_main_window(object):
         self.img_path_tbutton.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon20 = QtGui.QIcon()
-        icon20.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/file-plus.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.img_path_tbutton.setIcon(icon20)
+        icon21 = QtGui.QIcon()
+        icon21.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/file-plus.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.img_path_tbutton.setIcon(icon21)
         self.img_path_tbutton.setIconSize(QtCore.QSize(18, 18))
         self.img_path_tbutton.setObjectName("img_path_tbutton")
         self.img_path_layout.addWidget(self.img_path_tbutton)
@@ -1218,7 +1223,7 @@ class Ui_main_window(object):
         self.dose_path_tbutton.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.dose_path_tbutton.setIcon(icon20)
+        self.dose_path_tbutton.setIcon(icon21)
         self.dose_path_tbutton.setIconSize(QtCore.QSize(18, 18))
         self.dose_path_tbutton.setObjectName("dose_path_tbutton")
         self.dose_path_layout.addWidget(self.dose_path_tbutton)
@@ -1274,9 +1279,9 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon21 = QtGui.QIcon()
-        icon21.addPixmap(QtGui.QPixmap(":/green_icons/icons_green/check.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.update_configuration_pbutton.setIcon(icon21)
+        icon22 = QtGui.QIcon()
+        icon22.addPixmap(QtGui.QPixmap(":/green_icons/icons_green/check.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.update_configuration_pbutton.setIcon(icon22)
         self.update_configuration_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.update_configuration_pbutton.setObjectName("update_configuration_pbutton")
         self.configuration_content_bottom_layout.addWidget(self.update_configuration_pbutton)
@@ -1290,9 +1295,9 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon22 = QtGui.QIcon()
-        icon22.addPixmap(QtGui.QPixmap(":/goldIcons/icons_gold/rotate-ccw.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.reset_configuration_pbutton.setIcon(icon22)
+        icon23 = QtGui.QIcon()
+        icon23.addPixmap(QtGui.QPixmap(":/goldIcons/icons_gold/rotate-ccw.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.reset_configuration_pbutton.setIcon(icon23)
         self.reset_configuration_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.reset_configuration_pbutton.setObjectName("reset_configuration_pbutton")
         self.configuration_content_bottom_layout.addWidget(self.reset_configuration_pbutton)
@@ -1306,9 +1311,9 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon23 = QtGui.QIcon()
-        icon23.addPixmap(QtGui.QPixmap(":/red_icons/icons_red/x.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.clear_configuration_pbutton.setIcon(icon23)
+        icon24 = QtGui.QIcon()
+        icon24.addPixmap(QtGui.QPixmap(":/red_icons/icons_red/x.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.clear_configuration_pbutton.setIcon(icon24)
         self.clear_configuration_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.clear_configuration_pbutton.setObjectName("clear_configuration_pbutton")
         self.configuration_content_bottom_layout.addWidget(self.clear_configuration_pbutton)
@@ -1320,9 +1325,9 @@ class Ui_main_window(object):
         self.scroll_configuration_meta_layout.addLayout(self.configuration_content_layout)
         self.scroll_configuration.setWidget(self.scroll_configuration_content)
         self.tab_configuration_meta_layout.addWidget(self.scroll_configuration)
-        icon24 = QtGui.QIcon()
-        icon24.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/input-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.composer_widget.addTab(self.tab_configuration, icon24, "")
+        icon25 = QtGui.QIcon()
+        icon25.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/input-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.composer_widget.addTab(self.tab_configuration, icon25, "")
         self.tab_optimization = QtWidgets.QWidget()
         self.tab_optimization.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);")
@@ -1387,9 +1392,9 @@ class Ui_main_window(object):
         self.components_plus_tbutton.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon25 = QtGui.QIcon()
-        icon25.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/plus.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.components_plus_tbutton.setIcon(icon25)
+        icon26 = QtGui.QIcon()
+        icon26.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/plus.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.components_plus_tbutton.setIcon(icon26)
         self.components_plus_tbutton.setIconSize(QtCore.QSize(18, 18))
         self.components_plus_tbutton.setObjectName("components_plus_tbutton")
         self.plus_minus_layout.addWidget(self.components_plus_tbutton)
@@ -1402,9 +1407,9 @@ class Ui_main_window(object):
         self.components_minus_tbutton.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon26 = QtGui.QIcon()
-        icon26.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/minus.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.components_minus_tbutton.setIcon(icon26)
+        icon27 = QtGui.QIcon()
+        icon27.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/minus.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.components_minus_tbutton.setIcon(icon27)
         self.components_minus_tbutton.setIconSize(QtCore.QSize(18, 18))
         self.components_minus_tbutton.setObjectName("components_minus_tbutton")
         self.plus_minus_layout.addWidget(self.components_minus_tbutton)
@@ -1417,9 +1422,9 @@ class Ui_main_window(object):
         self.components_edit_tbutton.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon27 = QtGui.QIcon()
-        icon27.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/edit-3.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.components_edit_tbutton.setIcon(icon27)
+        icon28 = QtGui.QIcon()
+        icon28.addPixmap(QtGui.QPixmap(":/black_icons/icons_black/edit-3.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.components_edit_tbutton.setIcon(icon28)
         self.components_edit_tbutton.setIconSize(QtCore.QSize(18, 18))
         self.components_edit_tbutton.setObjectName("components_edit_tbutton")
         self.plus_minus_layout.addWidget(self.components_edit_tbutton)
@@ -1658,7 +1663,7 @@ class Ui_main_window(object):
         self.init_fluence_tbutton.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.init_fluence_tbutton.setIcon(icon20)
+        self.init_fluence_tbutton.setIcon(icon21)
         self.init_fluence_tbutton.setIconSize(QtCore.QSize(18, 18))
         self.init_fluence_tbutton.setObjectName("init_fluence_tbutton")
         self.init_fluence_ref_plan_fields_layout.addWidget(self.init_fluence_tbutton)
@@ -1735,7 +1740,7 @@ class Ui_main_window(object):
         self.lower_var_tbutton.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.lower_var_tbutton.setIcon(icon20)
+        self.lower_var_tbutton.setIcon(icon21)
         self.lower_var_tbutton.setIconSize(QtCore.QSize(18, 18))
         self.lower_var_tbutton.setObjectName("lower_var_tbutton")
         self.var_bounds_fields_layout.addWidget(self.lower_var_tbutton)
@@ -1778,7 +1783,7 @@ class Ui_main_window(object):
         self.upper_var_tbutton.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.upper_var_tbutton.setIcon(icon20)
+        self.upper_var_tbutton.setIcon(icon21)
         self.upper_var_tbutton.setIconSize(QtCore.QSize(18, 18))
         self.upper_var_tbutton.setObjectName("upper_var_tbutton")
         self.var_bounds_fields_layout.addWidget(self.upper_var_tbutton)
@@ -1880,7 +1885,7 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.update_optimization_pbutton.setIcon(icon21)
+        self.update_optimization_pbutton.setIcon(icon22)
         self.update_optimization_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.update_optimization_pbutton.setObjectName("update_optimization_pbutton")
         self.optimization_content_bottom_layout.addWidget(self.update_optimization_pbutton)
@@ -1894,9 +1899,9 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        icon28 = QtGui.QIcon()
-        icon28.addPixmap(QtGui.QPixmap(":/red_icons/icons_red/rotate-ccw.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.reset_optimization_pbutton.setIcon(icon28)
+        icon29 = QtGui.QIcon()
+        icon29.addPixmap(QtGui.QPixmap(":/red_icons/icons_red/rotate-ccw.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.reset_optimization_pbutton.setIcon(icon29)
         self.reset_optimization_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.reset_optimization_pbutton.setObjectName("reset_optimization_pbutton")
         self.optimization_content_bottom_layout.addWidget(self.reset_optimization_pbutton)
@@ -1910,7 +1915,7 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.clear_optimization_pbutton.setIcon(icon23)
+        self.clear_optimization_pbutton.setIcon(icon24)
         self.clear_optimization_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.clear_optimization_pbutton.setObjectName("clear_optimization_pbutton")
         self.optimization_content_bottom_layout.addWidget(self.clear_optimization_pbutton)
@@ -1922,9 +1927,9 @@ class Ui_main_window(object):
         self.scroll_optimization_meta_layout.addLayout(self.optimization_content_layout)
         self.scroll_optimization.setWidget(self.scroll_optimization_content)
         self.tab_optimization_meta_layout.addWidget(self.scroll_optimization)
-        icon29 = QtGui.QIcon()
-        icon29.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/find-path-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.composer_widget.addTab(self.tab_optimization, icon29, "")
+        icon30 = QtGui.QIcon()
+        icon30.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/find-path-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.composer_widget.addTab(self.tab_optimization, icon30, "")
         self.tab_evaluation = QtWidgets.QWidget()
         self.tab_evaluation.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);")
@@ -1937,7 +1942,7 @@ class Ui_main_window(object):
         self.scroll_evaluation.setWidgetResizable(True)
         self.scroll_evaluation.setObjectName("scroll_evaluation")
         self.scroll_evaluation_content = QtWidgets.QWidget()
-        self.scroll_evaluation_content.setGeometry(QtCore.QRect(0, 0, 368, 796))
+        self.scroll_evaluation_content.setGeometry(QtCore.QRect(0, 0, 369, 796))
         self.scroll_evaluation_content.setObjectName("scroll_evaluation_content")
         self.scroll_evaluation_meta_layout = QtWidgets.QVBoxLayout(self.scroll_evaluation_content)
         self.scroll_evaluation_meta_layout.setContentsMargins(10, 10, 10, 10)
@@ -2166,7 +2171,7 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.update_evaluation_pbutton.setIcon(icon21)
+        self.update_evaluation_pbutton.setIcon(icon22)
         self.update_evaluation_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.update_evaluation_pbutton.setObjectName("update_evaluation_pbutton")
         self.evaluation_content_bottom_layout.addWidget(self.update_evaluation_pbutton)
@@ -2180,7 +2185,7 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.reset_evaluation_pbutton.setIcon(icon28)
+        self.reset_evaluation_pbutton.setIcon(icon29)
         self.reset_evaluation_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.reset_evaluation_pbutton.setObjectName("reset_evaluation_pbutton")
         self.evaluation_content_bottom_layout.addWidget(self.reset_evaluation_pbutton)
@@ -2194,7 +2199,7 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.clear_evaluation_pbutton.setIcon(icon23)
+        self.clear_evaluation_pbutton.setIcon(icon24)
         self.clear_evaluation_pbutton.setIconSize(QtCore.QSize(18, 18))
         self.clear_evaluation_pbutton.setObjectName("clear_evaluation_pbutton")
         self.evaluation_content_bottom_layout.addWidget(self.clear_evaluation_pbutton)
@@ -2206,9 +2211,9 @@ class Ui_main_window(object):
         self.scroll_evaluation_meta_layout.addLayout(self.evaluation_content_layout)
         self.scroll_evaluation.setWidget(self.scroll_evaluation_content)
         self.tab_evaluation_meta_layout.addWidget(self.scroll_evaluation)
-        icon30 = QtGui.QIcon()
-        icon30.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/list-check-all-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.composer_widget.addTab(self.tab_evaluation, icon30, "")
+        icon31 = QtGui.QIcon()
+        icon31.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/list-check-all-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.composer_widget.addTab(self.tab_evaluation, icon31, "")
         self.widget_layout.addWidget(self.composer_widget, 6, 0, 2, 1)
         self.widget_layout.setColumnStretch(0, 1)
         self.widget_layout.setColumnStretch(1, 1)
@@ -2220,7 +2225,7 @@ class Ui_main_window(object):
         self.retranslateUi(main_window)
         self.viewer_widget.setCurrentIndex(0)
         self.tab_workflow.setCurrentIndex(0)
-        self.composer_widget.setCurrentIndex(1)
+        self.composer_widget.setCurrentIndex(0)
         self.log_level_cbox.setCurrentIndex(1)
         self.method_cbox.setCurrentIndex(2)
         self.solver_cbox.setCurrentIndex(4)
@@ -2232,6 +2237,7 @@ class Ui_main_window(object):
         _translate = QtCore.QCoreApplication.translate
         main_window.setWindowTitle(_translate("main_window", "pyanno4rt GUI"))
         self.composer_header_label.setText(_translate("main_window", "Composer"))
+        self.plan_select_cbox.setItemText(1, _translate("main_window", "Create new plan"))
         self.load_pbutton.setText(_translate("main_window", "LOAD TPI"))
         self.save_pbutton.setText(_translate("main_window", "SAVE TPI"))
         self.drop_pbutton.setText(_translate("main_window", "DROP TPI"))
