@@ -69,7 +69,7 @@ def get_scipy_configuration(problem_instance, lower_variable_bounds,
                                          upper_variable_bounds)),
                      'tol': 1e-3,
                      'options': {'disp': False,
-                                 'verbose': 2,
+                                 'verbose': 0,
                                  'maxiter': max_iter}}
 
     return fun, arguments

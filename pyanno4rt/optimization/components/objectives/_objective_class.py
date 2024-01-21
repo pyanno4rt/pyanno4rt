@@ -21,6 +21,7 @@ class ObjectiveClass(metaclass=ABCMeta):
             name,
             parameter_name,
             parameter_category,
+            parameter_value,
             embedding,
             weight,
             link,
@@ -30,11 +31,20 @@ class ObjectiveClass(metaclass=ABCMeta):
         # Get the class arguments
         class_arguments = locals()
 
-        # Remove the 'self'-key from the class arguments
-        class_arguments.pop('self')
+        # Loop over non-required local keys
+        for key in ('self', 'parameter_value'):
 
-        # Check the class attributes and objective parameters
-        Datahub().input_checker.approve(class_arguments)
+            # Remove the key from the locals dictionary
+            class_arguments.pop(key)
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Check the class attributes
+        hub.input_checker.approve(class_arguments)
+
+        # Check the objective parameters
+        hub.input_checker.approve(dict(zip(parameter_name, parameter_value)))
 
         # Set the instance attributes from the valid arguments
         self.name = name

@@ -71,7 +71,10 @@ class NTCPGraphPlotterMPL():
             groups = tuple(group for group in tuple(zip(
                 get_objective_segments(segmentation),
                 get_objectives(segmentation)))
-                if group[1].DEPENDS_ON_MODEL and group[1].display)
+                if (group[1].DEPENDS_ON_MODEL
+                    or group[1].name in ('Lyman-Kutcher-Burman NTCP',
+                                         'LQ Poisson TCP'))
+                and group[1].display)
 
             # Convert the pairs into an appropriate format
             groups = ((group[0], str([group[0]]), group[1].name,
@@ -105,6 +108,18 @@ class NTCPGraphPlotterMPL():
 
         # Loop over the number of tracks
         for i, _ in enumerate(tracks):
+
+            # Check if the track belongs to the LKB model
+            if 'Lyman-Kutcher-Burman NTCP' in labels[i]:
+
+                # Plot the track
+                axis.plot(range(1, tracks[i].size+1), tracks[i], '.-')
+
+            # Check if the track belongs to the LQ Poisson TCP model
+            if 'LQ Poisson TCP' in labels[i]:
+
+                # Plot the track
+                axis.plot(range(1, tracks[i].size+1), -tracks[i], '.-')
 
             # Check if the track belongs to the DT, EGB, KNN, NB or RF model
             if any(model_name in labels[i] for model_name in (

@@ -54,7 +54,7 @@ objective_map = {
                 value_group='scalar')
         ),
     'volume_parameter': (
-        partial(check_type, key_type=(int, float))
+        partial(check_type, key_type=(int, float)),
         ),
     'target_dose': (
         partial(check_type, key_type=(int, float)),
@@ -88,5 +88,19 @@ objective_map = {
         partial(check_type, key_type=(int, float)),
         partial(check_value, reference=0, sign='>=',
                 value_group='scalar')
+        ),
+    'tolerance_dose_50': (
+        partial(check_type, key_type=(int, float)),
+        partial(check_value, reference=0, sign='>=',
+                value_group='scalar')
+        ),
+    'slope_parameter': (
+        partial(check_type, key_type=(int, float)),
+        ),
+    'alpha': (
+        partial(check_type, key_type=(int, float)),
+        ),
+    'beta': (
+        partial(check_type, key_type=(int, float)),
         )
     }

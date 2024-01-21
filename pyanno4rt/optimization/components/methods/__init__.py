@@ -13,9 +13,9 @@ from ._lexicographic_optimization import LexicographicOptimization
 from ._pareto_optimization import ParetoOptimization
 from ._weighted_sum_optimization import WeightedSumOptimization
 
-from ._methods_map import methods_map
+from ._method_map import method_map
 
 __all__ = ['LexicographicOptimization',
            'ParetoOptimization',
            'WeightedSumOptimization',
-           'methods_map']
+           'method_map']

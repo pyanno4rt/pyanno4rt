@@ -75,8 +75,8 @@ class MaximumDVH(ObjectiveClass):
 
     def __init__(
             self,
-            target_dose,
-            maximum_volume,
+            target_dose=None,
+            maximum_volume=None,
             embedding='active',
             weight=1.0,
             link=None,
@@ -87,6 +87,7 @@ class MaximumDVH(ObjectiveClass):
         super().__init__(name='Maximum DVH',
                          parameter_name=('target_dose', 'maximum_volume'),
                          parameter_category=('dose', 'volume'),
+                         parameter_value=(target_dose, maximum_volume),
                          embedding=embedding,
                          weight=weight,
                          link=link,

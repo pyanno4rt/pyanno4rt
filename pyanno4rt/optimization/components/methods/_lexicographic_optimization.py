@@ -57,6 +57,9 @@ class LexicographicOptimization():
         divided by the associated segments.
     """
 
+    # Specify the class label
+    name = 'lexicographic'
+
     def __init__(
             self,
             backprojection,

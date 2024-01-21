@@ -183,8 +183,7 @@ class MainWindow(QMainWindow):
             # Connect the buttons with the onclick events
             button.clicked.connect(getattr(self, subclass.name).view)
 
-            # Disable the iteration value buttons if no tracker is present
-            # or if no objective should be displayed
+            # Check if the iteration values button should be disabled
             if ((not hasattr(
                     hub.optimization['problem'], 'tracker')
                     or not any(
@@ -192,39 +191,39 @@ class MainWindow(QMainWindow):
                     and subclass.name == 'iterations_plotter'):
                 button.setEnabled(False)
 
-            # Disable the iteration value buttons if no tracker is present
-            # or if no data objective should be displayed
-            if ((not hasattr(
-                    hub.optimization['problem'], 'tracker')
-                    or not any(
-                        objective.display for objective in data_objectives))
+            # Check if the NTCP values button should be disabled
+            if (not hasattr(hub.optimization['problem'], 'tracker')
+                    and not (any(objective.name in (
+                        'Lyman-Kutcher-Burman NTCP', 'LQ Poisson TCP')
+                                 for objective in objectives)
+                             or any(objective.display
+                                    for objective in data_objectives)
+                             or any(objective.display
+                                    for objective in objectives
+                                    if objective.name in (
+                                            'Lyman-Kutcher-Burman-NTCP',
+                                            'LQ Poisson TCP')))
                     and subclass.name == 'ntcp_plotter'):
                 button.setEnabled(False)
 
-            # Disable the data model buttons if no models are present
-            if (len(data_objectives) == 0
-                    and hasattr(subclass, 'DATA_DEPENDENT')):
-                button.setEnabled(False)
-
-            # Disable the features button if no features history exists
-            if (len(data_objectives) > 0 and
-                    all(objective.model_parameters['write_features'] is False
-                        for objective in data_objectives)
+            # Check if the feature iterations button should be disabled
+            if (all(objective.model_parameters['write_features'] is False
+                    for objective in data_objectives)
                     and subclass.name == 'features_plotter'):
                 button.setEnabled(False)
 
-            # Disable the permutation importance button if no inspector is used
-            if ((not hub.model_inspections or len(hub.model_inspections) == 0)
-                    and subclass.name in ('permutation_importance_plotter',)):
-                button.setEnabled(False)
-
-            # Disable the metrics tables and graphs if no evaluator is used
+            # Check if the metrics tables and graphs buttons should be disabled
             if ((not hub.model_evaluations or len(hub.model_evaluations) == 0)
                     and subclass.name in ('metrics_graphs_plotter',
                                           'metrics_tables_plotter')):
                 button.setEnabled(False)
 
-            # Disable the plan evaluation buttons if no evaluations are present
+            # Check if the permutation importance button should be disabled
+            if ((not hub.model_inspections or len(hub.model_inspections) == 0)
+                    and subclass.name in ('permutation_importance_plotter',)):
+                button.setEnabled(False)
+
+            # Check if the plan evaluation buttons should be disabled
             if (not hub.histogram and not hub.dosimetrics
                     and subclass.name in ('dvh_plotter',
                                           'dosimetrics_plotter')):

@@ -5,7 +5,6 @@
 # %% External package import
 
 from abc import ABCMeta, abstractmethod
-from math import inf
 
 # %% Internal package import
 

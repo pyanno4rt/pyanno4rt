@@ -76,6 +76,7 @@ class IpoptSolver():
             lower_constraint_bounds,
             upper_constraint_bounds,
             algorithm,
+            initial_fluence,
             max_iter,
             max_cpu_time):
 
@@ -137,12 +138,13 @@ class IpoptSolver():
                'hessian_approximation': 'limited-memory',
                'limited_memory_max_history': 6,
                'limited_memory_initialization': 'scalar2',
-               'linear_solver': algorithm
+               'linear_solver': algorithm,
+               'print_level': 0
                }
 
         # Add the options to the IPOPT problem instance
         for key, val in options.items():
-            self.nlp.addOption(key, val)
+            self.nlp.add_option(key, val)
 
     def start(
             self,

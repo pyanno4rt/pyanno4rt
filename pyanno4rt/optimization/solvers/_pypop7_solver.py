@@ -72,6 +72,7 @@ class Pypop7Solver():
             lower_constraint_bounds,
             upper_constraint_bounds,
             algorithm,
+            initial_fluence,
             max_iter,
             max_cpu_time):
 

@@ -28,7 +28,7 @@ class FluenceInitializer():
     initial_strategy : string
         Initialization strategy for the fluence vector.
 
-    initial_fluence_vector: ndarray
+    initial_fluence_vector: ndarray, default=None
         Input vector for initializing the fluence vector by a warm start.
 
     Attributes
@@ -42,21 +42,28 @@ class FluenceInitializer():
 
     def __init__(self,
                  initial_strategy,
-                 initial_fluence_vector):
+                 initial_fluence_vector=None,
+                 verbose=True):
 
-        # Log a message about the initialization of the fluence initializer
-        Datahub().logger.display_info("Initializing fluence initializer ...")
+        # Check if verbose is True
+        if verbose:
+
+            # Log a message about the initialization of the fluence initializer
+            Datahub().logger.display_info("Initializing fluence initializer "
+                                          "...")
 
         # Get the instance attributes from the arguments
         self.initial_strategy = initial_strategy
         self.initial_fluence_vector = initial_fluence_vector
+        self.verbose = verbose
 
     def run_strategy(self):
         """Run the initialization method based on the selected strategy."""
         # Map the 'initial_strategy' argument to the initialization methods
+
         strategies = {
-            'target-coverage': FluenceInitializer.initialize_from_target,
-            'warm-start': FluenceInitializer.initialize_from_vector}
+            'target-coverage': self.initialize_from_target,
+            'warm-start': self.initialize_from_vector}
 
         # Initialize the fluence vector based on the selected strategy
         initial_fluence = strategies[self.initial_strategy](
@@ -64,8 +71,9 @@ class FluenceInitializer():
 
         return initial_fluence
 
-    @staticmethod
-    def initialize_from_target(_):
+    def initialize_from_target(
+            self,
+            _):
         """
         Initialize the fluence vector with respect to target coverage.
 
@@ -74,12 +82,16 @@ class FluenceInitializer():
         ndarray
             Initial fluence vector.
         """
+
         # Initialize the datahub
         hub = Datahub()
 
-        # Log a message about the vector initialization
-        hub.logger.display_info("Initializing fluence vector with respect to "
-                                "target coverage ...")
+        # Check if verbose is True
+        if self.verbose:
+
+            # Log a message about the vector initialization
+            hub.logger.display_info("Initializing fluence vector with respect "
+                                    "to target coverage ...")
 
         # Get the segmentation and dose information data from the datahub
         segmentation = hub.segmentation
@@ -97,6 +109,7 @@ class FluenceInitializer():
 
         def get_dose_parameters(segment):
             """Get the dose-related objective parameters of a segment."""
+
             # 
             values = []
 
@@ -137,7 +150,7 @@ class FluenceInitializer():
                         'objective'].parameter_value[pos]
                         for pos in positions])
 
-                else:
+                elif len(positions) == 1:
 
                     # Otherwise, return the singular dose-related parameter
                     values.append(segmentation[
@@ -161,8 +174,9 @@ class FluenceInitializer():
                 dose_information['dose_influence_matrix'][indices, :]
                 @ ones_vector).mean())
 
-    @staticmethod
-    def initialize_from_vector(initial_fluence_vector):
+    def initialize_from_vector(
+            self,
+            initial_fluence_vector):
         """
         Initialize the fluence vector with respect to a reference optimal \
         point.
@@ -172,9 +186,13 @@ class FluenceInitializer():
         ndarray
             Initial fluence vector.
         """
-        # Log a message about the vector initialization
-        Datahub().logger.display_info("Initializing fluence vector with "
-                                      "respect to a reference optimal point "
-                                      "...")
+
+        # Check if verbose is True
+        if self.verbose:
+
+            # Log a message about the vector initialization
+            Datahub().logger.display_info("Initializing fluence vector with "
+                                          "respect to a reference optimal "
+                                          "point ...")
 
         return initial_fluence_vector

@@ -7,7 +7,7 @@ from math import inf
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model.data import Dataset
+from pyanno4rt.learning_model.data import TabularDataset
 from pyanno4rt.learning_model.features import (
     FeatureMapGenerator, FeatureCalculator)
 
@@ -69,8 +69,8 @@ class DataModelHandler():
 
     Attributes
     ----------
-    data : object of class `Dataset`
-        Instance of the class `Dataset`, which provides a preprocessed \
+    data : object of class `TabularDataset`
+        Instance of the class `TabularDataset`, which provides a preprocessed \
         version of the raw dataset along with its individual components.
 
     feature_map_generator : object of class `FeatureMapGenerator`
@@ -127,11 +127,14 @@ class DataModelHandler():
             # Replace the upper bound default with infinity
             label_bounds[1] = inf
 
-        # Initialize the dataset
-        self.data = Dataset(
-            model_label=model_label, data_path=data_path,
-            feature_filter=feature_filter, label_viewpoint=label_viewpoint,
-            label_bounds=label_bounds)
+        # Check if the data path leads to a tabular file
+        if data_path.endswith('.csv'):
+
+            # Initialize the tabular dataset
+            self.data = TabularDataset(
+                model_label=model_label, data_path=data_path,
+                feature_filter=feature_filter, label_viewpoint=label_viewpoint,
+                label_bounds=label_bounds)
 
         # Generate the feature map
         self.feature_map_generator = FeatureMapGenerator(

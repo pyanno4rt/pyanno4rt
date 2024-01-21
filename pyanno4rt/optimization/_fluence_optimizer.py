@@ -15,10 +15,10 @@ from scipy.ndimage import zoom
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.optimization import FluenceInitializer
-from pyanno4rt.optimization.projections import projections_map
-from pyanno4rt.optimization.components.methods import methods_map
-from pyanno4rt.optimization.components.objectives import objectives_map
-from pyanno4rt.optimization.solvers import solvers_map
+from pyanno4rt.optimization.projections import projection_map
+from pyanno4rt.optimization.components.methods import method_map
+from pyanno4rt.optimization.components.objectives import objective_map
+from pyanno4rt.optimization.solvers import solver_map
 from pyanno4rt.tools import get_model_objectives, sigmoid
 
 # %% Class definition
@@ -178,10 +178,10 @@ class FluenceOptimizer():
         FluenceOptimizer.adjust_parameters_for_fractionation(objectives)
 
         # Initialize the backprojection based on the 'projection' argument
-        backprojection = projections_map[hub.plan_configuration['modality']]()
+        backprojection = projection_map[hub.plan_configuration['modality']]()
 
         # Initialize the optimization problem based on the 'method' argument
-        hub.optimization['problem'] = methods_map[method](
+        hub.optimization['problem'] = method_map[method](
             backprojection, objectives, constraints)
 
         # Initialize the fluence initializer
@@ -237,10 +237,10 @@ class FluenceOptimizer():
                                      for bound in upper_variable_bounds]
 
         # Check if the IPOPT solver is selected but not available
-        if solver == 'ipopt' and solvers_map['ipopt'] is None:
+        if solver == 'ipopt' and solver_map['ipopt'] is None:
 
             # Overwrite the missing IPOPT solver with the default solver
-            solvers_map['ipopt'] = solvers_map['scipy']
+            solver_map['ipopt'] = solver_map['scipy']
 
             # Overwrite the algorithm to the default SciPy algorithm
             algorithm = 'L-BFGS-B'
@@ -251,7 +251,7 @@ class FluenceOptimizer():
                                        "L-BFGS-B ...")
 
         # Initialize the solver object based on the 'solver' argument
-        hub.optimization['solver_object'] = solvers_map[solver](
+        hub.optimization['solver_object'] = solver_map[solver](
             number_of_variables=len(hub.optimization['initial_fluence']),
             number_of_constraints=len(constraints),
             problem_instance=hub.optimization['problem'],
@@ -260,6 +260,7 @@ class FluenceOptimizer():
             lower_constraint_bounds=[],
             upper_constraint_bounds=[],
             algorithm=algorithm,
+            initial_fluence=hub.optimization['initial_fluence'],
             max_iter=max_iter,
             max_cpu_time=max_cpu_time)
 
@@ -357,13 +358,13 @@ class FluenceOptimizer():
             if isinstance(element, dict):
 
                 # Convert the element to a single instance
-                instance = objectives_map[element['class']](
+                instance = objective_map[element['class']](
                     **element['parameters'])
 
             else:
 
                 # Convert the element to a tuple of instances
-                instance = tuple(objectives_map[sub['class']](
+                instance = tuple(objective_map[sub['class']](
                     **sub['parameters']) for sub in element)
 
             # Run the corresponding set function

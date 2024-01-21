@@ -72,7 +72,7 @@ class SquaredDeviation(ObjectiveClass):
 
     def __init__(
             self,
-            target_dose,
+            target_dose=None,
             embedding='active',
             weight=1.0,
             link=None,
@@ -83,6 +83,7 @@ class SquaredDeviation(ObjectiveClass):
         super().__init__(name='Squared Deviation',
                          parameter_name=('target_dose',),
                          parameter_category=('dose',),
+                         parameter_value=(target_dose,),
                          embedding=embedding,
                          weight=weight,
                          link=link,
@@ -138,9 +139,7 @@ class SquaredDeviation(ObjectiveClass):
 
 
 @njit
-def compute(
-        dose,
-        parameter_value):
+def compute(dose, parameter_value):
     """
     Compute the value of the objective.
 
@@ -162,6 +161,7 @@ def compute(
     This computation function has been outsourced to make it jittable. Called \
     by ``compute_objective_value(*args)``.
     """
+
     # Center the dose values with the reference dose
     deviation = [dos - parameter_value[0] if len(parameter_value) == 1
                  else dos - array(parameter_value) for dos in dose]
@@ -174,11 +174,7 @@ def compute(
 
 
 @njit
-def differentiate(
-        dose,
-        parameter_value,
-        number_of_voxels,
-        segment_indices):
+def differentiate(dose, parameter_value, number_of_voxels, segment_indices):
     """
     Compute the value of the gradient.
 

@@ -19,6 +19,7 @@ from ._extreme_gradient_boosting_ntcp import ExtremeGradientBoostingNTCP
 from ._k_nearest_neighbors_ntcp import KNeighborsNTCP
 from ._logistic_regression_ntcp import LogisticRegressionNTCP
 from ._logistic_regression_tcp import LogisticRegressionTCP
+from ._lq_poisson_tcp import LQPoissonTCP
 from ._lyman_kutcher_burman_ntcp import LymanKutcherBurmanNTCP
 from ._maximum_dvh import MaximumDVH
 from ._mean_dose import MeanDose
@@ -34,7 +35,7 @@ from ._squared_underdosing import SquaredUnderdosing
 from ._support_vector_machine_ntcp import SupportVectorMachineNTCP
 from ._support_vector_machine_tcp import SupportVectorMachineTCP
 
-from ._objectives_map import objectives_map
+from ._objective_map import objective_map
 
 __all__ = ['DecisionTreeNTCP',
            'DoseUniformity',
@@ -43,6 +44,7 @@ __all__ = ['DecisionTreeNTCP',
            'KNeighborsNTCP',
            'LogisticRegressionNTCP',
            'LogisticRegressionTCP',
+           'LQPoissonTCP',
            'LymanKutcherBurmanNTCP',
            'MaximumDVH',
            'MeanDose',
@@ -59,4 +61,4 @@ __all__ = ['DecisionTreeNTCP',
            'SquaredUnderdosing',
            'SupportVectorMachineNTCP',
            'SupportVectorMachineTCP',
-           'objectives_map']
+           'objective_map']

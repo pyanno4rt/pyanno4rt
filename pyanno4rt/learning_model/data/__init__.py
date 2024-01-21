@@ -11,6 +11,6 @@ tissue reaction should be modeled.
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-from ._dataset import Dataset
+from ._tabular_dataset import TabularDataset
 
-__all__ = ['Dataset']
+__all__ = ['TabularDataset']

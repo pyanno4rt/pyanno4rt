@@ -115,6 +115,7 @@ class TreatmentPlan():
             - 'Equivalent Uniform Dose'
             - 'Logistic Regression NTCP'
             - 'Logistic Regression TCP'
+            - 'LQ Poisson TCP'
             - 'Lyman-Kutcher-Burman NTCP'
             - 'Maximum DVH'
             - 'Mean Dose'

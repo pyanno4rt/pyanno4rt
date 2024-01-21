@@ -72,7 +72,7 @@ class SquaredOverdosing(ObjectiveClass):
 
     def __init__(
             self,
-            maximum_dose,
+            maximum_dose=None,
             embedding='active',
             weight=1.0,
             link=None,
@@ -83,6 +83,7 @@ class SquaredOverdosing(ObjectiveClass):
         super().__init__(name='Squared Overdosing',
                          parameter_name=('maximum_dose',),
                          parameter_category=('dose',),
+                         parameter_value=(maximum_dose,),
                          embedding=embedding,
                          weight=weight,
                          link=link,

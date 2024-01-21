@@ -225,7 +225,7 @@ class SliceWidget(QWidget):
                 contour.setData(mask[:, :, self.slice])
 
         # 
-        if self.positions:
+        if self.positions is None:
 
             self.parent.slice_selection_pos.setText(
                 ''.join(('z = ', str(self.positions[self.slice]), ' mm')))

@@ -73,6 +73,7 @@ class ProxminSolver():
             lower_constraint_bounds,
             upper_constraint_bounds,
             algorithm,
+            initial_fluence,
             max_iter,
             max_cpu_time):
 
@@ -85,6 +86,23 @@ class ProxminSolver():
             number_of_variables, number_of_constraints, problem_instance,
             lower_variable_bounds, upper_variable_bounds, algorithm,
             max_iter)
+
+        # Get the objective function
+        self.objective = problem_instance.objective
+
+        # Add the callback
+        self.arguments['callback'] = self.callback
+
+    def callback(
+            self,
+            X,
+            it):
+        """Customize the logging output of the solver."""
+
+        # Log a message about the objective value in the current iteration
+        Datahub().logger.display_info(''.join((
+            f'At iterate {it+1}: f=',
+            str(round(self.objective(X.reshape(-1)), 4)))))
 
     def start(
             self,

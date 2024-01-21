@@ -18,11 +18,11 @@ from ._pymoo_solver import PymooSolver
 from ._pypop7_solver import Pypop7Solver
 from ._scipy_solver import SciPySolver
 
-from ._solvers_map import solvers_map
+from ._solver_map import solver_map
 
 __all__ = ['IpoptSolver',
            'ProxminSolver',
            'PymooSolver',
            'Pypop7Solver',
            'SciPySolver',
-           'solvers_map']
+           'solver_map']

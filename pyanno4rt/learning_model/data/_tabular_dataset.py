@@ -16,12 +16,12 @@ from pyanno4rt.datahub import Datahub
 # %% Class definition
 
 
-class Dataset():
+class TabularDataset():
     """
-    Dataset handling class.
+    Tabular dataset handling class.
 
-    This class provides methods to load, deconstruct and modulate the base \
-    data set according to the selected features and label viewpoint.
+    This class provides methods to load, deconstruct and modulate a base \
+    tabular data set according to the selected features and label viewpoint.
 
     Parameters
     ----------
@@ -87,7 +87,7 @@ class Dataset():
         hub = Datahub()
 
         # Log a message about the dataset building
-        hub.logger.display_info("Building base dataset ...")
+        hub.logger.display_info("Building tabular dataset ...")
 
         # Get the instance attributes from the arguments
         self.model_label = model_label
@@ -101,8 +101,8 @@ class Dataset():
 
     def generate_dataset(self):
         """
-        Deconstruct the raw dataset and return a dictionary with the \
-        relevant components of it.
+        Deconstruct the raw tabular dataset and return a dictionary with its \
+        relevant components.
 
         Returns
         -------
@@ -131,10 +131,10 @@ class Dataset():
 
             return array(label_values), label_names
 
-        # Read the data from the .csv file
+        # Read the data from the tabular .csv file
         data = read_csv(self.data_path)
 
-        # Select/Drop the features according to the filtering list
+        # Select/Drop the features according to the filter mode and list
         if self.feature_filter['filter_mode'] == 'retain':
             data = self.retain_features(data)
         else:
@@ -224,8 +224,8 @@ class Dataset():
             values.
         """
         # Log a message about the dataset modulation
-        Datahub().logger.display_info("Modulating dataset for label viewpoint "
-                                      "'{}' ..."
+        Datahub().logger.display_info("Modulating tabular dataset for label "
+                                      "viewpoint '{}' ..."
                                       .format(self.label_viewpoint))
 
         def round_custom(number):

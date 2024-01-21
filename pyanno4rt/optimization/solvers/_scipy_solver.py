@@ -72,6 +72,7 @@ class SciPySolver():
             lower_constraint_bounds,
             upper_constraint_bounds,
             algorithm,
+            initial_fluence,
             max_iter,
             max_cpu_time):
 
@@ -90,7 +91,7 @@ class SciPySolver():
     def callback(
             self,
             intermediate_result):
-        """."""
+        """Log an intermediate callback return per iteration."""
 
         # Log a message about the objective value in the current iteration
         Datahub().logger.display_info(''.join((
@@ -120,16 +121,16 @@ class SciPySolver():
             Description of the cause of termination.
         """
 
-        # Log a message about the initial objective value
-        Datahub().logger.display_info(''.join((
-            'At iterate 0: f=',
-            str(round(self.arguments['fun'](initial_fluence), 4)))))
-
         # Check if the algorithm is different from 'TNC'
         if self.arguments['method'] != 'TNC':
 
             # Assign the callback function
             callback = self.callback
+
+            # Log a message about the initial objective value
+            Datahub().logger.display_info(''.join((
+                'At iterate 0: f=',
+                str(round(self.arguments['fun'](initial_fluence), 4)))))
 
         else:
 

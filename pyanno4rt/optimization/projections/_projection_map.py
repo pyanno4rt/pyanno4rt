@@ -10,5 +10,5 @@ from pyanno4rt.optimization.projections import (
 # %% Map definition
 
 
-projections_map = {'photon': DoseProjection,
-                   'proton': ConstantRBEProjection}
+projection_map = {'photon': DoseProjection,
+                  'proton': ConstantRBEProjection}

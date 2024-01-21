@@ -10,6 +10,6 @@ from pyanno4rt.optimization.components.methods import (
 # %% Map definition
 
 
-methods_map = {'lexicographic': LexicographicOptimization,
-               'pareto': ParetoOptimization,
-               'weighted-sum': WeightedSumOptimization}
+method_map = {'lexicographic': LexicographicOptimization,
+              'pareto': ParetoOptimization,
+              'weighted-sum': WeightedSumOptimization}

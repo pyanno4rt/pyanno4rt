@@ -72,7 +72,7 @@ class MeanDose(ObjectiveClass):
 
     def __init__(
             self,
-            target_dose,
+            target_dose=None,
             embedding='active',
             weight=1.0,
             link=None,
@@ -83,6 +83,7 @@ class MeanDose(ObjectiveClass):
         super().__init__(name='Mean Dose',
                          parameter_name=('target_dose',),
                          parameter_category=('dose',),
+                         parameter_value=(target_dose),
                          embedding=embedding,
                          weight=weight,
                          link=link,

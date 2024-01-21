@@ -60,7 +60,7 @@ def copycat(base_class, path):
                         component['parameters']['model_parameters'][
                             'data_path'] = ''.join((inputs[0], '/', filename))
 
-        # Get the component(s)
+        # Get the component instance(s)
         component = treatment_plan.optimization[
             'components'][inputs[1]]['instance']
 

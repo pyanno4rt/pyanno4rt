@@ -75,8 +75,8 @@ class MinimumDVH(ObjectiveClass):
 
     def __init__(
             self,
-            target_dose,
-            minimum_volume,
+            target_dose=None,
+            minimum_volume=None,
             embedding='active',
             weight=1.0,
             link=None,
@@ -87,6 +87,7 @@ class MinimumDVH(ObjectiveClass):
         super().__init__(name='Minimum DVH',
                          parameter_name=('target_dose', 'minimum_volume'),
                          parameter_category=('dose', 'volume'),
+                         parameter_value=(target_dose, minimum_volume),
                          embedding=embedding,
                          weight=weight,
                          link=link,

@@ -72,7 +72,7 @@ class Moments(ObjectiveClass):
 
     def __init__(
             self,
-            exponents,
+            exponents=None,
             embedding='active',
             weight=1.0,
             link=None,

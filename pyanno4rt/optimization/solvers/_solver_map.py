@@ -10,8 +10,8 @@ from pyanno4rt.optimization.solvers import (
 # %% Map definition
 
 
-solvers_map = {'ipopt': IpoptSolver,
-               'proxmin': ProxminSolver,
-               'pymoo': PymooSolver,
-               'pypop7': Pypop7Solver,
-               'scipy': SciPySolver}
+solver_map = {'ipopt': IpoptSolver,
+              'proxmin': ProxminSolver,
+              'pymoo': PymooSolver,
+              'pypop7': Pypop7Solver,
+              'scipy': SciPySolver}

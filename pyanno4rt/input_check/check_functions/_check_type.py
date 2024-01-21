@@ -9,7 +9,7 @@ def check_type(key, value, key_type, type_group=None, value_group=None):
     """Check if the input data type is not valid."""
     # Check if no type group applies and the data type is not valid
     if type_group is None and not isinstance(value, key_type):
-
+        print(key, value)
         # Raise an error to indicate a wrong data type
         raise TypeError(
             "The treatment plan parameter '{}' has data type {}, but should "

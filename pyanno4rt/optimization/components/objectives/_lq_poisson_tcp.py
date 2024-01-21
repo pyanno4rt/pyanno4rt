@@ -1,12 +1,12 @@
-"""Dose uniformity objective."""
+"""Linear-quadratic Poisson TCP objective."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
 # %% External package import
 
-from math import sqrt
+from math import log
 from numba import njit
-from numpy import power, zeros
+from numpy import concatenate, exp, power, zeros
 
 # %% Internal package import
 
@@ -16,16 +16,25 @@ from pyanno4rt.optimization.components.objectives import ObjectiveClass
 # %% Class definition
 
 
-class DoseUniformity(ObjectiveClass):
+class LQPoissonTCP(ObjectiveClass):
     """
-    Dose uniformity objective class.
+    Linear-quadratic Poisson TCP objective class.
 
     This class provides methods to compute the value and the gradient of the \
-    dose uniformity objective, as well as to get/set the parameters and the \
-    objective weight.
+    linear-quadratic Poisson TCP objective, as well as to get/set the \
+    parameters and the objective weight.
 
     Parameters
     ----------
+    alpha : ...
+        ...
+
+    beta : ...
+        ...
+
+    volume_parameter : ...
+        ...
+
     embedding : {'active', 'passive'}, default = 'active'
         Mode of embedding for the objective. In 'passive' mode, the objective \
         value is computed and tracked, but not included in the optimization \
@@ -70,6 +79,9 @@ class DoseUniformity(ObjectiveClass):
 
     def __init__(
             self,
+            alpha=None,
+            beta=None,
+            volume_parameter=None,
             embedding='active',
             weight=1.0,
             link=None,
@@ -77,10 +89,11 @@ class DoseUniformity(ObjectiveClass):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Dose Uniformity',
-                         parameter_name=(),
-                         parameter_category=(),
-                         parameter_value=(),
+        super().__init__(name='LQ Poisson TCP',
+                         parameter_name=('alpha', 'beta', 'volume_parameter'),
+                         parameter_category=('coefficient', 'coefficient',
+                                             'coefficient'),
+                         parameter_value=(alpha, beta, volume_parameter),
                          embedding=embedding,
                          weight=weight,
                          link=link,
@@ -88,7 +101,8 @@ class DoseUniformity(ObjectiveClass):
                          display=display)
 
         # Set the individual parameter value
-        self.parameter_value = []
+        self.parameter_value = [float(alpha), float(beta),
+                                float(volume_parameter)]
 
     def compute_objective_value(
             self,
@@ -107,7 +121,9 @@ class DoseUniformity(ObjectiveClass):
         float
             Value of the objective function.
         """
-        return compute(args[0])
+
+        return compute(args[0], self.parameter_value,
+                       Datahub().dose_information['number_of_fractions'])
 
     def compute_gradient_value(
             self,
@@ -129,21 +145,28 @@ class DoseUniformity(ObjectiveClass):
         # Initialize the datahub
         hub = Datahub()
 
-        return differentiate(args[0], hub.dose_information['number_of_voxels'],
-                             [hub.segmentation[args[1][i]]['resized_indices']
-                              for i, _ in enumerate(args[0])])
+        # Get the segment indices
+        segment_indices = tuple(hub.segmentation[args[1][i]]['resized_indices']
+                                for i, _ in enumerate(args[0]))
+
+        return differentiate(args[0], self.parameter_value,
+                             hub.dose_information['number_of_voxels'],
+                             segment_indices,
+                             Datahub().dose_information['number_of_fractions'])
 
 
 @njit
-def compute(
-        dose):
+def compute(dose, parameter_value, number_of_fractions):
     """
     Compute the value of the objective.
 
     Parameters
     ----------
     dose : tuple
-        Values of the dose for a single or multiple segments.
+        Value of the dose for the segment(s).
+
+    parameter_value : list
+        Values of the objective parameters.
 
     Returns
     -------
@@ -155,20 +178,31 @@ def compute(
     This computation function has been outsourced to make it jittable. Called \
     by ``compute_objective_value(*args)``.
     """
-    # Compute the scaled dose variance for each segment
-    dose_transform = [len(dos)*power(dos.std(), 2) for dos in dose]
 
-    # Get the total length of the dose vectors
-    dose_length = sum([len(dos) for dos in dose])
+    # Concatenate the dose vector(s)
+    full_dose = concatenate(dose)
 
-    return sqrt(sum(dose_transform) / (dose_length-len(dose_transform)))
+    # Compute the generalized mean dose
+    gEUD = power((1/len(full_dose))*sum(power(full_dose, parameter_value[2])),
+                 parameter_value[2])
+
+    # Estimate the tolerance dose at 50% tumor control
+    tolerance_dose_50 = ((1/(parameter_value[0]+parameter_value[1]*gEUD))
+                         * log(len(full_dose)/log(2))) / number_of_fractions
+
+    # Estimate the normalized slope at 50% tumor control
+    normalized_slope = (log(2)/2) * log((len(full_dose)/log(2)))
+
+    # Compute the objective value
+    objective_value = -power(0.5, exp(
+        (2*normalized_slope/log(2)) * (1-gEUD/tolerance_dose_50)))
+
+    return objective_value
 
 
 @njit
-def differentiate(
-        dose,
-        number_of_voxels,
-        segment_indices):
+def differentiate(dose, parameter_value, number_of_voxels, segment_indices,
+                  number_of_fractions):
     """
     Compute the value of the gradient.
 
@@ -196,15 +230,47 @@ def differentiate(
     This differentiation function has been outsourced to make it jittable. \
     Called by ``compute_gradient_value(*args)``.
     """
+
     # Initialize the objective gradient
     objective_gradient = zeros((number_of_voxels,))
 
-    # Compute the segment-wise weighted subgradient
-    gradient = [(dos - dos.mean()) / ((len(dos)-1) * dos.std())
-                for dos in dose]
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
+
+    # Concatenate the segment index arrays
+    full_indices = concatenate(segment_indices)
+
+    # Compute the generalized mean dose
+    gEUD = power((1/len(full_dose))*sum(power(full_dose, parameter_value[2])),
+                 parameter_value[2])
+
+    # Estimate the tolerance dose at 50% tumor control
+    tolerance_dose_50 = ((1/(parameter_value[0]+parameter_value[1]*gEUD))
+                         * log(len(full_dose)/log(2))) / number_of_fractions
+
+    # Estimate the normalized slope at 50% tumor control
+    normalized_slope = (log(2)/2) * log((len(full_dose)/log(2)))
+
+    # Compute the dose gradient of the gEUD
+    gEUD_gradient = (1/power(len(full_dose), parameter_value[2])
+                     * power(sum(power(full_dose, 1/parameter_value[2])),
+                             parameter_value[2]-1)
+                     * power(full_dose, 1/parameter_value[2] - 1))
+
+    # Compute the gEUD gradient of the objective
+    tcp_gradient = -(2*power(
+        0.5, exp(
+            2*normalized_slope*(tolerance_dose_50-gEUD)
+            / (tolerance_dose_50*log(2))))
+        * exp(
+            2*normalized_slope*(tolerance_dose_50-gEUD)
+            / (tolerance_dose_50*log(2)))
+        * normalized_slope) / tolerance_dose_50
+
+    # Compute the full objective gradient
+    total_gradient = gEUD_gradient * tcp_gradient
 
     # Add the subgradients to the objective gradient
-    for i, _ in enumerate(segment_indices):
-        objective_gradient[segment_indices[i]] = gradient[i].reshape(-1)
+    objective_gradient[full_indices] = total_gradient.reshape(-1)
 
     return objective_gradient

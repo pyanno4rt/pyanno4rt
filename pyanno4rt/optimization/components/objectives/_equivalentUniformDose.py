@@ -75,8 +75,8 @@ class EquivalentUniformDose(ObjectiveClass):
 
     def __init__(
             self,
-            target_eud,
-            volume_parameter,
+            target_eud=None,
+            volume_parameter=None,
             embedding='active',
             weight=1.0,
             link=None,
@@ -87,6 +87,7 @@ class EquivalentUniformDose(ObjectiveClass):
         super().__init__(name='Equivalent Uniform Dose',
                          parameter_name=('target_eud', 'volume_parameter'),
                          parameter_category=('dose', 'parameter'),
+                         parameter_value=(target_eud, volume_parameter),
                          embedding=embedding,
                          weight=weight,
                          link=link,

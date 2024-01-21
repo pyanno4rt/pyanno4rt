@@ -5,19 +5,18 @@
 
 # %% External package import
 
-from numpy import array, clip, mean
-from numpy.random import uniform
+from numpy import array, mean
+from numpy.random import beta
 
 from pymoo.algorithms.moo.nsga3 import NSGA3
+from pymoo.core.callback import Callback
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.core.population import Population
-from pymoo.operators.crossover.sbx import SBX
+from pymoo.operators.crossover.ux import UniformCrossover
 from pymoo.operators.mutation.pm import PM
 from pymoo.optimize import minimize
 from pymoo.termination.default import DefaultMultiObjectiveTermination
 from pymoo.termination.robust import RobustTermination
-from pymoo.util.display.column import Column
-from pymoo.util.display.output import Output
 from pymoo.util.ref_dirs import get_reference_directions
 
 # %% Internal package import
@@ -94,6 +93,7 @@ class PymooSolver():
             lower_constraint_bounds,
             upper_constraint_bounds,
             algorithm,
+            initial_fluence,
             max_iter,
             max_cpu_time):
 
@@ -112,28 +112,29 @@ class PymooSolver():
             lower_variable_bounds=lower_variable_bounds,
             upper_variable_bounds=[1e12]*len(upper_variable_bounds))
 
-        # Set the number of points to evaluate
-        number_of_points = 100
-
-        # Initialize and evaluate the initial population
-        initial_population = Population.new(
-            "X", clip(uniform(
-                low=0, high=0.5323,
-                size=(number_of_points, number_of_variables)),
-                a_min=0, a_max=None))
-
-        # Get the reference directions from the Riesz s-Energy
-        reference_directions = get_reference_directions(
-            "energy", len(get_objectives(hub.segmentation)), number_of_points,
-            seed=1)
-
-        # Initialize the algorithm instance
+        # Check if the algorithm is 'NSGA3'
         if algorithm == 'NSGA3':
+
+            # Set the number of points to evaluate
+            number_of_points = 200
+
+            # Get the reference directions
+            reference_directions = get_reference_directions(
+                "energy", len(get_objectives(hub.segmentation)),
+                number_of_points, seed=1)
+
+            # Initialize and evaluate the initial population
+            initial_population = Population.new(
+                "X", 2*max(initial_fluence)*beta(a=0.5, b=0.5,
+                                                 size=(number_of_points,
+                                                       number_of_variables)))
+
+            # Initialize the NSGA-3 algorithm
             self.algorithm = NSGA3(ref_dirs=reference_directions,
                                    pop_size=number_of_points,
                                    n_offsprings=number_of_points,
                                    sampling=initial_population,
-                                   crossover=SBX(prob=0.9, eta=20),
+                                   crossover=UniformCrossover(prob=1.0),
                                    mutation=PM(prob=1/number_of_variables,
                                                eta=20),
                                    eliminate_duplicates=True)
@@ -141,20 +142,7 @@ class PymooSolver():
         # Initialize the termination instance
         self.termination = RobustTermination(
             DefaultMultiObjectiveTermination(
-                ftol=1e-3, n_max_gen=max_iter), period=30)
-
-    def __str__(self):
-        """
-        Print the class attributes.
-
-        Returns
-        -------
-        string
-            Class attributes as a formatted string.
-        """
-        return '\n'.join(("Pymoo wrapper class attributes:",
-                          "----------------------------------",
-                          str((*self.__dict__,))))
+                xtol=1e-12, ftol=1e-3, n_max_gen=max_iter), period=20)
 
     def start(
             self,
@@ -177,9 +165,8 @@ class PymooSolver():
         """
         # Solve the optimization problem
         result = minimize(self.problem, self.algorithm, self.termination,
-                          seed=1, save_history=False, verbose=True,
-                          output=CustomOutput(
-                              len(get_objectives(Datahub().segmentation))))
+                          seed=1, save_history=False, verbose=False,
+                          callback=CustomCallback())
 
         return result.X, result.message
 
@@ -253,48 +240,39 @@ class PymooProblem(ElementwiseProblem):
         kwargs : tuple
             Keyworded (optional) input arguments.
         """
+
         # Insert the vector of objective values into the dictionary
-        # value = self.problem_instance.objective(x)
-        # alpha = 0.1
-        # out['F'] = [(1-alpha)*val + (alpha/len(value))*sum(value)
-        #             for val in value]
-        out['F'] = self.problem_instance.objective(x)
+        value = self.problem_instance.objective(x)
+        alpha = 0.5
+        out['F'] = [(1-alpha)*val + (alpha/len(value))*sum(value)
+                    for val in value]
 
         # Insert the vector of constraint values into the dictionary
         out['G'] = self.problem_instance.constraint(x)
 
 
-class CustomOutput(Output):
+class CustomCallback(Callback):
     """."""
 
-    def __init__(
-            self,
-            number_of_objectives):
+    def __init__(self):
 
         # Call the superclass constructor
         super().__init__()
 
-        # Get the instance attribute from the argument
-        self.number_of_objectives = number_of_objectives
-
-        # Set the variables for the output columns
-        for n in range(self.number_of_objectives):
-            name = ''.join(('fmean_', str(n+1)))
-            setattr(self, name, Column(name, width=8))
-            self.columns.append(getattr(self, name))
-
-    def update(
+    def notify(
             self,
             algorithm):
         """."""
-        # Update the algorithm
-        super().update(algorithm)
 
-        # Get the current means for all objective space dimension
-        objective_mean_per_dimension = mean(algorithm.pop.get("F"), axis=0)
+        # Get the mean values of each objective
+        means = mean(algorithm.pop.get("F"), axis=0)
 
-        # Set the values for the output columns
-        for n in range(self.number_of_objectives):
-            name = ''.join(('fmean_', str(n+1)))
-            attr = getattr(self, name)
-            attr.set(objective_mean_per_dimension[n])
+        # Create the string label for each objective
+        names = [''.join(('f', str(i+1))) for i in range(means.shape[0])]
+
+        # Log a message about the mean objectives in the current generation
+        Datahub().logger.display_info(''.join((
+            f'At generation {algorithm.n_gen}: ',
+            ''
+            ', '.join((': '.join((name, str(round(mean, 4))))
+                       for name, mean in zip(names, means))))))

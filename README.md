@@ -54,7 +54,7 @@
 			<li> Dose-volume and outcome prediction model-based optimization functions </li>
 				<br>
 				<ul>
-					<li> 16-type objective catalogue, e.g. squared deviation, squared overdosing, logistic regression NTCP, ... </li>
+					<li> 17-type objective catalogue, e.g. squared deviation, squared overdosing, logistic regression NTCP, ... </li>
 					<li> 6-type constraint catalogue, e.g. minimum DVH, maximum DVH, maximum NTCP, ... </li>
 				</ul>
 				<br>

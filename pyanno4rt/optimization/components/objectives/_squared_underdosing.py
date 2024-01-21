@@ -72,7 +72,7 @@ class SquaredUnderdosing(ObjectiveClass):
 
     def __init__(
             self,
-            minimum_dose,
+            minimum_dose=None,
             embedding='active',
             weight=1.0,
             link=None,
@@ -83,6 +83,7 @@ class SquaredUnderdosing(ObjectiveClass):
         super().__init__(name='Squared Underdosing',
                          parameter_name=('minimum_dose',),
                          parameter_category=('dose',),
+                         parameter_value=(minimum_dose,),
                          embedding=embedding,
                          weight=weight,
                          link=link,
