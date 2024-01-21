@@ -11,12 +11,13 @@ from numpy import array, zeros
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import DecisionTreeModel
-from pyanno4rt.optimization.components.objectives import ModelObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    MachineLearningObjectiveClass)
 
 # %% Class definition
 
 
-class DecisionTreeNTCP(ModelObjectiveClass):
+class DecisionTreeNTCP(MachineLearningObjectiveClass):
     """
     Decision tree NTCP objective class.
 

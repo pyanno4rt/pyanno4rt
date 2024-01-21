@@ -10,12 +10,13 @@ from numpy import dot, logical_or, quantile, sort, zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components.objectives import ObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    ConventionalObjectiveClass)
 
 # %% Class definition
 
 
-class MaximumDVH(ObjectiveClass):
+class MaximumDVH(ConventionalObjectiveClass):
     """
     Maximum dose-volume histogram (Maximum DVH) objective class.
 

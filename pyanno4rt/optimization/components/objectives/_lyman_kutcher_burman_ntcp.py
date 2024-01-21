@@ -11,12 +11,13 @@ from numpy import concatenate, exp, power, zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components.objectives import ObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    RadiobiologyObjectiveClass)
 
 # %% Class definition
 
 
-class LymanKutcherBurmanNTCP(ObjectiveClass):
+class LymanKutcherBurmanNTCP(RadiobiologyObjectiveClass):
     """
     Lyman-Kutcher-Burman (LKB) NTCP objective class.
 

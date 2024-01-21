@@ -14,12 +14,13 @@ from scipy.optimize import minimize, NonlinearConstraint
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import KNeighborsModel
-from pyanno4rt.optimization.components.objectives import ModelObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    MachineLearningObjectiveClass)
 
 # %% Class definition
 
 
-class KNeighborsNTCP(ModelObjectiveClass):
+class KNeighborsNTCP(MachineLearningObjectiveClass):
     """
     K-nearest neighbors NTCP objective class.
 

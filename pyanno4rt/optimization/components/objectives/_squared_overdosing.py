@@ -5,17 +5,19 @@
 # %% External package import
 
 from numba import njit
+from numba.typed import List
 from numpy import array, clip, zeros
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components.objectives import ObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    ConventionalObjectiveClass)
 
 # %% Class definition
 
 
-class SquaredOverdosing(ObjectiveClass):
+class SquaredOverdosing(ConventionalObjectiveClass):
     """
     Squared overdosing objective class.
 

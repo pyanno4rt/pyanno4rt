@@ -1,4 +1,4 @@
-"""Objective template."""
+"""Conventional objective template."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -13,8 +13,8 @@ from pyanno4rt.datahub import Datahub
 # %% Class definition
 
 
-class ObjectiveClass(metaclass=ABCMeta):
-    """Objective template class."""
+class ConventionalObjectiveClass(metaclass=ABCMeta):
+    """Conventional objective template class."""
 
     def __init__(
             self,
@@ -59,8 +59,9 @@ class ObjectiveClass(metaclass=ABCMeta):
         # Initialize the adjustment indicator
         self.adjusted_parameters = False
 
-        # Indicate the model dependency of the objective
-        self.DEPENDS_ON_MODEL = False
+        # Set the objective flags
+        self.RETURNS_OUTCOME = False
+        self.DEPENDS_ON_DATA = False
 
     def get_parameter_value(self):
         """

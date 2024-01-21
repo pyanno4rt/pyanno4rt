@@ -19,7 +19,8 @@ from pyanno4rt.optimization.projections import projection_map
 from pyanno4rt.optimization.components.methods import method_map
 from pyanno4rt.optimization.components.objectives import objective_map
 from pyanno4rt.optimization.solvers import solver_map
-from pyanno4rt.tools import get_model_objectives, sigmoid
+from pyanno4rt.tools import (get_machine_learning_objectives,
+                             get_radiobiology_objectives, sigmoid)
 
 # %% Class definition
 
@@ -382,7 +383,7 @@ class FluenceOptimizer():
                                         else objective[0]))
 
             # Check if the objective depends on data
-            if objective[1].DEPENDS_ON_MODEL:
+            if objective[1].RETURNS_OUTCOME and objective[1].DEPENDS_ON_DATA:
 
                 # Add the outcome model to the objective
                 objective[1].add_model()
@@ -554,33 +555,77 @@ class FluenceOptimizer():
         # Compute the optimized dose from the fluence
         hub.optimization['optimized_dose'] = self.compute_dose_3d()
 
-        # Get the final (N)TCP values if outcome prediction models are present
-        model_objectives = get_model_objectives(hub.segmentation)
+        # Get the radiobiology objectives
+        rb_objectives = get_radiobiology_objectives(hub.segmentation)
 
-        # Check if the number of data-dependent objectives is nonzero
-        if (len(model_objectives) > 0
+        # Check if any radiobiology objectives have been tracked
+        if (len(rb_objectives) > 0
                 and hasattr(hub.optimization['problem'], 'tracker')):
 
-            # Loop over the data-dependent objectives
-            for objective in model_objectives:
+            # Get the radiobiology objective results from the tracker
+            rb_objective_results = tuple(
+                (objective.name, hub.optimization[
+                    'problem'].tracker[track][-1]/objective.weight)
+                for _, track in enumerate(
+                        (*hub.optimization['problem'].tracker,))
+                for objective in rb_objectives if objective.name in track)
+
+            # Iterate over the radiobiology objective results
+            for i, _ in enumerate(rb_objective_results):
+
+                # Get the component name
+                component_name = rb_objective_results[i][0]
+
+                # 
+                if component_name == 'LQ Poisson TCP':
+
+                    # Get the rounded final TCP prediction
+                    rounded_result = -round(
+                        100*(rb_objective_results[i][1]), 2)
+
+                    # Log a message about their final TCP values
+                    hub.logger.display_info(f"{component_name} for the "
+                                            f"optimized plan: {rounded_result}"
+                                            " % ...")
+
+                # 
+                elif component_name == 'Lyman-Kutcher-Burman NTCP':
+
+                    # Get the rounded final NTCP prediction
+                    rounded_result = round(100*(rb_objective_results[i][1]), 2)
+
+                    # Log a message about their final NTCP values
+                    hub.logger.display_info(f"{component_name} for the "
+                                            f"optimized plan: {rounded_result}"
+                                            " % ...")
+
+        # Get the machine learning objectives
+        ml_objectives = get_machine_learning_objectives(hub.segmentation)
+
+        # Check if any machine learning objectives have been tracked
+        if (len(ml_objectives) > 0
+                and hasattr(hub.optimization['problem'], 'tracker')):
+
+            # Loop over the machine learning objectives
+            for objective in ml_objectives:
 
                 # Process the feature and gradient histories
                 objective.data_model_handler.process_histories(
                     objective.model.model_label)
 
-            # Get the data-dependent model results from the tracker
-            data_model_results = tuple(
+            # Get the machine learning model results from the tracker
+            ml_objective_results = tuple(
                 (objective.name, hub.optimization[
                     'problem'].tracker[track][-1]/objective.weight)
                 for _, track in enumerate(
                         (*hub.optimization['problem'].tracker,))
-                for objective in model_objectives if objective.name in track)
+                for objective in ml_objectives if objective.name in track)
 
-            # Iterate over the data model results
-            for i, _ in enumerate(data_model_results):
+            # Iterate over the machine learning objective results
+            for i, _ in enumerate(ml_objective_results):
 
                 # Get the component name
-                component_name = data_model_results[i][0]
+                component_name = ml_objective_results[i][0]
 
                 # Check if a non-sigmoidal model is used
                 if any(model_name in component_name
@@ -591,7 +636,7 @@ class FluenceOptimizer():
                                           'Random Forest')):
 
                     # Get the rounded final outcome prediction
-                    rounded_result = round(100*(data_model_results[i][1]), 2)
+                    rounded_result = round(100*(ml_objective_results[i][1]), 2)
 
                     # Log a message about their final (N)TCP values
                     hub.logger.display_info(f"{component_name} for the "
@@ -604,17 +649,17 @@ class FluenceOptimizer():
                                           'Neural Network')):
 
                     # Check if the model predicts NTCP
-                    if 'NTCP' in model_objectives[i].name:
+                    if 'NTCP' in component_name:
 
                         # Get the rounded final outcome prediction
                         rounded_result = round(100*sigmoid(
-                            data_model_results[i][1], 1, 0), 2)
+                            ml_objective_results[i][1], 1, 0), 2)
 
                     else:
 
                         # Get the rounded final outcome prediction
                         rounded_result = round(100*(1-sigmoid(
-                            data_model_results[i][1], 1, 0)), 2)
+                            ml_objective_results[i][1], 1, 0)), 2)
 
                     # Log a message about their final (N)TCP values
                     hub.logger.display_info(f"{component_name} for the "
@@ -625,11 +670,11 @@ class FluenceOptimizer():
                 elif 'Support Vector Machine' in component_name:
 
                     # Get the SVM prediction model
-                    svm = model_objectives[i].model.prediction_model
+                    svm = ml_objectives[i].model.prediction_model
 
                     # Get the rounded final outcome prediction
                     rounded_result = round(100*sigmoid(
-                        data_model_results[i][1], -svm.probA_[0],
+                        ml_objective_results[i][1], -svm.probA_[0],
                         svm.probB_[0]), 2)
 
                     # Log a message about its final (N)TCP value

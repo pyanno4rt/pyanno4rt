@@ -9,8 +9,9 @@ outcome model-based objective functions for the optimization problem.
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-from ._model_objective_class import ModelObjectiveClass
-from ._objective_class import ObjectiveClass
+from ._conventional_objective_class import ConventionalObjectiveClass
+from ._machine_learning_objective_class import MachineLearningObjectiveClass
+from ._radiobiology_objective_class import RadiobiologyObjectiveClass
 
 from ._decision_tree_ntcp import DecisionTreeNTCP
 from ._dose_uniformity import DoseUniformity
@@ -37,7 +38,8 @@ from ._support_vector_machine_tcp import SupportVectorMachineTCP
 
 from ._objective_map import objective_map
 
-__all__ = ['DecisionTreeNTCP',
+__all__ = ['ConventionalObjectiveClass',
+           'DecisionTreeNTCP',
            'DoseUniformity',
            'EquivalentUniformDose',
            'ExtremeGradientBoostingNTCP',
@@ -46,6 +48,7 @@ __all__ = ['DecisionTreeNTCP',
            'LogisticRegressionTCP',
            'LQPoissonTCP',
            'LymanKutcherBurmanNTCP',
+           'MachineLearningObjectiveClass',
            'MaximumDVH',
            'MeanDose',
            'MinimumDVH',
@@ -53,9 +56,8 @@ __all__ = ['DecisionTreeNTCP',
            'NaiveBayesNTCP',
            'NeuralNetworkNTCP',
            'NeuralNetworkTCP',
+           'RadiobiologyObjectiveClass',
            'RandomForestNTCP',
-           'ObjectiveClass',
-           'ModelObjectiveClass',
            'SquaredDeviation',
            'SquaredOverdosing',
            'SquaredUnderdosing',

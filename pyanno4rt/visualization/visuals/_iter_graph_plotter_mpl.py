@@ -11,7 +11,7 @@ from numpy import ceil, floor
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import get_objectives, get_objective_segments
+from pyanno4rt.tools import get_all_objectives, get_objective_segments
 
 # %% Set options
 
@@ -57,10 +57,11 @@ class IterGraphPlotterMPL():
 
         def get_plotting_information():
             """Get the labels for the plot legend."""
+
             # Determine the segment/objective groups
             groups = tuple(zip(
                 get_objective_segments(segmentation),
-                get_objectives(segmentation)))
+                get_all_objectives(segmentation)))
 
             # Convert the groups into an appropriate format
             groups = ((group[0], group[1].name) if group[1].link is None
@@ -69,8 +70,8 @@ class IterGraphPlotterMPL():
                       for group in groups)
 
             # Get the display flags from the objectives
-            display_flags = [objective.display for objective in get_objectives(
-                segmentation)]
+            display_flags = [objective.display
+                             for objective in get_all_objectives(segmentation)]
 
             # Build the legend labels
             legend_labels = [r" $\rightarrow$ ".join(

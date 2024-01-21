@@ -9,7 +9,7 @@ from numpy import array
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import get_model_objectives
+from pyanno4rt.tools import get_machine_learning_objectives
 
 # %% Class definition
 
@@ -105,14 +105,14 @@ class LexicographicOptimization():
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the model-dependent objectives
-        model_objectives = get_model_objectives(hub.segmentation)
+        # Get the machine learning objectives
+        ml_objectives = get_machine_learning_objectives(hub.segmentation)
 
-        # Check if model-dependent objectives are present
-        if len(model_objectives) > 0:
+        # Check if machine learning objectives are present
+        if len(ml_objectives) > 0:
 
-            # Loop over the model-dependent objective
-            for objective in model_objectives:
+            # Loop over the machine learning objective
+            for objective in ml_objectives:
 
                 # Get the data model handler of the objective
                 data_model_handler = objective.data_model_handler

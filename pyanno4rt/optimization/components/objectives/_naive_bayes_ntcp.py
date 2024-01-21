@@ -11,12 +11,13 @@ from numpy import array, zeros
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import NaiveBayesModel
-from pyanno4rt.optimization.components.objectives import ModelObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    MachineLearningObjectiveClass)
 
 # %% Class definition
 
 
-class NaiveBayesNTCP(ModelObjectiveClass):
+class NaiveBayesNTCP(MachineLearningObjectiveClass):
     """
     Naive Bayes NTCP objective class.
 

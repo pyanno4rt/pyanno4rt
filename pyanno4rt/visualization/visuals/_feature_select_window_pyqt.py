@@ -16,7 +16,7 @@ from pyqtgraph.Qt import QtGui
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import get_model_objectives
+from pyanno4rt.tools import get_machine_learning_objectives
 
 # %% Set options
 
@@ -637,7 +637,7 @@ class FeatureSelectWindowPyQt(QMainWindow):
         self.feature_histories = {
             objective.model.model_label:
                 objective.data_model_handler.feature_calculator.feature_history
-            for objective in get_model_objectives(hub.segmentation)
+            for objective in get_machine_learning_objectives(hub.segmentation)
             if hasattr(objective.data_model_handler.feature_calculator,
                        'feature_history')}
 

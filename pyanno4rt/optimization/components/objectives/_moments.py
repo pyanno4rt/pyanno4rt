@@ -10,12 +10,13 @@ from numpy import zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components.objectives import ObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    ConventionalObjectiveClass)
 
 # %% Class definition
 
 
-class Moments(ObjectiveClass):
+class Moments(ConventionalObjectiveClass):
     """
     Moments objective class.
 

@@ -10,12 +10,13 @@ from numpy import dot, logical_or, quantile, sort, zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components.objectives import ObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    ConventionalObjectiveClass)
 
 # %% Class definition
 
 
-class MinimumDVH(ObjectiveClass):
+class MinimumDVH(ConventionalObjectiveClass):
     """
     Minimum dose-volume histogram (Minimum DVH) objective class.
 

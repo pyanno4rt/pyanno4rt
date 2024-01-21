@@ -11,7 +11,7 @@ from shutil import copy
 
 # %% Internal package import
 
-from pyanno4rt.tools import apply, get_model_objectives
+from pyanno4rt.tools import apply, get_machine_learning_objectives
 
 # %% Function definition
 
@@ -125,7 +125,8 @@ def snapshot(instance, path, include_patient_data=False,
     model_data = (
         (objective.model.model_label, objective.model,
          objective.model_parameters['data_path'])
-        for objective in get_model_objectives(instance.datahub.segmentation))
+        for objective in get_machine_learning_objectives(
+                instance.datahub.segmentation))
 
     # Save the data for each model
     apply(save_model_data, model_data)

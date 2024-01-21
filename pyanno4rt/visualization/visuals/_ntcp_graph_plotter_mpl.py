@@ -12,8 +12,7 @@ from numpy import ceil, divide
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import (
-    get_objectives, get_objective_segments, sigmoid)
+from pyanno4rt.tools import get_all_objectives, get_objective_segments, sigmoid
 
 # %% Set options
 
@@ -70,11 +69,8 @@ class NTCPGraphPlotterMPL():
             # Determine the segment/objective pairs
             groups = tuple(group for group in tuple(zip(
                 get_objective_segments(segmentation),
-                get_objectives(segmentation)))
-                if (group[1].DEPENDS_ON_MODEL
-                    or group[1].name in ('Lyman-Kutcher-Burman NTCP',
-                                         'LQ Poisson TCP'))
-                and group[1].display)
+                get_all_objectives(segmentation)))
+                if group[1].RETURNS_OUTCOME and group[1].display)
 
             # Convert the pairs into an appropriate format
             groups = ((group[0], str([group[0]]), group[1].name,

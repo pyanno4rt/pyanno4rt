@@ -11,12 +11,13 @@ from numpy import array, zeros
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import RandomForestModel
-from pyanno4rt.optimization.components.objectives import ModelObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    MachineLearningObjectiveClass)
 
 # %% Class definition
 
 
-class RandomForestNTCP(ModelObjectiveClass):
+class RandomForestNTCP(MachineLearningObjectiveClass):
     """
     Random forest NTCP objective class.
 

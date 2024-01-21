@@ -10,12 +10,13 @@ from numpy import array, clip, zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components.objectives import ObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    ConventionalObjectiveClass)
 
 # %% Class definition
 
 
-class SquaredUnderdosing(ObjectiveClass):
+class SquaredUnderdosing(ConventionalObjectiveClass):
     """
     Squared underdosing objective class.
 

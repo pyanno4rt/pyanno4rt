@@ -1,4 +1,4 @@
-"""Model objective template."""
+"""Machine learning objective template."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -13,8 +13,8 @@ from pyanno4rt.datahub import Datahub
 # %% Class definition
 
 
-class ModelObjectiveClass(metaclass=ABCMeta):
-    """Model objective template class."""
+class MachineLearningObjectiveClass(metaclass=ABCMeta):
+    """Machine learning objective template class."""
 
     def __init__(
             self,
@@ -89,8 +89,9 @@ class ModelObjectiveClass(metaclass=ABCMeta):
         # Initialize the adjustment indicator
         self.adjusted_parameters = False
 
-        # Indicate the model dependency of the objective
-        self.DEPENDS_ON_MODEL = True
+        # Set the objective flags
+        self.RETURNS_OUTCOME = True
+        self.DEPENDS_ON_DATA = True
 
     def get_parameter_value(self):
         """

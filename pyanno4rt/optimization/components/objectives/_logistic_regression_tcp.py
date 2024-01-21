@@ -11,12 +11,13 @@ from numpy import array, dot
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import LogisticRegressionModel
-from pyanno4rt.optimization.components.objectives import ModelObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    MachineLearningObjectiveClass)
 
 # %% Class definition
 
 
-class LogisticRegressionTCP(ModelObjectiveClass):
+class LogisticRegressionTCP(MachineLearningObjectiveClass):
     """
     Logistic regression TCP objective class.
 

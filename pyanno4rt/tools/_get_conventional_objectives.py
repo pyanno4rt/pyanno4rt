@@ -1,4 +1,4 @@
-"""Model objectives return."""
+"""Conventional objectives return."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -9,9 +9,9 @@ from pyanno4rt.tools import flatten
 # %% Function definition
 
 
-def get_model_objectives(segmentation):
+def get_conventional_objectives(segmentation):
     """
-    Return a tuple with the user-assigned, model-dependent objectives.
+    Return a tuple with the user-assigned conventional objectives.
 
     Parameters
     ----------
@@ -21,7 +21,7 @@ def get_model_objectives(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with the user-assigned, model-dependent objectives.
+        Flattened tuple with the user-assigned conventional objectives.
     """
 
     return tuple(objective
@@ -29,4 +29,5 @@ def get_model_objectives(segmentation):
                          segmentation[segment]['objective']
                          for segment in segmentation
                          if segmentation[segment]['objective'])
-                 if objective.DEPENDS_ON_MODEL)
+                 if not objective.RETURNS_OUTCOME
+                 and not objective.DEPENDS_ON_DATA)

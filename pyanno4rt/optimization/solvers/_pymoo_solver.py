@@ -22,7 +22,9 @@ from pymoo.util.ref_dirs import get_reference_directions
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import get_objectives
+from pyanno4rt.tools import (get_conventional_objectives,
+                             get_machine_learning_objectives,
+                             get_radiobiology_objectives)
 
 # %% Class definition
 
@@ -104,10 +106,19 @@ class PymooSolver():
         hub.logger.display_info("Initializing Pymoo solver with {} ..."
                                 .format(algorithm))
 
+        # Get the objectives
+        cv_objectives = get_conventional_objectives(hub.segmentation)
+        ml_objectives = get_machine_learning_objectives(hub.segmentation)
+        rb_objectives = get_radiobiology_objectives(hub.segmentation)
+
+        # Get the number of objectives
+        number_of_objectives = sum(len(objectives) for objectives in (
+            cv_objectives, ml_objectives, rb_objectives))
+
         # Initialize the Pymoo problem instance
         self.problem = PymooProblem(
             number_of_variables=number_of_variables,
-            number_of_objectives=len(get_objectives(hub.segmentation)),
+            number_of_objectives=number_of_objectives,
             problem_instance=problem_instance,
             lower_variable_bounds=lower_variable_bounds,
             upper_variable_bounds=[1e12]*len(upper_variable_bounds))
@@ -120,8 +131,7 @@ class PymooSolver():
 
             # Get the reference directions
             reference_directions = get_reference_directions(
-                "energy", len(get_objectives(hub.segmentation)),
-                number_of_points, seed=1)
+                "energy", number_of_objectives, number_of_points, seed=1)
 
             # Initialize and evaluate the initial population
             initial_population = Population.new(

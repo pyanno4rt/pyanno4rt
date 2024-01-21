@@ -10,12 +10,13 @@ from numpy import array, zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components.objectives import ObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    ConventionalObjectiveClass)
 
 # %% Class definition
 
 
-class SquaredDeviation(ObjectiveClass):
+class SquaredDeviation(ConventionalObjectiveClass):
     """
     Squared deviation objective class.
 

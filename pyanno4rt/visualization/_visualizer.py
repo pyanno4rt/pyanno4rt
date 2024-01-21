@@ -13,7 +13,9 @@ from pyqtgraph.Qt import QtGui
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import get_model_objectives, get_objectives
+from pyanno4rt.tools import (get_conventional_objectives,
+                             get_machine_learning_objectives,
+                             get_radiobiology_objectives)
 from pyanno4rt.visualization.visuals import (
     CtDoseSlicingWindowPyQt, DosimetricsTablePlotterMPL, DVHGraphPlotterMPL,
     FeatureSelectWindowPyQt, IterGraphPlotterMPL, MetricsGraphsPlotterMPL,
@@ -187,19 +189,20 @@ class MainWindow(QMainWindow):
             if ((not hasattr(
                     hub.optimization['problem'], 'tracker')
                     or not any(
-                        objective.display for objective in objectives))
+                        objective.display for objective in (
+                            *cv_objectives, *ml_objectives, *rb_objectives)))
                     and subclass.name == 'iterations_plotter'):
                 button.setEnabled(False)
 
-            # Check if the NTCP values button should be disabled
+            # Check if the (N)TCP values button should be disabled
             if (not hasattr(hub.optimization['problem'], 'tracker')
                     and not (any(objective.name in (
-                        'Lyman-Kutcher-Burman NTCP', 'LQ Poisson TCP')
-                                 for objective in objectives)
+                        'LQ Poisson TCP', 'Lyman-Kutcher-Burman NTCP')
+                                 for objective in rb_objectives)
                              or any(objective.display
-                                    for objective in data_objectives)
+                                    for objective in ml_objectives)
                              or any(objective.display
-                                    for objective in objectives
+                                    for objective in rb_objectives
                                     if objective.name in (
                                             'Lyman-Kutcher-Burman-NTCP',
                                             'LQ Poisson TCP')))
@@ -208,7 +211,7 @@ class MainWindow(QMainWindow):
 
             # Check if the feature iterations button should be disabled
             if (all(objective.model_parameters['write_features'] is False
-                    for objective in data_objectives)
+                    for objective in ml_objectives)
                     and subclass.name == 'features_plotter'):
                 button.setEnabled(False)
 
@@ -368,9 +371,10 @@ class MainWindow(QMainWindow):
             text.setStyleSheet(label_styles[i])
             layouts[i].addWidget(text)
 
-        # Get all objectives and the data-dependent objectives
-        objectives = get_objectives(hub.segmentation)
-        data_objectives = get_model_objectives(hub.segmentation)
+        # Get all objectives
+        cv_objectives = get_conventional_objectives(hub.segmentation)
+        ml_objectives = get_machine_learning_objectives(hub.segmentation)
+        rb_objectives = get_radiobiology_objectives(hub.segmentation)
 
         # Initialize the counter
         counts = [0, 0, 0]

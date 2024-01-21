@@ -15,12 +15,13 @@ from pyanno4rt.learning_model.frequentist.additional_files import (
     linear_decision_function, rbf_decision_function, poly_decision_function,
     sigmoid_decision_function, linear_decision_gradient, rbf_decision_gradient,
     poly_decision_gradient, sigmoid_decision_gradient)
-from pyanno4rt.optimization.components.objectives import ModelObjectiveClass
+from pyanno4rt.optimization.components.objectives import (
+    MachineLearningObjectiveClass)
 
 # %% Class definition
 
 
-class SupportVectorMachineNTCP(ModelObjectiveClass):
+class SupportVectorMachineNTCP(MachineLearningObjectiveClass):
     """
     Support vector machine NTCP objective class.
 
