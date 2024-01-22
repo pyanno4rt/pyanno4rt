@@ -77,8 +77,8 @@ def generate_ct_from_mat(data, resolution):
 
     # Initialize the CT dictionary with a subset of the data items
     computed_tomography = {key: value for key, value in data.items()
-                           if key in ('cube', 'resolution', 'x', 'y',
-                                      'z', 'cubeDim')}
+                           if key in ('cube', 'resolution', 'x', 'y', 'z',
+                                      'cubeDim')}
 
     # Rename the cube dimensions key
     computed_tomography['cube_dimensions'] = (

@@ -123,8 +123,8 @@ class Datahub():
         args : tuple
             Tuple with optional (non-keyworded) datahub parameters. The value \
             ``args[0]`` refers to the label of the treatment plan, while \
-            ``args[1]`` represents an instance of `Logger` and ``args[2]`` an \
-            instance of `InputChecker`.
+            ``args[1]`` represents an instance of `InputChecker` and \
+            ``args[2]`` is an instance of `Logger`.
 
         Returns
         -------
@@ -182,11 +182,11 @@ class Datahub():
             self.label = args[0]
             Datahub.label = args[0]
 
-            # Set the logging object
-            self.logger = args[1]
-
             # Set the input checking object
-            self.input_checker = args[2]
+            self.input_checker = args[1]
+
+            # Set the logging object
+            self.logger = args[2]
 
             # Log a message about the initialization of the class
             self.logger.display_info("Initializing datahub ...")

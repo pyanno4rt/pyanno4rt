@@ -382,7 +382,7 @@ class FluenceOptimizer():
                                         if len(objective[0]) >= 1
                                         else objective[0]))
 
-            # Check if the objective depends on data
+            # Check if the objective depends on a machine learning model
             if objective[1].RETURNS_OUTCOME and objective[1].DEPENDS_ON_DATA:
 
                 # Add the outcome model to the objective
@@ -465,7 +465,7 @@ class FluenceOptimizer():
             # Get the overlapping indices
             overlapping_indices = [
                 segmentation[segment_B]['raw_indices']
-                for segment_B in (*segmentation,)
+                for segment_B in segmentation
                 if (segmentation[segment_B]['parameters']['priority']
                     < segmentation[segment_A]['parameters']['priority'])
                 and segment_B in segments]
@@ -478,7 +478,7 @@ class FluenceOptimizer():
                 segmentation[segment_A]['raw_indices'], removable_indices)
 
         # Loop over all segments
-        for segment in (*segmentation,):
+        for segment in segmentation:
 
             # Remove the overlaps by priority
             remove_single_segment_overlap(segment)
@@ -523,7 +523,7 @@ class FluenceOptimizer():
                 dose_information['cube_dimensions'], order='F')
 
         # Loop over all segments
-        for segment in (*segmentation,):
+        for segment in segmentation:
 
             # Resize the segment
             resize_single_segment(segment)

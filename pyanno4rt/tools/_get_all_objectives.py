@@ -24,8 +24,6 @@ def get_all_objectives(segmentation):
         Flattened tuple with the user-assigned objectives.
     """
 
-    return tuple(objective
-                 for objective in flatten(
-                         segmentation[segment]['objective']
-                         for segment in segmentation
-                         if segmentation[segment]['objective']))
+    return tuple(objective for objective in flatten(
+        segmentation[segment]['objective'] for segment in segmentation
+        if segmentation[segment]['objective']))

@@ -4,9 +4,9 @@
 
 # %% External package import
 
-from math import inf
 from numpy import floor, linspace, power, sort, unravel_index
 from scipy.interpolate import interp1d
+from statistics import mean
 
 # %% Internal package import
 
@@ -71,11 +71,9 @@ class Dosimetrics():
         self.reference_dose = sorted(reference_dose)
 
         # Get the (default) segments and metrics to display from the arguments
-        self.display_segments = (display_segments
-                                 if len(display_segments) > 0
-                                 else list(hub.segmentation.keys()))
-        self.display_metrics = (display_metrics
-                                if len(display_metrics) > 0
+        self.display_segments = (display_segments if len(display_segments) > 0
+                                 else list(hub.segmentation))
+        self.display_metrics = (display_metrics if len(display_metrics) > 0
                                 else ['mean', 'std', 'max', 'min', 'Dx', 'Vx',
                                       'CI', 'HI'])
 
@@ -88,7 +86,7 @@ class Dosimetrics():
         Parameters
         ----------
         dose_cube : ndarray
-            Three-dimensional array with the dose values (on the CT grid).
+            Three-dimensional array with the dose values (CT resolution).
         """
 
         # Initialize the datahub
@@ -105,7 +103,7 @@ class Dosimetrics():
                 floor(linspace(0, dose_cube.max(), 5)*10)/10)
 
         # Initialize the dosimetrics dictionary
-        dosimetrics = {segment: {} for segment in (*hub.segmentation,)}
+        dosimetrics = {segment: {} for segment in hub.segmentation}
 
         # Loop over the segments
         for segment in dosimetrics:
@@ -118,13 +116,12 @@ class Dosimetrics():
             # Get the length of the dose vector
             dose_length = len(dose)
 
-            # Check if dose values are present
+            # Check if any dose values are present
             if dose_length > 0:
 
                 # Initialize the linear dose interpolator
-                interpolator = interp1d(
-                    linspace(0, 1, dose_length), dose, kind='linear',
-                    fill_value='extrapolate')
+                interpolator = interp1d(linspace(0, 1, dose_length), dose,
+                                        'linear', fill_value='extrapolate')
 
                 # Compute the base statistics from the dose vector
                 dosimetrics[segment].update({
@@ -133,77 +130,64 @@ class Dosimetrics():
 
                 # Compute the dose quantiles from the reference volumes
                 dosimetrics[segment].update(
-                    {'_'.join(('Dx', str(value))):
-                     interpolator((100-value)*0.01)
+                    {'_'.join(('Dx', str(value))): interpolator(1-value/100)
                      for value in self.reference_volume})
 
                 # Compute the relative volumes from the reference doses
                 dosimetrics[segment].update(
                     {'_'.join(('Vx', str(value))):
-                     ((dose >= value).sum() / dose_length)
+                     ((dose >= value).sum()/dose_length)
                      for value in self.reference_dose})
 
-                # Check if the segment is a relevant target volume
-                if isinstance(hub.segmentation[segment]['objective'],
-                              (tuple, list)):
+                # Check if the segment is a target volume with objective
+                if (hub.segmentation[segment]['type'].lower() == 'target'
+                        and hub.segmentation[segment]['objective']):
 
-                    if not (hub.segmentation[segment]['type'].lower()
-                            == 'target'
-                            and hub.segmentation[segment]['objective']
-                            and any(objective.name in (
-                                'Squared Deviation', 'Squared Underdosing')
-                                for objective
-                                in hub.segmentation[segment]['objective'])):
+                    # Initialize the target dose
+                    target_dose = None
 
-                        # Set the target dose to infinity
-                        target_dose = inf
+                    # Get the target objective
+                    target_objective = hub.segmentation[segment]['objective']
 
-                    else:
+                    # Set the relevant objective names
+                    names = ('Squared Deviation', 'Squared Underdosing')
 
-                        for objective in hub.segmentation[segment]['objective']:
-                            if objective.name in ('Squared Deviation',
-                                                  'Squared Underdosing'):
+                    # Check if the objective is a tuple with relevant elements
+                    if (isinstance(target_objective, tuple)
+                            and any(objective.name in names
+                                    for objective in target_objective)):
 
-                                # Set the target dose to the parameter value
-                                target_dose = objective.get_parameter_value()[0]
+                        # Compute the target dose
+                        target_dose = mean(
+                            objective.get_parameter_value()[0]
+                            for objective in target_objective
+                            if objective.name in names)
 
-                else:
-
-                    if not (hub.segmentation[segment]['type'].lower()
-                            == 'target'
-                            and hub.segmentation[segment]['objective']
-                            and hub.segmentation[segment]['objective'].name
-                            in ('Squared Deviation', 'Squared Underdosing')):
-
-                        # Set the target dose to infinity
-                        target_dose = inf
-
-                    else:
+                    # Else, check if the objective is not a tuple but relevant
+                    elif (not isinstance(target_objective, tuple)
+                          and target_objective.name in names):
 
                         # Set the target dose to the parameter value
-                        target_dose = hub.segmentation[segment][
-                            'objective'].get_parameter_value()[0]
+                        target_dose = target_objective.get_parameter_value()[0]
 
-                # Check if the target dose is not equal to infinity
-                if target_dose != inf:
+                    # Check if the target dose has a value
+                    if target_dose:
 
-                    # Set the dose threshold
-                    threshold = 0.95*target_dose
+                        # Set the dose threshold
+                        threshold = 0.95*target_dose
 
-                    # Get the rounded threshold as a string
-                    string_value = str(round(target_dose*100)/100)
+                        # Get the rounded threshold as a string
+                        sub = str(round(target_dose*100)/100)
 
-                    # Add the CI values to the dosimetrics dictionary
-                    dosimetrics[segment][
-                        ''.join(('CI_', string_value, 'Gy'))] = (
+                        # Add the CI values to the dosimetrics dictionary
+                        dosimetrics[segment][''.join(('CI_', sub, 'Gy'))] = (
                             power((dose >= threshold).sum(), 2)
                             / (dose_length*(dose_cube >= threshold).sum()))
 
-                    # Add the HI values to the dosimetrics dictionary
-                    dosimetrics[segment][
-                        ''.join(('HI_', string_value, 'Gy'))] = (
-                             ((interpolator(0.95)-interpolator(0.05))
-                              / target_dose) * 100)
+                        # Add the HI values to the dosimetrics dictionary
+                        dosimetrics[segment][''.join(('HI_', sub, 'Gy'))] = (
+                            ((interpolator(0.95)-interpolator(0.05))
+                             / target_dose) * 100)
 
         # Add the segment and metric names to be displayed
         dosimetrics['display_segments'] = self.display_segments

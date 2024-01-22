@@ -36,7 +36,7 @@ def generate_segmentation_from_mat(data, ct_dict, resolution):
         """Interpolate the segmentation dictionary to the target resolution."""
 
         # Loop over the segments
-        for segment in (*segmentation,):
+        for segment in segmentation:
 
             # Initialize the segment mask
             mask = zeros(ct_dict['old_dimensions'])
@@ -56,7 +56,7 @@ def generate_segmentation_from_mat(data, ct_dict, resolution):
         return segmentation
 
     # Build a multi-layer tuple with the values for the dictionary
-    segment_values = ((
+    raw_segment_values = ((
         segment[1],
         (
             segment[0],
@@ -74,17 +74,16 @@ def generate_segmentation_from_mat(data, ct_dict, resolution):
          )) for segment in data)
 
     # Set the dictionary keys
-    segment_keys = ('index', 'type', 'raw_indices',
-                    'prioritized_indices', 'resized_indices',
-                    'parameters', 'objective', 'constraint')
+    segment_keys = ('index', 'type', 'raw_indices', 'prioritized_indices',
+                    'resized_indices', 'parameters', 'objective', 'constraint')
 
     # Merge the keys and the values into the segmentation dictionary
     segmentation = {segment_values[0]:
                     dict(zip(segment_keys, segment_values[1]))
-                    for segment_values in segment_values}
+                    for segment_values in raw_segment_values}
 
     # Check if interpolation should be performed
-    if all(key in (*ct_dict,) for key in ('old_dimensions', 'zooms')):
+    if all(key in ct_dict for key in ('old_dimensions', 'zooms')):
 
         # Return the interpolated segmentation dictionary
         return interpolate_segmentation_dictionary()

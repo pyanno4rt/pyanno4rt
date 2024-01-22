@@ -24,10 +24,7 @@ def get_conventional_objectives(segmentation):
         Flattened tuple with the user-assigned conventional objectives.
     """
 
-    return tuple(objective
-                 for objective in flatten(
-                         segmentation[segment]['objective']
-                         for segment in segmentation
-                         if segmentation[segment]['objective'])
-                 if not objective.RETURNS_OUTCOME
-                 and not objective.DEPENDS_ON_DATA)
+    return tuple(objective for objective in flatten(
+        segmentation[segment]['objective'] for segment in segmentation
+        if segmentation[segment]['objective'])
+        if not objective.RETURNS_OUTCOME and not objective.DEPENDS_ON_DATA)

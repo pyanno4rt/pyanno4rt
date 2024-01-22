@@ -36,7 +36,7 @@ def generate_segmentation_from_p(data, ct_dict, resolution):
         """Interpolate the segmentation dictionary to the target resolution."""
 
         # Loop over the segments
-        for segment in (*segmentation,):
+        for segment in segmentation:
 
             # Initialize the segment mask
             mask = zeros(ct_dict['old_dimensions'])
@@ -59,7 +59,7 @@ def generate_segmentation_from_p(data, ct_dict, resolution):
     segmentation = data
 
     # Check if interpolation should be performed
-    if all(key in (*ct_dict,) for key in ('old_dimensions', 'zooms')):
+    if all(key in ct_dict for key in ('old_dimensions', 'zooms')):
 
         # Return the interpolated segmentation dictionary
         return interpolate_segmentation_dictionary()

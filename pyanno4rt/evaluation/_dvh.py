@@ -59,9 +59,8 @@ class DVH():
         # Get the instance attributes from the arguments
         self.dvh_type = dvh_type
         self.number_of_points = number_of_points
-        self.display_segments = (display_segments
-                                 if len(display_segments) > 0
-                                 else list(hub.segmentation.keys()))
+        self.display_segments = (display_segments if len(display_segments) > 0
+                                 else list(hub.segmentation))
 
     def compute(
             self,
@@ -72,7 +71,7 @@ class DVH():
         Parameters
         ----------
         dose_cube : ndarray
-            Three-dimensional array with the dose values (on the CT grid).
+            Three-dimensional array with the dose values (CT resolution).
         """
 
         # Initialize the datahub
@@ -82,19 +81,6 @@ class DVH():
         hub.logger.display_info(f"Computing {self.dvh_type} DVH with "
                                 f"{self.number_of_points} points for all "
                                 "segments ...")
-
-        def get_evaluation_points():
-            """Get the points at which to evaluate the DVH."""
-
-            # Get the minimum and the maximum dose from the dose cube
-            min_dose, max_dose = dose_cube.min(), dose_cube.max()
-
-            # Map the DVH type to the dose intervals
-            bounds = {'cumulative': (0, 1.05*max_dose),
-                      'differential': (0.95*min_dose, 1.05*max_dose)}
-
-            return linspace(*bounds[self.dvh_type], self.number_of_points,
-                            endpoint=True)
 
         def compute_cumulative_dvh(dose, evaluation_points):
             """Compute the cumulative DVH points."""
@@ -112,6 +98,19 @@ class DVH():
                                           point + bin_radius > dose))
                           for point in evaluation_points])
 
+        def get_evaluation_points():
+            """Get the points at which to evaluate the DVH."""
+
+            # Get the minimum and the maximum dose from the dose cube
+            min_dose, max_dose = dose_cube.min(), dose_cube.max()
+
+            # Map the DVH type to the dose intervals
+            bounds = {'cumulative': (0, 1.05*max_dose),
+                      'differential': (0.95*min_dose, 1.05*max_dose)}
+
+            return linspace(*bounds[self.dvh_type], self.number_of_points,
+                            endpoint=True)
+
         def get_segment_dvh(indices, cube_dimensions, evaluation_points):
             """Get the DVH for a single segment."""
 
@@ -120,7 +119,7 @@ class DVH():
                 unravel_index(indices, cube_dimensions, order='F')]
 
             return 100*(dvh_functions[self.dvh_type](
-                segment_dose, evaluation_points) / len(indices))
+                segment_dose, evaluation_points)/len(indices))
 
         # Map the DVH type to the computation function
         dvh_functions = {'cumulative': compute_cumulative_dvh,
@@ -133,8 +132,7 @@ class DVH():
         histogram.update({segment: {'dvh_values': get_segment_dvh(
             hub.segmentation[segment]['raw_indices'],
             hub.computed_tomography['cube_dimensions'],
-            histogram['evaluation_points'])}
-            for segment in (*hub.segmentation,)})
+            histogram['evaluation_points'])} for segment in hub.segmentation})
 
         # Add the segment names to be displayed
         histogram['display_segments'] = self.display_segments

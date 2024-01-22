@@ -57,19 +57,19 @@ def snapshot(instance, path, include_patient_data=False,
         """Create the data files for a model."""
 
         # Build the path for the respective model folder
-        model_file_path = ''.join((snap_path, '/', data[0]))
+        model_path = ''.join((snap_path, '/', data[0]))
 
         # Check if the model folder does not yet exist
-        if not exists(model_file_path):
+        if not exists(model_path):
 
             # Create a new folder for the model files
-            mkdir(model_file_path)
+            mkdir(model_path)
 
         # Get the model object
         model = data[1]
 
         # Set the file path to the current location
-        model.set_file_paths(model_file_path)
+        model.set_file_paths(model_path)
 
         # Write the prediction model to a file
         model.write_model_to_file(model.prediction_model)
@@ -87,8 +87,7 @@ def snapshot(instance, path, include_patient_data=False,
             _, extension = splitext(data[2])
 
             # Copy the raw data set into a new file
-            copy(data[2],
-                 ''.join((model_file_path, '/', 'model_data', extension)))
+            copy(data[2], ''.join((model_path, '/', 'model_data', extension)))
 
     # Build the snapshot folder path
     snap_path = ''.join((path, '/', instance.configuration['label']))
@@ -121,15 +120,14 @@ def snapshot(instance, path, include_patient_data=False,
         # Print the stream value to the file
         print(stream_value, file=file)
 
-    # Get the learning model data
-    model_data = (
-        (objective.model.model_label, objective.model,
-         objective.model_parameters['data_path'])
-        for objective in get_machine_learning_objectives(
-                instance.datahub.segmentation))
+    # Get the machine learning model data
+    ml_model_data = ((objective.model.model_label, objective.model,
+                      objective.model_parameters['data_path'])
+                     for objective in get_machine_learning_objectives(
+                             instance.datahub.segmentation))
 
-    # Save the data for each model
-    apply(save_model_data, model_data)
+    # Save the data for each machine learning model
+    apply(save_model_data, ml_model_data)
 
     # Check if the patient data should be saved
     if include_patient_data:

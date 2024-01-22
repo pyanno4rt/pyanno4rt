@@ -26,10 +26,7 @@ def get_machine_learning_objectives(segmentation):
         objectives.
     """
 
-    return tuple(objective
-                 for objective in flatten(
-                         segmentation[segment]['objective']
-                         for segment in segmentation
-                         if segmentation[segment]['objective'])
-                 if objective.RETURNS_OUTCOME
-                 and objective.DEPENDS_ON_DATA)
+    return tuple(objective for objective in flatten(
+        segmentation[segment]['objective'] for segment in segmentation
+        if segmentation[segment]['objective'])
+        if objective.RETURNS_OUTCOME and objective.DEPENDS_ON_DATA)

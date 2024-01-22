@@ -385,7 +385,7 @@ class TreatmentPlan():
 
         # Initialize the datahub
         self.datahub = Datahub(
-            self.configuration['label'], self.logger, self.input_checker)
+            self.configuration['label'], self.input_checker, self.logger)
 
         # Initialize the patient loader
         self.patient_loader = PatientLoader(
@@ -475,8 +475,18 @@ class TreatmentPlan():
         # Compute the dosimetrics from the optimized dose
         self.dosimetrics.compute(self.datahub.optimization['optimized_dose'])
 
-    def visualize(self, parent=None):
-        """Initialize the visualization interface and launch it."""
+    def visualize(
+            self,
+            parent=None):
+        """
+        Initialize the visualization interface and launch it.
+
+        Parameters
+        ----------
+        parent : object of class `MainWindow`, default=None
+            Instance of the class `MainWindow`, which allows to set a parent \
+            window for the visualization interface.
+        """
 
         # Check if any required attribute is missing
         if all(getattr(self, attribute) is None for attribute in (
@@ -484,7 +494,7 @@ class TreatmentPlan():
 
             # Raise an error to indicate a missing attribute
             raise AttributeError(
-                "Please optimize and (optionally) evaluate the treatment plan \
+                "Please optimize (and optionally evaluate) the treatment plan \
                 before launching the visualization interface!")
 
         # Reset the treatment plan label in the datahub

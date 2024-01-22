@@ -98,7 +98,7 @@ class FluenceInitializer():
         dose_information = hub.dose_information
 
         # Get the target segments
-        segments = tuple(segment for segment in (*segmentation,)
+        segments = tuple(segment for segment in segmentation
                          if (segmentation[segment]['type'] == 'TARGET')
                          and (segmentation[segment]['objective']
                               or segmentation[segment]['constraint']))

@@ -43,8 +43,8 @@ def copycat(base_class, path):
             # Check if the component has model parameters
             # and if the model label is equal to the folder name
             if ('model_parameters' in component['parameters']
-                and component['parameters']['model_parameters'][
-                    'model_label'] == basename(inputs[0])):
+                    and component['parameters']['model_parameters'][
+                        'model_label'] == basename(inputs[0])):
 
                 # Overwrite the model folder path of the component
                 component['parameters']['model_parameters'][
@@ -86,14 +86,14 @@ def copycat(base_class, path):
     # Loop over the path files
     for filename in listdir(path):
 
-        # Check if the patient data file exists
+        # Check if the current file holds the patient data
         if 'patient_data' in filename:
 
             # Overwrite the imaging path
             input_parameters['configuration']['imaging_path'] = (
                 ''.join((path, '/', filename)))
 
-        # Check if the dose influence matrix file exists
+        # Check if the current file holds the dose influence matrix
         elif 'dose_influence_matrix' in filename:
 
             # Overwrite the dose path

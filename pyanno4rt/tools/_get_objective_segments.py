@@ -24,8 +24,8 @@ def get_objective_segments(segmentation):
         Flattened tuple with the segments associated with each objective.
     """
 
-    return tuple(flatten([segment]*len(segmentation[segment]['objective'])
-                         if isinstance(segmentation[segment]['objective'],
-                                       (tuple, list))
-                         else [segment] for segment in segmentation
-                         if segmentation[segment]['objective']))
+    return tuple(flatten(
+        [segment]*len(segmentation[segment]['objective'])
+        if isinstance(segmentation[segment]['objective'], (tuple, list))
+        else [segment] for segment in segmentation
+        if segmentation[segment]['objective']))

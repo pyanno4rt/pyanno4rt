@@ -118,8 +118,7 @@ def generate_segmentation_from_dcm(data, ct_data, ct_dict):
 
         # Get the segment indices
         segment_indices = ravel_multi_index(
-            where(segment_cube == 1),
-            ct_dict['cube_dimensions'], order='F')
+            where(segment_cube == 1), ct_dict['cube_dimensions'], order='F')
 
         return sort(segment_indices)
 
@@ -142,16 +141,14 @@ def generate_segmentation_from_dcm(data, ct_data, ct_dict):
 
         # Add the first-layer backbone to the dictionary
         segmentation[segment] = {
-            key: None
-            for key in ('index', 'type', 'raw_indices', 'prioritized_indices',
-                        'resized_indices', 'parameters', 'objective',
-                        'constraint')
-            }
+            key: None for key in ('index', 'type', 'raw_indices',
+                                  'prioritized_indices', 'resized_indices',
+                                  'parameters', 'objective', 'constraint')}
 
         # Add the second-layer backbone to the dictionary
         segmentation[segment]['parameters'] = {
-            key: None
-            for key in ('priority', 'alphaX', 'betaX', 'visibleColor')}
+            key: None for key in ('priority', 'alphaX', 'betaX',
+                                  'visibleColor')}
 
         # Add the segment index to the dictionary
         segmentation[segment]['index'] = int(roi_contour.ReferencedROINumber)-1
