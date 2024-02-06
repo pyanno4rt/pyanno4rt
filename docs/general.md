@@ -59,7 +59,6 @@
 					<li> Interior-point algorithms provided by COIN-OR, wrapped by cyipopt </li> 
 					<li> Proximal algorithms provided by Proxmin </li>
 					<li> Multi-objective algorithms provided by Pymoo </li>
-					<li> Population-based algorithms provided by PyPop7 </li>
 					<li> Local algorithms provided by SciPy </li>
 				</ul>
 				<br> 

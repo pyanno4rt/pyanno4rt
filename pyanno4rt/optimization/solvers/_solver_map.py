@@ -5,7 +5,7 @@
 # %% Internal package import
 
 from pyanno4rt.optimization.solvers import (
-    IpoptSolver, ProxminSolver, PymooSolver, Pypop7Solver, SciPySolver)
+    IpoptSolver, ProxminSolver, PymooSolver, SciPySolver)
 
 # %% Map definition
 
@@ -13,5 +13,4 @@ from pyanno4rt.optimization.solvers import (
 solver_map = {'ipopt': IpoptSolver,
               'proxmin': ProxminSolver,
               'pymoo': PymooSolver,
-              'pypop7': Pypop7Solver,
               'scipy': SciPySolver}

@@ -79,7 +79,6 @@
 					<li> Interior-point algorithms provided by COIN-OR, wrapped by cyipopt </li> 
 					<li> Proximal algorithms provided by Proxmin </li>
 					<li> Multi-objective algorithms provided by Pymoo </li>
-					<li> Population-based algorithms provided by PyPop7 </li>
 					<li> Local algorithms provided by SciPy </li>
 				</ul>
 				<br> 
@@ -89,7 +88,7 @@
 		<ul> 
 			<li> Dataset import and preprocessing </li>
 			<li> Automatic feature map generation </li>
-			<li> 27-type feature catalog for iterative (re)calculation to support model integration into optimization </li>
+			<li> 27-type feature catalogue for iterative (re)calculation to support model integration into optimization </li>
 			<li> 3 highly customizable internal model classes for logistic regression, neural network and support vector machine </li>
 				<br>
 				<ul> 
@@ -172,27 +171,26 @@ from pyanno4rt.gui import GraphicalUserInterface
 <ul>
 	<li> python (>=3.10, <3.12)
 	<li> proxmin (>=0.6.12) </li>
-	<li> absl-py (>=2.0.0) </li>
+	<li> absl-py (>=2.1.0) </li>
 	<li> pydicom (>=2.4.4) </li>
 	<li> scikit-image (>=0.22.0) </li>
 	<li> h5py (>=3.10.0) </li>
-	<li> pandas (>=2.1.4) </li>
+	<li> pandas (>=2.2.0) </li>
 	<li> fuzzywuzzy (>=0.18.0) </li>
 	<li> jax (>=0.4.23) </li>
 	<li> jaxlib (>=0.4.23) </li>
-	<li> numba (>=0.58.1) </li>
-	<li> python-levenshtein (>=0.23.0) </li>
-	<li> scikit-learn (>=1.3.2) </li>
+	<li> numba (>=0.59.0) </li>
+	<li> python-levenshtein (>=0.24.0) </li>
+	<li> scikit-learn (>=1.4.0) </li>
 	<li> tensorflow-io-gcs-filesystem (==0.34.0) </li>
 	<li> tensorflow (==2.14.0) </li>
 	<li> hyperopt (>=0.2.7) </li>
-	<li> xgboost (>=2.0.3) </li>
-	<li> pypop7 (>=0.0.78) </li>
 	<li> pymoo (>=0.6.1.1) </li>
 	<li> pyqt5-qt5 (==5.15.2) </li>
 	<li> pyqt5 (==5.15.10) </li>
 	<li> pyqtgraph (>=0.13.3) </li>
-	<li> ipython (>=8.20.0) </li>
+	<li> ipython (>=8.21.0) </li>
+	<li> seaborn (>=0.13.2) </li>
 </ul>
 We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default and fallback if IPOPT is not available to import. IPOPT is the only (optional) third-party dependency (you can find the respective tarballs and instructions for installation under pyanno4rt/optimization/solvers). <br><br>
 
@@ -212,7 +210,12 @@ We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for develop
 
 pyanno4rt is open for new contributors of all experience levels. Please get in contact with us (see "Help and support") to discuss the format of your contribution.
 
-Note: the 'docs' folder includes example files with CT, segmentation and dose-influence matrix data for an example head-and-neck patient, which can be used for development. The example files are stored with Git Large File Storage (LFS), which you need to install before checking out the source code to be able to access them. <br><br>
+Note: the 'docs' folder includes example files with CT, segmentation and dose-influence matrix data for an example head-and-neck patient from the CORT dataset<sup>1</sup>, which can be used for development. The example files are stored with Git Large File Storage (LFS), which you need to install before checking out the source code to be able to access them. <br><br>
+
+<sub>
+<sup>1</sup>D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". <i>GigaScience</i> 3.1 (2014).
+</sub>
+<br><br>
 
 # Help and support
 
@@ -230,10 +233,10 @@ Note: the 'docs' folder includes example files with CT, segmentation and dose-in
 To cite this repository:
 
 ```
-@software{pyanno4rt2024,
-  author = {Tim Ortkamp},
+@misc{pyanno4rt2024,
+  author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},
   title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
-  url = {https://github.com/pyanno4rt/pyanno4rt},
-  year = {2024},
+  howpublished = {\url{http://github.com/pyanno4rt/pyanno4rt}},
+  year = {2024}
 }
 ```

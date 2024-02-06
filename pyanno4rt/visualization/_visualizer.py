@@ -185,27 +185,21 @@ class MainWindow(QMainWindow):
             # Connect the buttons with the onclick events
             button.clicked.connect(getattr(self, subclass.name).view)
 
+            # Check if the iteration plot buttons should be disabled
+            if not hasattr(hub.optimization['problem'], 'tracker'):
+                button.setEnabled(False)
+
             # Check if the iteration values button should be disabled
-            if ((not hasattr(
-                    hub.optimization['problem'], 'tracker')
-                    or not any(
-                        objective.display for objective in (
-                            *cv_objectives, *ml_objectives, *rb_objectives)))
+            if (not any(objective.display for objective in (
+                    *cv_objectives, *ml_objectives, *rb_objectives))
                     and subclass.name == 'iterations_plotter'):
                 button.setEnabled(False)
 
             # Check if the (N)TCP values button should be disabled
-            if (not hasattr(hub.optimization['problem'], 'tracker')
-                    and not (any(objective.name in (
-                        'LQ Poisson TCP', 'Lyman-Kutcher-Burman NTCP')
-                                 for objective in rb_objectives)
-                             or any(objective.display
-                                    for objective in ml_objectives)
-                             or any(objective.display
-                                    for objective in rb_objectives
-                                    if objective.name in (
-                                            'Lyman-Kutcher-Burman-NTCP',
-                                            'LQ Poisson TCP')))
+            if (not (any(objective.display for objective in ml_objectives)
+                     or any(objective.display for objective in rb_objectives
+                            if objective.name in ('Lyman-Kutcher-Burman-NTCP',
+                                                  'LQ Poisson TCP')))
                     and subclass.name == 'ntcp_plotter'):
                 button.setEnabled(False)
 

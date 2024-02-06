@@ -25,16 +25,14 @@ optimization_map = {
             partial(check_key_in_dict, key_choices=('class', 'parameters')),
             partial(check_value_in_set, options=(
                 'Decision Tree NTCP', 'Dose Uniformity',
-                'Equivalent Uniform Dose',
-                'Extreme Gradient Boosting NTCP',
-                'K-Nearest Neighbors NTCP', 'Logistic Regression NTCP',
-                'Logistic Regression TCP', 'Lyman-Kutcher-Burman NTCP',
-                'LQ Poisson TCP', 'Maximum DVH', 'Mean Dose', 'Minimum DVH',
-                'Moments', 'Naive Bayes NTCP', 'Neural Network NTCP',
-                'Neural Network TCP', 'Random Forest NTCP',
-                'Squared Deviation', 'Squared Overdosing',
-                'Squared Underdosing', 'Support Vector Machine NTCP',
-                'Support Vector Machine TCP')),
+                'Equivalent Uniform Dose', 'K-Nearest Neighbors NTCP',
+                'Logistic Regression NTCP', 'Logistic Regression TCP',
+                'Lyman-Kutcher-Burman NTCP', 'LQ Poisson TCP', 'Maximum DVH',
+                'Mean Dose', 'Minimum DVH', 'Moments', 'Naive Bayes NTCP',
+                'Neural Network NTCP', 'Neural Network TCP',
+                'Random Forest NTCP', 'Squared Deviation',
+                'Squared Overdosing', 'Squared Underdosing',
+                'Support Vector Machine NTCP', 'Support Vector Machine TCP')),
             partial(check_type, key_type=dict),
             partial(check_subtype, key_type=dict)
             ))
@@ -47,7 +45,7 @@ optimization_map = {
         partial(check_type, key_type=str),
         partial(check_value_in_set, options={
             'pareto': ('pymoo',),
-            'weighted-sum': ('ipopt', 'proxmin', 'pypop7', 'scipy')})
+            'weighted-sum': ('ipopt', 'proxmin', 'scipy')})
         ),
     'algorithm': (
         partial(check_type, key_type=str),
@@ -55,7 +53,6 @@ optimization_map = {
             'ipopt': ('ma27', 'ma57', 'ma77', 'ma86'),
             'proxmin': ('admm', 'pgm', 'sdmm'),
             'pymoo': ('NSGA3',),
-            'pypop7': ('MMES', 'LMCMA', 'RMES', 'BES', 'GS'),
             'scipy': ('L-BFGS-B', 'TNC', 'trust-constr')})
         ),
     'initial_strategy': (

@@ -140,7 +140,7 @@ class TreatmentPlan():
 
         - ``method`` : {'lexicographic', 'pareto', 'weighted-sum'}, default = \
             'weighted-sum', single- or multi-criteria optimization method;
-        - ``solver`` : {'ipopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}, \
+        - ``solver`` : {'ipopt', 'proxmin', 'pymoo', 'scipy'}, \
             default = 'scipy', python package to be used for solving the \
             optimization problem;
 
@@ -156,8 +156,6 @@ class TreatmentPlan():
             - ``solver`` = 'proxmin' : {'admm', 'pgm', 'sdmm'}, default = \
                 'pgm';
             - ``solver`` = 'pymoo' : {'NSGA3'}, default = 'NSGA3';
-            - ``solver`` = 'pypop7' : {'MMES', 'LMCMA', 'RMES', 'BES', 'GS'}, \
-                default = 'LMCMA';
             - ``solver`` = 'scipy' : {'L-BFGS-B', 'TNC', 'trust-constr'}, \
                 default = 'L-BFGS-B'.
 
@@ -336,7 +334,6 @@ class TreatmentPlan():
                 'ma57' if optimization.get('solver') == 'ipopt'
                 else 'pgm' if optimization.get('solver') == 'proxmin'
                 else 'NSGA3' if optimization.get('solver') == 'pymoo'
-                else 'LMCMA' if optimization.get('solver') == 'pypop7'
                 else 'L-BFGS-B'),
             'initial_strategy': optimization.get(
                 'initial_strategy', 'target-coverage'),

@@ -125,12 +125,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             getattr(self.settings_window, box).installEventFilter(
                 self.settings_window)
 
-        # Check if an initial treatment plan has been specified
-        if treatment_plan:
-
-            # Set the initial treatment plan
-            self.set_initial_plan(treatment_plan)
-
         # Disable some fields initially
         self.set_disabled((
             'save_pbutton', 'drop_pbutton', 'update_configuration_pbutton',
@@ -204,6 +198,12 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Connect the event signals
         self.connect_signals()
+
+        # Check if an initial treatment plan has been specified
+        if treatment_plan:
+
+            # Set the initial treatment plan
+            self.set_initial_plan(treatment_plan)
 
         # Set the initial window size
         self.resize(1920, 1080)
@@ -746,11 +746,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                     self.dvh_widget.update_dvh()
 
             # Check if the selected plan includes data models
-            if instance.datahub and all((instance.datahub.datasets,
-                                         instance.datahub.feature_maps,
-                                         instance.datahub.model_instances,
-                                         instance.datahub.model_inspections,
-                                         instance.datahub.model_evaluations)):
+            if instance.datahub and any(unit is not None for unit in (
+                    instance.datahub.datasets, instance.datahub.feature_maps,
+                    instance.datahub.model_instances,
+                    instance.datahub.model_inspections,
+                    instance.datahub.model_evaluations)):
 
                 # Enable the model data and feature maps tool button
                 self.set_enabled((
@@ -957,11 +957,11 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_enabled(('evaluate_pbutton', 'visualize_pbutton'))
 
         # Check if the selected plan includes data models
-        if instance.datahub and all((instance.datahub.datasets,
-                                     instance.datahub.feature_maps,
-                                     instance.datahub.model_instances,
-                                     instance.datahub.model_inspections,
-                                     instance.datahub.model_evaluations)):
+        if instance.datahub and any(unit is not None for unit in (
+                instance.datahub.datasets, instance.datahub.feature_maps,
+                instance.datahub.model_instances,
+                instance.datahub.model_inspections,
+                instance.datahub.model_evaluations)):
 
             # Enable the model data and feature maps tool button
             self.set_enabled(('show_model_data_tbutton', 'show_fmap_tbutton'))
@@ -2050,7 +2050,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         else:
 
             # Add the solver options to the combo box
-            self.solver_cbox.addItems(['ipopt', 'proxmin', 'pypop7', 'scipy'])
+            self.solver_cbox.addItems(['ipopt', 'proxmin', 'scipy'])
 
             # Set the default solver option
             self.solver_cbox.setCurrentText('scipy')
@@ -2087,16 +2087,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Set the default algorithm option
             self.algorithm_cbox.setCurrentText('NSGA-3')
-
-        # Else, check if the solver is 'pypop7'
-        elif self.solver_cbox.currentText() == 'pypop7':
-
-            # Add the algorithm options to the combo box
-            self.algorithm_cbox.addItems(
-                ['MMES', 'LMCMA', 'RMES', 'BES', 'GS'])
-
-            # Set the default algorithm option
-            self.algorithm_cbox.setCurrentText('LMCMA')
 
         # Else, check if the solver is 'scipy'
         elif self.solver_cbox.currentText() == 'scipy':

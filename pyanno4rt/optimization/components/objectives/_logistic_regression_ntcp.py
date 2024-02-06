@@ -302,5 +302,5 @@ class LogisticRegressionNTCP(MachineLearningObjectiveClass):
 
         # Get the feature gradient from the feature definitions
         feature_gradient = feature_calculator.gradientize(args[0], args[1])
-
+        
         return (model_gradient * preprocessing_gradient) @ feature_gradient

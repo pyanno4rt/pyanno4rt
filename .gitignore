@@ -1,7 +1,11 @@
 # Ignore local files
 launcher.sh
-script.py
 demo.ipynb
+tp_conv.py
+tp_dcm.py
+tp_ml.py
+tp_ml_only.py
+tp_rb.py
 
 # Ignore local folders
 external/

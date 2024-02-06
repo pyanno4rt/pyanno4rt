@@ -2158,7 +2158,7 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="iconSize">
            <size>
@@ -3576,7 +3576,7 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>0</y>
+                 <y>-450</y>
                  <width>418</width>
                  <height>1138</height>
                 </rect>
@@ -4122,10 +4122,10 @@ border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="currentText">
-                       <string>scipy</string>
+                       <string>ipopt</string>
                       </property>
                       <property name="currentIndex">
-                       <number>4</number>
+                       <number>0</number>
                       </property>
                       <item>
                        <property name="text">
@@ -4140,11 +4140,6 @@ border-color: rgb(186, 189, 182);</string>
                       <item>
                        <property name="text">
                         <string>pymoo</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>pypop7</string>
                        </property>
                       </item>
                       <item>
@@ -5592,7 +5587,7 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>369</width>
+                 <width>368</width>
                  <height>796</height>
                 </rect>
                </property>

@@ -40,26 +40,25 @@ from pyanno4rt.gui import GraphicalUserInterface
 <ul>
 	<li> python (>=3.10, <3.12)
 	<li> proxmin (>=0.6.12) </li>
-	<li> absl-py (>=2.0.0) </li>
+	<li> absl-py (>=2.1.0) </li>
 	<li> pydicom (>=2.4.4) </li>
 	<li> scikit-image (>=0.22.0) </li>
 	<li> h5py (>=3.10.0) </li>
-	<li> pandas (>=2.1.4) </li>
+	<li> pandas (>=2.2.0) </li>
 	<li> fuzzywuzzy (>=0.18.0) </li>
 	<li> jax (>=0.4.23) </li>
 	<li> jaxlib (>=0.4.23) </li>
-	<li> numba (>=0.58.1) </li>
-	<li> python-levenshtein (>=0.23.0) </li>
-	<li> scikit-learn (>=1.3.2) </li>
+	<li> numba (>=0.59.0) </li>
+	<li> python-levenshtein (>=0.24.0) </li>
+	<li> scikit-learn (>=1.4.0) </li>
 	<li> tensorflow-io-gcs-filesystem (==0.34.0) </li>
 	<li> tensorflow (==2.14.0) </li>
 	<li> hyperopt (>=0.2.7) </li>
-	<li> xgboost (>=2.0.3) </li>
-	<li> pypop7 (>=0.0.78) </li>
 	<li> pymoo (>=0.6.1.1) </li>
 	<li> pyqt5-qt5 (==5.15.2) </li>
 	<li> pyqt5 (==5.15.10) </li>
 	<li> pyqtgraph (>=0.13.3) </li>
-	<li> ipython (>=8.20.0) </li>
+	<li> ipython (>=8.21.0) </li>
+	<li> seaborn (>=0.13.2) </li>
 </ul>
 We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default and fallback if IPOPT is not available to import. IPOPT is the only (optional) third-party dependency (you can find the respective tarballs and instructions for installation under pyanno4rt/optimization/solvers). <br><br>

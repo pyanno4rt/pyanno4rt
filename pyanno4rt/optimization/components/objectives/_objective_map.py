@@ -5,12 +5,12 @@
 # %% Internal package import
 
 from pyanno4rt.optimization.components.objectives import (
-    DecisionTreeNTCP, DoseUniformity, EquivalentUniformDose,
-    ExtremeGradientBoostingNTCP, KNeighborsNTCP, LogisticRegressionNTCP,
-    LogisticRegressionTCP, LQPoissonTCP, LymanKutcherBurmanNTCP, MaximumDVH,
-    MeanDose, MinimumDVH, Moments, NaiveBayesNTCP, NeuralNetworkNTCP,
-    NeuralNetworkTCP, RandomForestNTCP, SquaredDeviation, SquaredOverdosing,
-    SquaredUnderdosing, SupportVectorMachineNTCP, SupportVectorMachineTCP)
+    DecisionTreeNTCP, DoseUniformity, EquivalentUniformDose, KNeighborsNTCP,
+    LogisticRegressionNTCP, LogisticRegressionTCP, LQPoissonTCP,
+    LymanKutcherBurmanNTCP, MaximumDVH, MeanDose, MinimumDVH, Moments,
+    NaiveBayesNTCP, NeuralNetworkNTCP, NeuralNetworkTCP, RandomForestNTCP,
+    SquaredDeviation, SquaredOverdosing, SquaredUnderdosing,
+    SupportVectorMachineNTCP, SupportVectorMachineTCP)
 
 # %% Map definition
 
@@ -18,8 +18,6 @@ from pyanno4rt.optimization.components.objectives import (
 objective_map = {'Decision Tree NTCP': DecisionTreeNTCP,
                  'Dose Uniformity': DoseUniformity,
                  'Equivalent Uniform Dose': EquivalentUniformDose,
-                 'Extreme Gradient Boosting NTCP': (
-                     ExtremeGradientBoostingNTCP),
                  'K-Nearest Neighbors NTCP': KNeighborsNTCP,
                  'Logistic Regression NTCP': LogisticRegressionNTCP,
                  'Logistic Regression TCP': LogisticRegressionTCP,
