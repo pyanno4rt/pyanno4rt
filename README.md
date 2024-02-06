@@ -30,6 +30,7 @@
 			<li> Python files (.npy, .p) </li>
 		</ul>
 	</li>
+	<br>
 	<li> <b>Individual configuration and management of treatment plan instances</b>
 		<br>
 		<ul> 
@@ -39,6 +40,7 @@
 			<li> Snapshot/copycat functionality for storage and retrieval </li>
 		</ul>
 	</li>
+	<br>
 	<li> <b>Fluence vector initialization strategies</b>
 		<br>
 		<ul> 
@@ -47,6 +49,7 @@
 			<li> Warm start initialization </li>
 		</ul>
 	</li>
+	<br>
 	<li> <b>Multi-objective treatment plan optimization</b>
 		<br>
 		<ul>
@@ -79,6 +82,7 @@
 			</li>
 		</ul>
 	</li>
+	<br>
 	<li> <b>Data-driven outcome prediction model handling</b>
 		<br>
 		<ul> 
@@ -95,6 +99,7 @@
 			<li> External model loading via user-definable model folder paths </li>
 		</ul>
 	</li>
+	<br>
 	<li> <b>Evaluation tools</b>
 		<br>
 		<ul>
@@ -102,6 +107,7 @@
 			<li> Dose statistics and clinical quality measures </li>
 		</ul>
 	</li>
+	<br>
 	<li> <b>Graphical user interface</b>
 		<br>
 		<ul>
