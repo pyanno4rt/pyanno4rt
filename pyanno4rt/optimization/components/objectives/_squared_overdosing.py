@@ -5,8 +5,7 @@
 # %% External package import
 
 from numba import njit
-from numba.typed import List
-from numpy import array, clip, zeros
+from numpy import clip, concatenate, zeros
 
 # %% Internal package import
 
@@ -92,7 +91,7 @@ class SquaredOverdosing(ConventionalObjectiveClass):
                          identifier=identifier,
                          display=display)
 
-        # Get the individual parameter value from the arguments
+        # Get the individual parameter value
         self.parameter_value = [float(maximum_dose)]
 
     def compute_objective_value(
@@ -134,10 +133,13 @@ class SquaredOverdosing(ConventionalObjectiveClass):
         # Initialize the datahub
         hub = Datahub()
 
+        # Get the segment indices
+        segment_indices = tuple(hub.segmentation[args[1][i]]['resized_indices']
+                                for i, _ in enumerate(args[0]))
+
         return differentiate(args[0], self.parameter_value,
                              hub.dose_information['number_of_voxels'],
-                             [hub.segmentation[args[1][i]]['resized_indices']
-                              for i, _ in enumerate(args[0])])
+                             segment_indices)
 
 
 @njit
@@ -165,16 +167,14 @@ def compute(
     This computation function has been outsourced to make it jittable. Called \
     by ``compute_objective_value(*args)``.
     """
+
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
+
     # Center the dose values with the maximum dose and clip values below zero
-    overdose = [clip(dos - parameter_value[0] if len(parameter_value) == 1
-                     else dos - array(parameter_value), a_min=0, a_max=None)
-                for dos in dose]
+    overdose = clip(full_dose - parameter_value[0], a_min=0, a_max=None)
 
-    # Get the total length of the dose vector(s)
-    dose_length = sum([len(dos) for dos in dose])
-
-    return ((1/dose_length) * sum([overdose[i] @ overdose[i]
-                                   for i, _ in enumerate(dose)]))
+    return (1/len(full_dose)) * (overdose @ overdose)
 
 
 @njit
@@ -210,19 +210,20 @@ def differentiate(
     This differentiation function has been outsourced to make it jittable. \
     Called by ``compute_gradient_value(*args)``.
     """
+
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
+
+    # Concatenate the segment index arrays
+    full_indices = concatenate(segment_indices)
+
+    # Center the dose values with the minimum dose and clip values above zero
+    overdose = clip(full_dose - parameter_value[0], a_min=0, a_max=None)
+
     # Initialize the objective gradient
     objective_gradient = zeros((number_of_voxels,))
 
-    # Center the dose values with the maximum dose and clip values below zero
-    overdose = [clip(dos - parameter_value[0] if len(parameter_value) == 1
-                     else dos - array(parameter_value), a_min=0, a_max=None)
-                for dos in dose]
-
-    # Compute the segment-wise subgradient
-    gradient = [2 / len(dose[i]) * overdose[i] for i, _ in enumerate(dose)]
-
-    # Add the subgradients to the objective gradient
-    for i, _ in enumerate(segment_indices):
-        objective_gradient[segment_indices[i]] = gradient[i].reshape(-1)
+    # Compute the objective gradient
+    objective_gradient[full_indices] = (2*overdose/len(overdose)).reshape(-1)
 
     return objective_gradient

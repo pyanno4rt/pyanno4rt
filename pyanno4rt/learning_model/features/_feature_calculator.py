@@ -444,7 +444,7 @@ class FeatureCalculator():
             compute_feature_gradient, (*self.feature_map,))
 
         # Build the gradient matrix by vertically stacking the gradient vectors
-        gradient_matrix = svstack(gradients)
+        gradient_matrix = svstack(tuple(gradients))
 
         # Check if the gradient history should be written
         if self.write_gradients:

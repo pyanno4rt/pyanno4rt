@@ -128,6 +128,7 @@
 		</ul>
 	</li>
 </ul>
+<br>
 
 # Installation
 

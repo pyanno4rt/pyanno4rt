@@ -5,7 +5,7 @@
 # %% External package import
 
 from numba import njit
-from numpy import dot, logical_or, quantile, sort, zeros
+from numpy import concatenate, logical_or, quantile, sort, zeros
 
 # %% Internal package import
 
@@ -116,15 +116,16 @@ class MinimumDVH(ConventionalObjectiveClass):
         float
             Value of the objective function.
         """
-        # Get the parameter term
-        min_volume = self.parameter_value[1]
+
+        # Concatenate the dose arrays
+        full_dose = concatenate(args[0])
 
         # Compute the dose quantile
-        dose_quantile = [quantile(
-            dose_sorted, min_volume, interpolation='lower')
-            for dose_sorted in [sort(dose)[::-1] for dose in args[0]]]
+        dose_quantile = quantile(sort(full_dose)[::-1],
+                                 self.parameter_value[1],
+                                 interpolation='lower')
 
-        return compute(args[0], self.parameter_value, dose_quantile)
+        return compute(full_dose, self.parameter_value, dose_quantile)
 
     def compute_gradient_value(
             self,
@@ -143,21 +144,25 @@ class MinimumDVH(ConventionalObjectiveClass):
         ndarray
             Value of the gradient vector.
         """
+
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the parameter term
-        min_volume = self.parameter_value[1]
+        # Concatenate the dose arrays
+        full_dose = concatenate(args[0])
 
         # Compute the dose quantile
-        dose_quantile = [quantile(
-            dose_sorted, min_volume, interpolation='lower')
-            for dose_sorted in [sort(dose)[::-1] for dose in args[0]]]
+        dose_quantile = quantile(sort(full_dose)[::-1],
+                                 self.parameter_value[1],
+                                 interpolation='lower')
 
-        return differentiate(args[0], self.parameter_value, dose_quantile,
+        # Get the segment indices
+        segment_indices = tuple(hub.segmentation[args[1][i]]['resized_indices']
+                                for i, _ in enumerate(args[0]))
+
+        return differentiate(full_dose, self.parameter_value, dose_quantile,
                              hub.dose_information['number_of_voxels'],
-                             [hub.segmentation[args[1][i]]['resized_indices']
-                              for i, _ in enumerate(args[0])])
+                             segment_indices)
 
 
 @njit
@@ -189,23 +194,17 @@ def compute(
     This computation function has been outsourced to make it jittable. Called \
     by ``compute_objective_value(*args)``.
     """
-    # Get the parameter term
-    reference_dose = parameter_value[0]
 
     # Center the dose values with the reference dose
-    deviation = [dos - reference_dose for dos in dose]
+    deviation = dose - parameter_value[0]
 
     # Generate a boolean mask to filter dose values
-    condition = [logical_or(dose[i] > reference_dose,
-                            dose[i] < dose_quantile[i])
-                 for i, _ in enumerate(dose)]
+    condition = logical_or(dose > parameter_value[0], dose < dose_quantile)
 
     # Set all elements to zero for which the filter holds true
-    for i, _ in enumerate(dose):
-        deviation[i][condition[i]] = 0
+    deviation[condition] = 0
 
-    return (sum([(1/len(dose[i])) * dot(deviation[i], deviation[i])
-                for i, _ in enumerate(dose)]))
+    return (1/len(dose)) * (deviation @ deviation)
 
 
 @njit
@@ -245,29 +244,26 @@ def differentiate(
     This differentiation function has been outsourced to make it jittable. \
     Called by ``compute_gradient_value(*args)``.
     """
-    # Get the parameter term
-    reference_dose = parameter_value[0]
-
-    # Center the dose values with the reference dose
-    deviation = [dos - reference_dose for dos in dose]
-
-    # Generate a boolean mask to filter dose values
-    condition = [logical_or(dose[i] > reference_dose,
-                            dose[i] < dose_quantile[i])
-                 for i, _ in enumerate(dose)]
-
-    # Set all elements to zero for which the filter holds true
-    for i, _ in enumerate(dose):
-        deviation[i][condition[i]] = 0
 
     # Initialize the objective gradient
     objective_gradient = zeros((number_of_voxels,))
 
-    # Compute the segment-wise subgradient
-    gradient = [(2/len(dose[i])) * deviation[i] for i, _ in enumerate(dose)]
+    # Concatenate the segment index arrays
+    full_indices = concatenate(segment_indices)
 
-    # Add the subgradients to the objective gradient
-    for i, _ in enumerate(segment_indices):
-        objective_gradient[segment_indices[i]] = gradient[i].reshape(-1)
+    # Get the parameter term
+    reference_dose = parameter_value[0]
+
+    # Center the dose values with the reference dose
+    deviation = dose - reference_dose
+
+    # Generate a boolean mask to filter dose values
+    condition = logical_or(dose > reference_dose, dose < dose_quantile)
+
+    # Set all elements to zero for which the filter holds true
+    deviation[condition] = 0
+
+    # Compute the gradient
+    objective_gradient[full_indices] = (2*deviation/len(dose)).reshape(-1)
 
     return objective_gradient

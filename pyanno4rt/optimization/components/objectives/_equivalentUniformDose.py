@@ -5,7 +5,7 @@
 # %% External package import
 
 from numba import njit
-from numpy import clip, power, zeros
+from numpy import clip, concatenate, zeros
 
 # %% Internal package import
 
@@ -137,10 +137,13 @@ class EquivalentUniformDose(ConventionalObjectiveClass):
         # Initialize the datahub
         hub = Datahub()
 
+        # Get the segment indices
+        segment_indices = tuple(hub.segmentation[args[1][i]]['resized_indices']
+                                for i, _ in enumerate(args[0]))
+
         return differentiate(args[0], self.parameter_value,
                              hub.dose_information['number_of_voxels'],
-                             [hub.segmentation[args[1][i]]['resized_indices']
-                              for i, _ in enumerate(args[0])])
+                             segment_indices)
 
 
 @njit
@@ -168,14 +171,15 @@ def compute(
     This computation function has been outsourced to make it jittable. Called \
     by ``compute_objective_value(*args)``.
     """
-    # Get the parameter terms
-    volume_parameter = parameter_value[1]
-    inverse_volume_parameter = 1/parameter_value[1]
-    reference_eud = parameter_value[0]
 
-    return (sum([power(sum(power(dos, volume_parameter)/len(dos)),
-                       inverse_volume_parameter)
-                 - power(reference_eud, 2) for dos in dose]))
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
+
+    # Compute the EUD
+    eud = (sum((full_dose**parameter_value[1]))/len(full_dose))**(
+        1/parameter_value[1])
+
+    return (eud - parameter_value[0])**2
 
 
 @njit
@@ -211,28 +215,29 @@ def differentiate(
     This differentiation function has been outsourced to make it jittable. \
     Called by ``compute_gradient_value(*args)``.
     """
-    # Get the parameter terms
-    volume_parameter = parameter_value[1]
-    inverse_volume_parameter = 1/parameter_value[1]
-    reference_eud = parameter_value[0]
 
     # Initialize the objective gradient
     objective_gradient = zeros((number_of_voxels,))
 
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
+
+    # Concatenate the segment index arrays
+    full_indices = concatenate(segment_indices)
+
     # Clip the dose values to prevent from numerical instabilities
-    dose_clipped = [clip(dos, a_min=0.001, a_max=None) for dos in dose]
+    dose_clipped = clip(full_dose, a_min=0.001, a_max=None)
 
     # Compute the segment-wise subgradient
-    gradient = [2 * power(1/len(dos), inverse_volume_parameter)
-                * power(sum(power(dos, volume_parameter)),
-                        inverse_volume_parameter-1)
-                * power(dos, volume_parameter-1)
-                * power(sum(power(dos, volume_parameter))/len(dos),
-                        inverse_volume_parameter)
-                - reference_eud for dos in dose_clipped]
+    gradient = (2*(1/len(dose_clipped))**1/parameter_value[1]
+                * (sum(dose_clipped**parameter_value[1]))**(
+                    1/parameter_value[1]-1)
+                * dose_clipped**(parameter_value[1]-1)
+                * (sum(dose_clipped**parameter_value[1])
+                   / len(dose_clipped))**(1/parameter_value[1])
+                - parameter_value[0])
 
-    # Add the subgradients to the objective gradient
-    for i, _ in enumerate(segment_indices):
-        objective_gradient[segment_indices[i]] = gradient[i].reshape(-1)
+    # Compute the gradient
+    objective_gradient[full_indices] = gradient.reshape(-1)
 
     return objective_gradient

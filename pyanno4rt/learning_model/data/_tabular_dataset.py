@@ -6,12 +6,16 @@
 
 from itertools import compress
 from math import isnan
-from numpy import array, empty, vstack, where
+from numpy import array, empty, seterr, vstack, where
 from pandas import read_csv
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+
+# %% Set package options
+
+seterr(divide='ignore', invalid='ignore')
 
 # %% Class definition
 

@@ -6,7 +6,7 @@
 
 from math import sqrt
 from numba import njit
-from numpy import power, zeros
+from numpy import concatenate, zeros
 
 # %% Internal package import
 
@@ -130,9 +130,12 @@ class DoseUniformity(ConventionalObjectiveClass):
         # Initialize the datahub
         hub = Datahub()
 
+        # Get the segment indices
+        segment_indices = tuple(hub.segmentation[args[1][i]]['resized_indices']
+                                for i, _ in enumerate(args[0]))
+
         return differentiate(args[0], hub.dose_information['number_of_voxels'],
-                             [hub.segmentation[args[1][i]]['resized_indices']
-                              for i, _ in enumerate(args[0])])
+                             segment_indices)
 
 
 @njit
@@ -156,13 +159,11 @@ def compute(
     This computation function has been outsourced to make it jittable. Called \
     by ``compute_objective_value(*args)``.
     """
-    # Compute the scaled dose variance for each segment
-    dose_transform = [len(dos)*power(dos.std(), 2) for dos in dose]
 
-    # Get the total length of the dose vectors
-    dose_length = sum([len(dos) for dos in dose])
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
 
-    return sqrt(sum(dose_transform) / (dose_length-len(dose_transform)))
+    return full_dose.std()*sqrt(len(full_dose)/(len(full_dose)-1))
 
 
 @njit
@@ -197,15 +198,21 @@ def differentiate(
     This differentiation function has been outsourced to make it jittable. \
     Called by ``compute_gradient_value(*args)``.
     """
+
     # Initialize the objective gradient
     objective_gradient = zeros((number_of_voxels,))
 
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
+
+    # Concatenate the segment index arrays
+    full_indices = concatenate(segment_indices)
+
     # Compute the segment-wise weighted subgradient
-    gradient = [(dos - dos.mean()) / ((len(dos)-1) * dos.std())
-                for dos in dose]
+    gradient = (full_dose - full_dose.mean()) / (
+        (len(full_dose)-1) * full_dose.std())
 
     # Add the subgradients to the objective gradient
-    for i, _ in enumerate(segment_indices):
-        objective_gradient[segment_indices[i]] = gradient[i].reshape(-1)
+    objective_gradient[full_indices] = gradient.reshape(-1)
 
     return objective_gradient

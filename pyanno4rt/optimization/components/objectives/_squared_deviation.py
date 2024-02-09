@@ -5,7 +5,7 @@
 # %% External package import
 
 from numba import njit
-from numpy import array, zeros
+from numpy import concatenate, zeros
 
 # %% Internal package import
 
@@ -133,10 +133,13 @@ class SquaredDeviation(ConventionalObjectiveClass):
         # Initialize the datahub
         hub = Datahub()
 
+        # Get the segment indices
+        segment_indices = tuple(hub.segmentation[args[1][i]]['resized_indices']
+                                for i, _ in enumerate(args[0]))
+
         return differentiate(args[0], self.parameter_value,
                              hub.dose_information['number_of_voxels'],
-                             [hub.segmentation[args[1][i]]['resized_indices']
-                              for i, _ in enumerate(args[0])])
+                             segment_indices)
 
 
 @njit
@@ -163,15 +166,13 @@ def compute(dose, parameter_value):
     by ``compute_objective_value(*args)``.
     """
 
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
+
     # Center the dose values with the reference dose
-    deviation = [dos - parameter_value[0] if len(parameter_value) == 1
-                 else dos - array(parameter_value) for dos in dose]
+    deviation = full_dose - parameter_value[0]
 
-    # Get the total length of the dose vector(s)
-    dose_length = sum([len(dos) for dos in dose])
-
-    return ((1/dose_length) * sum([deviation[i] @ deviation[i]
-                                   for i, _ in enumerate(dose)]))
+    return (1/len(full_dose)) * (deviation @ deviation)
 
 
 @njit
@@ -203,17 +204,18 @@ def differentiate(dose, parameter_value, number_of_voxels, segment_indices):
     This differentiation function has been outsourced to make it jittable. \
     Called by ``compute_gradient_value(*args)``.
     """
+
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
+
+    # Concatenate the segment index arrays
+    full_indices = concatenate(segment_indices)
+
     # Initialize the objective gradient
     objective_gradient = zeros((number_of_voxels,))
 
-    # Compute the segment-wise subgradient
-    gradient = [(2/len(dos)) * (dos - parameter_value[0])
-                if len(parameter_value) == 1
-                else (2/len(dos)) * (dos - array(parameter_value))
-                for dos in dose]
-
-    # Add the subgradients to the objective gradient
-    for i, _ in enumerate(segment_indices):
-        objective_gradient[segment_indices[i]] = gradient[i].reshape(-1)
+    # Compute the objective gradient
+    objective_gradient[full_indices] = (
+        (2/len(full_dose)) * (full_dose - parameter_value[0])).reshape(-1)
 
     return objective_gradient

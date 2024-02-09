@@ -5,7 +5,7 @@
 # %% External package import
 
 from numba import njit
-from numpy import zeros
+from numpy import concatenate, zeros
 
 # %% Internal package import
 
@@ -84,6 +84,7 @@ class Moments(ConventionalObjectiveClass):
         super().__init__(name='Moments',
                          parameter_name=('exponents',),
                          parameter_category=('vector',),
+                         parameter_value=(exponents,),
                          embedding=embedding,
                          weight=weight,
                          link=link,
@@ -110,6 +111,7 @@ class Moments(ConventionalObjectiveClass):
         float
             Value of the objective function.
         """
+
         return compute(args[0], self.parameter_value)
 
     def compute_gradient_value(
@@ -129,13 +131,17 @@ class Moments(ConventionalObjectiveClass):
         ndarray
             Value of the gradient vector.
         """
+
         # Initialize the datahub
         hub = Datahub()
 
+        # Get the segment indices
+        segment_indices = tuple(hub.segmentation[args[1][i]]['resized_indices']
+                                for i, _ in enumerate(args[0]))
+
         return differentiate(args[0], self.parameter_value,
                              hub.dose_information['number_of_voxels'],
-                             [hub.segmentation[args[1][i]]['resized_indices']
-                              for i, _ in enumerate(args[0])])
+                             segment_indices)
 
 
 @njit
@@ -164,7 +170,8 @@ def compute(
     by ``compute_objective_value(*args)``.
     """
 
-     
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
 
     return
 
@@ -202,14 +209,17 @@ def differentiate(
     This differentiation function has been outsourced to make it jittable. \
     Called by ``compute_gradient_value(*args)``.
     """
+
     # Initialize the objective gradient
     objective_gradient = zeros((number_of_voxels,))
 
-    # Compute the segment-wise subgradient
-    gradient = [] 
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
 
-    # Add the subgradients to the objective gradient
-    for i, _ in enumerate(segment_indices):
-        objective_gradient[segment_indices[i]] = gradient[i].reshape(-1)
+    # Concatenate the segment index arrays
+    full_indices = concatenate(segment_indices)
+
+    # Compute the gradient
+    # objective_gradient[full_indices] = ().reshape(-1)
 
     return objective_gradient

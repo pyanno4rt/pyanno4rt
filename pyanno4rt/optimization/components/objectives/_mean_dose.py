@@ -5,7 +5,7 @@
 # %% External package import
 
 from numba import njit
-from numpy import ones, power, zeros
+from numpy import concatenate, ones, zeros
 
 # %% Internal package import
 
@@ -164,10 +164,11 @@ def compute(
     This computation function has been outsourced to make it jittable. Called \
     by ``compute_objective_value(*args)``.
     """
-    # Get the parameter term
-    reference_dose = parameter_value[0]
 
-    return sum([power(dos.mean() - reference_dose, 2) for dos in dose])
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
+
+    return (full_dose.mean() - parameter_value[0])**2
 
 
 @njit
@@ -203,18 +204,19 @@ def differentiate(
     This differentiation function has been outsourced to make it jittable. \
     Called by ``compute_gradient_value(*args)``.
     """
-    # Get the parameter term
-    reference_dose = parameter_value[0]
 
     # Initialize the objective gradient
     objective_gradient = zeros((number_of_voxels,))
 
-    # Compute the segment-wise subgradient
-    gradient = [2 * (dos.mean() - reference_dose)
-                * ones(dos.shape)/len(dos) for dos in dose]
+    # Concatenate the dose arrays
+    full_dose = concatenate(dose)
 
-    # Add the subgradients to the objective gradient
-    for i, _ in enumerate(segment_indices):
-        objective_gradient[segment_indices[i]] = gradient[i].reshape(-1)
+    # Concatenate the segment index arrays
+    full_indices = concatenate(segment_indices)
+
+    # Compute the gradient
+    objective_gradient[full_indices] = (
+        2*(full_dose.mean() - parameter_value[0])
+        * ones(full_dose.shape)/len(full_dose)).reshape(-1)
 
     return objective_gradient

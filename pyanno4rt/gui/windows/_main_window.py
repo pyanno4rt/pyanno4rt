@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from os.path import dirname
+from os.path import abspath, dirname
 from json import loads
 from PyQt5.QtCore import QDir, QEvent, Qt
 from PyQt5.QtGui import QCursor, QIcon, QPixmap
@@ -1114,7 +1114,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.nfx_sbox.setValue(configuration['number_of_fractions'])
 
         # Set the imaging path
-        self.img_path_ledit.setText(configuration['imaging_path'])
+        self.img_path_ledit.setText(abspath(configuration['imaging_path']))
 
         # Check if the target imaging resolution is specified
         if configuration['target_imaging_resolution']:
@@ -1129,7 +1129,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.img_res_ledit.clear()
 
         # Set the dose matrix path
-        self.dose_path_ledit.setText(configuration['dose_matrix_path'])
+        self.dose_path_ledit.setText(abspath(
+            configuration['dose_matrix_path']))
 
         # Set the dose resolution
         self.dose_res_ledit.setText(str(configuration['dose_resolution']))
