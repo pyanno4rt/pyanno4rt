@@ -5,6 +5,7 @@
 # %% External package import
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QHBoxLayout, QLabel, QMainWindow, QPushButton,
                              QSizePolicy, QVBoxLayout, QWidget)
 from pyqtgraph import mkQApp, setConfigOptions
@@ -233,8 +234,11 @@ class MainWindow(QMainWindow):
         self.application = application
         self.standalone = standalone
 
+        # Set the window icon
+        self.setWindowIcon(QIcon('./logo/logo_white_icon.png'))
+
         # Set the window title
-        self.setWindowTitle("pyanno4rt - visual analysis tool")
+        self.setWindowTitle("pyanno4rt Visualizer")
 
         # Set the window style sheet
         self.setStyleSheet('background-color: black;')

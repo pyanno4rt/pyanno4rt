@@ -18,8 +18,8 @@ class DVH():
     DVH computation class.
 
     This class provides methods to compute the dose-volume histogram (DVH) as \
-    a means to evaluate dose distributions from treatment plans across all \
-    segments. Both cumulative and differential DVH can be obtained.
+    a means to evaluate dose distributions from a treatment plans across the \
+    segments. Both cumulative and differential DVH can be calculated.
 
     Parameters
     ----------
@@ -40,7 +40,7 @@ class DVH():
     number_of_points : int
         See 'Parameters'.
 
-    display_segments : list
+    display_segments : tuple
         See 'Parameters'.
     """
 
@@ -59,14 +59,23 @@ class DVH():
         # Get the instance attributes from the arguments
         self.dvh_type = dvh_type
         self.number_of_points = number_of_points
-        self.display_segments = (display_segments if len(display_segments) > 0
-                                 else list(hub.segmentation))
+
+        # Check if the length of the "display_segments" argument is zero
+        if len(display_segments) == 0:
+
+            # Get the display segments from the datahub
+            self.display_segments = tuple(hub.segmentation)
+
+        else:
+
+            # Get the display segments from the argument
+            self.display_segments = tuple(display_segments)
 
     def compute(
             self,
             dose_cube):
         """
-        Compute the cumulative or differential DVH for all segments.
+        Compute the DVH for all segments.
 
         Parameters
         ----------
@@ -82,44 +91,41 @@ class DVH():
                                 f"{self.number_of_points} points for all "
                                 "segments ...")
 
-        def compute_cumulative_dvh(dose, evaluation_points):
+        def compute_cumulative_dvh(dose, points):
             """Compute the cumulative DVH points."""
 
-            return array([(dose >= point).sum()
-                          for point in evaluation_points])
+            return array([(dose >= point).sum() for point in points])
 
-        def compute_differential_dvh(dose, evaluation_points):
+        def compute_differential_dvh(dose, points):
             """Compute the differential DVH points."""
 
             # Determine the bin radius
-            bin_radius = (evaluation_points[1] - evaluation_points[0])/2
+            radius = (points[1] - points[0]) / 2
 
-            return array([sum(logical_and(point - bin_radius < dose,
-                                          point + bin_radius > dose))
-                          for point in evaluation_points])
+            return array(
+                [sum(logical_and(point - radius < dose, point + radius > dose))
+                 for point in points])
 
         def get_evaluation_points():
             """Get the points at which to evaluate the DVH."""
 
             # Get the minimum and the maximum dose from the dose cube
-            min_dose, max_dose = dose_cube.min(), dose_cube.max()
+            minimum_dose, maximum_dose = dose_cube.min(), dose_cube.max()
 
             # Map the DVH type to the dose intervals
-            bounds = {'cumulative': (0, 1.05*max_dose),
-                      'differential': (0.95*min_dose, 1.05*max_dose)}
+            intervals = {'cumulative': (0, 1.05*maximum_dose),
+                         'differential': (0.95*minimum_dose, 1.05*maximum_dose)
+                         }
 
-            return linspace(*bounds[self.dvh_type], self.number_of_points,
+            return linspace(*intervals[self.dvh_type], self.number_of_points,
                             endpoint=True)
 
-        def get_segment_dvh(indices, cube_dimensions, evaluation_points):
+        def get_segment_dvh(indices, cube_dimensions, points):
             """Get the DVH for a single segment."""
 
-            # Get the dose values for the segment
-            segment_dose = dose_cube[
-                unravel_index(indices, cube_dimensions, order='F')]
-
-            return 100*(dvh_functions[self.dvh_type](
-                segment_dose, evaluation_points)/len(indices))
+            return (dvh_functions[self.dvh_type](dose_cube[unravel_index(
+                indices, cube_dimensions, order='F')], points)
+                * 100/len(indices))
 
         # Map the DVH type to the computation function
         dvh_functions = {'cumulative': compute_cumulative_dvh,

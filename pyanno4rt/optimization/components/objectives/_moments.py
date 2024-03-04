@@ -4,8 +4,9 @@
 
 # %% External package import
 
-from numba import njit
-from numpy import concatenate, zeros
+from jax import jit
+import jax.numpy as jnp
+from numpy import array, concatenate, prod, unravel_index, zeros
 
 # %% Internal package import
 
@@ -94,6 +95,13 @@ class Moments(ConventionalObjectiveClass):
         # Set the individual parameter value
         self.parameter_value = [float(exponent) for exponent in exponents]
 
+        # Precompile the computation function
+        self.jitted_compute = jit(compute, static_argnums=(1, 2))
+
+        # Precompile the differentiation function
+        self.jitted_differentiate = jit(differentiate,
+                                        static_argnums=(1, 2, 3))
+
     def compute_objective_value(
             self,
             *args):
@@ -112,7 +120,30 @@ class Moments(ConventionalObjectiveClass):
             Value of the objective function.
         """
 
-        return compute(args[0], self.parameter_value)
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Concatenate the dose vector(s)
+        full_dose = concatenate(args[0])
+
+        # Concatenate the segment index vector(s)
+        full_segment_indices = concatenate(tuple(
+            hub.segmentation[args[1][i]]['resized_indices']
+            for i, _ in enumerate(args[0])))
+
+        # Initialize dose cube
+        dose_cube = zeros(hub.dose_information['cube_dimensions'])
+
+        # Insert the dose values into the cube
+        dose_cube[unravel_index(full_segment_indices,
+                                hub.dose_information['cube_dimensions'],
+                                order='F')] = full_dose
+
+        return array(self.jitted_compute(
+            dose_cube, tuple(self.parameter_value),
+            tuple(hub.dose_information['cube_dimensions']),
+            [hub.segmentation[args[1][i]]['resized_indices']
+             for i, _ in enumerate(args[0])]))
 
     def compute_gradient_value(
             self,
@@ -135,19 +166,36 @@ class Moments(ConventionalObjectiveClass):
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the segment indices
-        segment_indices = tuple(hub.segmentation[args[1][i]]['resized_indices']
-                                for i, _ in enumerate(args[0]))
+        # Concatenate the dose vector(s)
+        full_dose = concatenate(args[0])
 
-        return differentiate(args[0], self.parameter_value,
-                             hub.dose_information['number_of_voxels'],
-                             segment_indices)
+        # Concatenate the segment index vector(s)
+        full_segment_indices = concatenate(tuple(
+            hub.segmentation[args[1][i]]['resized_indices']
+            for i, _ in enumerate(args[0])))
+
+        # Initialize dose cube
+        dose_cube = zeros(hub.dose_information['cube_dimensions'])
+
+        # Insert the dose values into the cube
+        dose_cube[unravel_index(full_segment_indices,
+                                hub.dose_information['cube_dimensions'],
+                                order='F')] = full_dose
+
+        return array(self.jitted_differentiate(
+            dose_cube, tuple(self.parameter_value),
+            tuple(hub.dose_information['cube_dimensions']),
+            hub.dose_information['number_of_voxels'],
+            [hub.segmentation[args[1][i]]['resized_indices']
+             for i, _ in enumerate(args[0])])).reshape(
+                     (prod(hub.dose_information['cube_dimensions']),))
 
 
-@njit
 def compute(
-        dose,
-        parameter_value):
+        dose_cube,
+        parameter_value,
+        cube_dimensions,
+        segment_indices):
     """
     Compute the value of the objective.
 
@@ -170,16 +218,39 @@ def compute(
     by ``compute_objective_value(*args)``.
     """
 
-    # Concatenate the dose arrays
-    full_dose = concatenate(dose)
+    def compute_scaled_cube(array):
+        """Compute the mean of the dose cube scaled by an array."""
+        return jnp.sum((array * dose_cube)) / jnp.sum(dose_cube)
 
-    return
+    # Get the coefficients of the moment function from the argument
+    coeff_1, coeff_2, coeff_3 = tuple(map(jnp.float32, parameter_value))
+
+    # Determine the axis points from a meshed grid
+    points_x, points_y, points_z = jnp.meshgrid(
+        jnp.array(range(dose_cube.shape[0])),
+        jnp.array(range(dose_cube.shape[1])),
+        jnp.array(range(dose_cube.shape[2])))
+
+    # Compute the means of the axis points
+    mean_x, mean_y, mean_z = tuple(
+        map(compute_scaled_cube, (points_x, points_y, points_z)))
+
+    # Compute the moment function numerator
+    numerator = jnp.sum((points_x-mean_x)**coeff_1
+                        * (points_y-mean_y)**coeff_2
+                        * (points_z-mean_z)**coeff_3
+                        * dose_cube)
+
+    # Compute the moment function denominator
+    denominator = jnp.sum(dose_cube)**((coeff_1+coeff_2+coeff_3)/3 + 1)
+
+    return numerator/denominator
 
 
-@njit
 def differentiate(
-        dose,
+        dose_cube,
         parameter_value,
+        cube_dimensions,
         number_of_voxels,
         segment_indices):
     """
@@ -210,16 +281,56 @@ def differentiate(
     Called by ``compute_gradient_value(*args)``.
     """
 
-    # Initialize the objective gradient
-    objective_gradient = zeros((number_of_voxels,))
+    def compute_scaled_cube(array):
+        """Compute the mean of the dose cube scaled by an array."""
+        return jnp.sum((array * dose_cube)) / jnp.sum(dose_cube)
 
-    # Concatenate the dose arrays
-    full_dose = concatenate(dose)
+    # Get the coefficients of the moment function from the argument
+    coeff_1, coeff_2, coeff_3 = tuple(map(jnp.float32, parameter_value))
 
-    # Concatenate the segment index arrays
-    full_indices = concatenate(segment_indices)
+    # Determine the axis points from a meshed grid
+    points_x, points_y, points_z = jnp.meshgrid(
+        jnp.array(range(dose_cube.shape[0])),
+        jnp.array(range(dose_cube.shape[1])),
+        jnp.array(range(dose_cube.shape[2])))
 
-    # Compute the gradient
-    # objective_gradient[full_indices] = ().reshape(-1)
+    # Compute the means of the axis points
+    mean_x, mean_y, mean_z = tuple(
+        map(compute_scaled_cube, (points_x, points_y, points_z)))
 
-    return objective_gradient
+    # Compute derivative mean
+    dx_bar_dD = (points_x-mean_x) / jnp.sum(dose_cube)
+    dy_bar_dD = (points_y-mean_y) / jnp.sum(dose_cube)
+    dz_bar_dD = (points_z-mean_z) / jnp.sum(dose_cube)
+
+    # Calculate derivative u
+    du_dD = (- coeff_1 * jnp.sum((points_x-mean_x)**(coeff_1 - 1)
+                                 * (points_y-mean_y)**coeff_2
+                                 * (points_z-mean_z)**coeff_3
+                                 * dose_cube) * dx_bar_dD
+             - coeff_1 * jnp.sum((points_x-mean_x)**coeff_1
+                                 * (points_y-mean_y)**(coeff_2 - 1)
+                                 * (points_z-mean_z)**coeff_3
+                                 * dose_cube) * dy_bar_dD
+             - coeff_3 * jnp.sum((points_x-mean_x)**coeff_1
+                                 * (points_y-mean_y)**coeff_2
+                                 * (points_z-mean_z)**(coeff_3 - 1)
+                                 * dose_cube) * dz_bar_dD
+             + (points_x-mean_x)**coeff_1
+             * (points_y-mean_y)**coeff_2
+             * (points_z-mean_z)**coeff_3)
+
+    # Calculate derivative v
+    dv_dD = ((jnp.sum(jnp.array(parameter_value))/3 + 1)
+             * jnp.sum(dose_cube)**jnp.sum(jnp.array(parameter_value))/3)
+
+    # Calculate full derivative
+    u = jnp.sum((points_x-mean_x)**coeff_1
+                * (points_y-mean_y)**coeff_2
+                * (points_z-mean_z)**coeff_3
+                * dose_cube)
+
+    # 
+    v = jnp.sum(dose_cube)**(jnp.sum(jnp.array(parameter_value)) / 3 + 1)
+
+    return (du_dD*v - u*dv_dD) / v**2

@@ -15,7 +15,7 @@ from ._radiobiology_objective_class import RadiobiologyObjectiveClass
 
 from ._decision_tree_ntcp import DecisionTreeNTCP
 from ._dose_uniformity import DoseUniformity
-from ._equivalentUniformDose import EquivalentUniformDose
+from ._equivalent_uniform_dose import EquivalentUniformDose
 from ._k_nearest_neighbors_ntcp import KNeighborsNTCP
 from ._logistic_regression_ntcp import LogisticRegressionNTCP
 from ._logistic_regression_tcp import LogisticRegressionTCP

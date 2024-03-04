@@ -14,10 +14,10 @@
 To cite this repository:
 
 ```
-@software{pyanno4rt2024,
+@misc{pyanno4rt2024,
   author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},
   title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
-  url = {https://github.com/pyanno4rt/pyanno4rt},
-  year = {2024},
+  howpublished = {\url{http://github.com/pyanno4rt/pyanno4rt}},
+  year = {2024}
 }
 ```

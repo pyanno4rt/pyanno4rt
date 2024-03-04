@@ -9,38 +9,35 @@ class Datahub():
     """
     Central data storage and management hub class.
 
-    This class provides a singleton implementation for centralizing the data \
-    structures generated across the pyanno4rt program to efficiently manage \
-    and distribute information units, e.g. CT and segmentation data or \
-    optimization and outcome model results.
+    This class provides a singleton datahub for centralizing the information \
+    units generated across one or multiple treatment plans, e.g. dictionaries \
+    with CT and segmentation data, to efficiently manage and distribute them.
 
     Parameters
     ----------
-    args : tuple
-        Tuple with optional (non-keyworded) parameters. The value ``args[0]``
-        refers to the label of the treatment plan, while ``args[1]`` \
-        represents an instance of `Logger` and ``args[2]`` an instance of \
-        `InputChecker`. Only required for (re-)instantiating a datahub.
+    *args : tuple
+        Tuple with optional (non-keyworded) parameters. The element args[0]
+        refers to the treatment plan label, while args[1] is a \
+        :class:`~pyanno4rt.logging._logger.Logger` object and args[2] \
+        is an :class:`~pyanno4rt.input_check._input_checker.InputChecker` \
+        object. Only required for (re-)instantiating a datahub.
 
     Attributes
     ----------
     instances : dict
         Dictionary with pairs of treatment plan labels and associated \
-        `Datahub` instances. For each unique treatment plan label, a new \
-        instance of `Datahub` is generated, which can then be used across the \
-        plan instance. This dictionary should NEVER be changed manually!
+        :class:`~pyanno4rt.datahub._datahub.Datahub` objects.
 
     label : string
-        Label of the current active´ treatment plan instance.
+        Label of the current active treatment plan instance.
 
-    input_checker : object of class `InputChecker`
-        Instance of the class 'InputChecker', which provides a unified \
-        interface to perform input parameter checks in an extensible way.
+    input_checker : object of class \
+        :class:`~pyanno4rt.input_check._input_checker.InputChecker`
+        The object used to approve the input dictionaries.
 
-    logger : object of class `Logger`
-        Instance of the class `Logger`, which provides a pre-configured \
-        instance of the logger together with the methods for outputting \
-        messages to multiple streams.
+    logger : object of class \
+        :class:`~pyanno4rt.logging._logger.Logger`
+        The object used to print and store logging messages.
 
     computed_tomography : dict
         Dictionary with information on the CT images.
@@ -120,28 +117,12 @@ class Datahub():
 
         Parameters
         ----------
-        args : tuple
-            Tuple with optional (non-keyworded) datahub parameters. The value \
-            ``args[0]`` refers to the label of the treatment plan, while \
-            ``args[1]`` represents an instance of `InputChecker` and \
-            ``args[2]`` is an instance of `Logger`.
+        *args : tuple
+            See the class docstring.
 
         Returns
         -------
-        object of class `Datahub`
-            Instance of the class `Datahub`, which provides a singleton \
-            implementation for centralizing the data structures generated \
-            across the pyanno4rt program to efficiently manage and distribute \
-            information units.
-
-        Notes
-        -----
-        The ``args`` tuple is passed during the datahub initialization in the \
-        treatment plan class only, i.e., the generated instance of `Datahub` \
-        is appended to the ``instances`` dictionary once, and otherwise \
-        fetched from the it. If ``args`` is None, and the instance for the \
-        treatment plan label does not exist, a default object is returned \
-        without appending to the ``instances`` dictionary.
+        object of class :class:`~pyanno4rt.datahub._datahub.Datahub`
         """
 
         # Check if no arguments are passed
@@ -150,13 +131,13 @@ class Datahub():
             # Check if the instance already exists in the dictionary
             if cls.instances.get(cls.label):
 
-                # Get the instance from the dictionary
-                instance = cls.instances[cls.label]
+                # Return the instance from the dictionary
+                return cls.instances[cls.label]
 
             else:
 
-                # Create a new default instance
-                instance = super().__new__(cls)
+                # Return a new default instance
+                return super().__new__(cls)
 
         else:
 
@@ -166,10 +147,8 @@ class Datahub():
                 # Create a new instance and append it to the dictionary
                 cls.instances[args[0]] = super().__new__(cls)
 
-            # Get the instance from the dictionary
-            instance = cls.instances[args[0]]
-
-        return instance
+            # Return the instance from the dictionary
+            return cls.instances[args[0]]
 
     def __init__(
             self,
@@ -179,8 +158,7 @@ class Datahub():
         if args:
 
             # Set the instance and the class label to the same value
-            self.label = args[0]
-            Datahub.label = args[0]
+            self.label = Datahub.label = args[0]
 
             # Set the input checking object
             self.input_checker = args[1]

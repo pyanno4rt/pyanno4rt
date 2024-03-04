@@ -77,7 +77,7 @@ objective_map = {
         ),
     'exponents': (
         partial(check_type, key_type=list),
-        partial(check_subtype, key_type=float)
+        partial(check_subtype, key_type=(int, float))
         ),
     'maximum_dose': (
         partial(check_type, key_type=(int, float)),

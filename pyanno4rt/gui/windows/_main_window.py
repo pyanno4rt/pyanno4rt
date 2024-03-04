@@ -1520,11 +1520,11 @@ class MainWindow(QMainWindow, Ui_main_window):
             'modality': self.modality_cbox.currentText(),
             'number_of_fractions': self.nfx_sbox.value(),
             'imaging_path': None if not self.img_path_ledit.text()
-            else self.img_path_ledit.text(),
+            else abspath(self.img_path_ledit.text()),
             'target_imaging_resolution': None if not target_imaging_resolution
             else loads(target_imaging_resolution),
             'dose_matrix_path': None if not self.dose_path_ledit.text()
-            else self.dose_path_ledit.text(),
+            else abspath(self.dose_path_ledit.text()),
             'dose_resolution': None if not dose_resolution
             else loads(dose_resolution)
             }
@@ -1700,6 +1700,12 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the treatment plan instance
         instance = self.plans[self.plan_ledit.text()]
+
+        # Loop over the configuration file paths
+        for key in ('imaging_path', 'dose_matrix_path'):
+
+            # Convert the input into absolute paths
+            instance.configuration[key] = abspath(instance.configuration[key])
 
         # Create the parameter tree from the input dictionaries
         self.parameter_window.create_tree_from_dict(data={
@@ -1877,7 +1883,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 path = dirname(path)
 
             # Set the imaging path field
-            self.img_path_ledit.setText(path)
+            self.img_path_ledit.setText(abspath(path))
 
             # Set the imaging path field cursor position to zero
             self.img_path_ledit.setCursorPosition(0)
@@ -1894,7 +1900,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         if path:
 
             # Set the dose matrix path field
-            self.dose_path_ledit.setText(path)
+            self.dose_path_ledit.setText(abspath(path))
 
             # Set the dose matrix path field cursor position to zero
             self.dose_path_ledit.setCursorPosition(0)

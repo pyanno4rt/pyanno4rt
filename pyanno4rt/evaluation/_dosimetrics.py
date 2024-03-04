@@ -20,9 +20,9 @@ class Dosimetrics():
     Dosimetrics computation class.
 
     This class provides methods to compute dosimetrics as a means to evaluate \
-    dose distributions from treatment plans across all segments. \
+    dose distributions from a treatment plan across the segments. \
     Dosimetrics include statistical location and dispersion measures, DVH \
-    indicators as well as conformity (CI) and homogeneity indices (HI).
+    indicators as well as conformity (CI) and homogeneity index (HI).
 
     Parameters
     ----------
@@ -40,16 +40,16 @@ class Dosimetrics():
 
     Attributes
     ----------
-    reference_volume : list
+    reference_volume : tuple
         See 'Parameters'.
 
-    reference_dose : list
+    reference_dose : tuple
         See 'Parameters'.
 
-    display_segments : list
+    display_segments : tuple
         See 'Parameters'.
 
-    display_metrics : list
+    display_metrics : tuple
         See 'Parameters'.
     """
 
@@ -67,15 +67,31 @@ class Dosimetrics():
         hub.logger.display_info("Initializing dosimetrics class ...")
 
         # Get the sorted reference volumes and doses from the arguments
-        self.reference_volume = sorted(reference_volume)
-        self.reference_dose = sorted(reference_dose)
+        self.reference_volume, self.reference_dose = map(
+            sorted, (tuple(reference_volume), tuple(reference_dose)))
 
-        # Get the (default) segments and metrics to display from the arguments
-        self.display_segments = (display_segments if len(display_segments) > 0
-                                 else list(hub.segmentation))
-        self.display_metrics = (display_metrics if len(display_metrics) > 0
-                                else ['mean', 'std', 'max', 'min', 'Dx', 'Vx',
-                                      'CI', 'HI'])
+        # Check if the length of the "display_segments" argument is zero
+        if len(display_segments) == 0:
+
+            # Get the display segments from the datahub
+            self.display_segments = tuple(hub.segmentation)
+
+        else:
+
+            # Get the display segments from the argument
+            self.display_segments = tuple(display_segments)
+
+        # Check if the length of the "display_metrics" argument is zero
+        if len(display_metrics) == 0:
+
+            # Get the default display metrics
+            self.display_metrics = ('mean', 'std', 'max', 'min', 'Dx', 'Vx',
+                                    'CI', 'HI')
+
+        else:
+
+            # Get the display metrics from the argument
+            self.display_metrics = tuple(display_metrics)
 
     def compute(
             self,
@@ -99,7 +115,7 @@ class Dosimetrics():
         if len(self.reference_dose) == 0:
 
             # Apply default reference dose values
-            self.reference_dose = list(
+            self.reference_dose = tuple(
                 floor(linspace(0, dose_cube.max(), 5)*10)/10)
 
         # Initialize the dosimetrics dictionary
@@ -135,16 +151,14 @@ class Dosimetrics():
 
                 # Compute the relative volumes from the reference doses
                 dosimetrics[segment].update(
-                    {'_'.join(('Vx', str(value))):
-                     ((dose >= value).sum()/dose_length)
+                    {'_'.join(('Vx', str(value))): ((dose >= value).sum()
+                                                    / dose_length)
                      for value in self.reference_dose})
 
                 # Check if the segment is a target volume with objective
-                if (hub.segmentation[segment]['type'].lower() == 'target'
+                if (hub.segmentation[segment]['type'].lower() in (
+                        'tv', 'target', 'boost', 'tumor')
                         and hub.segmentation[segment]['objective']):
-
-                    # Initialize the target dose
-                    target_dose = None
 
                     # Get the target objective
                     target_objective = hub.segmentation[segment]['objective']
@@ -157,7 +171,7 @@ class Dosimetrics():
                             and any(objective.name in names
                                     for objective in target_objective)):
 
-                        # Compute the target dose
+                        # Set the target dose to the mean parameter value
                         target_dose = mean(
                             objective.get_parameter_value()[0]
                             for objective in target_objective
@@ -170,6 +184,11 @@ class Dosimetrics():
                         # Set the target dose to the parameter value
                         target_dose = target_objective.get_parameter_value()[0]
 
+                    else:
+
+                        # Set the target dose to None
+                        target_dose = None
+
                     # Check if the target dose has a value
                     if target_dose:
 
@@ -179,12 +198,12 @@ class Dosimetrics():
                         # Get the rounded threshold as a string
                         sub = str(round(target_dose*100)/100)
 
-                        # Add the CI values to the dosimetrics dictionary
+                        # Add the conformity index to the dosimetrics
                         dosimetrics[segment][''.join(('CI_', sub, 'Gy'))] = (
                             power((dose >= threshold).sum(), 2)
                             / (dose_length*(dose_cube >= threshold).sum()))
 
-                        # Add the HI values to the dosimetrics dictionary
+                        # Add the homogeneity index to the dosimetrics
                         dosimetrics[segment][''.join(('HI_', sub, 'Gy'))] = (
                             ((interpolator(0.95)-interpolator(0.05))
                              / target_dose) * 100)
