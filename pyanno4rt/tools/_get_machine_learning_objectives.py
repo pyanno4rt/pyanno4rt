@@ -1,4 +1,4 @@
-"""Machine learning objectives return."""
+"""Machine learning model-based objective retrieval."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -11,8 +11,7 @@ from pyanno4rt.tools import flatten
 
 def get_machine_learning_objectives(segmentation):
     """
-    Return a tuple with the user-assigned, machine learning model-based \
-    objectives.
+    Get a tuple with all set machine learning model-based objective functions.
 
     Parameters
     ----------
@@ -22,8 +21,8 @@ def get_machine_learning_objectives(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with the user-assigned, machine learning model-based \
-        objectives.
+        Flattened tuple with all set machine learning model-based objective \
+        functions.
     """
 
     return tuple(objective for objective in flatten(

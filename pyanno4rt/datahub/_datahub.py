@@ -28,7 +28,7 @@ class Datahub():
         Dictionary with pairs of treatment plan labels and associated \
         :class:`~pyanno4rt.datahub._datahub.Datahub` objects.
 
-    label : string
+    label : str
         Label of the current active treatment plan instance.
 
     input_checker : object of class \

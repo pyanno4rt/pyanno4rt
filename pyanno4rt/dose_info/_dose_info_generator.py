@@ -34,7 +34,7 @@ class DoseInfoGenerator():
     number_of_fractions : int
         Number of fractions according to the treatment scheme.
 
-    dose_matrix_path : string
+    dose_matrix_path : str
         Path to the dose-influence matrix file (.mat or .npy).
 
     Attributes
@@ -42,7 +42,7 @@ class DoseInfoGenerator():
     number_of_fractions : int
         See 'Parameters'.
 
-    dose_matrix_path : string
+    dose_matrix_path : str
         See 'Parameters'.
 
     dose_resolution : tuple

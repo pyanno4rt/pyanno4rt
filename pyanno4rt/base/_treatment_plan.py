@@ -44,7 +44,7 @@ class TreatmentPlan():
     configuration : dict
         Dictionary with the treatment plan configuration parameters.
 
-        - label : string
+        - label : str
             Unique identifier for the treatment plan.
 
             .. note:: Uniqueness of the label is important because it \
@@ -67,7 +67,7 @@ class TreatmentPlan():
         - number_of_fractions : int
             Number of fractions according to the treatment scheme.
 
-        - imaging_path : string
+        - imaging_path : str
             Path to the CT and segmentation data.
 
             .. note:: It is assumed that CT and segmentation data are \
@@ -79,7 +79,7 @@ class TreatmentPlan():
             and segmentation data, only used if a list is passed (the default \
             is None).
 
-        - dose_matrix_path : string
+        - dose_matrix_path : str
             Path to the dose-influence matrix file (.mat or .npy).
 
         - dose_resolution : list
@@ -167,7 +167,7 @@ class TreatmentPlan():
                 Moreover, the 'pareto' method currently only works with the \
                 'pymoo' solver option.
 
-        - algorithm : string
+        - algorithm : str
             Solution algorithm from the chosen solver:
 
             - solver='ipopt' : {'ma27', 'ma57', 'ma77', 'ma86'}, default='ma57'
@@ -272,7 +272,7 @@ class TreatmentPlan():
 
     logger : object of class \
         :class:`~pyanno4rt.logging._logger.Logger`
-        The object used to print and store logging messages.
+        The internal object used to print and store logging messages.
 
     datahub : object of class \
         :class:`~pyanno4rt.datahub._datahub.Datahub`

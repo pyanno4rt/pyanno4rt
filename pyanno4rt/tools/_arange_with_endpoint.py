@@ -31,12 +31,12 @@ def arange_with_endpoint(start, stop, step):
     """
 
     # Run the common arange function
-    arr = arange(start, stop, step)
+    array = arange(start, stop, step)
 
     # Check if the final step leads to the stop point
-    if arr[-1]+step == stop:
+    if array[-1] + step == stop:
 
         # Add the endpoint to the array
-        arr = concatenate([arr, [stop]])
+        array = concatenate([array, [stop]])
 
-    return arr
+    return array

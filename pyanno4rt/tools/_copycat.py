@@ -22,16 +22,16 @@ def copycat(base_class, path):
 
     Parameters
     ----------
-    base_class : class ``TreatmentPlan``
-        Treatment plan class from which to create the instance.
+    base_class : class from :mod:`~pyanno4rt.base`
+        The base treatment plan class from which to create an instance.
 
-    path : string
-        Directory path for the snapshot folder.
+    path : str
+        Directory path of the snapshot.
 
     Returns
     -------
-    object of class ``TreatmentPlan``
-        Treatment plan instance.
+    object of class from :mod:`~pyanno4rt.base`
+        The instantiated base treatment plan object.
     """
 
     def add_model_paths(inputs):
@@ -40,8 +40,8 @@ def copycat(base_class, path):
         def edit(component):
             """Edit a single component."""
 
-            # Check if the component has model parameters
-            # and if the model label is equal to the folder name
+            # Check if the component has model parameters and if the model
+            # label is equal to the folder name
             if ('model_parameters' in component['parameters']
                     and component['parameters']['model_parameters'][
                         'model_label'] == basename(inputs[0])):
@@ -70,7 +70,7 @@ def copycat(base_class, path):
             # Apply the editing function to each element in the component
             apply(edit, component)
 
-        # Else, check if the component is a dict
+        # Else, check if the component is a dictionary
         elif isinstance(component, dict):
 
             # Edit the component

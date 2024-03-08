@@ -1,4 +1,4 @@
-"""Sigmoid computation."""
+"""Sigmoid function calculation."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -11,22 +11,22 @@ from numpy import exp
 
 def sigmoid(value, multiplier, summand):
     """
-    Compute the sigmoid function value.
+    Calculate the sigmoid function value.
 
     Parameters
     ----------
-    value : int or float, or tuple/list of int or float
-        Value(s) at which to compute the sigmoid function.
+    value : int, float, tuple or list
+        Value(s) at which to calculate the sigmoid function.
 
-    coeff_A : int or float
-        Multiplicate coefficient for the value in the linear predictor term.
+    multiplier : int or float
+        Multiplicative coefficient in the linear term.
 
-    coeff_B : int or float
-        Additive coefficient for the value in the linear predictor term.
+    summand : int or float
+        Additive coefficient in the linear term.
 
     Returns
     -------
-    float or tuple of floats
+    float or tuple
         Value(s) of the sigmoid function.
     """
 

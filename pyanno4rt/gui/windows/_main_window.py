@@ -23,7 +23,7 @@ from pyanno4rt.gui.styles._custom_styles import (
 from pyanno4rt.gui.windows import (
     InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow, TreeWindow)
 from pyanno4rt.tools import (
-    apply, copycat, load_list_from_file, make_list_string, snapshot)
+    add_square_brackets, apply, copycat, load_list_from_file, snapshot)
 
 # %% Class definition
 
@@ -1506,11 +1506,11 @@ class MainWindow(QMainWindow, Ui_main_window):
         """
 
         # Convert the target imaging resolution from the field
-        target_imaging_resolution = make_list_string(
-            self.img_res_ledit.text(), 0)
+        target_imaging_resolution = add_square_brackets(
+            self.img_res_ledit.text())
 
         # Convert the dose resolution from the field
-        dose_resolution = make_list_string(self.dose_res_ledit.text(), 0)
+        dose_resolution = add_square_brackets(self.dose_res_ledit.text())
 
         # Create the configuration dictionary
         configuration = {
@@ -1546,12 +1546,12 @@ class MainWindow(QMainWindow, Ui_main_window):
                    self.ref_plan_cbox.currentText())
 
         # Convert the lower variable bounds from the field
-        lower_variable_bounds = make_list_string(
-            self.lower_var_ledit.text(), 1)
+        lower_variable_bounds = add_square_brackets(
+            self.lower_var_ledit.text())
 
         # Convert the upper variable bounds from the field
-        upper_variable_bounds = make_list_string(
-            self.upper_var_ledit.text(), 1)
+        upper_variable_bounds = add_square_brackets(
+            self.upper_var_ledit.text())
 
         # Create the optimization dictionary from the input fields
         optimization = {
@@ -1588,10 +1588,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         """
 
         # Convert the reference volume from the field
-        reference_volume = make_list_string(self.ref_vol_ledit.text(), 0)
+        reference_volume = add_square_brackets(self.ref_vol_ledit.text())
 
         # Convert the reference dose from the field
-        reference_dose = make_list_string(self.ref_dose_ledit.text(), 0)
+        reference_dose = add_square_brackets(self.ref_dose_ledit.text())
 
         # Get the display segments text
         display_segments = self.display_segments_ledit.text()

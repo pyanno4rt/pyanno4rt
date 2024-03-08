@@ -1,4 +1,4 @@
-"""Inverse sigmoid computation."""
+"""Inverse sigmoid function calculation."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -11,16 +11,22 @@ from numpy import log
 
 def inverse_sigmoid(value, multiplier, summand):
     """
-    Compute the inverse sigmoid function value.
+    Calculate the inverse sigmoid function value.
 
     Parameters
     ----------
-    value : int or float, or tuple/list of int or float
-        Value(s) at which to compute the inverse sigmoid function.
+    value : int, float, tuple or list
+        Value(s) at which to calculate the inverse sigmoid function.
+
+    multiplier : int or float
+        Multiplicative coefficient in the linear term.
+
+    summand : int or float
+        Additive coefficient in the linear term.
 
     Returns
     -------
-    float or tuple of floats
+    float or tuple
         Value(s) of the inverse sigmoid function.
     """
 

@@ -1,4 +1,4 @@
-"""Conventional objectives return."""
+"""Conventional objective retrieval."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -11,7 +11,7 @@ from pyanno4rt.tools import flatten
 
 def get_conventional_objectives(segmentation):
     """
-    Return a tuple with the user-assigned conventional objectives.
+    Get a tuple with all set conventional objective functions.
 
     Parameters
     ----------
@@ -21,7 +21,7 @@ def get_conventional_objectives(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with the user-assigned conventional objectives.
+        Flattened tuple with all set conventional objective functions.
     """
 
     return tuple(objective for objective in flatten(

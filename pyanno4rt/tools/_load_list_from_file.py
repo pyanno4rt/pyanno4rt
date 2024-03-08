@@ -1,4 +1,4 @@
-"""List loading."""
+"""External list loading."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -11,7 +11,19 @@ from pickle import load
 
 
 def load_list_from_file(path):
-    """Load a list of values from a file."""
+    """
+    Load a list of values from a file path.
+
+    Parameters
+    ----------
+    path : str
+        Path to the list file.
+
+    Returns
+    -------
+    list
+        Loaded list of values.
+    """
 
     # Check if a JSON file has been selected
     if path.endswith('.json'):
@@ -22,7 +34,7 @@ def load_list_from_file(path):
             # Get the list of values
             value_list = jload(file)
 
-    # Check if a Python file has been selected
+    # Else, check if a python binary file has been selected
     elif path.endswith('.p'):
 
         # Open a file stream
@@ -31,7 +43,7 @@ def load_list_from_file(path):
             # Get the list of values
             value_list = load(file)
 
-    # Check if a text file has been selected
+    # Else, check if a text file has been selected
     elif path.endswith('.txt'):
 
         # Open a file stream

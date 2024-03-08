@@ -4,8 +4,7 @@ Plan configuration module.
 ==================================================================
 
 The module aims to provide methods and classes to generate the plan \
-configuration dictionary for the management and retrieval of plan properties \
-and plan-related parameters.
+configuration dictionary.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

@@ -4,9 +4,10 @@
 
 # %% External package import
 
+from statistics import mean
+
 from numpy import floor, linspace, power, sort, unravel_index
 from scipy.interpolate import interp1d
-from statistics import mean
 
 # %% Internal package import
 
