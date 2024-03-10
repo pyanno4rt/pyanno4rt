@@ -1,4 +1,4 @@
-"""DICOM (.dcm) import."""
+"""DICOM folder import."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -16,11 +16,11 @@ from pyanno4rt.patient.import_functions._read_data_from_dcm import (
 
 def import_from_dcm(path, resolution):
     """
-    Import the data from a DICOM (.dcm) file.
+    Import the patient data from a folder with DICOM (.dcm) files.
 
     Parameters
     ----------
-    path : string
+    path : str
         Path to the DICOM folder.
 
     resolution : None or list
@@ -36,7 +36,7 @@ def import_from_dcm(path, resolution):
         Dictionary with information on the segmented structures.
     """
 
-    # Read the CT and the segmentation data
+    # Read the CT and segmentation data
     computed_tomography_data, segmentation_data = read_data_from_dcm(path)
 
     # Generate the CT dictionary

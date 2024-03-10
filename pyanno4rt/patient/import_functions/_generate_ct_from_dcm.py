@@ -1,4 +1,4 @@
-"""CT dictionary generation from DICOM (.dcm) file."""
+"""DICOM folder-based CT dictionary generation."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -18,12 +18,13 @@ from pyanno4rt.tools import arange_with_endpoint
 
 def generate_ct_from_dcm(data, resolution):
     """
-    Generate the CT dictionary.
+    Generate the CT dictionary from a folder with DICOM (.dcm) files.
 
     Parameters
     ----------
     data : tuple
-        Tuple of 'FileDataset' instances with information on the CT slices.
+        Tuple of :class:`~pydicom.dataset.FileDataset` objects with \
+        information on the CT slices.
 
     resolution : None or list
         Imaging resolution for post-processing interpolation of the CT and \
@@ -39,15 +40,15 @@ def generate_ct_from_dcm(data, resolution):
     hlut = ((-1024.0, 200.0, 449.0, 2000.0, 2048.0, 3071.0),
             (0.00324, 1.2, 1.20001, 2.49066, 2.5306, 2.53061))
 
-    def check_ct_data():
+    def check_ct_data(data):
         """Check the CT data from the DICOM files."""
 
         # Check if the grid resolutions are inconsistent
-        if tuple(len(set(resolutions)) for resolutions in zip(
+        if any(len(set(resolutions)) != 1 for resolutions in zip(
                 *((file.PixelSpacing._list[1].real,
                    file.PixelSpacing._list[0].real,
                    file.SpacingBetweenSlices.real)
-                  for file in data))) != (1, 1, 1):
+                  for file in data))):
 
             # Raise an error to indicate an inconsistency
             raise ValueError(
@@ -55,10 +56,10 @@ def generate_ct_from_dcm(data, resolution):
                 "the CT slices!")
 
         # Check if the image positions are inconsistent
-        if tuple(len(set(positions)) for positions in zip(
+        if any(len(set(positions)) != 1 for positions in zip(
                 *((file.ImagePositionPatient._list[1].real,
                    file.ImagePositionPatient._list[0].real)
-                  for file in data))) != (1, 1):
+                  for file in data))):
 
             # Raise an error to indicate an inconsistency
             raise ValueError(
@@ -66,16 +67,16 @@ def generate_ct_from_dcm(data, resolution):
                 "inconsistent across the CT slices!")
 
         # Check if the dimensionalities are inconsistent
-        if tuple(len(set(dimensions)) for dimensions in zip(
+        if any(len(set(dimensions)) != 1 for dimensions in zip(
                 *((file.Columns.real, file.Rows.real)
-                  for file in data))) != (1, 1):
+                  for file in data))):
 
             # Raise an error to indicate an inconsistency
             raise ValueError(
-                "The number of rows/columns is found to be inconsistent "
-                "across the CT slices!")
+                "The number of data columns or rows is found to be "
+                "inconsistent across the CT slices!")
 
-    def calculate_3d_cube():
+    def calculate_3d_cube(data):
         """Calculate the CT cube from the pixel arrays."""
 
         # Generate the 3D cube with HU values
@@ -91,7 +92,7 @@ def generate_ct_from_dcm(data, resolution):
 
         return interpolator(cube_hounsfield)
 
-    def interpolate_ct_dictionary():
+    def interpolate_ct_dictionary(computed_tomography, resolution):
         """Interpolate the CT dictionary values to a resolution."""
 
         # Get the current cube dimensions
@@ -112,10 +113,10 @@ def generate_ct_from_dcm(data, resolution):
 
         # Update the cube dimensions
         computed_tomography['cube_dimensions'] = array([
-            len(computed_tomography[axis]) for axis in ('y', 'x', 'z')])
+            len(computed_tomography[axis]) for axis in ('x', 'y', 'z')])
 
         # Get the zoom factors for all cube dimensions
-        zooms = (new_length / old_length for new_length, old_length in zip(
+        zooms = (pair[0]/pair[1] for pair in zip(
             computed_tomography['cube_dimensions'], old_dimensions))
 
         # Interpolate the CT cube to the target resolution
@@ -129,13 +130,13 @@ def generate_ct_from_dcm(data, resolution):
         return computed_tomography
 
     # Check the CT data
-    check_ct_data()
+    check_ct_data(data)
 
     # Initialize the dictionary
     computed_tomography = {}
 
     # Add the interpolated RED/RSP cube to the dictionary
-    computed_tomography['cube'] = calculate_3d_cube()
+    computed_tomography['cube'] = calculate_3d_cube(data)
 
     # Add the grid resolution to the dictionary
     computed_tomography['resolution'] = {
@@ -171,6 +172,6 @@ def generate_ct_from_dcm(data, resolution):
     if resolution:
 
         # Return the interpolated CT dictionary
-        return interpolate_ct_dictionary()
+        return interpolate_ct_dictionary(computed_tomography, resolution)
 
     return computed_tomography

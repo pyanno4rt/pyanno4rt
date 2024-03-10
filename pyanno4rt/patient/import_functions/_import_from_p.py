@@ -1,4 +1,4 @@
-"""Python (.p) import."""
+"""Python file import."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -16,11 +16,11 @@ from pyanno4rt.patient.import_functions._read_data_from_p import (
 
 def import_from_p(path, resolution):
     """
-    Import the data from a Python (.p) file.
+    Import the patient data from a Python (.p) file.
 
     Parameters
     ----------
-    path : string
+    path : str
         Path to the Python file.
 
     resolution : None or list
@@ -36,7 +36,7 @@ def import_from_p(path, resolution):
         Dictionary with information on the segmented structures.
     """
 
-    # Read the CT and the segmentation data
+    # Read the CT and segmentation data
     computed_tomography_data, segmentation_data = read_data_from_p(path)
 
     # Generate the CT dictionary
@@ -45,7 +45,7 @@ def import_from_p(path, resolution):
 
     # Generate the segmentation dictionary
     segmentation = generate_segmentation_from_p(
-        segmentation_data, computed_tomography, resolution)
+        segmentation_data, computed_tomography)
 
     return {key: value for key, value in computed_tomography.items()
             if key not in ('old_dimensions', 'zooms')}, segmentation

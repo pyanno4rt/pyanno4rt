@@ -76,8 +76,7 @@ class TreatmentPlan():
 
         - target_imaging_resolution : list or None, default=None
             Imaging resolution for post-processing interpolation of the CT \
-            and segmentation data, only used if a list is passed (the default \
-            is None).
+            and segmentation data, only used if a list is passed.
 
         - dose_matrix_path : str
             Path to the dose-influence matrix file (.mat or .npy).
