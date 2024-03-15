@@ -33,25 +33,13 @@ def check_value_in_set(label, data, options, value_condition=None):
     # Check if no condition applies
     if value_condition is None:
 
-        # Check if the number of allowed options is one
-        if len(options) == 1:
-
-            # Get the options output string from the single element
-            options_string = options[0]
-
-        else:
-
-            # Get the extension output string by joining multiple elements
-            options_string = " or ".join((", ".join(options[:-1]),
-                                          options[-1]))
-
         # Check if no list is passed and the value is not supported
         if not isinstance(data, list) and data not in options:
 
             # Raise an error to indicate an invalid value
             raise ValueError(
-                f"The treatment plan parameter '{label}' has to be "
-                f"{options_string}, got {data}!")
+                f"The treatment plan parameter '{label}' is {data}, but "
+                f"should be from {options}!")
 
         # Check if a list is passed and one or more elements are not supported
         if (isinstance(data, list)
@@ -60,31 +48,18 @@ def check_value_in_set(label, data, options, value_condition=None):
             # Raise an error to indicate an invalid value
             raise ValueError(
                 "One or more elements of the treatment plan parameter "
-                f"'{label}' are not in {options_string}!")
+                f"'{label}' are not in {options}!")
 
     # Check if a condition applies
     if value_condition is not None:
-
-        # Check if the number of allowed options is one
-        if len(options[value_condition]) == 1:
-
-            # Get the options output string from the single element
-            options_string = options[value_condition][0]
-
-        else:
-
-            # Get the extension output string by joining multiple elements
-            options_string = " or ".join(
-                (", ".join(options[value_condition][:-1]),
-                 options[value_condition][-1]))
 
         # Check if no list is passed and the value is not supported
         if not isinstance(data, list) and data not in options[value_condition]:
 
             # Raise an error to indicate an invalid value
             raise ValueError(
-                f"The treatment plan parameter '{label}' has to be "
-                f"{options_string} for {value_condition}, got {data}!")
+                f"The treatment plan parameter '{label}' is {data}, but "
+                f"should be from {options} for {value_condition}!")
 
         # Check if a list is passed and one or more elements are not supported
         if (isinstance(data, list) and any(
@@ -93,5 +68,4 @@ def check_value_in_set(label, data, options, value_condition=None):
             # Raise an error to indicate an invalid value
             raise ValueError(
                 "One or more elements of the treatment plan parameter "
-                f"'{label}' are not in {options_string} for "
-                f"{value_condition}!")
+                f"'{label}' are not in {options} for {value_condition}!")
