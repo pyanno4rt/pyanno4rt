@@ -9,13 +9,28 @@ from os.path import isdir, isfile
 # %% Function definition
 
 
-def check_path(key, value):
-    """Check if the file path is not valid."""
+def check_path(label, data):
+    """
+    Check if a file or directory path is invalid.
 
-    # Check if the value is neither a valid file nor a directory
-    if not (isdir(value) or isfile(value)):
+    Parameters
+    ----------
+    label : str
+        Label for the item to be checked.
+
+    data : str
+        Path to the file or directory.
+
+    Raises
+    ------
+    IOError
+        If the path references an invalid file or directory.
+    """
+
+    # Check if the path references an invalid file or directory
+    if data and not (isdir(data) or isfile(data)):
 
         # Raise an error to indicate an invalid value
-        raise OSError(
-            f"The treatment plan parameter '{key}' neither leads to a valid "
-            "file nor a valid directory!")
+        raise IOError(
+            f"The treatment plan parameter '{label}' neither leads to a valid "
+            "file nor a directory!")

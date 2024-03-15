@@ -34,8 +34,11 @@ class MachineLearningObjectiveClass(metaclass=ABCMeta):
         # Remove the 'self'-key from the class arguments
         class_arguments.pop('self')
 
+        # Initialize the datahub
+        hub = Datahub()
+
         # Check the class attributes and objective parameters
-        Datahub().input_checker.approve(class_arguments)
+        hub.input_checker.approve(class_arguments)
 
         # Get the fixed objective attributes
         self.name = name
@@ -77,7 +80,13 @@ class MachineLearningObjectiveClass(metaclass=ABCMeta):
             }
 
         # Check the model parameters
-        Datahub().input_checker.approve(self.model_parameters)
+        hub.input_checker.approve(self.model_parameters)
+
+        # Check the tune space
+        hub.input_checker.approve(self.model_parameters['tune_space'])
+
+        # Check the model display options
+        hub.input_checker.approve(self.model_parameters['display_options'])
 
         # Get the variable objective parameters
         self.embedding = embedding

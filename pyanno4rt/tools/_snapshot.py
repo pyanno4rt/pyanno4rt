@@ -41,6 +41,11 @@ def snapshot(instance, path, include_patient_data=False,
 
     include_model_data : bool, default=False
         Indicator for the storage of the outcome model-related dataset(s).
+
+    Raises
+    ------
+    AttributeError
+        If the treatment plan instance has not been configured yet.
     """
 
     # Check if any required attribute is missing

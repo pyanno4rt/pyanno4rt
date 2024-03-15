@@ -34,6 +34,11 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
     -------
     segmentation : dict
         Dictionary with information on the segmented structures.
+
+    Raises
+    ------
+    ValueError
+        If the contour sequence for a segment includes out-of-slice points.
     """
 
     def generate_colors(length):

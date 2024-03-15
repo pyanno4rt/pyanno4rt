@@ -5,66 +5,93 @@
 # %% Function definition
 
 
-def check_value_in_set(key, value, options, type_group=None, value_group=None):
-    """Check if the value is not supported w.r.t the options."""
+def check_value_in_set(label, data, options, value_condition=None):
+    """
+    Check if a value is not included in a set of options.
 
-    # Check if no value group applies
-    if value_group is None:
+    Parameters
+    ----------
+    label : str
+        Label for the item to be checked.
+
+    data : str or list
+        Input value to be checked.
+
+    options : tuple or dict
+        Tuple or dictionary with the value options.
+
+    value_condition : str
+        Value of the conditional variable (used as a selector if options is a \
+        dictionary).
+
+    Raises
+    ------
+    ValueError
+        If the data has a value not included in the set of options.
+    """
+
+    # Check if no condition applies
+    if value_condition is None:
+
+        # Check if the number of allowed options is one
+        if len(options) == 1:
+
+            # Get the options output string from the single element
+            options_string = options[0]
+
+        else:
+
+            # Get the extension output string by joining multiple elements
+            options_string = " or ".join((", ".join(options[:-1]),
+                                          options[-1]))
 
         # Check if no list is passed and the value is not supported
-        if not isinstance(value, list) and value not in options:
+        if not isinstance(data, list) and data not in options:
 
-            # Raise an error to indicate a wrong value
+            # Raise an error to indicate an invalid value
             raise ValueError(
-                "The treatment plan parameter '{}' has to be {}, got {}!"
-                .format(key,
-                        options[0]
-                        if len(options) == 1
-                        else " or ".join((", ".join(options[:-1]),
-                                          options[-1])),
-                        value))
+                f"The treatment plan parameter '{label}' has to be "
+                f"{options_string}, got {data}!")
 
-        elif (isinstance(value, list)
-              and any(val not in options for val in value)):
+        # Check if a list is passed and one or more elements are not supported
+        if (isinstance(data, list)
+                and any(element not in options for element in data)):
 
-            # Raise an error to indicate a wrong value
+            # Raise an error to indicate an invalid value
             raise ValueError(
-                "One or more elements of the treatment plan parameter '{}' "
-                "are not in {}!"
-                .format(key,
-                        options[0]
-                        if len(options) == 1
-                        else " or ".join((", ".join(options[:-1]),
-                                          options[-1]))))
+                "One or more elements of the treatment plan parameter "
+                f"'{label}' are not in {options_string}!")
 
-    # Else, check if a value group applies but the value is not supported
-    elif value_group is not None and value not in options[value_group]:
+    # Check if a condition applies
+    if value_condition is not None:
+
+        # Check if the number of allowed options is one
+        if len(options[value_condition]) == 1:
+
+            # Get the options output string from the single element
+            options_string = options[value_condition][0]
+
+        else:
+
+            # Get the extension output string by joining multiple elements
+            options_string = " or ".join(
+                (", ".join(options[value_condition][:-1]),
+                 options[value_condition][-1]))
 
         # Check if no list is passed and the value is not supported
-        if not isinstance(value, list) and value not in options[value_group]:
+        if not isinstance(data, list) and data not in options[value_condition]:
 
-            # Raise an error to indicate a wrong value
+            # Raise an error to indicate an invalid value
             raise ValueError(
-                "The treatment plan parameter '{}' has to be {} for {}, got "
-                "{}!"
-                .format(key,
-                        options[value_group][0]
-                        if len(options[value_group]) == 1
-                        else " or ".join((", ".join(options[value_group][:-1]),
-                                          options[value_group][-1])),
-                        value_group,
-                        value))
+                f"The treatment plan parameter '{label}' has to be "
+                f"{options_string} for {value_condition}, got {data}!")
 
-        elif (isinstance(value, list)
-              and any(val not in options[value_group] for val in value)):
+        # Check if a list is passed and one or more elements are not supported
+        if (isinstance(data, list) and any(
+                element not in options[value_condition] for element in data)):
 
-            # Raise an error to indicate a wrong value
+            # Raise an error to indicate an invalid value
             raise ValueError(
-                "One or more elements of the treatment plan parameter '{}' "
-                "are not in {} for {}!"
-                .format(key,
-                        options[value_group][0]
-                        if len(options[value_group]) == 1
-                        else " or ".join((", ".join(options[value_group][:-1]),
-                                          options[value_group][-1])),
-                        value_group))
+                "One or more elements of the treatment plan parameter "
+                f"'{label}' are not in {options_string} for "
+                f"{value_condition}!")

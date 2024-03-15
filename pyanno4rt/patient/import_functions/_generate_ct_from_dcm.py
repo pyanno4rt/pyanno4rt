@@ -34,6 +34,12 @@ def generate_ct_from_dcm(data, resolution):
     -------
     computed_tomography : dict
         Dictionary with information on the CT images.
+
+    Raises
+    ------
+    ValueError
+        If either the grid resolutions, the image positions or the \
+        dimensionalities are inconsistent.
     """
 
     # Specify the Hounsfield lookup table (HU to RED/RSP)
