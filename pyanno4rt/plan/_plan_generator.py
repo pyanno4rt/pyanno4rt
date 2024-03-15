@@ -46,8 +46,8 @@ class PlanGenerator():
         hub = Datahub()
 
         # Log a message about the plan generation
-        hub.logger.display_info("Generating plan configuration for "
-                                f"{self.modality} treatment ...")
+        hub.logger.display_info(
+            f"Generating plan configuration for {self.modality} treatment ...")
 
         # Initialize the plan dictionary
         plan_configuration = {'modality': self.modality,

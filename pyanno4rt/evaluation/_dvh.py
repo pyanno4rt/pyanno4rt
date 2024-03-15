@@ -87,9 +87,9 @@ class DVH():
         hub = Datahub()
 
         # Log a message about the DVH computation
-        hub.logger.display_info(f"Computing {self.dvh_type} DVH with "
-                                f"{self.number_of_points} points for all "
-                                "segments ...")
+        hub.logger.display_info(
+            f"Computing {self.dvh_type} DVH with {self.number_of_points} "
+            "points for all segments ...")
 
         def compute_cumulative_dvh(dose, points):
             """Compute the cumulative DVH points."""

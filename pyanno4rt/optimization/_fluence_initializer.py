@@ -25,7 +25,7 @@ class FluenceInitializer():
 
     Parameters
     ----------
-    initial_strategy : string
+    initial_strategy : str
         Initialization strategy for the fluence vector.
 
     initial_fluence_vector: ndarray, default=None
@@ -33,7 +33,7 @@ class FluenceInitializer():
 
     Attributes
     ----------
-    initial_strategy : string
+    initial_strategy : str
         See 'Parameters'.
 
     initial_fluence_vector : ndarray
@@ -49,8 +49,8 @@ class FluenceInitializer():
         if verbose:
 
             # Log a message about the initialization of the fluence initializer
-            Datahub().logger.display_info("Initializing fluence initializer "
-                                          "...")
+            Datahub().logger.display_info(
+                "Initializing fluence initializer ...")
 
         # Get the instance attributes from the arguments
         self.initial_strategy = initial_strategy
@@ -191,8 +191,8 @@ class FluenceInitializer():
         if self.verbose:
 
             # Log a message about the vector initialization
-            Datahub().logger.display_info("Initializing fluence vector with "
-                                          "respect to a reference optimal "
-                                          "point ...")
+            Datahub().logger.display_info(
+                "Initializing fluence vector with respect to a reference "
+                "optimal point ...")
 
         return initial_fluence_vector

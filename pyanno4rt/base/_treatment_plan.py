@@ -432,7 +432,14 @@ class TreatmentPlan():
         self.dose_info_generator.generate()
 
     def optimize(self):
-        """Initialize the fluence optimizer and solve the problem."""
+        """
+        Initialize the fluence optimizer and solve the problem.
+
+        Raises
+        ------
+        AttributeError
+            If the treatment plan has not been configured yet.
+        """
 
         # Check if any required attribute is missing
         if any(getattr(self, attribute) is None for attribute in (
@@ -470,7 +477,14 @@ class TreatmentPlan():
         self.fluence_optimizer.solve()
 
     def evaluate(self):
-        """Initialize the evaluation classes and compute the plan metrics."""
+        """
+        Initialize the evaluation classes and compute the plan metrics.
+
+        Raises
+        ------
+        AttributeError
+            If the treatment plan has not been optimized yet.
+        """
 
         # Check if the 'fluence_optimizer' attribute is missing
         if getattr(self, 'fluence_optimizer') is None:
@@ -521,6 +535,11 @@ class TreatmentPlan():
                 default=None
             The (optional) object used as a parent window for the \
             visualization interface.
+
+        Raises
+        ------
+        AttributeError
+            If the treatment plan has not been optimized (and evaluated) yet.
         """
 
         # Check if any required attribute is missing
@@ -571,6 +590,11 @@ class TreatmentPlan():
         ----------
         key_value_pairs : dict
             Dictionary with the keys and values to update.
+
+        Raises
+        ------
+        KeyError
+            If any update key is not included in the parameter dictionaries.
         """
 
         # Approve the key-value pairs

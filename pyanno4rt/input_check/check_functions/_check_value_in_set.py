@@ -38,7 +38,7 @@ def check_value_in_set(label, data, options, value_condition=None):
 
             # Raise an error to indicate an invalid value
             raise ValueError(
-                f"The treatment plan parameter '{label}' is {data}, but "
+                f"The treatment plan parameter '{label}' is '{data}', but "
                 f"should be from {options}!")
 
         # Check if a list is passed and one or more elements are not supported
@@ -58,7 +58,7 @@ def check_value_in_set(label, data, options, value_condition=None):
 
             # Raise an error to indicate an invalid value
             raise ValueError(
-                f"The treatment plan parameter '{label}' is {data}, but "
+                f"The treatment plan parameter '{label}' is '{data}', but "
                 f"should be from {options} for {value_condition}!")
 
         # Check if a list is passed and one or more elements are not supported

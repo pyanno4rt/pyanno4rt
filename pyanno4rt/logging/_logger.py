@@ -47,8 +47,8 @@ class Logger():
             self.display_info("Initializing logger ...")
 
             # Log a message about the python version used
-            self.display_info("You are running python version "
-                              f"{python_version()} ...")
+            self.display_info(
+                f"You are running python version {python_version()} ...")
 
     def initialize_logger(
             self,

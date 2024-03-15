@@ -37,7 +37,7 @@ class FluenceOptimizer():
     (scalarization, lexicographization) and multi-criteria optimization \
     (Pareto analysis) with different fluence initialization strategies, \
     and integrates multiple local and global solvers from IPOPT, Proxmin, \
-    Pymoo, PyPOP7 and SciPy.
+    Pymoo, and SciPy.
 
     Parameters
     ----------
@@ -64,25 +64,23 @@ class FluenceOptimizer():
         - 'weighted-sum' : optimize all objectives based on a weighted sum \
             (single-criteria).
 
-    solver : {'ipopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}
+    solver : {'ipopt', 'proxmin', 'pymoo', 'scipy'}
         Python package for solving the optimization problem:
 
         - 'ipopt' : interior-point algorithms provided by COIN-OR;
         - 'proxmin' : proximal algorithms provided by Proxmin;
         - 'pymoo' : multi-objective algorithms provided by Pymoo;
-        - 'pypop7' : population-based algorithms provided by PyPOP7;
         - 'scipy' : local algorithms provided by SciPy.
 
-    algorithm : string
+    algorithm : str
         Solution algorithm from the chosen solver:
 
         - ``solver`` = 'ipopt' : {'ma27', 'ma57', 'ma77', 'ma86'};
         - ``solver`` = 'proxmin' : {'admm', 'pgm', 'sdmm'};
         - ``solver`` = 'pymoo' : {'NSGA3'};
-        - ``solver`` = 'pypop7' : {'MMES', 'LMCMA', 'RMES', 'BES', 'GS'};
         - ``solver`` = 'scipy' : {'L-BFGS-B', 'TNC', 'trust-constr'}.
 
-    initial_strategy : {'target-coverage', 'warm-start'}
+    initial_strategy : {'data-medoid', 'target-coverage', 'warm-start'}
         Initialization strategy for the fluence vector:
 
         - ``target-coverage`` : initialize the fluence vector with respect to \
@@ -124,7 +122,7 @@ class FluenceOptimizer():
         Initialization of the fluence vector.
 
     solver_object : object of class `IpoptSolver`, `ProxminSolver`, \
-        `PymooSolver`, `Pypop7Solver` or `SciPySolver`
+        `PymooSolver`, or `SciPySolver`
         Instance of the solver with its configuration.
 
     optimized_fluence : ndarray
@@ -247,9 +245,9 @@ class FluenceOptimizer():
             algorithm = 'L-BFGS-B'
 
             # Log a message about the fallback to SciPy
-            hub.logger.display_warning("IPOPT solver is not available, "
-                                       "falling back to SciPy solver with "
-                                       "L-BFGS-B ...")
+            hub.logger.display_warning(
+                "IPOPT solver is not available, falling back to SciPy solver "
+                "with L-BFGS-B ...")
 
         # Initialize the solver object based on the 'solver' argument
         hub.optimization['solver_object'] = solver_map[solver](
@@ -414,8 +412,8 @@ class FluenceOptimizer():
         hub = Datahub()
 
         # Log a message about the parameter adjustment
-        hub.logger.display_info("Adjusting dose parameters for fractionation "
-                                "...")
+        hub.logger.display_info(
+            "Adjusting dose parameters for fractionation ...")
 
         def adjust_single_objective(objective):
             """Adjust the dose parameters for a single objective."""
@@ -584,9 +582,9 @@ class FluenceOptimizer():
                         100*(rb_objective_results[i][1]), 2)
 
                     # Log a message about their final TCP values
-                    hub.logger.display_info(f"{component_name} for the "
-                                            f"optimized plan: {rounded_result}"
-                                            " % ...")
+                    hub.logger.display_info(
+                        f"{component_name} for the optimized plan: "
+                        f"{rounded_result} % ...")
 
                 # 
                 elif component_name == 'Lyman-Kutcher-Burman NTCP':
@@ -595,9 +593,9 @@ class FluenceOptimizer():
                     rounded_result = round(100*(rb_objective_results[i][1]), 2)
 
                     # Log a message about their final NTCP values
-                    hub.logger.display_info(f"{component_name} for the "
-                                            f"optimized plan: {rounded_result}"
-                                            " % ...")
+                    hub.logger.display_info(
+                        f"{component_name} for the optimized plan: "
+                        f"{rounded_result} % ...")
 
         # Get the machine learning objectives
         ml_objectives = get_machine_learning_objectives(hub.segmentation)
@@ -639,9 +637,9 @@ class FluenceOptimizer():
                     rounded_result = round(100*(ml_objective_results[i][1]), 2)
 
                     # Log a message about their final (N)TCP values
-                    hub.logger.display_info(f"{component_name} for the "
-                                            f"optimized plan: {rounded_result}"
-                                            " % ...")
+                    hub.logger.display_info(
+                        f"{component_name} for the optimized plan: "
+                        f"{rounded_result} % ...")
 
                 # Check if logistic regression or neural networks are used
                 if any(model_name in component_name
@@ -662,9 +660,9 @@ class FluenceOptimizer():
                             ml_objective_results[i][1], 1, 0)), 2)
 
                     # Log a message about their final (N)TCP values
-                    hub.logger.display_info(f"{component_name} for the "
-                                            f"optimized plan: {rounded_result}"
-                                            " % ...")
+                    hub.logger.display_info(
+                        f"{component_name} for the optimized plan: "
+                        f"{rounded_result} % ...")
 
                 # Check if support vector machines are used
                 elif 'Support Vector Machine' in component_name:
@@ -678,9 +676,9 @@ class FluenceOptimizer():
                         svm.probB_[0]), 2)
 
                     # Log a message about its final (N)TCP value
-                    hub.logger.display_info(f"{component_name} for the "
-                                            f"optimized plan: {rounded_result}"
-                                            " % ...")
+                    hub.logger.display_info(
+                        f"{component_name} for the optimized plan: "
+                        "{rounded_result} % ...")
 
         # End the solver runtime recording
         end_time = time()
@@ -693,9 +691,9 @@ class FluenceOptimizer():
         solver_runtime = round((check_time-start_time), 2)
 
         # Log a message about the overall optimization runtime
-        hub.logger.display_info(f"Fluence optimization took {total_runtime} "
-                                f"seconds ({solver_runtime} seconds for "
-                                "problem solving) ...")
+        hub.logger.display_info(
+            f"Fluence optimization took {total_runtime} seconds "
+            f"({solver_runtime} seconds for problem solving) ...")
 
     def compute_dose_3d(self):
         """

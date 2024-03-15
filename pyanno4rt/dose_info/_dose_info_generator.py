@@ -56,8 +56,8 @@ class DoseInfoGenerator():
             dose_resolution):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing dose information "
-                                      "generator ...")
+        Datahub().logger.display_info(
+            "Initializing dose information generator ...")
 
         # Get the instance attributes from the arguments
         self.number_of_fractions = number_of_fractions
@@ -71,9 +71,9 @@ class DoseInfoGenerator():
         hub = Datahub()
 
         # Log a message about the dose information generation
-        hub.logger.display_info("Generating dose information for "
-                                f"{hub.plan_configuration['modality']} "
-                                "treatment ...")
+        hub.logger.display_info(
+            "Generating dose information for "
+            f"{hub.plan_configuration['modality']} treatment ...")
 
         # Initialize the dose information dictionary
         dose_information = {}
@@ -104,8 +104,8 @@ class DoseInfoGenerator():
         if self.dose_matrix_path.endswith('.mat'):
 
             # Log a message about the dose-influence matrix addition
-            hub.logger.display_info("Adding dose-influence matrix from matlab "
-                                    "file ...")
+            hub.logger.display_info(
+                "Adding dose-influence matrix from matlab file ...")
 
             try:
 
@@ -126,8 +126,8 @@ class DoseInfoGenerator():
         elif self.dose_matrix_path.endswith('.npy'):
 
             # Log a message about the dose-influence matrix addition
-            hub.logger.display_info("Adding dose-influence matrix from numpy "
-                                    "binary file ...")
+            hub.logger.display_info(
+                "Adding dose-influence matrix from numpy binary file ...")
 
             # Add the dose-influence matrix from the .npy file
             dose_information['dose_influence_matrix'] = csr_matrix(

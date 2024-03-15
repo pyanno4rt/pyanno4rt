@@ -68,8 +68,8 @@ class PatientLoader():
         source, importer = sources[splitext(self.imaging_path)[1]]
 
         # Log a message about the import of the patient imaging data
-        hub.logger.display_info("Importing CT and segmentation data from "
-                                f"{source} ...")
+        hub.logger.display_info(
+            f"Importing CT and segmentation data from {source} ...")
 
         # Enter the patient imaging data into the datahub
         hub.computed_tomography, hub.segmentation = importer(

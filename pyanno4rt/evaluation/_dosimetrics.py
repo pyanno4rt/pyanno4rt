@@ -86,8 +86,8 @@ class Dosimetrics():
         if len(display_metrics) == 0:
 
             # Get the default display metrics
-            self.display_metrics = ('mean', 'std', 'max', 'min', 'Dx', 'Vx',
-                                    'CI', 'HI')
+            self.display_metrics = (
+                'mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI')
 
         else:
 
