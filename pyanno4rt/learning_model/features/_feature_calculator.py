@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from numpy import (array, array_equal, empty, fromiter, unravel_index, vstack,
                    zeros)
 from scipy.ndimage import zoom
-from scipy.sparse import csr_matrix
+from scipy.sparse import lil_matrix
 from scipy.sparse import vstack as svstack
 
 # %% Internal package import
@@ -425,7 +425,7 @@ class FeatureCalculator():
 
             def get_default_gradient(_, __):
                 """Return a default gradient for non-dosiomic features."""
-                return csr_matrix((1, dose_information['number_of_voxels']))
+                return lil_matrix((1, dose_information['number_of_voxels']))
 
             # Map the feature types to the get functions
             get_functions = {'Dosiomics': get_dosiomic_gradient,

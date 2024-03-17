@@ -48,7 +48,7 @@ class Visualizer():
     def __init__(self, parent=None):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing visualizer class ...")
+        Datahub().logger.display_info("Initializing visualizer ...")
 
         if not parent:
 
@@ -75,8 +75,8 @@ class Visualizer():
 
     def launch(self):
         """Launch the visual analysis tool."""
-        # Log a message about the analysis tool launching
-        Datahub().logger.display_info("Launching visual analysis tool ...")
+        # Log a message about launching the visualizer
+        Datahub().logger.display_info("Launching visualizer ...")
 
         if not self.parent:
 
@@ -222,7 +222,7 @@ class MainWindow(QMainWindow):
                 button.setEnabled(False)
 
             # Check if the plan evaluation buttons should be disabled
-            if (not hub.histogram and not hub.dosimetrics
+            if (not hub.dose_histogram and not hub.dosimetrics
                     and subclass.name in ('dvh_plotter',
                                           'dosimetrics_plotter')):
                 button.setEnabled(False)
@@ -428,8 +428,8 @@ class MainWindow(QMainWindow):
         event : object of class `QCloseEvent`
             Instance of the class `QCloseEvent`.
         """
-        # Log a message about the analysis tool closing
-        Datahub().logger.display_info("Closing visual analysis tool ...")
+        # Log a message about closing the visualizer
+        Datahub().logger.display_info("Closing visualizer ...")
 
         # Check if the visual interface is handled as a standalone
         if self.standalone:

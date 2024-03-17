@@ -1,4 +1,4 @@
-"""Dosimetrics computation."""
+"""Dosimetrics evaluation."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -16,22 +16,22 @@ from pyanno4rt.datahub import Datahub
 # %% Class definition
 
 
-class Dosimetrics():
+class DosimetricsEvaluator():
     """
-    Dosimetrics computation class.
+    Dosimetrics evaluation class.
 
-    This class provides methods to compute dosimetrics as a means to evaluate \
-    dose distributions from a treatment plan across the segments. \
+    This class provides methods to evaluate dosimetrics as a means to \
+    quantify dose distributions from a treatment plan across the segments. \
     Dosimetrics include statistical location and dispersion measures, DVH \
     indicators as well as conformity (CI) and homogeneity index (HI).
 
     Parameters
     ----------
     reference_volume : list
-        Reference volumes for which to calculate the inverse DVH values.
+        Reference volumes for which to evaluate the inverse DVH indicators.
 
     reference_dose : list
-        Reference dose values for which to calculate the DVH values.
+        Reference dose values for which to evaluate the DVH indicators.
 
     display_segments : list
         Names of the segmented structures to be displayed.
@@ -65,7 +65,7 @@ class Dosimetrics():
         hub = Datahub()
 
         # Log a message about the initialization of the class
-        hub.logger.display_info("Initializing dosimetrics class ...")
+        hub.logger.display_info("Initializing dosimetrics evaluator ...")
 
         # Get the sorted reference volumes and doses from the arguments
         self.reference_volume, self.reference_dose = map(
@@ -94,11 +94,11 @@ class Dosimetrics():
             # Get the display metrics from the argument
             self.display_metrics = tuple(display_metrics)
 
-    def compute(
+    def evaluate(
             self,
             dose_cube):
         """
-        Compute the dosimetrics for all segments.
+        Evaluate the dosimetrics for all segments.
 
         Parameters
         ----------
@@ -109,8 +109,8 @@ class Dosimetrics():
         # Initialize the datahub
         hub = Datahub()
 
-        # Log a message about the dosimetrics computation
-        hub.logger.display_info("Computing dosimetrics for all segments ...")
+        # Log a message about the dosimetrics evaluation
+        hub.logger.display_info("Evaluating dosimetrics for all segments ...")
 
         # Check if the reference dose list is empty
         if len(self.reference_dose) == 0:

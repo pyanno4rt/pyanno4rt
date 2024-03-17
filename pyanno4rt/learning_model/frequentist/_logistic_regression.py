@@ -195,7 +195,7 @@ class LogisticRegressionModel():
                                   'C': tune_space.get(
                                       'C', [2**-5, 2**10]),
                                   'penalty': tune_space.get(
-                                      'penalty', ['none', 'l1', 'l2']),
+                                      'penalty', ['l1', 'l2']),
                                   'tol': tune_space.get(
                                       'tol', [1e-4, 1e-5, 1e-6]),
                                   'class_weight': tune_space.get(
@@ -410,7 +410,7 @@ class LogisticRegressionModel():
                                'class_weight': proposal['class_weight'],
                                'random_state': 3,
                                'solver': 'saga',
-                               'max_iter': 100000}
+                               'max_iter': int(1e6)}
 
             # Initialize the model from the hyperparameter dictionary
             prediction_model = LogisticRegression(**hyperparameters)
@@ -451,9 +451,7 @@ class LogisticRegressionModel():
                                           self.configuration[
                                               'tune_space']['C'][1])}
                                      for norm in self.configuration[
-                                             'tune_space']['penalty']
-                                     if norm != 'none'],
-                                   *[{'penalty': 'none', 'C': 0.01}]]),
+                                             'tune_space']['penalty']]]),
             'tol': hp.choice(
                 'tol',
                 self.configuration['tune_space']['tol']),
@@ -506,7 +504,7 @@ class LogisticRegressionModel():
                                'class_weight'],
                            'random_state': 3,
                            'solver': 'saga',
-                           'max_iter': 100000}
+                           'max_iter': int(1e6)}
 
         # Initialize the model from the hyperparameter dictionary
         prediction_model = LogisticRegression(**hyperparameters)

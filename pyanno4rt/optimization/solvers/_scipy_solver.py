@@ -6,7 +6,7 @@
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.solvers.algorithms import get_scipy_configuration
+from pyanno4rt.optimization.solvers.algorithms import configure_scipy
 
 # %% Class definition
 
@@ -15,10 +15,9 @@ class SciPySolver():
     """
     SciPy wrapper class.
 
-    This class provides methods for wrapping the SciPy solver, including the \
-    initialization of the algorithms from the arguments set in the treatment \
-    plan, the composition of a SciPy-compatible optimization problem, and a \
-    method to start the algorithms.
+    This class serves as a wrapper for the local optimization algorithms from \
+    the SciPy solver. It takes the problem structure, configures the selected \
+    algorithm, and defines the method to run the solver.
 
     Parameters
     ----------
@@ -28,9 +27,14 @@ class SciPySolver():
     number_of_constraints : int
         Number of constraints.
 
-    problem_instance : object of class `LexicographicOptimization`, \
-    `ParetoOptimization`, or `WeightedSumOptimization`
-        Instance of the optimization problem.
+    problem_instance : object of class \
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _lexicographic_optimization.LexicographicOptimization`,\
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _pareto_optimization.ParetoOptimization` or \
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _weighted_sum_optimization.WeightedSumOptimization`
+        The object representing the optimization problem.
 
     lower_variable_bounds : list
         Lower bounds on the decision variables.
@@ -44,22 +48,28 @@ class SciPySolver():
     upper_constraint_bounds : list
         Upper bounds on the constraints.
 
-    algorithm : string
+    algorithm : str
         Label for the solution algorithm.
 
+    initial_fluence : ndarray
+        Initial fluence vector.
+
     max_iter : int
-        Maximum number of iterations taken for the solver to converge.
+        Maximum number of iterations.
 
     max_cpu_time : float
-        Maximum CPU time taken for the solver to converge.
+        Maximum CPU time.
 
     Attributes
     ----------
-    fun : object of class `function`
-        Function from the SciPy library to be called with ``arguments``.
+    fun : function from :mod:`~scipy.optimize`
+        Minimization function from the SciPy library.
 
     arguments : dict
-        Dictionary with the arguments used to configure ``fun``.
+        Dictionary with the function arguments.
+
+    counter : int
+        Counter for the iterations.
     """
 
     def __init__(
@@ -77,31 +87,39 @@ class SciPySolver():
             max_cpu_time):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing SciPy solver with {} ..."
-                                      .format(algorithm))
+        Datahub().logger.display_info(
+            f"Initializing SciPy solver with {algorithm} algorithm ...")
 
-        # Get the optimizer function and the arguments
-        self.fun, self.arguments = get_scipy_configuration(
+        # Get the callable optimization function with its arguments
+        self.fun, self.arguments = configure_scipy(
             problem_instance, lower_variable_bounds, upper_variable_bounds,
-            algorithm, max_iter)
+            lower_constraint_bounds, upper_constraint_bounds, algorithm,
+            max_iter)
 
-        # Initialize the iteration number
-        self.iter = 1
+        # Initialize the iteration counter
+        self.counter = 1
 
     def callback(
             self,
             intermediate_result):
-        """Log an intermediate callback return per iteration."""
+        """
+        Log the intermediate results after each iteration.
 
-        # Log a message about the objective value in the current iteration
-        Datahub().logger.display_info(''.join((
-            f'At iterate {self.iter}: f=',
-            str(round(intermediate_result['fun'], 4)))))
+        Parameters
+        ----------
+        intermediate_result : dict
+            Dictionary with the intermediate results of the current iteration.
+        """
+
+        # Log a message about the intermediate objective function value
+        Datahub().logger.display_info(
+            f"At iterate {self.counter}: "
+            f"f={round(intermediate_result['fun'], 4)}")
 
         # Increment the iteration counter
-        self.iter += 1
+        self.counter += 1
 
-    def start(
+    def run(
             self,
             initial_fluence):
         """
@@ -117,28 +135,22 @@ class SciPySolver():
         ndarray
             Optimized fluence vector.
 
-        string
-            Description of the cause of termination.
+        str
+            Description for the cause of termination.
         """
 
         # Check if the algorithm is different from 'TNC'
         if self.arguments['method'] != 'TNC':
 
-            # Assign the callback function
-            callback = self.callback
+            # Assign the custom callback function
+            self.arguments['callback'] = self.callback
 
-            # Log a message about the initial objective value
-            Datahub().logger.display_info(''.join((
-                'At iterate 0: f=',
-                str(round(self.arguments['fun'](initial_fluence), 4)))))
-
-        else:
-
-            # Assign the default callback
-            callback = None
+            # Log a message about the initial objective function value
+            Datahub().logger.display_info(
+                "At iterate 0: "
+                f"f={round(self.arguments['fun'](initial_fluence), 4)}")
 
         # Solve the optimization problem
-        result = self.fun(x0=initial_fluence, **self.arguments,
-                          callback=callback)
+        result = self.fun(x0=initial_fluence, **self.arguments)
 
         return result.x, result.message

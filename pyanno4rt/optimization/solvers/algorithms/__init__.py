@@ -1,17 +1,16 @@
 """
-Solver algorithms module.
+Solution algorithms module.
 
 ==================================================================
 
-The module aims to provide functions to get the callable algorithms together \
-with their configurations. It is designed to hold one extensible file per \
-solver, each of which specifies the available algorithms.
+The module aims to provide functions to configure the solution algorithms for \
+the optimization packages.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-from ._proxmin_algorithms import get_proxmin_configuration
-from ._scipy_algorithms import get_scipy_configuration
+from ._configure_proxmin import configure_proxmin
+from ._configure_scipy import configure_scipy
 
-__all__ = ['get_proxmin_configuration',
-           'get_scipy_configuration']
+__all__ = ['configure_proxmin',
+           'configure_scipy']

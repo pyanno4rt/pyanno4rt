@@ -6,7 +6,7 @@
 
 from numba import njit
 from numpy import array, exp, linspace, power
-from scipy.sparse import csr_matrix
+from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -152,7 +152,7 @@ class DoseEnergy(DosiomicFeature):
     def differentiate(dose, *args):
         """Call the differentiation function."""
         # Initialize the gradient vector
-        gradient = csr_matrix((1, args[0]))
+        gradient = lil_matrix((1, args[0]))
 
         # Insert the gradient values at the indices of the segment
         gradient[:, args[1]] = DoseEnergy.gradient(dose)

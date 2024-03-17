@@ -18,8 +18,8 @@ from pyanno4rt.dose_info import DoseInfoGenerator
 from pyanno4rt.optimization import FluenceOptimizer
 
 # Treatment plan evaluation
-from pyanno4rt.evaluation import DVH
-from pyanno4rt.evaluation import Dosimetrics
+from pyanno4rt.evaluation import DVHEvaluator
+from pyanno4rt.evaluation import DosimetricsEvaluator
 
 # Treatment plan visualization
 from pyanno4rt.visualization import Visualizer
@@ -61,8 +61,13 @@ class TreatmentPlan():
             calculation inputs.
 
             .. note:: If the modality is 'photon', dose projection with \
-                neutral RBE of 1.0 is automatically applied, whereas for the \
-                modality 'proton', a constant RBE of 1.1 is assumed.
+                neutral RBE of 1.0 is automatically applied \
+                (:class:`~pyanno4rt.optimization.projections.\
+                     _dose_projection.DoseProjection`), \
+                whereas for the modality 'proton', a constant RBE of 1.1 \
+                (:class:`~pyanno4rt.optimization.projections.\
+                     _constant_rbe_projection.ConstantRBEProjection`) \
+                is assumed.
 
         - number_of_fractions : int
             Number of fractions according to the treatment scheme.
@@ -111,39 +116,56 @@ class TreatmentPlan():
                 *Objectives*
 
                 - 'Dose Uniformity' \
-                    :class:`~pyanno4rt.optimization.components.objectives._dose_uniformity.DoseUniformity`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _dose_uniformity.DoseUniformity`
                 - 'Equivalent Uniform Dose' \
-                    :class:`~pyanno4rt.optimization.components.objectives._equivalent_uniform_dose.EquivalentUniformDose`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _equivalent_uniform_dose.EquivalentUniformDose`
                 - 'Logistic Regression NTCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives._logistic_regression_ntcp.LogisticRegressionNTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _logistic_regression_ntcp.LogisticRegressionNTCP`
                 - 'Logistic Regression TCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives._logistic_regression_tcp.LogisticRegressionTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _logistic_regression_tcp.LogisticRegressionTCP`
                 - 'LQ Poisson TCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives._lq_poisson_tcp.LQPoissonTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _lq_poisson_tcp.LQPoissonTCP`
                 - 'Lyman-Kutcher-Burman NTCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives._lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
                 - 'Maximum DVH' \
-                    :class:`~pyanno4rt.optimization.components.objectives._maximum_dvh.MaximumDVH`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _maximum_dvh.MaximumDVH`
                 - 'Mean Dose' \
-                    :class:`~pyanno4rt.optimization.components.objectives._mean_dose.MeanDose`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _mean_dose.MeanDose`
                 - 'Minimum DVH' \
-                    :class:`~pyanno4rt.optimization.components.objectives._minimum_dvh.MinimumDVH`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _minimum_dvh.MinimumDVH`
                 - 'Moments' \
-                    :class:`~pyanno4rt.optimization.components.objectives._moments.Moments`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _moments.Moments`
                 - 'Neural Network NTCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives._neural_network_ntcp.NeuralNetworkNTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _neural_network_ntcp.NeuralNetworkNTCP`
                 - 'Neural Network TCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives._neural_network_tcp.NeuralNetworkTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _neural_network_tcp.NeuralNetworkTCP`
                 - 'Squared Deviation' \
-                    :class:`~pyanno4rt.optimization.components.objectives._squared_deviation.SquaredDeviation`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _squared_deviation.SquaredDeviation`
                 - 'Squared Overdosing' \
-                    :class:`~pyanno4rt.optimization.components.objectives._squared_overdosing.SquaredOverdosing`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _squared_overdosing.SquaredOverdosing`
                 - 'Squared Underdosing' \
-                    :class:`~pyanno4rt.optimization.components.objectives._squared_underdosing.SquaredUnderdosing`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _squared_underdosing.SquaredUnderdosing`
                 - 'Support Vector Machine NTCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives._support_vector_machine_ntcp.SupportVectorMachineNTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _support_vector_machine_ntcp.SupportVectorMachineNTCP`
                 - 'Support Vector Machine TCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives._support_vector_machine_tcp.SupportVectorMachineTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives.\
+                        _support_vector_machine_tcp.SupportVectorMachineTCP`
 
                 *Constraints*
 
@@ -156,10 +178,24 @@ class TreatmentPlan():
 
         - method : {'lexicographic', 'pareto', 'weighted-sum'}, \
             default='weighted-sum'
-            Single- or multi-criteria optimization method.
+            Single- or multi-criteria optimization method \
+            (:class:`~pyanno4rt.optimization.components.methods.\
+                 _lexicographic_optimization.LexicographicOptimization`, \
+             :class:`~pyanno4rt.optimization.components.methods.\
+                 _pareto_optimization.ParetoOptimization`, or \
+             :class:`~pyanno4rt.optimization.components.methods.\
+                 _weighted_sum_optimization.WeightedSumOptimization`).
 
         - solver : {'ipopt', 'proxmin', 'pymoo', 'scipy'}, default='scipy'
-            Python package to be used for solving the optimization problem.
+            Python package to be used for solving the optimization problem \
+            (:class:`~pyanno4rt.optimization.solvers.\
+                 _ipopt_solver.IpoptSolver`, \
+             :class:`~pyanno4rt.optimization.solvers.\
+                 _proxmin_solver.ProxminSolver`, \
+             :class:`~pyanno4rt.optimization.solvers.\
+                 _pymoo_solver.PymooSolver`, or \
+             :class:`~pyanno4rt.optimization.solvers.\
+                 _scipy_solver.SciPySolver`).
 
             .. note:: The 'ipopt' solver option requires a running IPOPT \
                 installation, otherwise pyanno4rt will fall back to 'scipy'. \
@@ -180,7 +216,9 @@ class TreatmentPlan():
 
         - initial_strategy : {'data-medoid', 'target-coverage', \
                               'warm-start'}, default='target-coverage'
-            Initialization strategy for the fluence vector.
+            Initialization strategy for the fluence vector (see \
+            :class:`~pyanno4rt.optimization.\
+                _fluence_initializer.FluenceInitializer`).
 
             .. note:: Data-medoid initialization works best for a single \
                 dataset or multiple datasets with a high degree of \
@@ -189,7 +227,9 @@ class TreatmentPlan():
 
         - initial_fluence_vector : list or None, default=None
             User-defined initial fluence vector for the optimization problem, \
-            only used if initial_strategy='warm-start'.
+            only used if initial_strategy='warm-start' (see \
+            :class:`~pyanno4rt.optimization.\
+                _fluence_initializer.FluenceInitializer`).
 
         - lower_variable_bounds : int, float, list or None, default=0
             Lower bound(s) on the decision variables.
@@ -217,16 +257,16 @@ class TreatmentPlan():
         Dictionary with the treatment plan evaluation parameters.
 
         - dvh_type : {'cumulative', 'differential'}, default=cumulative'
-            Type of DVH to be calculated.
+            Type of DVH to be evaluated.
 
         - number_of_points : int, default=1000
             Number of (evenly-spaced) points for which to evaluate the DVH.
 
         - reference_volume : list, default=[2, 5, 50, 95, 98]
-            Reference volumes for which to calculate the inverse DVH values.
+            Reference volumes for which to evaluate the inverse DVH values.
 
         - reference_dose : list, default=[]
-            Reference dose values for which to calculate the DVH values.
+            Reference dose values for which to evaluate the DVH values.
 
             .. note:: If the default value [] is used, reference dose \
                 levels will be determined automatically.
@@ -293,13 +333,13 @@ class TreatmentPlan():
         :class:`~pyanno4rt.optimization._fluence_optimizer.FluenceOptimizer`
         The object used to solve the fluence optimization problem.
 
-    histogram : object of class \
-        :class:`~pyanno4rt.evaluation._dvh.DVH`
-        The object used to compute the dose-volume histogram (DVH).
+    dose_histogram : object of class \
+        :class:`~pyanno4rt.evaluation._dvh.DVHEvaluator`
+        The object used to evaluate the dose-volume histogram (DVH).
 
     dosimetrics : object of class \
-        :class:`~pyanno4rt.evaluation._dosimetrics.Dosimetrics`
-        The object used to compute dosimetrics.
+        :class:`~pyanno4rt.evaluation._dosimetrics.DosimetricsEvaluator`
+        The object used to evaluate the dosimetrics.
 
     visualizer : object of class \
         :class:`~pyanno4rt.visualization._visualizer.Visualizer`
@@ -391,7 +431,7 @@ class TreatmentPlan():
         self.plan_generator = None
         self.dose_info_generator = None
         self.fluence_optimizer = None
-        self.histogram = None
+        self.dose_histogram = None
         self.dosimetrics = None
         self.visualizer = None
 
@@ -504,23 +544,24 @@ class TreatmentPlan():
         Datahub.label = self.configuration['label']
 
         # Initialize the DVH class
-        self.histogram = DVH(
+        self.dose_histogram = DVHEvaluator(
             dvh_type=self.evaluation['dvh_type'],
             number_of_points=self.evaluation['number_of_points'],
             display_segments=self.evaluation['display_segments'])
 
         # Initialize the dosimetrics class
-        self.dosimetrics = Dosimetrics(
+        self.dosimetrics = DosimetricsEvaluator(
             reference_volume=self.evaluation['reference_volume'],
             reference_dose=self.evaluation['reference_dose'],
             display_segments=self.evaluation['display_segments'],
             display_metrics=self.evaluation['display_metrics'])
 
         # Compute the dose-volume histogram from the optimized dose
-        self.histogram.compute(self.datahub.optimization['optimized_dose'])
+        self.dose_histogram.evaluate(
+            self.datahub.optimization['optimized_dose'])
 
         # Compute the dosimetrics from the optimized dose
-        self.dosimetrics.compute(self.datahub.optimization['optimized_dose'])
+        self.dosimetrics.evaluate(self.datahub.optimization['optimized_dose'])
 
     def visualize(
             self,
@@ -544,7 +585,7 @@ class TreatmentPlan():
 
         # Check if any required attribute is missing
         if all(getattr(self, attribute) is None for attribute in (
-                'fluence_optimizer', 'histogram', 'dosimetrics')):
+                'fluence_optimizer', 'dose_histogram', 'dosimetrics')):
 
             # Check if the logger has been initialized
             if self.logger:

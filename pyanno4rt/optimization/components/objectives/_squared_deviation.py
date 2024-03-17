@@ -172,7 +172,7 @@ def compute(dose, parameter_value):
     # Center the dose values with the reference dose
     deviation = full_dose - parameter_value[0]
 
-    return (1/len(full_dose)) * (deviation @ deviation)
+    return (deviation @ deviation)/len(full_dose)
 
 
 @njit
@@ -216,6 +216,6 @@ def differentiate(dose, parameter_value, number_of_voxels, segment_indices):
 
     # Compute the objective gradient
     objective_gradient[full_indices] = (
-        (2/len(full_dose)) * (full_dose - parameter_value[0])).reshape(-1)
+        2*(full_dose - parameter_value[0])/len(full_dose)).reshape(-1)
 
     return objective_gradient

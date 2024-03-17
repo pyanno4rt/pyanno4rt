@@ -541,7 +541,7 @@ class FluenceOptimizer():
         # Solve the optimization problem and retrieve the optimized fluence
         (hub.optimization['optimized_fluence'],
          hub.optimization['solver_info']) = hub.optimization[
-             'solver_object'].start(hub.optimization['initial_fluence'])
+             'solver_object'].run(hub.optimization['initial_fluence'])
 
         # Check the time of solver running
         check_time = time()

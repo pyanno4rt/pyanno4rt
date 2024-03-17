@@ -1,4 +1,4 @@
-"""DVH computation."""
+"""DVH evaluation."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -13,18 +13,18 @@ from pyanno4rt.datahub import Datahub
 # %% Class definition
 
 
-class DVH():
+class DVHEvaluator():
     """
-    DVH computation class.
+    DVH evaluation class.
 
-    This class provides methods to compute the dose-volume histogram (DVH) as \
-    a means to evaluate dose distributions from a treatment plans across the \
-    segments. Both cumulative and differential DVH can be calculated.
+    This class provides methods to evaluate dose-volume histograms (DVH) as a \
+    means to quantify dose distributions from a treatment plan across the \
+    segments. Both cumulative and differential DVH can be evaluated.
 
     Parameters
     ----------
     dvh_type : {'cumulative', 'differential'}
-        Type of DVH to be calculated.
+        Type of DVH to be evaluated.
 
     number_of_points : int
         Number of (evenly-spaced) points for which to evaluate the DVH.
@@ -54,7 +54,7 @@ class DVH():
         hub = Datahub()
 
         # Log a message about the initialization of the class
-        hub.logger.display_info("Initializing DVH class ...")
+        hub.logger.display_info("Initializing DVH evaluator ...")
 
         # Get the instance attributes from the arguments
         self.dvh_type = dvh_type
@@ -71,11 +71,11 @@ class DVH():
             # Get the display segments from the argument
             self.display_segments = tuple(display_segments)
 
-    def compute(
+    def evaluate(
             self,
             dose_cube):
         """
-        Compute the DVH for all segments.
+        Evaluate the DVH for all segments.
 
         Parameters
         ----------
@@ -86,18 +86,18 @@ class DVH():
         # Initialize the datahub
         hub = Datahub()
 
-        # Log a message about the DVH computation
+        # Log a message about the DVH evaluation
         hub.logger.display_info(
-            f"Computing {self.dvh_type} DVH with {self.number_of_points} "
+            f"Evaluating {self.dvh_type} DVH with {self.number_of_points} "
             "points for all segments ...")
 
-        def compute_cumulative_dvh(dose, points):
-            """Compute the cumulative DVH points."""
+        def evaluate_cumulative_dvh(dose, points):
+            """Evaluate the cumulative DVH points."""
 
             return array([(dose >= point).sum() for point in points])
 
-        def compute_differential_dvh(dose, points):
-            """Compute the differential DVH points."""
+        def evaluate_differential_dvh(dose, points):
+            """Evaluate the differential DVH points."""
 
             # Determine the bin radius
             radius = (points[1] - points[0]) / 2
@@ -127,21 +127,22 @@ class DVH():
                 indices, cube_dimensions, order='F')], points)
                 * 100/len(indices))
 
-        # Map the DVH type to the computation function
-        dvh_functions = {'cumulative': compute_cumulative_dvh,
-                         'differential': compute_differential_dvh}
+        # Map the DVH type to the evaluation function
+        dvh_functions = {'cumulative': evaluate_cumulative_dvh,
+                         'differential': evaluate_differential_dvh}
 
-        # Initialize the histogram dictionary with the evaluation points
-        histogram = {'evaluation_points': get_evaluation_points()}
+        # Initialize the dose histogram dictionary with the evaluation points
+        dose_histogram = {'evaluation_points': get_evaluation_points()}
 
         # Add the segment names with the corresponding DVH values
-        histogram.update({segment: {'dvh_values': get_segment_dvh(
+        dose_histogram.update({segment: {'dvh_values': get_segment_dvh(
             hub.segmentation[segment]['raw_indices'],
             hub.computed_tomography['cube_dimensions'],
-            histogram['evaluation_points'])} for segment in hub.segmentation})
+            dose_histogram['evaluation_points'])}
+            for segment in hub.segmentation})
 
         # Add the segment names to be displayed
-        histogram['display_segments'] = self.display_segments
+        dose_histogram['display_segments'] = self.display_segments
 
-        # Enter the histogram dictionary into the datahub
-        hub.histogram = histogram
+        # Enter the dose histogram dictionary into the datahub
+        hub.dose_histogram = dose_histogram

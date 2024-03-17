@@ -736,11 +736,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.slice_widget.update_images()
 
                 # Check if the selected plan has been evaluated
-                if isinstance(instance.datahub.histogram, dict):
+                if isinstance(instance.datahub.dose_histogram, dict):
 
                     # Add the style and input data to the DVH widget
                     self.dvh_widget.add_style_and_data(
-                        instance.datahub.histogram)
+                        instance.datahub.dose_histogram)
 
                     # Update the plot of the DVH widget
                     self.dvh_widget.update_dvh()
@@ -1002,7 +1002,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.dvh_widget.reset_dvh()
 
             # Add the style and input data to the DVH widget
-            self.dvh_widget.add_style_and_data(instance.datahub.histogram)
+            self.dvh_widget.add_style_and_data(instance.datahub.dose_histogram)
 
         except Exception as error:
 
@@ -1740,7 +1740,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             'plan_configuration': instance.datahub.plan_configuration,
             'dose_information': instance.datahub.dose_information,
             'optimization': instance.datahub.optimization,
-            'histogram': instance.datahub.histogram,
+            'dose_histogram': instance.datahub.dose_histogram,
             'dosimetrics': instance.datahub.dosimetrics},
             parent=self.plan_window.tree_widget)
 

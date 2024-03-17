@@ -105,7 +105,7 @@ class DoseInfoGenerator():
 
             # Log a message about the dose-influence matrix addition
             hub.logger.display_info(
-                "Adding dose-influence matrix from matlab file ...")
+                "Adding dose-influence matrix from MATLAB file ...")
 
             try:
 
@@ -127,7 +127,7 @@ class DoseInfoGenerator():
 
             # Log a message about the dose-influence matrix addition
             hub.logger.display_info(
-                "Adding dose-influence matrix from numpy binary file ...")
+                "Adding dose-influence matrix from NumPy binary file ...")
 
             # Add the dose-influence matrix from the .npy file
             dose_information['dose_influence_matrix'] = csr_matrix(

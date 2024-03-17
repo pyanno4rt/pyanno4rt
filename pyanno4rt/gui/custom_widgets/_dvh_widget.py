@@ -38,7 +38,7 @@ class DVHWidget(QWidget):
         self.plot_graph.getPlotItem().hideButtons()
 
         self.segments = None
-        self.histogram = None
+        self.dose_histogram = None
         self.segment_styles = None
 
         # Create vertical and horizontal infinite lines
@@ -53,14 +53,14 @@ class DVHWidget(QWidget):
         self.plot_graph.addItem(self.vertical_line, ignoreBounds=True)
         self.plot_graph.addItem(self.horizontal_line, ignoreBounds=True)
 
-    def add_style_and_data(self, histogram):
+    def add_style_and_data(self, dose_histogram):
         """."""
 
         # 
-        self.histogram = histogram
+        self.dose_histogram = dose_histogram
 
         # 
-        self.segments = tuple(segment for segment in (*histogram,)
+        self.segments = tuple(segment for segment in (*dose_histogram,)
                               if segment not in ('evaluation_points',
                                                  'display_segments'))
 
@@ -98,7 +98,8 @@ class DVHWidget(QWidget):
 
         # 
         self.plot_graph.plotItem.vb.setLimits(
-            xMin=0, xMax=max(histogram['evaluation_points']), yMin=0, yMax=101)
+            xMin=0, xMax=max(dose_histogram['evaluation_points']),
+            yMin=0, yMax=101)
 
         # 
         self.plot_graph.plotItem.vb.enableAutoRange()
@@ -210,8 +211,9 @@ class DVHWidget(QWidget):
                         style=self.segment_styles[segment][1],
                         width=2)
 
-            plot = self.plot_graph.plot(self.histogram['evaluation_points'],
-                                        self.histogram[segment]['dvh_values'],
-                                        pen=pen, name=segment, clickable=True)
+            plot = self.plot_graph.plot(
+                self.dose_histogram['evaluation_points'],
+                self.dose_histogram[segment]['dvh_values'],
+                pen=pen, name=segment, clickable=True)
             plot.sigClicked.connect(self.get_segment_statistics)
             plot.sigClicked.connect(self.select_dvh_curve)

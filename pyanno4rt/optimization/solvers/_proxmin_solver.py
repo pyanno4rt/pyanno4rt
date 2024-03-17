@@ -6,7 +6,7 @@
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.solvers.algorithms import get_proxmin_configuration
+from pyanno4rt.optimization.solvers.algorithms import configure_proxmin
 
 # %% Class definition
 
@@ -82,10 +82,9 @@ class ProxminSolver():
                                       .format(algorithm))
 
         # Get the optimizer function and the arguments
-        self.fun, self.arguments = get_proxmin_configuration(
-            number_of_variables, number_of_constraints, problem_instance,
-            lower_variable_bounds, upper_variable_bounds, algorithm,
-            max_iter)
+        self.fun, self.arguments = configure_proxmin(
+            problem_instance, lower_variable_bounds, upper_variable_bounds,
+            algorithm, max_iter)
 
         # Get the objective function
         self.objective = problem_instance.objective

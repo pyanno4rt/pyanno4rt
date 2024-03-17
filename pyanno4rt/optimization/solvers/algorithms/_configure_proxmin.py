@@ -1,4 +1,4 @@
-"""Proxmin algorithms."""
+"""Proxmin algorithm configuration."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 # Package: https://pypi.org/project/proxmin/
@@ -13,9 +13,8 @@ from scipy.optimize import line_search
 # %% Function definition
 
 
-def get_proxmin_configuration(number_of_variables, number_of_constraints,
-                              problem_instance, lower_variable_bounds,
-                              upper_variable_bounds, algorithm, max_iter):
+def configure_proxmin(problem_instance, lower_variable_bounds,
+                      upper_variable_bounds, algorithm, max_iter):
     """
     Get the optimizer function and arguments for the Proxmin solver.
 

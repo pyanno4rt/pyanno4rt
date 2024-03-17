@@ -42,11 +42,10 @@ class FluenceInitializer():
 
     def __init__(self,
                  initial_strategy,
-                 initial_fluence_vector=None,
-                 verbose=True):
+                 initial_fluence_vector=None):
 
         # Check if verbose is True
-        if verbose:
+        if True:
 
             # Log a message about the initialization of the fluence initializer
             Datahub().logger.display_info(
@@ -55,7 +54,6 @@ class FluenceInitializer():
         # Get the instance attributes from the arguments
         self.initial_strategy = initial_strategy
         self.initial_fluence_vector = initial_fluence_vector
-        self.verbose = verbose
 
     def run_strategy(self):
         """Run the initialization method based on the selected strategy."""
@@ -87,7 +85,7 @@ class FluenceInitializer():
         hub = Datahub()
 
         # Check if verbose is True
-        if self.verbose:
+        if True:
 
             # Log a message about the vector initialization
             hub.logger.display_info("Initializing fluence vector with respect "
@@ -188,7 +186,7 @@ class FluenceInitializer():
         """
 
         # Check if verbose is True
-        if self.verbose:
+        if True:
 
             # Log a message about the vector initialization
             Datahub().logger.display_info(

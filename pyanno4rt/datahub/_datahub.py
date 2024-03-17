@@ -79,9 +79,9 @@ class Datahub():
         evaluators. Each evaluator holds information on the evaluation \
         measures calculated.
 
-    histogram : dict
+    dose_histogram : dict
         Dictionary with information on the cumulative or differential \
-        dose-volume histograms for each segmented structure.
+        dose-volume histogram for each segmented structure.
 
     dosimetrics : dict
         Dictionary with information on the dosimetrics for each segmented \
@@ -106,7 +106,7 @@ class Datahub():
     model_instances = None
     model_inspections = None
     model_evaluations = None
-    histogram = None
+    dose_histogram = None
     dosimetrics = None
 
     def __new__(

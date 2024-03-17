@@ -174,7 +174,7 @@ def compute(
     # Center the dose values with the maximum dose and clip values below zero
     overdose = clip(full_dose - parameter_value[0], a_min=0, a_max=None)
 
-    return (1/len(full_dose)) * (overdose @ overdose)
+    return (overdose @ overdose)/len(full_dose)
 
 
 @njit

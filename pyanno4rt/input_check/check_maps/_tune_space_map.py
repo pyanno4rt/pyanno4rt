@@ -23,7 +23,7 @@ tune_space_map = {
         ),
     'penalty': (
         partial(check_type, types=list),
-        partial(check_value_in_set, options=('none', 'l1', 'l2'))
+        partial(check_value_in_set, options=('l1', 'l2'))
         ),
     'tol': (
         partial(check_type, types=list),

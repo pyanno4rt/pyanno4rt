@@ -26,6 +26,6 @@ def get_objective_segments(segmentation):
 
     return tuple(flatten(
         [segment]*len(segmentation[segment]['objective'])
-        if isinstance(segmentation[segment]['objective'], list)
+        if isinstance(segmentation[segment]['objective'], tuple)
         else [segment] for segment in segmentation
         if segmentation[segment]['objective']))

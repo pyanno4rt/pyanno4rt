@@ -9,8 +9,8 @@ treatment plans.
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-from ._dosimetrics import Dosimetrics
-from ._dvh import DVH
+from ._dosimetrics_evaluator import DosimetricsEvaluator
+from ._dvh_evaluator import DVHEvaluator
 
-__all__ = ['Dosimetrics',
-           'DVH']
+__all__ = ['DosimetricsEvaluator',
+           'DVHEvaluator']
