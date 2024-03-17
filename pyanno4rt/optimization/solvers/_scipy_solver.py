@@ -1,7 +1,7 @@
 """SciPy wrapper."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
-# Package: https://docs.scipy.org/doc/scipy/reference/optimize.html
+# Reference: https://docs.scipy.org/doc/scipy/reference/optimize.html
 
 # %% Internal package import
 
@@ -62,7 +62,7 @@ class SciPySolver():
 
     Attributes
     ----------
-    fun : function from :mod:`~scipy.optimize`
+    fun : callable
         Minimization function from the SciPy library.
 
     arguments : dict
@@ -90,11 +90,11 @@ class SciPySolver():
         Datahub().logger.display_info(
             f"Initializing SciPy solver with {algorithm} algorithm ...")
 
-        # Get the callable optimization function with its arguments
+        # Get the callable optimization function and its arguments
         self.fun, self.arguments = configure_scipy(
             problem_instance, lower_variable_bounds, upper_variable_bounds,
             lower_constraint_bounds, upper_constraint_bounds, algorithm,
-            max_iter)
+            max_iter, self.callback)
 
         # Initialize the iteration counter
         self.counter = 1
@@ -141,9 +141,6 @@ class SciPySolver():
 
         # Check if the algorithm is different from 'TNC'
         if self.arguments['method'] != 'TNC':
-
-            # Assign the custom callback function
-            self.arguments['callback'] = self.callback
 
             # Log a message about the initial objective function value
             Datahub().logger.display_info(

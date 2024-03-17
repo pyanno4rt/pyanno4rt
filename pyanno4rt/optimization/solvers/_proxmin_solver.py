@@ -1,7 +1,7 @@
 """Proxmin wrapper."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
-# Package: https://pypi.org/project/proxmin/
+# Reference: https://pypi.org/project/proxmin/
 
 # %% Internal package import
 
@@ -15,11 +15,9 @@ class ProxminSolver():
     """
     Proxmin wrapper class.
 
-    This class provides methods for wrapping the Proxmin solver, including \
-    the definition of support functions for calculations and printouts, the \
-    initialization of the algorithms from the arguments set in the treatment \
-    plan, the composition of a Proxmin-compatible optimization problem, and a \
-    method to start the algorithm.
+    This class serves as a wrapper for the proximal optimization algorithms \
+    from the Proxmin solver. It takes the problem structure, configures the \
+    selected algorithm, and defines the method to run the solver.
 
     Parameters
     ----------
@@ -29,9 +27,14 @@ class ProxminSolver():
     number_of_constraints : int
         Number of constraints.
 
-    problem_instance : object of class `LexicographicOptimization`, \
-    `ParetoOptimization`, or `WeightedSumOptimization`
-        Instance of the optimization problem.
+    problem_instance : object of class \
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _lexicographic_optimization.LexicographicOptimization`,\
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _pareto_optimization.ParetoOptimization` or \
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _weighted_sum_optimization.WeightedSumOptimization`
+        The object representing the optimization problem.
 
     lower_variable_bounds : list
         Lower bounds on the decision variables.
@@ -45,22 +48,25 @@ class ProxminSolver():
     upper_constraint_bounds : list
         Upper bounds on the constraints.
 
-    algorithm : string
+    algorithm : str
         Label for the solution algorithm.
 
+    initial_fluence : ndarray
+        Initial fluence vector.
+
     max_iter : int
-        Maximum number of iterations taken for the solver to converge.
+        Maximum number of iterations.
 
     max_cpu_time : float
-        Maximum CPU time taken for the solver to converge.
+        Maximum CPU time.
 
     Attributes
     ----------
-    fun : object of class `function`
-        Function from the Proxmin library to be called with ``arguments``.
+    fun : callable
+        Minimization function from the Proxmin library.
 
     arguments : dict
-        Dictionary with the arguments used to configure ``fun``.
+        Dictionary with the function arguments.
     """
 
     def __init__(
@@ -78,32 +84,40 @@ class ProxminSolver():
             max_cpu_time):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing Proxmin solver with {} ..."
-                                      .format(algorithm))
+        Datahub().logger.display_info(
+            f"Initializing Proxmin solver with {algorithm} algorithm ...")
 
-        # Get the optimizer function and the arguments
+        # Get the callable optimization function and its arguments
         self.fun, self.arguments = configure_proxmin(
             problem_instance, lower_variable_bounds, upper_variable_bounds,
-            algorithm, max_iter)
-
-        # Get the objective function
-        self.objective = problem_instance.objective
-
-        # Add the callback
-        self.arguments['callback'] = self.callback
+            lower_constraint_bounds, upper_constraint_bounds, algorithm,
+            max_iter, self.callback)
 
     def callback(
             self,
             X,
-            it):
-        """Customize the logging output of the solver."""
+            it,
+            objective):
+        """
+        Log the intermediate results after each iteration.
 
-        # Log a message about the objective value in the current iteration
-        Datahub().logger.display_info(''.join((
-            f'At iterate {it+1}: f=',
-            str(round(self.objective(X.reshape(-1)), 4)))))
+        Parameters
+        ----------
+        X : ndarray
+            Optimal point of the current iteration.
 
-    def start(
+        it : int
+            Iteration counter.
+
+        fun : callable
+            Objective value function.
+        """
+
+        # Log a message about the intermediate objective function value
+        Datahub().logger.display_info(
+            f"At iterate {it}: f={round(objective(X.reshape(-1)), 4)}")
+
+    def run(
             self,
             initial_fluence):
         """
@@ -119,10 +133,11 @@ class ProxminSolver():
         ndarray
             Optimized fluence vector.
 
-        string
-            Description of the cause of termination.
+        str
+            Description for the cause of termination.
         """
-        # Create a deep copy of the initial fluence vector
+
+        # Make a deep copy of the initial fluence vector
         decision_vector = initial_fluence.copy()[:, None]
 
         # Solve the optimization problem

@@ -63,7 +63,6 @@
 			</li>
 			<li> Local and global solvers
 				<ul> 
-					<li> Interior-point algorithms provided by COIN-OR, wrapped by cyipopt </li> 
 					<li> Proximal algorithms provided by Proxmin </li>
 					<li> Multi-objective algorithms provided by Pymoo </li>
 					<li> Local algorithms provided by SciPy </li>

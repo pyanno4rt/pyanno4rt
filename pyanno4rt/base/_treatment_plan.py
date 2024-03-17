@@ -186,26 +186,21 @@ class TreatmentPlan():
              :class:`~pyanno4rt.optimization.components.methods.\
                  _weighted_sum_optimization.WeightedSumOptimization`).
 
-        - solver : {'ipopt', 'proxmin', 'pymoo', 'scipy'}, default='scipy'
+        - solver : {'proxmin', 'pymoo', 'scipy'}, default='scipy'
             Python package to be used for solving the optimization problem \
             (:class:`~pyanno4rt.optimization.solvers.\
-                 _ipopt_solver.IpoptSolver`, \
-             :class:`~pyanno4rt.optimization.solvers.\
                  _proxmin_solver.ProxminSolver`, \
              :class:`~pyanno4rt.optimization.solvers.\
                  _pymoo_solver.PymooSolver`, or \
              :class:`~pyanno4rt.optimization.solvers.\
                  _scipy_solver.SciPySolver`).
 
-            .. note:: The 'ipopt' solver option requires a running IPOPT \
-                installation, otherwise pyanno4rt will fall back to 'scipy'. \
-                Moreover, the 'pareto' method currently only works with the \
+            .. note:: The 'pareto' method currently only works with the \
                 'pymoo' solver option.
 
         - algorithm : str
             Solution algorithm from the chosen solver:
 
-            - solver='ipopt' : {'ma27', 'ma57', 'ma77', 'ma86'}, default='ma57'
             - solver='proxmin' : {'admm', 'pgm', 'sdmm'}, default='pgm'
             - solver='pymoo' : {'NSGA3'}, default='NSGA3'
             - solver='scipy' : {'L-BFGS-B', 'TNC', 'trust-constr'}, \
@@ -393,8 +388,7 @@ class TreatmentPlan():
             'solver': optimization.get('solver', 'scipy'),
             'algorithm': optimization.get(
                 'algorithm',
-                'ma57' if optimization.get('solver') == 'ipopt'
-                else 'pgm' if optimization.get('solver') == 'proxmin'
+                'pgm' if optimization.get('solver') == 'proxmin'
                 else 'NSGA3' if optimization.get('solver') == 'pymoo'
                 else 'L-BFGS-B'),
             'initial_strategy': optimization.get(

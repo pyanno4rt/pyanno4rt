@@ -2057,7 +2057,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         else:
 
             # Add the solver options to the combo box
-            self.solver_cbox.addItems(['ipopt', 'proxmin', 'scipy'])
+            self.solver_cbox.addItems(['proxmin', 'scipy'])
 
             # Set the default solver option
             self.solver_cbox.setCurrentText('scipy')
@@ -2068,17 +2068,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Clear the algorithm combo box
         self.algorithm_cbox.clear()
 
-        # Check if the solver is 'ipopt'
-        if self.solver_cbox.currentText() == 'ipopt':
-
-            # Add the algorithm options to the combo box
-            self.algorithm_cbox.addItems(['ma27', 'ma57', 'ma77', 'ma86'])
-
-            # Set the default algorithm option
-            self.algorithm_cbox.setCurrentText('ma57')
-
-        # Else, check if the solver is 'proxmin'
-        elif self.solver_cbox.currentText() == 'proxmin':
+        # Check if the solver is 'proxmin'
+        if self.solver_cbox.currentText() == 'proxmin':
 
             # Add the algorithm options to the combo box
             self.algorithm_cbox.addItems(['admm', 'pgm', 'sdmm'])

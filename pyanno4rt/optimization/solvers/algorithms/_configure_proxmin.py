@@ -1,7 +1,7 @@
 """Proxmin algorithm configuration."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
-# Package: https://pypi.org/project/proxmin/
+# Reference: https://pypi.org/project/proxmin/
 
 # %% External package import
 
@@ -14,87 +14,141 @@ from scipy.optimize import line_search
 
 
 def configure_proxmin(problem_instance, lower_variable_bounds,
-                      upper_variable_bounds, algorithm, max_iter):
+                      upper_variable_bounds, lower_constraint_bounds,
+                      upper_constraint_bounds, algorithm, max_iter,
+                      callback):
     """
-    Get the optimizer function and arguments for the Proxmin solver.
+    Configure the Proxmin solver.
 
-    Supported algorithms: ADMM, PGM, SDMM
+    Supported algorithms: ADMM, PGM, SDMM.
+
+    Parameters
+    ----------
+    problem_instance : object of class \
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _lexicographic_optimization.LexicographicOptimization`,\
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _pareto_optimization.ParetoOptimization` or \
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _weighted_sum_optimization.WeightedSumOptimization`
+        The object representing the optimization problem.
+
+    lower_variable_bounds : list
+        Lower bounds on the decision variables.
+
+    upper_variable_bounds : list
+        Upper bounds on the decision variables.
+
+    lower_constraint_bounds : list
+        Lower bounds on the constraints.
+
+    upper_constraint_bounds : list
+        Upper bounds on the constraints.
+
+    algorithm : str
+        Label for the solution algorithm.
+
+    max_iter : int
+        Maximum number of iterations.
+
+    callback : callable
+        Callback function from the class \
+        :class:`~pyanno4rt.optimization.solvers._proxmin_solver.ProxminSolver`.
+
+    Returns
+    -------
+    fun : callable
+        Minimization function from the Proxmin library.
+
+    arguments : dict
+        Dictionary with the function arguments.
     """
 
     def get_objective_gradient(X):
         """Get the objective gradient for the current solution."""
+
         return problem_instance.gradient(X)[:, None]
 
     def estimate_lipschitz(X, it=0):
         """Estimate the Lipschitz constant of the gradient function."""
+
+        # Reshape the array
         X = X.reshape(-1)
-        L = line_search(partial(problem_instance.objective, track=False),
-                        problem_instance.gradient,
-                        X, -problem_instance.gradient(X))
+
+        # Determine the step size from a line search
+        L = line_search(
+            partial(problem_instance.objective, track=False),
+            problem_instance.gradient, X, -problem_instance.gradient(X))
+
+        # Check if no step size value has been found
         if not L[0]:
-            return 1e-100
+
+            # Return the default value
+            return 1e-20
 
         return L[0]/2
 
     def project_on_bounds(X, step):
         """Project the current solution on the bounded set."""
-        return clip(X, a_min=lower_variable_bounds,
-                    a_max=upper_variable_bounds)
+
+        return clip(
+            X, a_min=lower_variable_bounds, a_max=upper_variable_bounds)
 
     def perform_proximal_grad_step(X, step):
         """Perform a proximal gradient step."""
+
         return X - step*get_objective_gradient(X)
 
-    # Convert the bound lists to 2D arrays
+    # Convert the lower and upper variable bounds into 2D arrays
     lower_variable_bounds = array(lower_variable_bounds)[:, None]
     upper_variable_bounds = array(upper_variable_bounds)[:, None]
+
+    # Initialize the arguments dictionary
+    arguments = {'e_rel': 5e-3,
+                 'max_iter': max_iter,
+                 'callback': partial(
+                     callback, objective=problem_instance.objective)}
 
     # Check if the algorithm is 'admm'
     if algorithm == 'admm':
 
-        # Set the solution function
+        # Set the optimization function
         fun = admm
 
-        # Set the function arguments
-        arguments = {'prox_f': perform_proximal_grad_step,
-                     'step_f': estimate_lipschitz,
-                     'prox_g': project_on_bounds,
-                     'step_g': None,
-                     'L': None,
-                     'e_rel': 5e-3,
-                     'e_abs': 5e-3,
-                     'max_iter': max_iter}
+        # Update by the arguments of the 'admm' algorithm
+        arguments.update({'prox_f': perform_proximal_grad_step,
+                          'step_f': estimate_lipschitz,
+                          'prox_g': project_on_bounds,
+                          'step_g': None,
+                          'L': None,
+                          'e_abs': 5e-3})
 
     # Else, check if the algorithm is 'pgm'
     elif algorithm == 'pgm':
 
-        # Set the solution function
+        # Set the optimization function
         fun = pgm
 
-        # Set the function arguments
-        arguments = {'grad': get_objective_gradient,
-                     'step': estimate_lipschitz,
-                     'prox': project_on_bounds,
-                     'accelerated': True,
-                     'backtracking': False,
-                     'f': None,
-                     'e_rel': 5e-3,
-                     'max_iter': max_iter}
+        # Update by the arguments of the 'pgm' algorithm
+        arguments.update({'grad': get_objective_gradient,
+                          'step': estimate_lipschitz,
+                          'prox': project_on_bounds,
+                          'accelerated': True,
+                          'backtracking': False,
+                          'f': None})
 
     # Else, check if the algorithm is 'sdmm'
     elif algorithm == 'sdmm':
 
-        # Set the solution function
+        # Set the optimization function
         fun = sdmm
 
-        # Set the function arguments
-        arguments = {'prox_f': perform_proximal_grad_step,
-                     'step_f': estimate_lipschitz,
-                     'proxs_g': [project_on_bounds],
-                     'steps_g': None,
-                     'Ls': None,
-                     'e_rel': 5e-3,
-                     'e_abs': 5e-3,
-                     'max_iter': max_iter}
+        # Update by the arguments of the 'sdmm' algorithm
+        arguments.update({'prox_f': perform_proximal_grad_step,
+                          'step_f': estimate_lipschitz,
+                          'proxs_g': [project_on_bounds],
+                          'steps_g': None,
+                          'Ls': None,
+                          'e_abs': 5e-3})
 
     return fun, arguments

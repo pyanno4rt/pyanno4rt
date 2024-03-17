@@ -9,7 +9,6 @@ tp_rb.py
 
 # Ignore local folders
 external/
-coinhsl/
 snaps/
 
 # Ignore unwanted file types

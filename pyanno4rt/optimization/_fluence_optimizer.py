@@ -36,8 +36,8 @@ class FluenceOptimizer():
     objective functions and constraints, allows for single-criteria \
     (scalarization, lexicographization) and multi-criteria optimization \
     (Pareto analysis) with different fluence initialization strategies, \
-    and integrates multiple local and global solvers from IPOPT, Proxmin, \
-    Pymoo, and SciPy.
+    and integrates multiple local and global solvers from Proxmin, Pymoo, and \
+    SciPy.
 
     Parameters
     ----------
@@ -64,10 +64,9 @@ class FluenceOptimizer():
         - 'weighted-sum' : optimize all objectives based on a weighted sum \
             (single-criteria).
 
-    solver : {'ipopt', 'proxmin', 'pymoo', 'scipy'}
+    solver : {'proxmin', 'pymoo', 'scipy'}
         Python package for solving the optimization problem:
 
-        - 'ipopt' : interior-point algorithms provided by COIN-OR;
         - 'proxmin' : proximal algorithms provided by Proxmin;
         - 'pymoo' : multi-objective algorithms provided by Pymoo;
         - 'scipy' : local algorithms provided by SciPy.
@@ -75,7 +74,6 @@ class FluenceOptimizer():
     algorithm : str
         Solution algorithm from the chosen solver:
 
-        - ``solver`` = 'ipopt' : {'ma27', 'ma57', 'ma77', 'ma86'};
         - ``solver`` = 'proxmin' : {'admm', 'pgm', 'sdmm'};
         - ``solver`` = 'pymoo' : {'NSGA3'};
         - ``solver`` = 'scipy' : {'L-BFGS-B', 'TNC', 'trust-constr'}.
@@ -121,8 +119,8 @@ class FluenceOptimizer():
     initial_fluence : ndarray
         Initialization of the fluence vector.
 
-    solver_object : object of class `IpoptSolver`, `ProxminSolver`, \
-        `PymooSolver`, or `SciPySolver`
+    solver_object : object of class `ProxminSolver`, `PymooSolver`, or \
+        `SciPySolver`
         Instance of the solver with its configuration.
 
     optimized_fluence : ndarray
@@ -234,20 +232,6 @@ class FluenceOptimizer():
             # Replace all values of None in the upper variable bounds list
             upper_variable_bounds = [inf if bound is None else bound
                                      for bound in upper_variable_bounds]
-
-        # Check if the IPOPT solver is selected but not available
-        if solver == 'ipopt' and solver_map['ipopt'] is None:
-
-            # Overwrite the missing IPOPT solver with the default solver
-            solver_map['ipopt'] = solver_map['scipy']
-
-            # Overwrite the algorithm to the default SciPy algorithm
-            algorithm = 'L-BFGS-B'
-
-            # Log a message about the fallback to SciPy
-            hub.logger.display_warning(
-                "IPOPT solver is not available, falling back to SciPy solver "
-                "with L-BFGS-B ...")
 
         # Initialize the solver object based on the 'solver' argument
         hub.optimization['solver_object'] = solver_map[solver](

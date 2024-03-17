@@ -16,7 +16,7 @@ def add_square_brackets(text):
 
     Returns
     -------
-    str
+    text
         Input text with enclosing square brackets.
     """
 

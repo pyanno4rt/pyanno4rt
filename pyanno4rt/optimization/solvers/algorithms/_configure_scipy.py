@@ -1,7 +1,7 @@
 """SciPy algorithm configuration."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
-# Package: https://docs.scipy.org/doc/scipy/reference/optimize.html
+# Reference: https://docs.scipy.org/doc/scipy/reference/optimize.html
 
 # %% External package import
 
@@ -12,17 +12,59 @@ from scipy.optimize import minimize
 
 def configure_scipy(problem_instance, lower_variable_bounds,
                     upper_variable_bounds, lower_constraint_bounds,
-                    upper_constraint_bounds, algorithm, max_iter):
+                    upper_constraint_bounds, algorithm, max_iter,
+                    callback):
     """
     Configure the SciPy solver.
 
     Supported algorithms: L-BFGS-B, TNC, trust-constr.
+
+    Parameters
+    ----------
+    problem_instance : object of class \
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _lexicographic_optimization.LexicographicOptimization`,\
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _pareto_optimization.ParetoOptimization` or \
+        :class:`~pyanno4rt.optimization.components.methods.\
+            _weighted_sum_optimization.WeightedSumOptimization`
+        The object representing the optimization problem.
+
+    lower_variable_bounds : list
+        Lower bounds on the decision variables.
+
+    upper_variable_bounds : list
+        Upper bounds on the decision variables.
+
+    lower_constraint_bounds : list
+        Lower bounds on the constraints.
+
+    upper_constraint_bounds : list
+        Upper bounds on the constraints.
+
+    algorithm : str
+        Label for the solution algorithm.
+
+    max_iter : int
+        Maximum number of iterations.
+
+    callback : callable
+        Callback function from the class \
+        :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`.
+
+    Returns
+    -------
+    fun : callable
+        Minimization function from the SciPy library.
+
+    arguments : dict
+        Dictionary with the function arguments.
     """
 
     # Set the optimization function
     fun = minimize
 
-    # Set the common function arguments
+    # Initialize the arguments dictionary
     arguments = {'fun': problem_instance.objective,
                  'jac': problem_instance.gradient,
                  'bounds': tuple(
@@ -38,8 +80,8 @@ def configure_scipy(problem_instance, lower_variable_bounds,
                           'options': {'disp': False,
                                       'ftol': 1e-3,
                                       'maxiter': max_iter,
-                                      'maxls': 20}
-                          })
+                                      'maxls': 20},
+                          'callback': callback})
 
     # Else, check if the algorithm is 'TNC'
     elif algorithm == 'TNC':
@@ -61,7 +103,7 @@ def configure_scipy(problem_instance, lower_variable_bounds,
         arguments.update({'method': 'trust-constr',
                           'options': {'disp': False,
                                       'verbose': 0,
-                                      'maxiter': max_iter}
-                          })
+                                      'maxiter': max_iter},
+                          'callback': callback})
 
     return fun, arguments

@@ -46,12 +46,11 @@ optimization_map = {
         partial(check_type, types=str),
         partial(check_value_in_set, options={
             'pareto': ('pymoo',),
-            'weighted-sum': ('ipopt', 'proxmin', 'scipy')})
+            'weighted-sum': ('proxmin', 'scipy')})
         ),
     'algorithm': (
         partial(check_type, types=str),
         partial(check_value_in_set, options={
-            'ipopt': ('ma27', 'ma57', 'ma77', 'ma86'),
             'proxmin': ('admm', 'pgm', 'sdmm'),
             'pymoo': ('NSGA3',),
             'scipy': ('L-BFGS-B', 'TNC', 'trust-constr')})

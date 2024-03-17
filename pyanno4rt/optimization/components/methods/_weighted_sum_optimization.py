@@ -282,22 +282,3 @@ class WeightedSumOptimization():
                             for constraint in self.constraints)
 
         return constraints
-
-    def intermediate(
-            self,
-            alg_mod,
-            iter_count,
-            obj_value,
-            inf_pr,
-            inf_du,
-            mu,
-            d_norm,
-            regularization_size,
-            alpha_du,
-            alpha_pr,
-            ls_trials):
-        """Log an intermediate callback for the IPOPT solver."""
-
-        # Log a message about the objective value in the current iteration
-        Datahub().logger.display_info(''.join((
-            f'At iterate {iter_count}: f=', str(round(obj_value, 4)))))
