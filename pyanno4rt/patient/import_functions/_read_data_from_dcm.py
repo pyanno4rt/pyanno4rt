@@ -22,15 +22,15 @@ def read_data_from_dcm(path):
     Returns
     -------
     computed_tomography_data : tuple
-        Tuple of :class:`~pydicom.dataset.FileDataset` objects with \
+        Tuple of :class:`pydicom.dataset.FileDataset` objects with \
         information on the CT slices.
 
-    segmentation_data : object of class :class:`~pydicom.dataset.FileDataset`
+    segmentation_data : object of class :class:`pydicom.dataset.FileDataset`
         The object representation of the segmentation data.
     """
 
     # Load the DICOM files
-    files = tuple(dcmread(''.join((path, file))) for file in listdir(path))
+    files = tuple(dcmread(f'{path}{file}') for file in listdir(path))
 
     # Get the (axially ordered) CT data files
     computed_tomography_data = tuple(sorted(

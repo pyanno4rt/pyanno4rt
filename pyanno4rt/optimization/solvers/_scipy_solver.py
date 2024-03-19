@@ -28,12 +28,9 @@ class SciPySolver():
         Number of constraints.
 
     problem_instance : object of class \
-        :class:`~pyanno4rt.optimization.components.methods.\
-            _lexicographic_optimization.LexicographicOptimization`,\
-        :class:`~pyanno4rt.optimization.components.methods.\
-            _pareto_optimization.ParetoOptimization` or \
-        :class:`~pyanno4rt.optimization.components.methods.\
-            _weighted_sum_optimization.WeightedSumOptimization`
+        :class:`~pyanno4rt.optimization.components.methods._lexicographic_optimization.LexicographicOptimization`\
+        :class:`~pyanno4rt.optimization.components.methods._pareto_optimization.ParetoOptimization`\
+        :class:`~pyanno4rt.optimization.components.methods._weighted_sum_optimization.WeightedSumOptimization`
         The object representing the optimization problem.
 
     lower_variable_bounds : list

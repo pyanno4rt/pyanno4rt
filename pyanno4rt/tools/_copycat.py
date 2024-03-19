@@ -58,7 +58,7 @@ def copycat(base_class, path):
 
                         # Overwrite the model data path
                         component['parameters']['model_parameters'][
-                            'data_path'] = ''.join((inputs[0], '/', filename))
+                            'data_path'] = f'{inputs[0]}/{filename}'
 
         # Get the component instance(s)
         component = treatment_plan.optimization[
@@ -77,7 +77,7 @@ def copycat(base_class, path):
             edit(component)
 
     # Open a file stream
-    with open(''.join((path, '/input_parameters.json')), 'r',
+    with open(f'{path}/input_parameters.json', 'r',
               encoding='utf-8') as file:
 
         # Load the input parameter dictionaries
@@ -91,21 +91,21 @@ def copycat(base_class, path):
 
             # Overwrite the imaging path
             input_parameters['configuration']['imaging_path'] = (
-                ''.join((path, '/', filename)))
+                f'{path}/{filename}')
 
         # Check if the current file holds the dose influence matrix
         elif 'dose_influence_matrix' in filename:
 
             # Overwrite the dose path
             input_parameters['configuration']['dose_path'] = (
-                ''.join((path, '/', filename)))
+                f'{path}/{filename}')
 
     # Initialize the treatment plan instance from the input parameters
     treatment_plan = base_class(**input_parameters)
 
     # Get the model folder paths
-    model_paths = (''.join((path, '/', folder_name))
-                   for folder_name in tuple(next(walk(path))[1]))
+    model_paths = (f'{path}/{folder_name}' for folder_name in tuple(
+        next(walk(path))[1]))
 
     # Add the model folder and data paths
     apply(add_model_paths,

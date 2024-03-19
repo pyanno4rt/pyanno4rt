@@ -147,13 +147,12 @@ class DosimetricsEvaluator():
 
                 # Compute the dose quantiles from the reference volumes
                 dosimetrics[segment].update(
-                    {'_'.join(('Dx', str(value))): interpolator(1-value/100)
+                    {f'Dx_{value}': interpolator(1-value/100)
                      for value in self.reference_volume})
 
                 # Compute the relative volumes from the reference doses
                 dosimetrics[segment].update(
-                    {'_'.join(('Vx', str(value))): ((dose >= value).sum()
-                                                    / dose_length)
+                    {f'Vx_{value}': ((dose >= value).sum()/dose_length)
                      for value in self.reference_dose})
 
                 # Check if the segment is a target volume with objective
@@ -200,12 +199,12 @@ class DosimetricsEvaluator():
                         sub = str(round(target_dose*100)/100)
 
                         # Add the conformity index to the dosimetrics
-                        dosimetrics[segment][''.join(('CI_', sub, 'Gy'))] = (
+                        dosimetrics[segment][f'CI_{sub}Gy'] = (
                             power((dose >= threshold).sum(), 2)
                             / (dose_length*(dose_cube >= threshold).sum()))
 
                         # Add the homogeneity index to the dosimetrics
-                        dosimetrics[segment][''.join(('HI_', sub, 'Gy'))] = (
+                        dosimetrics[segment][f'HI_{sub}Gy'] = (
                             ((interpolator(0.95)-interpolator(0.05))
                              / target_dose) * 100)
 

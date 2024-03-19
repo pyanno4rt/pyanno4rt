@@ -27,19 +27,19 @@ def add_square_brackets(text):
         if text[0] == '(':
 
             # Replace it with a square bracket
-            text = text.replace('(', '[', 1)
+            text = f'{text[1:]}'
 
         # Check if the last character is a round bracket
         if text[-1] == ')':
 
             # Replace it with a square bracket
-            text = text.replace(')', ']', 1)
+            text = f'{text[:-1]}'
 
         # Check if the text is not already bracketed
         if (text[0], text[-1]) != ('[', ']'):
 
             # Return the text input with square brackets
-            return ''.join(('[', text, ']'))
+            return f'[{text}]'
 
         else:
 

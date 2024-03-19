@@ -61,7 +61,7 @@ def generate_segmentation_from_mat(data, computed_tomography):
             segment_values[3].astype(int)-1,
             segment_values[3].astype(int)-1,
             segment_values[3].astype(int)-1,
-            {''.join((parameter[0].lower(), parameter[1:])):
+            {f'{parameter[0].lower()}{parameter[1:]}':
              segment_values[4].__dict__[parameter]
              for parameter in segment_values[4].__dict__
              if parameter in ('Priority', 'alphaX', 'betaX', 'visibleColor')},

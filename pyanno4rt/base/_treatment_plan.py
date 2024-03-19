@@ -60,14 +60,12 @@ class TreatmentPlan():
             Treatment modality, needs to be consistent with the dose \
             calculation inputs.
 
-            .. note:: If the modality is 'photon', dose projection with \
-                neutral RBE of 1.0 is automatically applied \
-                (:class:`~pyanno4rt.optimization.projections.\
-                     _dose_projection.DoseProjection`), \
-                whereas for the modality 'proton', a constant RBE of 1.1 \
-                (:class:`~pyanno4rt.optimization.projections.\
-                     _constant_rbe_projection.ConstantRBEProjection`) \
-                is assumed.
+            .. note:: If the modality is 'photon', \
+                :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
+                with neutral RBE of 1.0 is automatically applied, whereas for \
+                the modality 'proton', \
+                :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`\
+                with constant RBE of 1.1 is used.
 
         - number_of_fractions : int
             Number of fractions according to the treatment scheme.
@@ -116,56 +114,39 @@ class TreatmentPlan():
                 *Objectives*
 
                 - 'Dose Uniformity' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _dose_uniformity.DoseUniformity`
+                    :class:`~pyanno4rt.optimization.components.objectives._dose_uniformity.DoseUniformity`
                 - 'Equivalent Uniform Dose' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _equivalent_uniform_dose.EquivalentUniformDose`
+                    :class:`~pyanno4rt.optimization.components.objectives._equivalent_uniform_dose.EquivalentUniformDose`
                 - 'Logistic Regression NTCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _logistic_regression_ntcp.LogisticRegressionNTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives._logistic_regression_ntcp.LogisticRegressionNTCP`
                 - 'Logistic Regression TCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _logistic_regression_tcp.LogisticRegressionTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives._logistic_regression_tcp.LogisticRegressionTCP`
                 - 'LQ Poisson TCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _lq_poisson_tcp.LQPoissonTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives._lq_poisson_tcp.LQPoissonTCP`
                 - 'Lyman-Kutcher-Burman NTCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives._lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
                 - 'Maximum DVH' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _maximum_dvh.MaximumDVH`
+                    :class:`~pyanno4rt.optimization.components.objectives._maximum_dvh.MaximumDVH`
                 - 'Mean Dose' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _mean_dose.MeanDose`
+                    :class:`~pyanno4rt.optimization.components.objectives._mean_dose.MeanDose`
                 - 'Minimum DVH' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _minimum_dvh.MinimumDVH`
+                    :class:`~pyanno4rt.optimization.components.objectives._minimum_dvh.MinimumDVH`
                 - 'Moments' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _moments.Moments`
+                    :class:`~pyanno4rt.optimization.components.objectives._moments.Moments`
                 - 'Neural Network NTCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _neural_network_ntcp.NeuralNetworkNTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives._neural_network_ntcp.NeuralNetworkNTCP`
                 - 'Neural Network TCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _neural_network_tcp.NeuralNetworkTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives._neural_network_tcp.NeuralNetworkTCP`
                 - 'Squared Deviation' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _squared_deviation.SquaredDeviation`
+                    :class:`~pyanno4rt.optimization.components.objectives._squared_deviation.SquaredDeviation`
                 - 'Squared Overdosing' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _squared_overdosing.SquaredOverdosing`
+                    :class:`~pyanno4rt.optimization.components.objectives._squared_overdosing.SquaredOverdosing`
                 - 'Squared Underdosing' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _squared_underdosing.SquaredUnderdosing`
+                    :class:`~pyanno4rt.optimization.components.objectives._squared_underdosing.SquaredUnderdosing`
                 - 'Support Vector Machine NTCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _support_vector_machine_ntcp.SupportVectorMachineNTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives._support_vector_machine_ntcp.SupportVectorMachineNTCP`
                 - 'Support Vector Machine TCP' \
-                    :class:`~pyanno4rt.optimization.components.objectives.\
-                        _support_vector_machine_tcp.SupportVectorMachineTCP`
+                    :class:`~pyanno4rt.optimization.components.objectives._support_vector_machine_tcp.SupportVectorMachineTCP`
 
                 *Constraints*
 
@@ -178,22 +159,17 @@ class TreatmentPlan():
 
         - method : {'lexicographic', 'pareto', 'weighted-sum'}, \
             default='weighted-sum'
-            Single- or multi-criteria optimization method \
-            (:class:`~pyanno4rt.optimization.components.methods.\
-                 _lexicographic_optimization.LexicographicOptimization`, \
-             :class:`~pyanno4rt.optimization.components.methods.\
-                 _pareto_optimization.ParetoOptimization`, or \
-             :class:`~pyanno4rt.optimization.components.methods.\
-                 _weighted_sum_optimization.WeightedSumOptimization`).
+            Single- or multi-criteria optimization method, see the classes \
+            :class:`~pyanno4rt.optimization.components.methods._lexicographic_optimization.LexicographicOptimization`\
+            :class:`~pyanno4rt.optimization.components.methods._pareto_optimization.ParetoOptimization`\
+            :class:`~pyanno4rt.optimization.components.methods._weighted_sum_optimization.WeightedSumOptimization`.
 
         - solver : {'proxmin', 'pymoo', 'scipy'}, default='scipy'
-            Python package to be used for solving the optimization problem \
-            (:class:`~pyanno4rt.optimization.solvers.\
-                 _proxmin_solver.ProxminSolver`, \
-             :class:`~pyanno4rt.optimization.solvers.\
-                 _pymoo_solver.PymooSolver`, or \
-             :class:`~pyanno4rt.optimization.solvers.\
-                 _scipy_solver.SciPySolver`).
+            Python package to be used for solving the optimization problem, \
+            see the classes \
+            :class:`~pyanno4rt.optimization.solvers._proxmin_solver.ProxminSolver`\
+            :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
+            :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`.
 
             .. note:: The 'pareto' method currently only works with the \
                 'pymoo' solver option.
@@ -211,9 +187,8 @@ class TreatmentPlan():
 
         - initial_strategy : {'data-medoid', 'target-coverage', \
                               'warm-start'}, default='target-coverage'
-            Initialization strategy for the fluence vector (see \
-            :class:`~pyanno4rt.optimization.\
-                _fluence_initializer.FluenceInitializer`).
+            Initialization strategy for the fluence vector (see the class \
+            :class:`~pyanno4rt.optimization._fluence_initializer.FluenceInitializer`).
 
             .. note:: Data-medoid initialization works best for a single \
                 dataset or multiple datasets with a high degree of \
@@ -222,9 +197,8 @@ class TreatmentPlan():
 
         - initial_fluence_vector : list or None, default=None
             User-defined initial fluence vector for the optimization problem, \
-            only used if initial_strategy='warm-start' (see \
-            :class:`~pyanno4rt.optimization.\
-                _fluence_initializer.FluenceInitializer`).
+            only used if initial_strategy='warm-start' (see the class \
+            :class:`~pyanno4rt.optimization._fluence_initializer.FluenceInitializer`).
 
         - lower_variable_bounds : int, float, list or None, default=0
             Lower bound(s) on the decision variables.

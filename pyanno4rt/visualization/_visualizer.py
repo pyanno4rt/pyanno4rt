@@ -187,7 +187,9 @@ class MainWindow(QMainWindow):
             button.clicked.connect(getattr(self, subclass.name).view)
 
             # Check if the iteration plot buttons should be disabled
-            if not hasattr(hub.optimization['problem'], 'tracker'):
+            if (not hasattr(hub.optimization['problem'], 'tracker')
+                    and subclass.name in (
+                        'iterations_plotter', 'ntcp_plotter')):
                 button.setEnabled(False)
 
             # Check if the iteration values button should be disabled

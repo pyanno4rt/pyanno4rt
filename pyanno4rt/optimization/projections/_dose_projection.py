@@ -16,7 +16,7 @@ class DoseProjection(BackProjection):
 
     This class provides an implementation of the abstract forward and \
     backward projection methods in \
-    :class:`~pyanno4rt.optimization.projections._backprojection.Backprojection` \
+    :class:`~pyanno4rt.optimization.projections._backprojection.Backprojection`\
     by a linear function with a neutral RBE value of 1.0.
     """
 

@@ -61,7 +61,7 @@ def snapshot(instance, path, include_patient_data=False,
         """Create and save the machine learning model data files."""
 
         # Build the model folder path
-        model_path = ''.join((snap_path, '/', data[0]))
+        model_path = f'{snap_path}/{data[0]}'
 
         # Check if the model folder does not yet exist
         if not exists(model_path):
@@ -91,10 +91,10 @@ def snapshot(instance, path, include_patient_data=False,
             _, extension = splitext(data[2])
 
             # Copy the raw data set into a new file
-            copy(data[2], ''.join((model_path, '/model_data', extension)))
+            copy(data[2], f'{model_path}/model_data{extension}')
 
     # Build the snapshot folder path
-    snap_path = ''.join((path, '/', instance.configuration['label']))
+    snap_path = f"{path}/{instance.configuration['label']}"
 
     # Check if the folder path does not already exists
     if not exists(snap_path):
@@ -108,7 +108,7 @@ def snapshot(instance, path, include_patient_data=False,
                           'evaluation': instance.evaluation}
 
     # Open a file stream
-    with open(''.join((snap_path, '/input_parameters.json')), 'w',
+    with open(f'{snap_path}/input_parameters.json', 'w',
               encoding='utf-8') as file:
 
         # Dump the input dictionaries to the file
@@ -118,7 +118,7 @@ def snapshot(instance, path, include_patient_data=False,
     stream_value = instance.logger.logger.handlers[1].stream.getvalue()
 
     # Open a file stream
-    with open(''.join((snap_path, '/', instance.datahub.label, '.log')), 'w',
+    with open(f'{snap_path}/{instance.datahub.label}.log', 'w',
               encoding='utf-8') as file:
 
         # Print the stream value to the file
@@ -141,7 +141,7 @@ def snapshot(instance, path, include_patient_data=False,
 
         # Copy the input file into a new file
         copy(instance.configuration['imaging_path'],
-             ''.join((snap_path, '/patient_data', extension)))
+             f'{snap_path}/patient_data{extension}')
 
     # Check if the dose influence matrix data should be saved
     if include_dose_matrix:
@@ -151,4 +151,4 @@ def snapshot(instance, path, include_patient_data=False,
 
         # Copy the input file into a new file
         copy(instance.configuration['dose_path'],
-             ''.join((snap_path, '/dose_influence_matrix', extension)))
+             f'{snap_path}/dose_influence_matrix{extension}')

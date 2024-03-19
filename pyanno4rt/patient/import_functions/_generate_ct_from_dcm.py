@@ -23,7 +23,7 @@ def generate_ct_from_dcm(data, resolution):
     Parameters
     ----------
     data : tuple
-        Tuple of :class:`~pydicom.dataset.FileDataset` objects with \
+        Tuple of :class:`pydicom.dataset.FileDataset` objects with \
         information on the CT slices.
 
     resolution : None or list

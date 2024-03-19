@@ -19,12 +19,12 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
 
     Parameters
     ----------
-    data : object of class :class:`~pydicom.dataset.FileDataset`
-        The :class:`~pydicom.dataset.FileDataset` object with information on \
+    data : object of class :class:`pydicom.dataset.FileDataset`
+        The :class:`pydicom.dataset.FileDataset` object with information on \
         the segmented structures.
 
     slices : tuple
-        Tuple of :class:`~pydicom.dataset.FileDataset` objects with \
+        Tuple of :class:`pydicom.dataset.FileDataset` objects with \
         information on the CT slices.
 
     computed_tomography : dict

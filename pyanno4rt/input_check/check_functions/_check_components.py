@@ -28,8 +28,8 @@ def check_components(label, data, check_functions):
         dict_value = data[dict_key]
 
         # Get the dictionary paths to check
-        dict_paths = tuple(''.join((label, string)) for string in (
-            ''.join((f"['{dict_key}']", extension))
+        dict_paths = tuple(f'{label}{string}' for string in (
+            f"['{dict_key}']{extension}"
             for extension in ('', "['type']", "['instance']")))
 
         # Check if 'type' and 'instance' are unavailable keys
@@ -54,8 +54,8 @@ def check_components(label, data, check_functions):
             for i, element in enumerate(instance):
 
                 # Get the dictionary paths to check
-                paths = tuple(''.join((dict_paths[0], string)) for string in (
-                    ''.join((f"['instance'][{i}]", extension))
+                paths = tuple(f'{dict_paths[0]}{string}' for string in (
+                    f"['instance'][{i}]{extension}"
                     for extension in ('', "['class']", "['parameters']")))
 
                 # Check if 'class' and 'parameters' are unavailable keys
@@ -70,8 +70,8 @@ def check_components(label, data, check_functions):
         else:
 
             # Get the dictionary paths to check
-            paths = tuple(''.join((dict_paths[0], string)) for string in (
-                ''.join(("['instance']", extension))
+            paths = tuple(f'{dict_paths[0]}{string}' for string in (
+                f"['instance']{extension}"
                 for extension in ('', "['class']", "['parameters']")))
 
             # Check if 'class' and 'parameters' are unavailable keys
