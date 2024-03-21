@@ -1,10 +1,9 @@
 """
-Optimization problems module.
+Optimization methods module.
 
 ==================================================================
 
-The module aims to provide different optimization problem formulations, e.g.
-weighted-sum approach or Pareto analysis.
+The module aims to provide different types of optimization methods.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

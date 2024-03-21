@@ -1,4 +1,4 @@
-"""Weighted-sum problem."""
+"""Weighted-sum optimization method."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -42,9 +42,6 @@ class WeightedSumOptimization():
 
     Attributes
     ----------
-    name : string
-        Label for the optimization problem.
-
     backprojection : object of class `DoseProjection` or \
         `ConstantRBEProjection`
         See 'Parameters'.
@@ -60,9 +57,6 @@ class WeightedSumOptimization():
         divided by the associated segments.
     """
 
-    # Specify the class label
-    name = 'weighted-sum'
-
     def __init__(
             self,
             backprojection,
@@ -70,8 +64,8 @@ class WeightedSumOptimization():
             constraints):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing weighted-sum "
-                                      "optimization problem ...")
+        Datahub().logger.display_info(
+            "Initializing weighted-sum optimization method ...")
 
         # Get the instance attributes from the arguments
         self.backprojection = backprojection
@@ -79,13 +73,7 @@ class WeightedSumOptimization():
         self.constraints = constraints
 
         # Initialize the tracker dictionary
-        self.tracker = {segment_objective: []
-                        for segment_objective in (
-                            '-'.join((str(objective[0]), objective[1].name))
-                        if objective[1].identifier is None
-                        else '-'.join((str(objective[0]), objective[1].name,
-                                       objective[1].identifier))
-                        for objective in self.objectives)}
+        self.tracker = {key: [] for key in self.objectives}
 
     def objective(
             self,
@@ -104,32 +92,26 @@ class WeightedSumOptimization():
         total_objective_value : float
             Value of the weighted-sum objective function.
         """
+
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the machine learning objectives
-        ml_objectives = get_machine_learning_objectives(hub.segmentation)
+        # Loop over the machine learning objectives
+        for objective in get_machine_learning_objectives(hub.segmentation):
 
-        # Check if machine learning objectives are present
-        if len(ml_objectives) > 0:
-
-            # Loop over the machine learning objectives
-            for objective in ml_objectives:
-
-                # Get the data model handler of the objective
-                data_model_handler = objective.data_model_handler
-
-                # Increment the feature calculator iteration
-                data_model_handler.feature_calculator.__iteration__[1] += 1
+            # Increment the feature calculator iteration
+            (objective.data_model_handler.
+             feature_calculator.__iteration__[1]) += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_objective(objective):
+        def compute_single_objective(label, objective):
             """Compute the value of a single objective function."""
+
             # Get the associated segments and the objective class
-            segments = objective[0]
-            objective_class = objective[1]
+            segments = objective['segments']
+            objective_class = objective['instance']
 
             # Check if the objective class is valid
             if all(base in str(type(objective_class).__bases__[0])
@@ -144,12 +126,8 @@ class WeightedSumOptimization():
                 if track:
 
                     # Enter the value into the tracking dictionary
-                    self.tracker[
-                        '-'.join((str(segments), objective_class.name))
-                        if objective_class.identifier is None
-                        else '-'.join((str(segments), objective_class.name,
-                                       objective_class.identifier))
-                        ] += (objective_value * objective_class.weight,)
+                    self.tracker[label] += (
+                        objective_value * objective_class.weight,)
 
                 # Check if the objective class is active
                 if objective_class.embedding == 'active':
@@ -163,11 +141,10 @@ class WeightedSumOptimization():
             # Raise an error if the objective class is not valid
             raise TypeError("All objective functions must have 'pyanno4rt' "
                             "and 'ObjectiveClass' in the class name, got "
-                            "{} instead!"
-                            .format(type(objective)))
+                            f"{type(objective)} instead!")
 
-        return sum(compute_single_objective(objective)
-                   for objective in self.objectives)
+        return sum(compute_single_objective(label, objective)
+                   for label, objective in self.objectives.items())
 
     def gradient(
             self,
@@ -185,14 +162,16 @@ class WeightedSumOptimization():
         fluence_gradient : ndarray
             Values of the weighted-sum fluence derivatives.
         """
+
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
         def compute_single_gradient(objective):
             """Compute the value of a single gradient function."""
+
             # Get the associated segments and the objective class
-            segments = objective[0]
-            objective_class = objective[1]
+            segments = objective['segments']
+            objective_class = objective['instance']
 
             # Check if the objective class is valid
             if all(base in str(type(objective_class).__bases__[0])
@@ -215,18 +194,14 @@ class WeightedSumOptimization():
             # Raise an error if the objective class is not valid
             raise TypeError("All objective functions must have 'pyanno4rt' "
                             "and 'ObjectiveClass' in the class name, got "
-                            "{} instead!"
-                            .format(type(objective)))
+                            f"{type(objective)} instead!")
 
         # Compute the total gradient vector
         total_gradient = sum(compute_single_gradient(objective)
-                             for objective in self.objectives)
+                             for objective in self.objectives.values())
 
-        # Compute the fluence gradient from the dose gradient
-        fluence_gradient = self.backprojection.compute_fluence_gradient(
+        return self.backprojection.compute_fluence_gradient(
             total_gradient)
-
-        return fluence_gradient
 
     def constraint(
             self,
@@ -244,11 +219,13 @@ class WeightedSumOptimization():
         constraints : ndarray
             Values of the constraints.
         """
+
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
         def compute_single_constraint(constraint):
             """Compute the value of a single constraint function."""
+
             # Get the associated segments and the constraint class
             segments = constraint[0]
             constraint_class = constraint[1]
@@ -274,11 +251,7 @@ class WeightedSumOptimization():
             # Raise an error if the constraint class is not valid
             raise TypeError("All constraint functions must have 'pyanno4rt' "
                             "and 'ConstraintClass' in the class name, got "
-                            "{} instead!"
-                            .format(type(constraint)))
+                            f"{type(constraint)} instead!")
 
-        # Compute the values of all constraint functions
-        constraints = array(compute_single_constraint(constraint)
-                            for constraint in self.constraints)
-
-        return constraints
+        return array(compute_single_constraint(constraint)
+                     for constraint in self.constraints)

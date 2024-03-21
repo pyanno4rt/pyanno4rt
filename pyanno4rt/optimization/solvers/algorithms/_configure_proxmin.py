@@ -15,8 +15,7 @@ from scipy.optimize import line_search
 
 def configure_proxmin(problem_instance, lower_variable_bounds,
                       upper_variable_bounds, lower_constraint_bounds,
-                      upper_constraint_bounds, algorithm, max_iter,
-                      callback):
+                      upper_constraint_bounds, algorithm, max_iter, callback):
     """
     Configure the Proxmin solver.
 
@@ -26,7 +25,6 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
     ----------
     problem_instance : object of class \
         :class:`~pyanno4rt.optimization.components.methods._lexicographic_optimization.LexicographicOptimization`\
-        :class:`~pyanno4rt.optimization.components.methods._pareto_optimization.ParetoOptimization`\
         :class:`~pyanno4rt.optimization.components.methods._weighted_sum_optimization.WeightedSumOptimization`
         The object representing the optimization problem.
 
@@ -101,7 +99,7 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
     upper_variable_bounds = array(upper_variable_bounds)[:, None]
 
     # Initialize the arguments dictionary
-    arguments = {'e_rel': 5e-3,
+    arguments = {'e_rel': 1e-2,
                  'max_iter': max_iter,
                  'callback': partial(
                      callback, objective=problem_instance.objective)}

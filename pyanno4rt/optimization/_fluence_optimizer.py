@@ -6,10 +6,10 @@
 
 from functools import reduce
 from math import inf
-from time import time
-from numpy import (ravel_multi_index, setdiff1d, union1d, unravel_index,
-                   where, zeros)
+from numpy import (
+    ravel_multi_index, setdiff1d, union1d, unravel_index, where, zeros)
 from scipy.ndimage import zoom
+from time import time
 
 # %% Internal package import
 
@@ -19,8 +19,8 @@ from pyanno4rt.optimization.projections import projection_map
 from pyanno4rt.optimization.components.methods import method_map
 from pyanno4rt.optimization.components.objectives import objective_map
 from pyanno4rt.optimization.solvers import solver_map
-from pyanno4rt.tools import (get_machine_learning_objectives,
-                             get_radiobiology_objectives, sigmoid)
+from pyanno4rt.tools import (
+    get_machine_learning_objectives, get_radiobiology_objectives, sigmoid)
 
 # %% Class definition
 
@@ -101,42 +101,8 @@ class FluenceOptimizer():
 
     max_cpu_time : float
         Maximum CPU time taken for the solver to converge.
-
-    Attributes
-    ----------
-    optimization_problem : object of class `LexicographicOptimization`, \
-        `ParetoOptimization` or `WeightedSumOptimization`
-        Instance of the optimization problem depending on the parameters \
-        ``method`` and ``solver``. This includes methods to compute \
-        objective, gradient and constraint functions, and initializes the \
-        tracker dictionary to store computed values for each objective \
-        function.
-
-    fluence_initializer : object of class `FluenceInitializer`
-        Instance of the fluence initializer, which includes different \
-        strategies to find the initial fluence vector.
-
-    initial_fluence : ndarray
-        Initialization of the fluence vector.
-
-    solver_object : object of class `ProxminSolver`, `PymooSolver`, or \
-        `SciPySolver`
-        Instance of the solver with its configuration.
-
-    optimized_fluence : ndarray
-        Optimized fluence vector as returned by the optimizer.
-
-    optimized_dose : ndarray
-        Optimized dose cube as returned by the optimizer.
-
-    optimized_info : dict
-        Dictionary with information on the state of the optimizer.
-
-    initial_time : float
-        Runtime for the initialization of the fluence optimizer (in seconds).
     """
 
-    # Class constructor
     def __init__(
             self,
             components,
@@ -156,28 +122,29 @@ class FluenceOptimizer():
         # Log a message about the initialization of the class
         hub.logger.display_info("Initializing fluence optimizer ...")
 
-        # Initialize the optimization dictionary
-        hub.optimization = {}
-
         # Start the constructor runtime recording
         start_time = time()
 
-        # Preprocess the segments
-        FluenceOptimizer.set_overlap_priorities(segments=(*components,))
+        # Initialize the optimization dictionary
+        hub.optimization = {}
+
+        # Remove overlaps between segments according to their priority
+        FluenceOptimizer.remove_overlap(segments=(*components,))
+
+        # Resize the segments to the dose grid
         FluenceOptimizer.resize_segments_to_dose()
 
-        # Set the optimization components based on the 'components' argument
-        objectives, constraints = (
-            FluenceOptimizer.set_optimization_components(
-                components=components))
+        # Set the optimization components
+        objectives, constraints = FluenceOptimizer.set_optimization_components(
+            components=components)
 
-        # Preprocess the objectives
+        # Adjust dose-volume component parameters for fractionation
         FluenceOptimizer.adjust_parameters_for_fractionation(objectives)
 
-        # Initialize the backprojection based on the 'projection' argument
+        # Initialize the backprojection by the selected modality
         backprojection = projection_map[hub.plan_configuration['modality']]()
 
-        # Initialize the optimization problem based on the 'method' argument
+        # Initialize the optimization problem by the selected method
         hub.optimization['problem'] = method_map[method](
             backprojection, objectives, constraints)
 
@@ -186,60 +153,20 @@ class FluenceOptimizer():
             initial_strategy, initial_fluence_vector)
 
         # Get the initial fluence vector
-        hub.optimization['initial_fluence'] = hub.optimization[
-            'initializer'].run_strategy()
+        hub.optimization['initial_fluence'] = (
+            hub.optimization['initializer'].run_strategy())
 
-        # Check if the lower variable bounds are represented by a single value
-        if isinstance(lower_variable_bounds, (int, float, type(None))):
+        # Get the decision variable bounds
+        variable_bounds = FluenceOptimizer.get_variable_bounds(
+            lower_variable_bounds, upper_variable_bounds)
 
-            # Check if the bounds are set to None
-            if lower_variable_bounds is None:
-
-                # Generate a negative infinity vector for the lower bounds
-                lower_variable_bounds = [-inf]*len(
-                    hub.optimization['initial_fluence'])
-
-            else:
-
-                # Generate a uniform vector for the lower bounds
-                lower_variable_bounds = [lower_variable_bounds]*len(
-                    hub.optimization['initial_fluence'])
-
-        else:
-
-            # Replace all values of None in the lower variable bounds list
-            lower_variable_bounds = [-inf if bound is None else bound
-                                     for bound in lower_variable_bounds]
-
-        # Check if the upper variable bounds are represented by a single value
-        if isinstance(upper_variable_bounds, (int, float, type(None))):
-
-            # Check if the bounds are set to None
-            if upper_variable_bounds is None:
-
-                # Generate an infinity vector for the upper bounds
-                upper_variable_bounds = [inf]*len(
-                    hub.optimization['initial_fluence'])
-
-            else:
-
-                # Generate a uniform vector for the upper bounds
-                upper_variable_bounds = [upper_variable_bounds]*len(
-                    hub.optimization['initial_fluence'])
-
-        else:
-
-            # Replace all values of None in the upper variable bounds list
-            upper_variable_bounds = [inf if bound is None else bound
-                                     for bound in upper_variable_bounds]
-
-        # Initialize the solver object based on the 'solver' argument
+        # Initialize the solver object by the selected package
         hub.optimization['solver_object'] = solver_map[solver](
             number_of_variables=len(hub.optimization['initial_fluence']),
             number_of_constraints=len(constraints),
             problem_instance=hub.optimization['problem'],
-            lower_variable_bounds=lower_variable_bounds,
-            upper_variable_bounds=upper_variable_bounds,
+            lower_variable_bounds=variable_bounds[0],
+            upper_variable_bounds=variable_bounds[1],
             lower_constraint_bounds=[],
             upper_constraint_bounds=[],
             algorithm=algorithm,
@@ -247,217 +174,37 @@ class FluenceOptimizer():
             max_iter=max_iter,
             max_cpu_time=max_cpu_time)
 
-        # End the constructor runtime recording
-        end_time = time()
-
-        # Compute the initialization time for the class
-        hub.optimization['initial_time'] = end_time - start_time
+        # Enter the total constructor runtime into the datahub
+        hub.optimization['initial_time'] = time() - start_time
 
     @staticmethod
-    def set_optimization_components(components):
-        """
-        Set the components of the optimization problem.
+    def remove_overlap(segments):
+        """Remove overlaps between segments."""
 
-        Parameters
-        ----------
-        components : dict
-            Optimization components (objectives and constraints), passed as a \
-            dictionary which maps segmented structures to iterables of length \
-            2 (holding the component type and instance, or a list of \
-            instances, if multiple components should be assigned to a single \
-            structure).
-
-        Returns
-        -------
-        tuple
-            Tuple with pairs of segmented structures and their associated \
-            objectives or constraints.
-        """
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the logger and the segmentation data from the datahub
-        logger = hub.logger
-        segmentation = hub.segmentation
-
-        # Log a message about the components setting
-        logger.display_info("Setting the optimization components ...")
-
-        # Initialize the iterables for the objectives and constraints
-        objectives = []
-        constraints = []
-
-        def set_objective(segment, objective):
-            """Set the objective for a segment."""
-            # Enter the objective into the datahub
-            segmentation[segment]['objective'] = objective
-
-            # Check if the objective is not an iterable
-            if not isinstance(objective, tuple):
-
-                # Add the segment/link and the instance to the objectives
-                objectives.append(([segment]+objective.link, objective))
-
-            else:
-
-                # Iterate over all segment objectives
-                for subobjective in objective:
-
-                    # Add the segment/link and the instance to the objectives
-                    objectives.append(([segment]+subobjective.link,
-                                       subobjective))
-
-        def set_constraint(segment, constraint):
-            """Set the constraint for a segment."""
-            # Enter the constraint into the datahub
-            segmentation[segment]['constraint'] = constraint
-
-            # Check if the constraint is not an iterable
-            if not isinstance(constraint, tuple):
-
-                # Add the segment/link and the instance to the constraints
-                constraints.append(([segment]+constraint.link, constraint))
-
-            else:
-
-                # Iterate over all segment constraints
-                for subconstraint in constraint:
-
-                    # Add the segment/link and the instance to the constraints
-                    constraints.append(([segment]+subconstraint.link,
-                                        subconstraint))
-
-        # Map the component categories to the set functions
-        categories = {'objective': set_objective,
-                      'constraint': set_constraint}
-
-        # Iterate over all items in the 'components' dictionary
-        for segment in components:
-
-            # Get the component category and element
-            category, element = components[segment].values()
-
-            # Check if the element is a dictionary
-            if isinstance(element, dict):
-
-                # Convert the element to a single instance
-                instance = objective_map[element['class']](
-                    **element['parameters'])
-
-            else:
-
-                # Convert the element to a tuple of instances
-                instance = tuple(objective_map[sub['class']](
-                    **sub['parameters']) for sub in element)
-
-            # Run the corresponding set function
-            categories[category](segment, instance)
-
-        # Iterate over all objectives
-        for objective in objectives:
-
-            # Log a message about the objective set
-            logger.display_info("Setting {} objective '{}' for {} ..."
-                                .format(objective[1].embedding,
-                                        objective[1].name,
-                                        objective[0][0]
-                                        if len(objective[0]) >= 1
-                                        else objective[0]))
-
-            # Check if the objective depends on a machine learning model
-            if objective[1].RETURNS_OUTCOME and objective[1].DEPENDS_ON_DATA:
-
-                # Add the outcome model to the objective
-                objective[1].add_model()
-
-        # Iterate over all constraints
-        for constraint in constraints:
-
-            # Log a message about the constraint set
-            logger.display_info("Setting constraint '{}' for {} ..."
-                                .format(constraint[1].name, constraint[0][0]
-                                        if len(constraint[0]) >= 1
-                                        else constraint[0]))
-
-        return tuple(objectives), tuple(constraints)
-
-    @staticmethod
-    def adjust_parameters_for_fractionation(objectives):
-        """
-        Adjust the dose parameters according to the number of fractions.
-
-        Parameters
-        ----------
-        objectives : tuple
-            Tuple with pairs of segmented structures and their associated \
-            objectives and constraints.
-        """
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the parameter adjustment
-        hub.logger.display_info(
-            "Adjusting dose parameters for fractionation ...")
-
-        def adjust_single_objective(objective):
-            """Adjust the dose parameters for a single objective."""
-            # Get the indices of the dose-related parameters
-            indices = tuple(item[0]
-                            for item in enumerate(objective.parameter_category)
-                            if item[1] == 'dose')
-
-            # Get the parameter value of the objective
-            parameters = objective.get_parameter_value()
-
-            # Iterate over the indices
-            for index in indices:
-
-                # Adjust the indexed parameters with the number of fractions
-                parameters[index] /= hub.dose_information[
-                    'number_of_fractions']
-
-            # Set the objective parameters to the adjusted values
-            objective.set_parameter_value(parameters)
-
-            # Set the 'adjusted_parameters' attribute to True
-            objective.adjusted_parameters = True
-
-        # Loop over all non-adjusted, dose-related parameters
-        for objective in (objective[1] for objective in objectives
-                          if not objective[1].adjusted_parameters
-                          and 'dose' in objective[1].parameter_category):
-
-            # Adjust the objective parameters
-            adjust_single_objective(objective)
-
-    @staticmethod
-    def set_overlap_priorities(segments):
-        """Set the overlap priorities."""
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the overlap prioritization
-        hub.logger.display_info("Setting overlap priorities ...")
+        # Log a message about the overlap removal
+        hub.logger.display_info("Removing segment overlaps ...")
 
         # Get the segmentation data from the datahub
         segmentation = hub.segmentation
 
-        def remove_single_segment_overlap(segment_A):
+        def remove_single_segment_overlap(reference):
             """Remove the overlap for a single segment."""
+
             # Get the overlapping indices
             overlapping_indices = [
-                segmentation[segment_B]['raw_indices']
-                for segment_B in segmentation
-                if (segmentation[segment_B]['parameters']['priority']
-                    < segmentation[segment_A]['parameters']['priority'])
-                and segment_B in segments]
+                segmentation[segment]['raw_indices'] for segment in segments
+                if (segmentation[segment]['parameters']['priority']
+                    < segmentation[reference]['parameters']['priority'])]
 
             # Compute the union over the index list
             removable_indices = reduce(union1d, overlapping_indices, -1)
 
             # Remove the common indices to get the indices after prioritization
-            segmentation[segment_A]['prioritized_indices'] = setdiff1d(
-                segmentation[segment_A]['raw_indices'], removable_indices)
+            segmentation[reference]['prioritized_indices'] = setdiff1d(
+                segmentation[reference]['raw_indices'], removable_indices)
 
         # Loop over all segments
         for segment in segmentation:
@@ -468,6 +215,7 @@ class FluenceOptimizer():
     @staticmethod
     def resize_segments_to_dose():
         """Resize the segments from CT to dose grid."""
+
         # Initialize the datahub
         hub = Datahub()
 
@@ -481,6 +229,7 @@ class FluenceOptimizer():
 
         def resize_single_segment(segment):
             """Resize a single segment to the dose grid."""
+
             # Initialize the segment mask
             mask = zeros(computed_tomography['cube_dimensions'])
 
@@ -509,6 +258,259 @@ class FluenceOptimizer():
 
             # Resize the segment
             resize_single_segment(segment)
+
+    @staticmethod
+    def set_optimization_components(components):
+        """
+        Set the components of the optimization problem.
+
+        Parameters
+        ----------
+        components : dict
+            Optimization components (objectives and constraints), passed as a \
+            dictionary which maps segmented structures to iterables of length \
+            2 (holding the component type and instance, or a list of \
+            instances, if multiple components should be assigned to a single \
+            structure).
+
+        Returns
+        -------
+        tuple
+            Tuple with pairs of segmented structures and their associated \
+            objectives or constraints.
+        """
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Get the logger and the segmentation data from the datahub
+        logger = hub.logger
+        segmentation = hub.segmentation
+
+        # Log a message about the components setting
+        logger.display_info("Setting the optimization components ...")
+
+        # Initialize the dictionaries for the objectives and constraints
+        objectives = {}
+        constraints = {}
+
+        def set_objective(segment, objective):
+            """Set the objective for a segment."""
+
+            # Enter the objective into the datahub
+            segmentation[segment]['objective'] = objective
+
+            # Check if the objective is not an iterable
+            if not isinstance(objective, tuple):
+
+                # 
+                if not objective.identifier:
+
+                    # 
+                    objectives[f"{segment}-{objective.name}"] = {
+                        'segments': [segment]+objective.link,
+                        'instance': objective}
+
+                else:
+
+                    # 
+                    objectives[f"{segment}-{objective.name}-"
+                               "{objective.identifier"] = {
+                        'segments': [segment]+objective.link,
+                        'instance': objective}
+
+            else:
+
+                # Iterate over all segment objectives
+                for subobjective in objective:
+
+                    # 
+                    if not subobjective.identifier:
+
+                        # 
+                        objectives[f"{segment}-{subobjective.name}"] = {
+                            'segments': [segment]+subobjective.link,
+                            'instance': subobjective}
+
+                    else:
+
+                        # 
+                        objectives[f"{segment}-{subobjective.name}-"
+                                   "{subobjective.identifier"] = {
+                            'segments': [segment]+subobjective.link,
+                            'instance': subobjective}
+
+        def set_constraint(segment, constraint):
+            """Set the constraint for a segment."""
+
+            # Enter the constraint into the datahub
+            segmentation[segment]['constraint'] = constraint
+
+            # Check if the constraint is not an iterable
+            if not isinstance(constraint, tuple):
+
+                # 
+                constraints[f"{segment}-{constraint.name}"] = {
+                    'segments': [segment]+constraint.link,
+                    'instance': constraint}
+
+            else:
+
+                # Iterate over all segment constraints
+                for subconstraint in constraint:
+
+                    # 
+                    constraints[f"{segment}-{subconstraint.name}"] = {
+                        'segments': [segment]+subconstraint.link,
+                        'instance': subconstraint}
+
+        # Map the component categories to the set functions
+        categories = {'objective': set_objective,
+                      'constraint': set_constraint}
+
+        # Iterate over all items in the 'components' dictionary
+        for segment in components:
+
+            # Get the component category and element
+            category, element = components[segment].values()
+
+            # Check if the element is a dictionary
+            if isinstance(element, dict):
+
+                # Convert the element to a single instance
+                instance = objective_map[element['class']](
+                    **element['parameters'])
+
+            else:
+
+                # Convert the element to a tuple of instances
+                instance = tuple(objective_map[sub['class']](
+                    **sub['parameters']) for sub in element)
+
+            # Run the corresponding set function
+            categories[category](segment, instance)
+
+        # Iterate over all objectives
+        for subdict in objectives.values():
+
+            # Log a message about the objective set
+            logger.display_info(
+                f"Setting {subdict['instance'].embedding} objective "
+                f"'{subdict['instance'].name}' for {subdict['segments']} ...")
+
+            # Check if the objective depends on a machine learning model
+            if (subdict['instance'].RETURNS_OUTCOME
+                    and subdict['instance'].DEPENDS_ON_DATA):
+
+                # Add the outcome model to the objective
+                subdict['instance'].add_model()
+
+        # Iterate over all constraints
+        for subdict in constraints.values():
+
+            # Log a message about the constraint set
+            logger.display_info(
+                f"Setting constraint '{subdict['instance'].name}' for "
+                "{subdict['segments']} ...")
+
+        return objectives, constraints
+
+    @staticmethod
+    def adjust_parameters_for_fractionation(objectives):
+        """
+        Adjust the dose parameters according to the number of fractions.
+
+        Parameters
+        ----------
+        objectives : dict
+            Dictionary with pairs of segmented structures and their associated \
+            objectives and constraints.
+        """
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Log a message about the parameter adjustment
+        hub.logger.display_info(
+            "Adjusting dose parameters for fractionation ...")
+
+        def adjust_single_objective(objective):
+            """Adjust the dose parameters for a single objective."""
+
+            # Get the indices of the dose-related parameters
+            indices = tuple(item[0]
+                            for item in enumerate(objective.parameter_category)
+                            if item[1] == 'dose')
+
+            # Get the parameter value of the objective
+            parameters = objective.get_parameter_value()
+
+            # Iterate over the indices
+            for index in indices:
+
+                # Adjust the indexed parameters with the number of fractions
+                parameters[index] /= hub.dose_information[
+                    'number_of_fractions']
+
+            # Set the objective parameters to the adjusted values
+            objective.set_parameter_value(parameters)
+
+            # Set the 'adjusted_parameters' attribute to True
+            objective.adjusted_parameters = True
+
+        # Loop over all non-adjusted, dose-related parameters
+        for objective in (
+                objective for objective in objectives.values()
+                if not objective['instance'].adjusted_parameters
+                and 'dose' in objective['instance'].parameter_category):
+
+            # Adjust the objective parameters
+            adjust_single_objective(objective['instance'])
+
+    @staticmethod
+    def get_variable_bounds(lower, upper):
+        """
+        Get the lower and upper variable bounds in a compatible shape.
+
+        Parameters
+        ----------
+        lower : int, float, list or None
+            Lower bound(s) on the decision variables.
+
+        upper : int, float, list or None
+            Upper bound(s) on the decision variables.
+
+        Returns
+        -------
+        list
+            Transformed lower bounds on the decision variables.
+
+        list
+            Transformed upper bounds on the decision variables.
+        """
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        def get_bounds(value, limit):
+            """Get the lower or upper bounds by the input value and limit."""
+
+            # Check if the value is scalar or None
+            if isinstance(value, (int, float)):
+
+                # Generate a uniform list from the value
+                return [value]*len(hub.optimization['initial_fluence'])
+
+            # Else, check if the value is None
+            elif value is None:
+
+                # Generate a uniform list from the limit
+                return [limit]*len(hub.optimization['initial_fluence'])
+
+            # Generate a cleansed list by replacing None with the limit
+            return [limit if bound is None else bound for bound in value]
+
+        return get_bounds(lower, -inf), get_bounds(upper, inf)
 
     def solve(self):
         """Solve the optimization problem."""
@@ -688,6 +690,7 @@ class FluenceOptimizer():
         ndarray
             Optimized dose cube on the CT grid.
         """
+
         # Initialize the datahub
         hub = Datahub()
 

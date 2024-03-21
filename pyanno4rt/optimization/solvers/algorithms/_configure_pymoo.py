@@ -14,7 +14,6 @@ from pymoo.operators.crossover.ux import UniformCrossover
 from pymoo.operators.mutation.pm import PM
 from pymoo.optimize import minimize
 from pymoo.termination.default import DefaultMultiObjectiveTermination
-from pymoo.termination.robust import RobustTermination
 from pymoo.util.ref_dirs import get_reference_directions
 
 # %% Function definition
@@ -118,8 +117,8 @@ def configure_pymoo(number_of_variables, number_of_objectives,
             eliminate_duplicates=True)
 
     # Initialize the termination instance
-    termination = RobustTermination(DefaultMultiObjectiveTermination(
-        xtol=1e-12, ftol=1e-3, n_max_gen=max_iter), period=20)
+    termination = DefaultMultiObjectiveTermination(
+        xtol=1e-12, ftol=1e-3, n_max_gen=max_iter)
 
     return fun, algorithm_object, problem, termination
 
@@ -163,7 +162,7 @@ class PymooProblem(ElementwiseProblem):
 
     Notes
     -----
-    Fitness evaluation is based on a modification suggested in the paper \
+    Fitness evaluation is based on a modification suggested in the paper by \
     Pang et al. (2020): DOI 10.1109/ACCESS.2020.3032240.
     """
 

@@ -4,8 +4,7 @@ Optimization components module.
 ==================================================================
 
 The module aims to provide methods and classes to represent the optimization \
-components, i.e., objective and constraint functions, and different \
-optimization methods, e.g. weighted-sum approach or Pareto analysis.
+components and different optimization methods.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

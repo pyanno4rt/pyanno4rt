@@ -12,8 +12,7 @@ from scipy.optimize import minimize
 
 def configure_scipy(problem_instance, lower_variable_bounds,
                     upper_variable_bounds, lower_constraint_bounds,
-                    upper_constraint_bounds, algorithm, max_iter,
-                    callback):
+                    upper_constraint_bounds, algorithm, max_iter, callback):
     """
     Configure the SciPy solver.
 
@@ -23,7 +22,6 @@ def configure_scipy(problem_instance, lower_variable_bounds,
     ----------
     problem_instance : object of class \
         :class:`~pyanno4rt.optimization.components.methods._lexicographic_optimization.LexicographicOptimization`\
-        :class:`~pyanno4rt.optimization.components.methods._pareto_optimization.ParetoOptimization`\
         :class:`~pyanno4rt.optimization.components.methods._weighted_sum_optimization.WeightedSumOptimization`
         The object representing the optimization problem.
 
@@ -100,6 +98,7 @@ def configure_scipy(problem_instance, lower_variable_bounds,
         arguments.update({'method': 'trust-constr',
                           'options': {'disp': False,
                                       'verbose': 0,
+                                      'initial_tr_radius': 1,
                                       'maxiter': max_iter},
                           'callback': callback})
 
