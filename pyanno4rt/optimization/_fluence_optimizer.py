@@ -4,12 +4,13 @@
 
 # %% External package import
 
+from time import time
+
 from functools import reduce
 from math import inf
 from numpy import (
     ravel_multi_index, setdiff1d, union1d, unravel_index, where, zeros)
 from scipy.ndimage import zoom
-from time import time
 
 # %% Internal package import
 
@@ -18,9 +19,11 @@ from pyanno4rt.optimization import FluenceInitializer
 from pyanno4rt.optimization.projections import projection_map
 from pyanno4rt.optimization.components.methods import method_map
 from pyanno4rt.optimization.components.objectives import objective_map
+from pyanno4rt.optimization.components.constraints import constraint_map
 from pyanno4rt.optimization.solvers import solver_map
 from pyanno4rt.tools import (
-    get_machine_learning_objectives, get_radiobiology_objectives, sigmoid)
+   apply, get_machine_learning_objectives, get_radiobiology_objectives,
+   get_objective_segments, sigmoid)
 
 # %% Class definition
 
@@ -129,16 +132,16 @@ class FluenceOptimizer():
         hub.optimization = {}
 
         # Remove overlaps between segments according to their priority
-        FluenceOptimizer.remove_overlap(segments=(*components,))
+        FluenceOptimizer.remove_overlap((*components,))
 
         # Resize the segments to the dose grid
         FluenceOptimizer.resize_segments_to_dose()
 
-        # Set the optimization components
+        # Set the objective and constraint functions
         objectives, constraints = FluenceOptimizer.set_optimization_components(
-            components=components)
+            components)
 
-        # Adjust dose-volume component parameters for fractionation
+        # Adjust the dose-volume-related parameters for fractionation
         FluenceOptimizer.adjust_parameters_for_fractionation(objectives)
 
         # Initialize the backprojection by the selected modality
@@ -160,26 +163,37 @@ class FluenceOptimizer():
         variable_bounds = FluenceOptimizer.get_variable_bounds(
             lower_variable_bounds, upper_variable_bounds)
 
-        # Initialize the solver object by the selected package
+        # Get the box constraint bounds
+        # constraint_bounds = FluenceOptimizer.get_constraint_bounds(
+        # constraints)
+
+        # Initialize the solver object by the selected solver
         hub.optimization['solver_object'] = solver_map[solver](
             number_of_variables=len(hub.optimization['initial_fluence']),
             number_of_constraints=len(constraints),
             problem_instance=hub.optimization['problem'],
             lower_variable_bounds=variable_bounds[0],
             upper_variable_bounds=variable_bounds[1],
-            lower_constraint_bounds=[],
-            upper_constraint_bounds=[],
+            lower_constraint_bounds=[],  # constraint_bounds[0],
+            upper_constraint_bounds=[],  # constraint_bounds[1],
             algorithm=algorithm,
             initial_fluence=hub.optimization['initial_fluence'],
             max_iter=max_iter,
             max_cpu_time=max_cpu_time)
 
-        # Enter the total constructor runtime into the datahub
+        # Enter the runtime for initialization into the datahub
         hub.optimization['initial_time'] = time() - start_time
 
     @staticmethod
-    def remove_overlap(segments):
-        """Remove overlaps between segments."""
+    def remove_overlap(voi):
+        """
+        Remove overlaps between segments.
+
+        Parameters
+        ----------
+        voi : tuple
+            Tuple with the labels for the volumes of interest.
+        """
 
         # Initialize the datahub
         hub = Datahub()
@@ -187,30 +201,25 @@ class FluenceOptimizer():
         # Log a message about the overlap removal
         hub.logger.display_info("Removing segment overlaps ...")
 
-        # Get the segmentation data from the datahub
+        # Get the segmentation data
         segmentation = hub.segmentation
 
-        def remove_single_segment_overlap(reference):
-            """Remove the overlap for a single segment."""
+        def remove_segment_overlap(reference):
+            """Remove the overlap from a reference segment."""
 
-            # Get the overlapping indices
-            overlapping_indices = [
-                segmentation[segment]['raw_indices'] for segment in segments
+            # Get the superior indices from all VOIs
+            superior_indices = [
+                segmentation[segment]['raw_indices'] for segment in voi
                 if (segmentation[segment]['parameters']['priority']
                     < segmentation[reference]['parameters']['priority'])]
 
-            # Compute the union over the index list
-            removable_indices = reduce(union1d, overlapping_indices, -1)
-
-            # Remove the common indices to get the indices after prioritization
+            # Enter the overlap-free (prioritized) indices into the datahub
             segmentation[reference]['prioritized_indices'] = setdiff1d(
-                segmentation[reference]['raw_indices'], removable_indices)
+                segmentation[reference]['raw_indices'],
+                reduce(union1d, superior_indices, -1))
 
-        # Loop over all segments
-        for segment in segmentation:
-
-            # Remove the overlaps by priority
-            remove_single_segment_overlap(segment)
+        # Remove the overlaps from all segments
+        apply(remove_segment_overlap, (*segmentation,))
 
     @staticmethod
     def resize_segments_to_dose():
@@ -219,45 +228,36 @@ class FluenceOptimizer():
         # Initialize the datahub
         hub = Datahub()
 
-        # Log a message about the resizing
+        # Log a message about the segment resizing
         hub.logger.display_info("Resizing segments from CT to dose grid ...")
 
-        # Get the CT, segmentation and dose information data from the datahub
-        computed_tomography = hub.computed_tomography
+        # Get the segmentation data
         segmentation = hub.segmentation
-        dose_information = hub.dose_information
 
-        def resize_single_segment(segment):
-            """Resize a single segment to the dose grid."""
+        # Get the CT and dose cube dimensions
+        ct_dim, dose_dim = (hub.computed_tomography['cube_dimensions'],
+                            hub.dose_information['cube_dimensions'])
+
+        def resize_segment(segment):
+            """Resize a segment to the dose grid."""
 
             # Initialize the segment mask
-            mask = zeros(computed_tomography['cube_dimensions'])
+            mask = zeros(ct_dim)
 
-            # Insert ones at the indices of the segment
+            # Fill the mask at the indices of the segment
             mask[unravel_index(
-                segmentation[segment]['prioritized_indices'],
-                computed_tomography['cube_dimensions'], order='F')] = 1
+                segmentation[segment]['prioritized_indices'], ct_dim,
+                order='F')] = 1
 
-            # Get the resized indices of the segment
-            resized_indices = where(
-                zoom(
-                    mask,
-                    (dose_information['cube_dimensions'][j]
-                     / computed_tomography['cube_dimensions'][j]
-                     for j, _ in enumerate(
-                             dose_information['cube_dimensions'])),
-                    order=0))
+            # Get the zoom factors for all cube dimensions
+            zooms = (pair[0]/pair[1] for pair in zip(dose_dim, ct_dim))
 
-            # Enter the resized indices into the datahub
+            # Enter the dose grid level (resized) indices into the datahub
             segmentation[segment]['resized_indices'] = ravel_multi_index(
-                resized_indices,
-                dose_information['cube_dimensions'], order='F')
+                where(zoom(mask, zooms, order=0)), dose_dim, order='F')
 
-        # Loop over all segments
-        for segment in segmentation:
-
-            # Resize the segment
-            resize_single_segment(segment)
+        # Resize all segments
+        apply(resize_segment, (*segmentation,))
 
     @staticmethod
     def set_optimization_components(components):
@@ -267,164 +267,111 @@ class FluenceOptimizer():
         Parameters
         ----------
         components : dict
-            Optimization components (objectives and constraints), passed as a \
-            dictionary which maps segmented structures to iterables of length \
-            2 (holding the component type and instance, or a list of \
-            instances, if multiple components should be assigned to a single \
-            structure).
+            Optimization components for each segment of interest, i.e., \
+            objectives and constraints, in the raw user format.
 
         Returns
         -------
-        tuple
-            Tuple with pairs of segmented structures and their associated \
-            objectives or constraints.
+        dict
+            Dictionary with the internally configured objectives.
+
+        dict
+            Dictionary with the internally configured constraints.
         """
 
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the logger and the segmentation data from the datahub
-        logger = hub.logger
-        segmentation = hub.segmentation
+        # Get the logger and the segmentation data
+        logger, segmentation = hub.logger, hub.segmentation
 
         # Log a message about the components setting
         logger.display_info("Setting the optimization components ...")
 
-        # Initialize the dictionaries for the objectives and constraints
-        objectives = {}
-        constraints = {}
+        # Initialize the objective and constraint dictionaries
+        objectives, constraints = {}, {}
 
-        def set_objective(segment, objective):
-            """Set the objective for a segment."""
+        # Set the base elements for the component types
+        bases = {'objective': (objectives, objective_map),
+                 'constraint': (constraints, constraint_map)}
 
-            # Enter the objective into the datahub
-            segmentation[segment]['objective'] = objective
+        def set_component(component, segment, category, base_dict, base_map):
+            """Set the component by its segment and type assignments."""
 
-            # Check if the objective is not an iterable
-            if not isinstance(objective, tuple):
+            # Check if the component is a dictionary
+            if isinstance(component, dict):
 
-                # 
-                if not objective.identifier:
+                # Get the instance from the component map
+                instance = base_map[component['class']](
+                    **component['parameters'])
 
-                    # 
-                    objectives[f"{segment}-{objective.name}"] = {
-                        'segments': [segment]+objective.link,
-                        'instance': objective}
+                # Log a message about setting the instance
+                logger.display_info(
+                    f"Setting {category} '{instance.name}' for "
+                    f"{[segment]+instance.link} ...")
 
-                else:
+                # Get the instance key for the base dictionary
+                instance_key = '-'.join(filter(
+                    None, (segment, instance.name, instance.identifier)))
 
-                    # 
-                    objectives[f"{segment}-{objective.name}-"
-                               "{objective.identifier"] = {
-                        'segments': [segment]+objective.link,
-                        'instance': objective}
-
-            else:
-
-                # Iterate over all segment objectives
-                for subobjective in objective:
-
-                    # 
-                    if not subobjective.identifier:
-
-                        # 
-                        objectives[f"{segment}-{subobjective.name}"] = {
-                            'segments': [segment]+subobjective.link,
-                            'instance': subobjective}
-
-                    else:
-
-                        # 
-                        objectives[f"{segment}-{subobjective.name}-"
-                                   "{subobjective.identifier"] = {
-                            'segments': [segment]+subobjective.link,
-                            'instance': subobjective}
-
-        def set_constraint(segment, constraint):
-            """Set the constraint for a segment."""
-
-            # Enter the constraint into the datahub
-            segmentation[segment]['constraint'] = constraint
-
-            # Check if the constraint is not an iterable
-            if not isinstance(constraint, tuple):
-
-                # 
-                constraints[f"{segment}-{constraint.name}"] = {
-                    'segments': [segment]+constraint.link,
-                    'instance': constraint}
+                # Add the instance to the base dictionary
+                base_dict[instance_key] = {
+                    'segments': [segment]+instance.link,
+                    'instance': instance}
 
             else:
 
-                # Iterate over all segment constraints
-                for subconstraint in constraint:
+                # Get the instance tuple from the component map
+                instance = tuple(base_map[element['class']](
+                    **element['parameters']) for element in component)
 
-                    # 
-                    constraints[f"{segment}-{subconstraint.name}"] = {
-                        'segments': [segment]+subconstraint.link,
-                        'instance': subconstraint}
+                # Loop over the elements of the instance
+                for element in instance:
 
-        # Map the component categories to the set functions
-        categories = {'objective': set_objective,
-                      'constraint': set_constraint}
+                    # Log a message about setting the element
+                    logger.display_info(
+                        f"Setting {category} '{element.name}' for "
+                        f"{[segment]+element.link} ...")
 
-        # Iterate over all items in the 'components' dictionary
+                    # Get the element key for the base dictionary
+                    element_key = '-'.join(filter(
+                        None, (segment, element.name, element.identifier)))
+
+                    # Add the element to the base dictionary
+                    base_dict[element_key] = {
+                        'segments': [segment]+element.link,
+                        'instance': element}
+
+            # Enter the instance into the datahub
+            segmentation[segment][category] = instance
+
+        # Loop over the segments in the components dictionary
         for segment in components:
 
-            # Get the component category and element
-            category, element = components[segment].values()
+            # Get the category and component
+            category, component = components[segment].values()
 
-            # Check if the element is a dictionary
-            if isinstance(element, dict):
+            # Get the base dictionary and mapping
+            base_dict, base_map = bases[category]
 
-                # Convert the element to a single instance
-                instance = objective_map[element['class']](
-                    **element['parameters'])
+            # Set the component
+            set_component(component, segment, category, base_dict, base_map)
 
-            else:
-
-                # Convert the element to a tuple of instances
-                instance = tuple(objective_map[sub['class']](
-                    **sub['parameters']) for sub in element)
-
-            # Run the corresponding set function
-            categories[category](segment, instance)
-
-        # Iterate over all objectives
-        for subdict in objectives.values():
-
-            # Log a message about the objective set
-            logger.display_info(
-                f"Setting {subdict['instance'].embedding} objective "
-                f"'{subdict['instance'].name}' for {subdict['segments']} ...")
-
-            # Check if the objective depends on a machine learning model
-            if (subdict['instance'].RETURNS_OUTCOME
-                    and subdict['instance'].DEPENDS_ON_DATA):
-
-                # Add the outcome model to the objective
-                subdict['instance'].add_model()
-
-        # Iterate over all constraints
-        for subdict in constraints.values():
-
-            # Log a message about the constraint set
-            logger.display_info(
-                f"Setting constraint '{subdict['instance'].name}' for "
-                "{subdict['segments']} ...")
+        # Add the outcome models for all machine learning components
+        apply(lambda component: component.add_model(),
+              get_machine_learning_objectives(segmentation))
 
         return objectives, constraints
 
     @staticmethod
-    def adjust_parameters_for_fractionation(objectives):
+    def adjust_parameters_for_fractionation(components):
         """
         Adjust the dose parameters according to the number of fractions.
 
         Parameters
         ----------
-        objectives : dict
-            Dictionary with pairs of segmented structures and their associated \
-            objectives and constraints.
+        components : dict
+            Dictionary with the internally configured objectives/constraints.
         """
 
         # Initialize the datahub
@@ -434,43 +381,38 @@ class FluenceOptimizer():
         hub.logger.display_info(
             "Adjusting dose parameters for fractionation ...")
 
-        def adjust_single_objective(objective):
-            """Adjust the dose parameters for a single objective."""
+        # Get the number of fractions
+        number_of_fractions = hub.dose_information['number_of_fractions']
 
-            # Get the indices of the dose-related parameters
-            indices = tuple(item[0]
-                            for item in enumerate(objective.parameter_category)
-                            if item[1] == 'dose')
+        def adjust_component(component):
+            """Adjust the dose parameters for a component."""
 
-            # Get the parameter value of the objective
-            parameters = objective.get_parameter_value()
+            # Get the component parameters
+            parameters = component.get_parameter_value()
 
-            # Iterate over the indices
-            for index in indices:
+            # Loop over the indices of the dose-related parameter values
+            for index in (index for index, category in enumerate(
+                    component.parameter_category) if category == 'dose'):
 
-                # Adjust the indexed parameters with the number of fractions
-                parameters[index] /= hub.dose_information[
-                    'number_of_fractions']
+                # Adjust the indexed parameters by the number of fractions
+                parameters[index] /= number_of_fractions
 
-            # Set the objective parameters to the adjusted values
-            objective.set_parameter_value(parameters)
+            # Set the adjusted objective parameters
+            component.set_parameter_value(parameters)
 
-            # Set the 'adjusted_parameters' attribute to True
-            objective.adjusted_parameters = True
+            # Activate the adjustment indicator of the component
+            component.adjusted_parameters = True
 
-        # Loop over all non-adjusted, dose-related parameters
-        for objective in (
-                objective for objective in objectives.values()
-                if not objective['instance'].adjusted_parameters
-                and 'dose' in objective['instance'].parameter_category):
-
-            # Adjust the objective parameters
-            adjust_single_objective(objective['instance'])
+        # Adjust all non-adjusted components with dose-related parameters
+        apply(adjust_component, (
+            component['instance'] for component in components.values()
+            if not component['instance'].adjusted_parameters
+            and 'dose' in component['instance'].parameter_category))
 
     @staticmethod
     def get_variable_bounds(lower, upper):
         """
-        Get the lower and upper variable bounds in a compatible shape.
+        Get the lower and upper variable bounds in a compatible form.
 
         Parameters
         ----------
@@ -489,23 +431,20 @@ class FluenceOptimizer():
             Transformed upper bounds on the decision variables.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
         def get_bounds(value, limit):
             """Get the lower or upper bounds by the input value and limit."""
 
-            # Check if the value is scalar or None
+            # Check if the value is scalar
             if isinstance(value, (int, float)):
 
                 # Generate a uniform list from the value
-                return [value]*len(hub.optimization['initial_fluence'])
+                return [value]*len(Datahub().optimization['initial_fluence'])
 
-            # Else, check if the value is None
-            elif value is None:
+            # Check if the value is None
+            if value is None:
 
                 # Generate a uniform list from the limit
-                return [limit]*len(hub.optimization['initial_fluence'])
+                return [limit]*len(Datahub().optimization['initial_fluence'])
 
             # Generate a cleansed list by replacing None with the limit
             return [limit if bound is None else bound for bound in value]
@@ -518,245 +457,176 @@ class FluenceOptimizer():
         # Initialize the datahub
         hub = Datahub()
 
+        # Get the logger, segmentation data and optimization problem
+        logger, segmentation, problem = (
+            hub.logger, hub.segmentation, hub.optimization['problem'])
+
         # Log a message about the problem solving
-        hub.logger.display_info("Solving optimization problem ...")
+        logger.display_info("Solving optimization problem ...")
 
         # Start the solver runtime recording
         start_time = time()
 
-        # Solve the optimization problem and retrieve the optimized fluence
+        # Solve the optimization problem
         (hub.optimization['optimized_fluence'],
          hub.optimization['solver_info']) = hub.optimization[
              'solver_object'].run(hub.optimization['initial_fluence'])
 
-        # Check the time of solver running
-        check_time = time()
-
-        # Log a message about the successful optimization
-        hub.logger.display_info("Optimization reached acceptable level and "
-                                "returned optimal results ...")
+        # Get the runtime for problem solving
+        solver_runtime = round(time()-start_time, 2)
 
         # Compute the optimized dose from the fluence
-        hub.optimization['optimized_dose'] = self.compute_dose_3d()
+        hub.optimization['optimized_dose'] = self.compute_dose_3d(
+            hub.optimization['optimized_fluence'])
 
-        # Get the radiobiology objectives
-        rb_objectives = get_radiobiology_objectives(hub.segmentation)
+        # Check if the optimization problem has a tracker dictionary
+        if hasattr(problem, 'tracker'):
 
-        # Check if any radiobiology objectives have been tracked
-        if (len(rb_objectives) > 0
-                and hasattr(hub.optimization['problem'], 'tracker')):
+            # Loop over the radiobiological outcome model-based objectives
+            for name, value in (
+                (objective.name, track[-1]/objective.weight)
+                for label, track in problem.tracker.items()
+                for objective in get_radiobiology_objectives(segmentation)
+                    if objective.name in label):
 
-            # Get the radiobiology objective results from the tracker
-            rb_objective_results = tuple(
-                (objective.name, hub.optimization[
-                    'problem'].tracker[track][-1]/objective.weight)
-                for _, track in enumerate(
-                        (*hub.optimization['problem'].tracker,))
-                for objective in rb_objectives if objective.name in track)
+                # Log a message about the (N)TCP prediction
+                logger.display_info(
+                    f"{name} for the optimized plan: "
+                    f"{(-1)**('NTCP' not in name)*round(100*value, 2)} % ...")
 
-            # Iterate over the radiobiology objective results
-            for i, _ in enumerate(rb_objective_results):
-
-                # Get the component name
-                component_name = rb_objective_results[i][0]
-
-                # 
-                if component_name == 'LQ Poisson TCP':
-
-                    # Get the rounded final TCP prediction
-                    rounded_result = -round(
-                        100*(rb_objective_results[i][1]), 2)
-
-                    # Log a message about their final TCP values
-                    hub.logger.display_info(
-                        f"{component_name} for the optimized plan: "
-                        f"{rounded_result} % ...")
-
-                # 
-                elif component_name == 'Lyman-Kutcher-Burman NTCP':
-
-                    # Get the rounded final NTCP prediction
-                    rounded_result = round(100*(rb_objective_results[i][1]), 2)
-
-                    # Log a message about their final NTCP values
-                    hub.logger.display_info(
-                        f"{component_name} for the optimized plan: "
-                        f"{rounded_result} % ...")
-
-        # Get the machine learning objectives
-        ml_objectives = get_machine_learning_objectives(hub.segmentation)
-
-        # Check if any machine learning objectives have been tracked
-        if (len(ml_objectives) > 0
-                and hasattr(hub.optimization['problem'], 'tracker')):
-
-            # Loop over the machine learning objectives
-            for objective in ml_objectives:
+            # Loop over the machine learning outcome model-based objectives
+            for name, value, objective in (
+                (objective.name, track[-1]/objective.weight, objective)
+                for label, track in problem.tracker.items()
+                for objective in get_machine_learning_objectives(segmentation)
+                    if objective.name in label):
 
                 # Process the feature and gradient histories
                 objective.data_model_handler.process_histories(
                     objective.model.model_label)
 
-            # Get the machine learning model results from the tracker
-            ml_objective_results = tuple(
-                (objective.name, hub.optimization[
-                    'problem'].tracker[track][-1]/objective.weight)
-                for _, track in enumerate(
-                        (*hub.optimization['problem'].tracker,))
-                for objective in ml_objectives if objective.name in track)
+                # Get the boolean value for sigmoidal models
+                is_sigmoidal = any(string in name for string in (
+                    'Logistic Regression', 'Neural Network',
+                    'Support Vector Machine'))
 
-            # Iterate over the machine learning objective results
-            for i, _ in enumerate(ml_objective_results):
+                # Get the default sigmoid coefficients
+                multiplier, summand = 1, 0
 
-                # Get the component name
-                component_name = ml_objective_results[i][0]
+                # Check if a support vector machine is present
+                if 'Support Vector Machine' in name:
 
-                # Check if a non-sigmoidal model is used
-                if any(model_name in component_name
-                       for model_name in ('Decision Tree',
-                                          'Extreme Gradient Boosting',
-                                          'K-Nearest Neighbor',
-                                          'Naive Bayes',
-                                          'Random Forest')):
+                    # Get the support vector machine prediction model
+                    svm = objective.model.prediction_model
 
-                    # Get the rounded final outcome prediction
-                    rounded_result = round(100*(ml_objective_results[i][1]), 2)
+                    # Get the Platt scaling coefficients
+                    multiplier, summand = -svm.probA_[0], svm.probB_[0]
 
-                    # Log a message about their final (N)TCP values
-                    hub.logger.display_info(
-                        f"{component_name} for the optimized plan: "
-                        f"{rounded_result} % ...")
+                # Get the (N)TCP prediction value
+                value = round(100*value**(1-is_sigmoidal)*sigmoid(
+                    (-1)**('NTCP' not in name)*value, multiplier, summand)
+                    ** is_sigmoidal, 2)
 
-                # Check if logistic regression or neural networks are used
-                if any(model_name in component_name
-                       for model_name in ('Logistic Regression',
-                                          'Neural Network')):
+                # Log a message about the (N)TCP prediction
+                logger.display_info(
+                    f"{name} for the optimized plan: {value} % ...")
 
-                    # Check if the model predicts NTCP
-                    if 'NTCP' in component_name:
+        # Get the runtime for the fluence optimizer
+        optimizer_runtime = round(
+            time()-start_time+hub.optimization['initial_time'], 2)
 
-                        # Get the rounded final outcome prediction
-                        rounded_result = round(100*sigmoid(
-                            ml_objective_results[i][1], 1, 0), 2)
-
-                    else:
-
-                        # Get the rounded final outcome prediction
-                        rounded_result = round(100*(1-sigmoid(
-                            ml_objective_results[i][1], 1, 0)), 2)
-
-                    # Log a message about their final (N)TCP values
-                    hub.logger.display_info(
-                        f"{component_name} for the optimized plan: "
-                        f"{rounded_result} % ...")
-
-                # Check if support vector machines are used
-                elif 'Support Vector Machine' in component_name:
-
-                    # Get the SVM prediction model
-                    svm = ml_objectives[i].model.prediction_model
-
-                    # Get the rounded final outcome prediction
-                    rounded_result = round(100*sigmoid(
-                        ml_objective_results[i][1], -svm.probA_[0],
-                        svm.probB_[0]), 2)
-
-                    # Log a message about its final (N)TCP value
-                    hub.logger.display_info(
-                        f"{component_name} for the optimized plan: "
-                        "{rounded_result} % ...")
-
-        # End the solver runtime recording
-        end_time = time()
-
-        # Get the total fluence optimization runtime
-        total_runtime = round((end_time-start_time)
-                              + hub.optimization['initial_time'], 2)
-
-        # Get the problem solving runtime
-        solver_runtime = round((check_time-start_time), 2)
-
-        # Log a message about the overall optimization runtime
-        hub.logger.display_info(
-            f"Fluence optimization took {total_runtime} seconds "
+        # Log a message about the optimization runtimes
+        logger.display_info(
+            f"Fluence optimizer took {optimizer_runtime} seconds "
             f"({solver_runtime} seconds for problem solving) ...")
 
-    def compute_dose_3d(self):
+    def compute_dose_3d(
+            self,
+            optimized_fluence):
         """
-        Compute the 3D dose distribution from the optimized fluence vector.
+        Compute the 3D dose cube from the optimized fluence vector.
+
+        Parameters
+        ----------
+        optimized_fluence : ndarray
+            Optimized fluence vector(s).
 
         Returns
         -------
         ndarray
-            Optimized dose cube on the CT grid.
+            Optimized 3D dose cube (CT resolution).
         """
 
         # Initialize the datahub
         hub = Datahub()
 
-        # Log a message about the 3D dose computation
-        hub.logger.display_info("Computing 3D dose distribution from "
-                                "optimized fluence vector ...")
+        # Get the logger and the segmentation data
+        logger, segmentation = hub.logger, hub.segmentation
 
-        # Get the CT and dose information data form the datahub
-        computed_tomography = hub.computed_tomography
-        segmentation = hub.segmentation
-        dose_information = hub.dose_information
+        # Get the dose-influence matrix
+        dose_matrix = hub.dose_information['dose_influence_matrix']
 
-        try:
+        # Get the CT and dose grid dimensions
+        ct_dim, dose_dim = (hub.computed_tomography['cube_dimensions'],
+                            hub.dose_information['cube_dimensions'])
+
+        # Check if a single fluence vector is passed
+        if optimized_fluence.ndim == 1:
 
             # Compute the optimized dose vector from the optimized fluence
-            optimized_dose = (dose_information['dose_influence_matrix']
-                              @ hub.optimization['optimized_fluence'])
+            optimized_dose = dose_matrix @ optimized_fluence
 
-        except ValueError:
+        else:
 
-            # Initialize the selectivity values
-            selectivity_values = []
+            # Log a message about the number of Pareto-optimal solutions
+            logger.display_info(
+                f"Pareto analysis resulted in {optimized_fluence.shape[0]} "
+                "trade-off solutions ...")
 
-            # Get the index lists for targets and OARs
-            target_indices = [segmentation[segment]['resized_indices']
-                              for segment in segmentation
-                              if segmentation[segment]['type'] == 'TARGET']
-            oar_indices = [segmentation[segment]['resized_indices']
-                           for segment in segmentation
-                           if segmentation[segment]['type'] == 'OAR']
+            # Log a message about the mean dose difference selection criterion
+            logger.display_info(
+                "Selecting best solution with respect to the maximum mean "
+                "dose difference between targets and organs at risk ...")
 
-            # Get the union sets over the index lists
-            union_target_indices = reduce(union1d, target_indices, -1)
-            union_oar_indices = reduce(union1d, oar_indices, -1)
+            # Initialize the current best score
+            best_score = -inf
 
-            # Loop over the number of candidate optimized fluence vectors
-            for j in range(hub.optimization['optimized_fluence'].shape[0]):
+            # Get the indices of targets and OARs of interest
+            target_indices, oar_indices = (reduce(
+                union1d, [segmentation[segment]['resized_indices']
+                          for segment in get_objective_segments(segmentation)
+                          if segmentation[segment]['type'] == string], -1)
+                for string in ('TARGET', 'OAR'))
 
-                # Calculate the dose from the candidate vector
-                dose = (dose_information['dose_influence_matrix']
-                        @ hub.optimization['optimized_fluence'][j])
+            # Loop over the number of trade-off solutions
+            for fluence in optimized_fluence:
 
-                # Calculate the mean doses to the targets and OARs
-                mean_target_dose = dose[union_target_indices].mean()
-                mean_oar_dose = dose[union_oar_indices].mean()
+                # Compute the dose from the solution
+                dose = dose_matrix @ fluence
 
-                # Add the mean dose difference to the selectivity values
-                selectivity_values.append(mean_target_dose - mean_oar_dose)
+                # Calculate the mean dose difference between targets and OARs
+                score = dose[target_indices].mean() - dose[oar_indices].mean()
 
-            # Determine the selected index from the maximum difference
-            index = selectivity_values.index(max(selectivity_values))
+                # Check if the score is better than the current best score
+                if score > best_score:
 
-            # Calculate the optimized dose vector from the selected fluence
-            optimized_dose = (dose_information['dose_influence_matrix']
-                              @ hub.optimization['optimized_fluence'][index])
+                    # Update the best score and the best solution
+                    best_score, best_fluence = score, fluence
+
+            # Compute the optimized dose vector from the best solution
+            optimized_dose = dose_matrix @ best_fluence
+
+        # Log a message about the 3D dose computation
+        logger.display_info(
+            "Computing 3D dose cube from optimized fluence vector ...")
 
         # Reshape the optimized dose vector to the 3D dose cube
-        optimized_dose = optimized_dose.reshape(
-            dose_information['cube_dimensions'], order='F')
+        optimized_dose = optimized_dose.reshape(dose_dim, order='F')
 
         # Get the zoom factors for all cube dimensions
-        zooms = (computed_tomography['cube_dimensions'][j]
-                 / dose_information['cube_dimensions'][j]
-                 for j, _ in enumerate(computed_tomography['cube_dimensions']))
+        zooms = (pair[0]/pair[1] for pair in zip(ct_dim, dose_dim))
 
-        # Interpolate the dose cube to fit the CT grid and weight with the RBE
+        # Interpolate the dose cube to the CT grid and multiply by the RBE
         optimized_dose = (zoom(optimized_dose, zooms, order=1)
                           * hub.plan_configuration['RBE'])
 

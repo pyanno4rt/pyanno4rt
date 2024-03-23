@@ -9,4 +9,6 @@ outcome model-based constraint functions.
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-__all__ = []
+from ._constraint_map import constraint_map
+
+__all__ = ['constraint_map']

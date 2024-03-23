@@ -52,9 +52,6 @@ class ParetoOptimization():
         See 'Parameters'.
     """
 
-    # Specify the class label
-    name = 'pareto'
-
     def __init__(
             self,
             backprojection,
@@ -62,8 +59,8 @@ class ParetoOptimization():
             constraints):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing Pareto optimization "
-                                      "problem ...")
+        Datahub().logger.display_info(
+            "Initializing Pareto optimization problem ...")
 
         # Get the instance attributes from the arguments
         self.backprojection = backprojection
@@ -89,29 +86,22 @@ class ParetoOptimization():
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the machine learning objectives
-        ml_objectives = get_machine_learning_objectives(hub.segmentation)
+        # Loop over the machine learning objectives
+        for objective in get_machine_learning_objectives(hub.segmentation):
 
-        # Check if machine learning objectives are present
-        if len(ml_objectives) > 0:
-
-            # Loop over the machine learning objective
-            for objective in ml_objectives:
-
-                # Get the data model handler of the objective
-                data_model_handler = objective.data_model_handler
-
-                # Increment the feature calculator iteration
-                data_model_handler.feature_calculator.__iteration__[1] += 1
+            # Increment the feature calculator iteration
+            (objective.data_model_handler.
+             feature_calculator.__iteration__[1]) += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_objective(objective):
+        def compute_single_objective(label, objective):
             """Compute the value of a single objective function."""
+
             # Get the associated segments and the objective class
-            segments = objective[0]
-            objective_class = objective[1]
+            segments = objective['segments']
+            objective_class = objective['instance']
 
             # Check if the objective class is valid
             if all(base in str(type(objective_class).__bases__[0])
@@ -134,12 +124,11 @@ class ParetoOptimization():
             # Raise an error if the objective class is not valid
             raise TypeError("All objective functions must have 'pyanno4rt' "
                             "and 'ObjectiveClass' in the class name, got "
-                            "{} instead!"
-                            .format(type(objective)))
+                            f"{type(objective)} instead!")
 
         # Compute the objective vector
-        objective_vector = [compute_single_objective(objective)
-                            for objective in self.objectives]
+        objective_vector = [compute_single_objective(label, objective)
+                            for label, objective in self.objectives.items()]
 
         return objective_vector
 
@@ -159,14 +148,16 @@ class ParetoOptimization():
         constraint_vector : list
             List of the constraint function values.
         """
+
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
         def compute_single_constraint(constraint):
             """Compute the value of a single constraint function."""
+
             # Get the associated segments and the constraint class
-            segments = constraint[0]
-            constraint_class = constraint[1]
+            segments = constraint['segments']
+            constraint_class = constraint['instance']
 
             # Check if the constraint class is valid
             if all(base in str(type(constraint_class).__bases__[0])
@@ -189,8 +180,7 @@ class ParetoOptimization():
             # Raise an error if the constraint class is not valid
             raise TypeError("All constraint functions must have 'pyanno4rt' "
                             "and 'ConstraintClass' in the class name, got "
-                            "{} instead!"
-                            .format(type(constraint)))
+                            f"{type(constraint)} instead!")
 
         # Compute the constraint vector
         constraint_vector = [compute_single_constraint(constraint)
