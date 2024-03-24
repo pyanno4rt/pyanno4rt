@@ -32,72 +32,38 @@ class FluenceOptimizer():
     """
     Fluence optimization class.
 
-    This class implements methods for optimizing the fluence vector, based on \
-    CT, segmentation, plan configuration, and dose information. It handles \
-    both photon and proton treatment plan optimization with different \
-    backprojection types, includes dose-volume and outcome model-based \
-    objective functions and constraints, allows for single-criteria \
-    (scalarization, lexicographization) and multi-criteria optimization \
-    (Pareto analysis) with different fluence initialization strategies, \
-    and integrates multiple local and global solvers from Proxmin, Pymoo, and \
-    SciPy.
+    This class provides methods to optimize the fluence vector by solving the \
+    inverse planning problem. It preprocesses the configuration inputs, sets \
+    up the optimization problem and the solver, and allows to compute both \
+    optimized fluence vector and optimized 3D dose cube (CT resolution).
 
     Parameters
     ----------
     components : dict
-        Optimization components (objectives and constraints), passed as a \
-        dictionary which maps segmented structures to tuples of length 2 \
-        (holding the component type and instance, or a tuple of instances, if \
-        multiple components should be assigned to a single structure).
-
-    projection : {'constantRBE', 'dose'}
-        Type of projection between fluence and dose:
-
-        - 'constantRBE' : linear dose projection with a constant RBE factor \
-            of 1.1;
-        - 'dose' : linear dose projection with a neutral RBE factor of 1.0.
+        Optimization components for each segment of interest, i.e., \
+        objective functions and constraints.
 
     method : {'lexicographic', 'pareto', 'weighted-sum'}
-        Single- or multi-criteria optimization method:
-
-        - 'lexicographic' : optimize all objectives sequentially based on a \
-            preference order (single-criteria);
-        - 'pareto' : optimize all objectives with trade-offs to obtain a \
-            set of pareto-optimal points (multi-criteria);
-        - 'weighted-sum' : optimize all objectives based on a weighted sum \
-            (single-criteria).
+        Single- or multi-criteria optimization method.
 
     solver : {'proxmin', 'pymoo', 'scipy'}
-        Python package for solving the optimization problem:
-
-        - 'proxmin' : proximal algorithms provided by Proxmin;
-        - 'pymoo' : multi-objective algorithms provided by Pymoo;
-        - 'scipy' : local algorithms provided by SciPy.
+        Python package to be used for solving the optimization problem.
 
     algorithm : str
-        Solution algorithm from the chosen solver:
-
-        - ``solver`` = 'proxmin' : {'admm', 'pgm', 'sdmm'};
-        - ``solver`` = 'pymoo' : {'NSGA3'};
-        - ``solver`` = 'scipy' : {'L-BFGS-B', 'TNC', 'trust-constr'}.
+        Solution algorithm from the chosen solver.
 
     initial_strategy : {'data-medoid', 'target-coverage', 'warm-start'}
-        Initialization strategy for the fluence vector:
+        Initialization strategy for the fluence vector.
 
-        - ``target-coverage`` : initialize the fluence vector with respect to \
-            tumor coverage;
-        - ``warm-start`` : initialize the fluence vector with respect to a \
-            reference optimal point.
+    initial_fluence_vector : list or None
+        User-defined initial fluence vector for the optimization problem, \
+        only used if initial_strategy='warm-start'.
 
-    initial_fluence_vector : ndarray
-        Initial fluence vector for warm-starting the plan (either by passing \
-        an array of values or the treatment plan instance holding the values).
+    lower_variable_bounds : int, float, list or None
+        Lower bound(s) on the decision variables.
 
-    lower_variable_bounds : int, float or tuple
-        Lower bounds on the decision variables.
-
-    upper_variable_bounds : int, float or tuple
-        Upper bounds on the decision variables.
+    upper_variable_bounds : int, float, list or None
+        Upper bound(s) on the decision variables.
 
     max_iter : int
         Maximum number of iterations taken for the solver to converge.

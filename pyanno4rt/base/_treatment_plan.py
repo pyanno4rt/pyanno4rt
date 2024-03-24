@@ -100,10 +100,10 @@ class TreatmentPlan():
                 {<segment>: {'type': <1>, 'instance': {'class': <2>, \
                                                        'parameters': <3>}
 
-                - <1>: 'objective' or 'constraint',
-                - <2>: component label (see note below),
+                - <1>: 'objective' or 'constraint'
+                - <2>: component label (see note below)
                 - <3> parameter dictionary for the component (see the \
-                  component classes for details).
+                  component classes for details)
 
                 Multiple objective functions or constraints can be assigned \
                 simultaneously by passing a list of class/parameter \
@@ -164,12 +164,23 @@ class TreatmentPlan():
             :class:`~pyanno4rt.optimization.components.methods._pareto_optimization.ParetoOptimization`\
             :class:`~pyanno4rt.optimization.components.methods._weighted_sum_optimization.WeightedSumOptimization`.
 
+            - 'lexicographic' : sequential optimization based on a \
+                preference order
+            - 'pareto' : parallel optimization based on the criterion of \
+                pareto optimality
+            - 'weighted-sum' : parallel optimization based on a weighted-sum \
+                scalarization of the objective function
+
         - solver : {'proxmin', 'pymoo', 'scipy'}, default='scipy'
             Python package to be used for solving the optimization problem, \
             see the classes \
             :class:`~pyanno4rt.optimization.solvers._proxmin_solver.ProxminSolver`\
             :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
             :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`.
+
+            - 'proxmin' : proximal algorithms provided by Proxmin
+            - 'pymoo' : multi-objective algorithms provided by Pymoo
+            - 'scipy' : local algorithms provided by SciPy
 
             .. note:: The 'pareto' method currently only works with the \
                 'pymoo' solver option.
@@ -178,9 +189,22 @@ class TreatmentPlan():
             Solution algorithm from the chosen solver:
 
             - solver='proxmin' : {'admm', 'pgm', 'sdmm'}, default='pgm'
+
+                - 'admm' : alternating direction method of multipliers
+                - 'pgm' : proximal gradient method
+                - 'sdmm' : simultaneous direction method of multipliers
+
             - solver='pymoo' : {'NSGA3'}, default='NSGA3'
+
+                - 'NSGA3' : non-dominated sorting genetic algorithm III
+
             - solver='scipy' : {'L-BFGS-B', 'TNC', 'trust-constr'}, \
                 default='L-BFGS-B'
+
+                - 'L-BFGS-B' : bounded limited memory \
+                    Broyden-Fletcher-Goldfarb-Shanno method
+                - 'TNC' : truncated Newton method
+                - 'trust-constr' : trust-region constrained method
 
             .. note:: Constraints are supported by all algorithms except the \
                 'L-BFGS-B' algorithm.
@@ -189,6 +213,13 @@ class TreatmentPlan():
                               'warm-start'}, default='target-coverage'
             Initialization strategy for the fluence vector (see the class \
             :class:`~pyanno4rt.optimization._fluence_initializer.FluenceInitializer`).
+
+            - 'data-medoid' : fluence vector initialization with respect to a \
+                data medoid point
+            - 'target-coverage' : fluence vector initialization with respect \
+                to tumor coverage
+            - 'warm-start' : fluence vector initialization with respect to a \
+                reference optimal point
 
             .. note:: Data-medoid initialization works best for a single \
                 dataset or multiple datasets with a high degree of \
@@ -217,10 +248,10 @@ class TreatmentPlan():
                     decision variables)
 
         - max_iter : int, default=500
-            Maximum number of iterations taken for the solvers to converge.
+            Maximum number of iterations taken for the solver to converge.
 
         - max_cpu_time : float, default=3000.0
-            Maximum CPU time taken for the solvers to converge.
+            Maximum CPU time taken for the solver to converge.
 
     evaluation : dict, default={}
         Dictionary with the treatment plan evaluation parameters.
