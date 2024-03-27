@@ -53,8 +53,8 @@ class SciPySolver():
     max_iter : int
         Maximum number of iterations.
 
-    max_cpu_time : float
-        Maximum CPU time.
+    tolerance : float
+        Precision goal for the objective function value.
 
     Attributes
     ----------
@@ -80,7 +80,7 @@ class SciPySolver():
             algorithm,
             initial_fluence,
             max_iter,
-            max_cpu_time):
+            tolerance):
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info(
@@ -90,7 +90,7 @@ class SciPySolver():
         self.fun, self.arguments = configure_scipy(
             problem_instance, lower_variable_bounds, upper_variable_bounds,
             lower_constraint_bounds, upper_constraint_bounds, algorithm,
-            max_iter, self.callback)
+            max_iter, tolerance, self.callback)
 
         # Initialize the iteration counter
         self.counter = 1

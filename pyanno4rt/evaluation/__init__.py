@@ -3,7 +3,7 @@ Treatment plan evaluation module.
 
 ==================================================================
 
-The module aims to provide methods and classes to evaluate the generated \
+This module aims to provide methods and classes to evaluate the generated \
 treatment plans.
 """
 

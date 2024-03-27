@@ -79,7 +79,7 @@ optimization_map = {
         partial(check_type, types=int),
         partial(check_value, reference=0, sign='>')
         ),
-    'max_cpu_time': (
+    'tolerance': (
         partial(check_type, types=float),
         partial(check_value, reference=0, sign='>')
         )

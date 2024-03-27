@@ -3,7 +3,7 @@ Input checking module.
 
 ==================================================================
 
-The module aims to provide classes and functions to perform input parameter \
+This module aims to provide classes and functions to perform input parameter \
 checks.
 """
 

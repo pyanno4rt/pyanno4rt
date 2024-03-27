@@ -3,7 +3,7 @@ Plan configuration module.
 
 ==================================================================
 
-The module aims to provide methods and classes to generate the plan \
+This module aims to provide methods and classes to generate the plan \
 configuration dictionary.
 """
 

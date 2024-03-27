@@ -15,7 +15,8 @@ from scipy.optimize import line_search
 
 def configure_proxmin(problem_instance, lower_variable_bounds,
                       upper_variable_bounds, lower_constraint_bounds,
-                      upper_constraint_bounds, algorithm, max_iter, callback):
+                      upper_constraint_bounds, algorithm, max_iter, tolerance,
+                      callback):
     """
     Configure the Proxmin solver.
 
@@ -45,6 +46,9 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
 
     max_iter : int
         Maximum number of iterations.
+
+    tolerance : float
+        Precision goal for the objective function value.
 
     callback : callable
         Callback function from the class \
@@ -116,7 +120,7 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
                           'prox_g': project_on_bounds,
                           'step_g': None,
                           'L': None,
-                          'e_abs': 5e-3})
+                          'e_abs': tolerance})
 
     # Else, check if the algorithm is 'pgm'
     elif algorithm == 'pgm':
@@ -144,6 +148,6 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
                           'proxs_g': [project_on_bounds],
                           'steps_g': None,
                           'Ls': None,
-                          'e_abs': 5e-3})
+                          'e_abs': tolerance})
 
     return fun, arguments

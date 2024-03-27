@@ -3,7 +3,7 @@ Tools module.
 
 ==================================================================
 
-The module aims to provide helpful functions that improve code readability.
+This module aims to provide helpful functions that improve code readability.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

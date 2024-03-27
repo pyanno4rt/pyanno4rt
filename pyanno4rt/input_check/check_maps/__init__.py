@@ -3,7 +3,7 @@ Check maps module.
 
 ==================================================================
 
-The module aims to provide scripts with mappings between the members of \
+This module aims to provide scripts with mappings between the members of \
 different input parameter groups and their validity check functions.
 """
 

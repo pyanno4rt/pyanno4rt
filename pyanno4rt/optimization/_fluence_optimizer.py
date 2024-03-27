@@ -15,7 +15,7 @@ from scipy.ndimage import zoom
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization import FluenceInitializer
+from pyanno4rt.optimization.initializers import FluenceInitializer
 from pyanno4rt.optimization.projections import projection_map
 from pyanno4rt.optimization.components.methods import method_map
 from pyanno4rt.optimization.components.objectives import objective_map
@@ -68,8 +68,8 @@ class FluenceOptimizer():
     max_iter : int
         Maximum number of iterations taken for the solver to converge.
 
-    max_cpu_time : float
-        Maximum CPU time taken for the solver to converge.
+    tolerance : float
+        Precision goal for the objective function value.
     """
 
     def __init__(
@@ -83,7 +83,7 @@ class FluenceOptimizer():
             lower_variable_bounds,
             upper_variable_bounds,
             max_iter,
-            max_cpu_time):
+            tolerance):
 
         # Initialize the datahub
         hub = Datahub()
@@ -145,7 +145,7 @@ class FluenceOptimizer():
             algorithm=algorithm,
             initial_fluence=hub.optimization['initial_fluence'],
             max_iter=max_iter,
-            max_cpu_time=max_cpu_time)
+            tolerance=tolerance)
 
         # Enter the runtime for initialization into the datahub
         hub.optimization['initial_time'] = time() - start_time

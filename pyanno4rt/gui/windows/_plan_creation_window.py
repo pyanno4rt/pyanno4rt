@@ -4,7 +4,9 @@
 
 # %% External package import
 
-from PyQt5.QtWidgets import QMainWindow
+from os.path import abspath, dirname
+from PyQt5.QtCore import QDir
+from PyQt5.QtWidgets import QFileDialog, QMainWindow
 
 # %% Internal package import
 
@@ -36,9 +38,22 @@ class PlanCreationWindow(QMainWindow, Ui_plan_create_window):
         # Build the UI main window
         self.setupUi(self)
 
+        # Loop over the fieldnames with 'clicked' events
+        for key, value in {
+                'new_img_path_tbutton': self.add_imaging_path,
+                'new_dose_path_tbutton': self.add_dose_matrix_path,
+                }.items():
+
+            # Connect the 'clicked' signal
+            getattr(self, key).clicked.connect(value)
+
         # 
         self.new_plan_ledit.textChanged.connect(
             self.update_by_new_plan_label)
+
+        # 
+        self.new_plan_ref_cbox.currentTextChanged.connect(
+            self.update_by_new_plan_reference)
 
         # 
         self.create_plan_pbutton.clicked.connect(self.create)
@@ -74,6 +89,70 @@ class PlanCreationWindow(QMainWindow, Ui_plan_create_window):
             # 
             self.create_plan_pbutton.setEnabled(True)
 
+    def update_by_new_plan_reference(self):
+        """."""
+
+        # 
+        if self.new_plan_ref_cbox.currentText() != 'None':
+
+            # 
+            self.new_modality_cbox.setEnabled(False)
+            self.new_img_path_ledit.setEnabled(False)
+            self.new_img_path_tbutton.setEnabled(False)
+            self.new_dose_path_ledit.setEnabled(False)
+            self.new_dose_path_tbutton.setEnabled(False)
+            self.new_dose_res_ledit.setEnabled(False)
+
+        else:
+
+            # 
+            self.new_modality_cbox.setEnabled(True)
+            self.new_img_path_ledit.setEnabled(True)
+            self.new_img_path_tbutton.setEnabled(True)
+            self.new_dose_path_ledit.setEnabled(True)
+            self.new_dose_path_tbutton.setEnabled(True)
+            self.new_dose_res_ledit.setEnabled(True)
+
+    def add_imaging_path(self):
+        """Add the CT and segmentation data from a folder."""
+
+        # Get the file path
+        path, _ = QFileDialog.getOpenFileName(
+            self, 'Select a patient data file', QDir.rootPath(),
+            'CT/Segmentation data (*.dcm *.mat *.p)')
+
+        # Check if the file path exists
+        if path:
+
+            # Check if a DICOM file is selected
+            if path.endswith('.dcm'):
+
+                # Get the directory path
+                path = dirname(path)
+
+            # Set the imaging path field
+            self.new_img_path_ledit.setText(abspath(path))
+
+            # Set the imaging path field cursor position to zero
+            self.new_img_path_ledit.setCursorPosition(0)
+
+    def add_dose_matrix_path(self):
+        """Add the dose-influence matrix from a folder."""
+
+        # Get the file path
+        path, _ = QFileDialog.getOpenFileName(
+            self, 'Select a dose-influence matrix file', QDir.rootPath(),
+            'Dose-influence matrix (*.mat *.npy)')
+
+        # Check if the file path exists
+        if path:
+
+            # Set the dose matrix path field
+            self.new_dose_path_ledit.setText(abspath(path))
+
+            # Set the dose matrix path field cursor position to zero
+            self.new_dose_path_ledit.setCursorPosition(0)
+
     def create(self):
         """."""
 
@@ -105,6 +184,25 @@ class PlanCreationWindow(QMainWindow, Ui_plan_create_window):
 
             # 
             self.parent.plan_ledit.setText(new_label)
+
+            # Set the treatment modality
+            self.parent.modality_cbox.setCurrentText(
+                self.new_modality_cbox.currentText())
+
+            # Set the imaging path
+            self.parent.img_path_ledit.setText(abspath(
+                self.new_img_path_ledit.text()))
+
+            # Set the dose matrix path
+            self.parent.dose_path_ledit.setText(abspath(
+                self.new_dose_path_ledit.text()))
+
+            # Set the dose resolution
+            self.parent.dose_res_ledit.setText(
+                str(self.new_dose_res_ledit.text()))
+
+            # Set the default objectives
+            
 
         # 
         self.parent.plan_ledit.setReadOnly(True)

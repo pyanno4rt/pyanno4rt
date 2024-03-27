@@ -3,7 +3,7 @@ Import functions module.
 
 ==================================================================
 
-The module aims to provide import functions to extract computed tomography \
+This module aims to provide import functions to extract computed tomography \
 (CT) and segmentation data from the external data file(s).
 """
 

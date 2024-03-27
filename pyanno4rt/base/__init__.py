@@ -3,7 +3,7 @@ Base module.
 
 ==================================================================
 
-The module aims to provide base classes to generate treatment plans.
+This module aims to provide base classes to generate treatment plans.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

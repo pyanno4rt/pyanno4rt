@@ -3,7 +3,7 @@ Patient module.
 
 ==================================================================
 
-The module aims to provide methods and classes for importing and processing \
+This module aims to provide methods and classes for importing and processing \
 patient data.
 """
 

@@ -59,8 +59,8 @@ class PymooSolver():
     max_iter : int
         Maximum number of iterations.
 
-    max_cpu_time : float
-        Maximum CPU time.
+    tolerance : float
+        Precision goal for the objective function value.
 
     Attributes
     ----------
@@ -90,7 +90,7 @@ class PymooSolver():
             algorithm,
             initial_fluence,
             max_iter,
-            max_cpu_time):
+            tolerance):
 
         # Initialize the datahub
         hub = Datahub()
@@ -105,7 +105,7 @@ class PymooSolver():
                 number_of_variables, len(get_all_objectives(hub.segmentation)),
                 problem_instance, lower_variable_bounds, upper_variable_bounds,
                 lower_constraint_bounds, upper_constraint_bounds, algorithm,
-                initial_fluence, max_iter))
+                initial_fluence, max_iter, tolerance))
 
     def run(
             self,

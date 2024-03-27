@@ -3,7 +3,7 @@ Datahub module.
 
 ==================================================================
 
-The module aims to provide methods and classes to centralize and distribute \
+This module aims to provide methods and classes to centralize and distribute \
 information units within each treatment plan.
 """
 

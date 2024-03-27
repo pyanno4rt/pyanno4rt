@@ -12,7 +12,8 @@ from scipy.optimize import minimize
 
 def configure_scipy(problem_instance, lower_variable_bounds,
                     upper_variable_bounds, lower_constraint_bounds,
-                    upper_constraint_bounds, algorithm, max_iter, callback):
+                    upper_constraint_bounds, algorithm, max_iter, tolerance,
+                    callback):
     """
     Configure the SciPy solver.
 
@@ -43,6 +44,9 @@ def configure_scipy(problem_instance, lower_variable_bounds,
     max_iter : int
         Maximum number of iterations.
 
+    tolerance : float
+        Precision goal for the objective function value.
+
     callback : callable
         Callback function from the class \
         :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`.
@@ -64,7 +68,7 @@ def configure_scipy(problem_instance, lower_variable_bounds,
                  'jac': problem_instance.gradient,
                  'bounds': tuple(
                      zip(lower_variable_bounds, upper_variable_bounds)),
-                 'tol': 1e-3,
+                 'tol': tolerance,
                  'callback': None}
 
     # Check if the algorithm is 'L-BFGS-B'
@@ -73,7 +77,7 @@ def configure_scipy(problem_instance, lower_variable_bounds,
         # Update by the arguments of the 'L-BFGS-B' algorithm
         arguments.update({'method': 'L-BFGS-B',
                           'options': {'disp': False,
-                                      'ftol': 1e-3,
+                                      'ftol': tolerance,
                                       'maxiter': max_iter,
                                       'maxls': 20},
                           'callback': callback})
@@ -87,7 +91,7 @@ def configure_scipy(problem_instance, lower_variable_bounds,
                                       'maxCGit': 0,
                                       'eta': -1,
                                       'stepmx': 0,
-                                      'ftol': 1e-3,
+                                      'ftol': tolerance,
                                       'maxfun': max_iter}
                           })
 

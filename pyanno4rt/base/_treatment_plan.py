@@ -250,8 +250,8 @@ class TreatmentPlan():
         - max_iter : int, default=500
             Maximum number of iterations taken for the solver to converge.
 
-        - max_cpu_time : float, default=3000.0
-            Maximum CPU time taken for the solver to converge.
+        - tolerance : float, default=1e-3
+            Precision goal for the objective function value.
 
     evaluation : dict, default={}
         Dictionary with the treatment plan evaluation parameters.
@@ -405,7 +405,7 @@ class TreatmentPlan():
             'upper_variable_bounds': optimization.get(
                 'upper_variable_bounds', None),
             'max_iter': optimization.get('max_iter', 500),
-            'max_cpu_time': optimization.get('max_cpu_time', 3000.0)
+            'tolerance': optimization.get('tolerance', 1e-3)
             }
 
         # Initialize the treatment plan evaluation dictionary
@@ -510,7 +510,7 @@ class TreatmentPlan():
             lower_variable_bounds=self.optimization['lower_variable_bounds'],
             upper_variable_bounds=self.optimization['upper_variable_bounds'],
             max_iter=self.optimization['max_iter'],
-            max_cpu_time=self.optimization['max_cpu_time'])
+            tolerance=self.optimization['tolerance'])
 
         # Solve the optimization problem with the optimizer
         self.fluence_optimizer.solve()

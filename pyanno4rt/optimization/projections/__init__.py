@@ -3,8 +3,8 @@ Projections module.
 
 ==================================================================
 
-The module aims to provide methods and classes for different types of forward \
-and backward projections between fluence and dose.
+This module aims to provide methods and classes for different types of \
+forward and backward projections between fluence and dose.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

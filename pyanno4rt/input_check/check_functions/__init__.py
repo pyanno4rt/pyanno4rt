@@ -3,7 +3,7 @@ Check functions module.
 
 ==================================================================
 
-The module aims to provide a collection of basic validity check functions.
+This module aims to provide a collection of basic validity check functions.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

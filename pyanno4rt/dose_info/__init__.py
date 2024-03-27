@@ -3,7 +3,7 @@ Dose information module.
 
 ==================================================================
 
-The module aims to provide methods and classes to generate the dose \
+This module aims to provide methods and classes to generate the dose \
 information dictionary.
 """
 

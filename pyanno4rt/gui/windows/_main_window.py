@@ -194,7 +194,10 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'close_info_pbutton': pbutton_composer,
                          'create_plan_pbutton': pbutton_composer,
                          'close_plan_pbutton': pbutton_composer,
-                         'new_plan_ref_cbox': cbox})
+                         'new_plan_ref_cbox': cbox,
+                         'new_modality_cbox': cbox,
+                         'new_img_path_tbutton': tbutton_composer,
+                         'new_dose_path_tbutton': tbutton_composer})
 
         # Connect the event signals
         self.connect_signals()
@@ -430,7 +433,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                            'close_log_pbutton', 'reset_settings_pbutton',
                            'save_settings_pbutton', 'close_text_pbutton',
                            'close_info_pbutton', 'create_plan_pbutton',
-                           'close_plan_pbutton', 'new_plan_ref_cbox'):
+                           'close_plan_pbutton', 'new_plan_ref_cbox',
+                           'new_modality_cbox', 'new_img_path_tbutton',
+                           'new_dose_path_tbutton'):
 
                 # Get the attribute and set the stylesheet
                 getattr(self, key).setStyleSheet(value)
@@ -475,7 +480,8 @@ class MainWindow(QMainWindow, Ui_main_window):
                 getattr(self.info_window, key).setStyleSheet(value)
 
             elif key in ('create_plan_pbutton', 'close_plan_pbutton',
-                         'new_plan_ref_cbox'):
+                         'new_plan_ref_cbox', 'new_modality_cbox',
+                         'new_img_path_tbutton', 'new_dose_path_tbutton'):
 
                 # Get the attribute and set the stylesheet
                 getattr(self.plan_creation_window, key).setStyleSheet(value)
@@ -1345,8 +1351,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Set the maximum number of iterations
         self.max_iter_sbox.setValue(optimization['max_iter'])
 
-        # Set the maximum CPU time
-        self.max_cpu_ledit.setText(str(optimization['max_cpu_time']))
+        # Set the tolerance
+        self.tolerance_ledit.setText(str(optimization['tolerance']))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1465,8 +1471,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Reset the maximum number of iterations
         self.max_iter_sbox.setValue(self.base_optimization['max_iter'])
 
-        # Reset the maximum CPU time
-        self.max_cpu_ledit.setText(str(self.base_optimization['max_cpu_time']))
+        # Reset the tolerance
+        self.tolerance_ledit.setText(str(self.base_optimization['tolerance']))
 
     def clear_evaluation(self):
         """Clear the evaluation parameters."""
@@ -1571,8 +1577,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             'upper_variable_bounds': None if not upper_variable_bounds
             else loads(upper_variable_bounds),
             'max_iter': self.max_iter_sbox.value(),
-            'max_cpu_time': 3000.0 if self.max_cpu_ledit.text() == ''
-            else loads(self.max_cpu_ledit.text())
+            'tolerance': 1e-3 if self.tolerance_ledit.text() == ''
+            else loads(self.tolerance_ledit.text())
             }
 
         return optimization

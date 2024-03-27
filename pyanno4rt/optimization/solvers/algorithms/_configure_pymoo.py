@@ -23,7 +23,7 @@ def configure_pymoo(number_of_variables, number_of_objectives,
                     problem_instance, lower_variable_bounds,
                     upper_variable_bounds, lower_constraint_bounds,
                     upper_constraint_bounds, algorithm, initial_fluence,
-                    max_iter):
+                    max_iter, tolerance):
     """
     Configure the Pymoo solver.
 
@@ -61,6 +61,9 @@ def configure_pymoo(number_of_variables, number_of_objectives,
 
     max_iter : int
         Maximum number of iterations.
+
+    tolerance : float
+        Precision goal for the objective function value.
 
     Returns
     -------
@@ -118,7 +121,7 @@ def configure_pymoo(number_of_variables, number_of_objectives,
 
     # Initialize the termination instance
     termination = DefaultMultiObjectiveTermination(
-        xtol=1e-12, ftol=1e-3, n_max_gen=max_iter)
+        xtol=1e-12, ftol=tolerance, n_max_gen=max_iter)
 
     return fun, algorithm_object, problem, termination
 

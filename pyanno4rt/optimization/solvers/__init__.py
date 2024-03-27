@@ -3,7 +3,7 @@ Solvers module.
 
 ==================================================================
 
-The module aims to provide methods and classes for wrapping the local and \
+This module aims to provide methods and classes for wrapping the local and \
 global solution algorithms from the integrated optimization packages.
 """
 

@@ -3,7 +3,7 @@ Logging module.
 
 ==================================================================
 
-The module aims to provide methods and classes to configure an instance of \
+This module aims to provide methods and classes to configure an instance of \
 the logger.
 """
 
