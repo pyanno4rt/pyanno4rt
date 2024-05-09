@@ -1,4 +1,4 @@
-"""CT dictionary generation from MATLAB (.mat) file."""
+"""MATLAB file-based CT dictionary generation."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -16,7 +16,7 @@ from pyanno4rt.tools import arange_with_endpoint
 
 def generate_ct_from_mat(data, resolution):
     """
-    Generate the CT dictionary.
+    Generate the CT dictionary from a MATLAB (.mat) file.
 
     Parameters
     ----------
@@ -33,8 +33,8 @@ def generate_ct_from_mat(data, resolution):
         Dictionary with information on the CT images.
     """
 
-    def interpolate_ct_dictionary():
-        """Interpolate the CT dictionary values to the target resolution."""
+    def interpolate_ct_dictionary(computed_tomography, resolution):
+        """Interpolate the CT dictionary values to a resolution."""
 
         # Get the current cube dimensions
         old_dimensions = computed_tomography['cube_dimensions']
@@ -57,9 +57,8 @@ def generate_ct_from_mat(data, resolution):
             len(computed_tomography[axis]) for axis in ('x', 'y', 'z')])
 
         # Get the zoom factors for all cube dimensions
-        zooms = tuple(
-            new_length / old_length for new_length, old_length
-            in zip(computed_tomography['cube_dimensions'], old_dimensions))
+        zooms = tuple(pair[0]/pair[1] for pair in zip(
+            computed_tomography['cube_dimensions'], old_dimensions))
 
         # Interpolate the CT cube to the target resolution
         computed_tomography['cube'] = zoom(
@@ -77,8 +76,8 @@ def generate_ct_from_mat(data, resolution):
 
     # Initialize the CT dictionary with a subset of the data items
     computed_tomography = {key: value for key, value in data.items()
-                           if key in ('cube', 'resolution', 'x', 'y',
-                                      'z', 'cubeDim')}
+                           if key in ('cube', 'resolution', 'x', 'y', 'z',
+                                      'cubeDim')}
 
     # Rename the cube dimensions key
     computed_tomography['cube_dimensions'] = (
@@ -86,12 +85,12 @@ def generate_ct_from_mat(data, resolution):
 
     # Add the number of voxels to the CT dictionary
     computed_tomography['number_of_voxels'] = prod(
-        computed_tomography['cube_dimensions']).astype(int)
+        computed_tomography['cube_dimensions'])
 
     # Check if a target resolution has been passed
     if resolution:
 
         # Return the interpolated CT dictionary
-        return interpolate_ct_dictionary()
+        return interpolate_ct_dictionary(computed_tomography, resolution)
 
     return computed_tomography

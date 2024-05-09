@@ -9,7 +9,7 @@ model-based inverse photon and proton treatment plan optimization, including \
 radiobiological and machine learning (ML) models for tumor control \
 probability (TCP) and normal tissue complication probability (NTCP).
 
-The module aims to provide methods and classes for the import of patient \
+This module aims to provide methods and classes for the import of patient \
 data from different sources, the individual configuration and management of \
 treatment plan instances, the initialization of the fluence vector by \
 different strategies, multi-objective treatment plan optimization, \

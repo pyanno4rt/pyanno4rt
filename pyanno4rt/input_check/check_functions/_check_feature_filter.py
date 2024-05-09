@@ -5,16 +5,30 @@
 # %% Function definition
 
 
-def check_feature_filter(key, value, subfunctions):
-    """Check the optimization components."""
-    # Check if the first element is not a tuple or a list
-    subfunctions[0](key, value[0])
+def check_feature_filter(label, data, check_functions):
+    """
+    Check the feature filter.
 
-    # Check if any subvalue in the first element is not a string
-    subfunctions[1](key, value[0])
+    Parameters
+    ----------
+    label : str
+        Label for the item to be checked ('feature_filter').
 
-    # Check if the second element is not a string
-    subfunctions[2](key, value[1])
+    data : dict
+        Dictionary with the parameters of the feature filter.
 
-    # Check if the second element is not 'retain' or 'remove'
-    subfunctions[3](key, value[1])
+    check_functions : tuple
+        Tuple with the individual check functions for the dictionary items.
+    """
+
+    # Check if 'features' and 'filter_mode' are unavailable keys
+    check_functions[0](label, data)
+
+    # Check if 'features' is not a list
+    check_functions[1](label, data['features'])
+
+    # Check if any element in 'features' is not a string
+    check_functions[2](label, data['features'])
+
+    # Check if 'filter_mode' is not set to 'retain' or 'remove'
+    check_functions[3](label, data['filter_mode'])

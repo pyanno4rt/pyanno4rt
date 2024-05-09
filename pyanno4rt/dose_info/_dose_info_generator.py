@@ -29,30 +29,40 @@ class DoseInfoGenerator():
     Parameters
     ----------
     dose_resolution : list
-        Size of the dose grid in [`mm`] per dimension, needs to be consistent \
-        with the dose calculation inputs.
+        Size of the dose grid in [`mm`] per dimension.
 
     number_of_fractions : int
         Number of fractions according to the treatment scheme.
 
-    dose_path : string
+    dose_matrix_path : str
         Path to the dose-influence matrix file (.mat or .npy).
+
+    Attributes
+    ----------
+    number_of_fractions : int
+        See 'Parameters'.
+
+    dose_matrix_path : str
+        See 'Parameters'.
+
+    dose_resolution : tuple
+        See 'Parameters'.
     """
 
     def __init__(
             self,
-            dose_resolution,
             number_of_fractions,
-            dose_path):
+            dose_matrix_path,
+            dose_resolution):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing dose information "
-                                      "generator ...")
+        Datahub().logger.display_info(
+            "Initializing dose information generator ...")
 
         # Get the instance attributes from the arguments
-        self.dose_resolution = dose_resolution
         self.number_of_fractions = number_of_fractions
-        self.dose_path = dose_path
+        self.dose_matrix_path = dose_matrix_path
+        self.dose_resolution = tuple(dose_resolution)
 
     def generate(self):
         """Generate the dose information dictionary."""
@@ -61,9 +71,9 @@ class DoseInfoGenerator():
         hub = Datahub()
 
         # Log a message about the dose information generation
-        hub.logger.display_info("Generating dose information for "
-                                f"{hub.plan_configuration['modality']} "
-                                "treatment ...")
+        hub.logger.display_info(
+            "Generating dose information for "
+            f"{hub.plan_configuration['modality']} treatment ...")
 
         # Initialize the dose information dictionary
         dose_information = {}
@@ -73,15 +83,15 @@ class DoseInfoGenerator():
             zip(('x', 'y', 'z'), self.dose_resolution))
 
         # Add the grid points for all dimensions
-        dose_information.update({dimension: arange_with_endpoint(
+        dose_information |= {dimension: arange_with_endpoint(
             hub.computed_tomography[dimension][0],
             hub.computed_tomography[dimension][-1],
             dose_information['resolution'][dimension])
-            for dimension in ('x', 'y', 'z')})
+            for dimension in ('x', 'y', 'z')}
 
         # Add the dose cube dimensions
-        dose_information['cube_dimensions'] = [
-            len(dose_information[dimension]) for dimension in ('x', 'y', 'z')]
+        dose_information['cube_dimensions'] = tuple(
+            len(dose_information[dimension]) for dimension in ('x', 'y', 'z'))
 
         # Add the total number of dose voxels
         dose_information['number_of_voxels'] = prod(
@@ -90,33 +100,38 @@ class DoseInfoGenerator():
         # Add the number of fractions
         dose_information['number_of_fractions'] = self.number_of_fractions
 
-        # Log a message about the dose-influence matrix addition
-        hub.logger.display_info("Adding dose-influence matrix ...")
+        # Check if the dose path leads to a matlab file
+        if self.dose_matrix_path.endswith('.mat'):
 
-        # Check if the dose path leads to a .mat file
-        if self.dose_path.endswith('.mat'):
+            # Log a message about the dose-influence matrix addition
+            hub.logger.display_info(
+                "Adding dose-influence matrix from MATLAB file ...")
 
             try:
 
                 # Read the dose-influence matrix from version < 7.3
                 dose_information['dose_influence_matrix'] = csr_matrix(
-                    loadmat(self.dose_path)['Dij'][0][0])
+                    loadmat(self.dose_matrix_path)['Dij'][0][0])
 
             except NotImplementedError:
 
                 # Open a file stream
-                with File(self.dose_path, 'r') as file:
+                with File(self.dose_matrix_path, 'r') as file:
 
                     # Read the dose-influence matrix from version >= 7.3
                     dose_information['dose_influence_matrix'] = csr_matrix(
                         file['Dij'][0][0])
 
-        # Else, check if the dose path leads to a .npy file
-        elif self.dose_path.endswith('.npy'):
+        # Else, check if the dose path leads to a numpy binary file
+        elif self.dose_matrix_path.endswith('.npy'):
+
+            # Log a message about the dose-influence matrix addition
+            hub.logger.display_info(
+                "Adding dose-influence matrix from NumPy binary file ...")
 
             # Add the dose-influence matrix from the .npy file
             dose_information['dose_influence_matrix'] = csr_matrix(
-                load(self.dose_path))
+                load(self.dose_matrix_path))
 
         # Add the degrees of freedom (the number of decision variables)
         dose_information['degrees_of_freedom'] = dose_information[

@@ -13,7 +13,6 @@ validation.
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
 from ._decision_tree import DecisionTreeModel
-from ._extreme_gradient_boosting import ExtremeGradientBoostingModel
 from ._k_nearest_neighbors import KNeighborsModel
 from ._logistic_regression import LogisticRegressionModel
 from ._naive_bayes import NaiveBayesModel
@@ -24,7 +23,6 @@ from ._support_vector_machine import SupportVectorMachineModel
 from . import additional_files
 
 __all__ = ['DecisionTreeModel',
-           'ExtremeGradientBoostingModel',
            'KNeighborsModel',
            'LogisticRegressionModel',
            'NaiveBayesModel',

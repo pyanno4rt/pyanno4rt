@@ -5,17 +5,17 @@
 # %% Function definition
 
 
-def identity(value, _):
+def identity(value, *args):
     """
-    Return the first argument of a two-argument input.
+    Return the identity of the first input parameter.
 
     Parameters
     ----------
     value : arbitrary
         Value to be returned.
 
-    _
-        Arbitrary placeholder argument.
+    *args : tuple
+        Tuple with optional (non-keyworded) parameters.
 
     Returns
     -------

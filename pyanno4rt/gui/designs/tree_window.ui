@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>tree_window</class>
+ <widget class="QMainWindow" name="tree_window">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>720</width>
+    <height>640</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>720</width>
+    <height>640</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>720</width>
+    <height>640</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Tree Viewer</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);</string>
+  </property>
+  <widget class="QWidget" name="body_widget">
+   <property name="styleSheet">
+    <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+   </property>
+   <widget class="QPushButton" name="close_tree_pbutton">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>600</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+    </property>
+    <property name="text">
+     <string>Close</string>
+    </property>
+   </widget>
+   <widget class="QTreeWidget" name="tree_widget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>701</width>
+      <height>581</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+    </property>
+    <property name="horizontalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+    <property name="alternatingRowColors">
+     <bool>true</bool>
+    </property>
+    <property name="verticalScrollMode">
+     <enum>QAbstractItemView::ScrollPerPixel</enum>
+    </property>
+    <property name="uniformRowHeights">
+     <bool>true</bool>
+    </property>
+    <property name="columnCount">
+     <number>3</number>
+    </property>
+    <column>
+     <property name="text">
+      <string>Key</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Type</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Value</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QPushButton" name="collapse_tree_pbutton">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>600</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+    </property>
+    <property name="text">
+     <string>Collapse</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="expand_tree_pbutton">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>600</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+    </property>
+    <property name="text">
+     <string>Expand</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../assets/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

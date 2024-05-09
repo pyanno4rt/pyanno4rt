@@ -21,7 +21,12 @@ class PlanGenerator():
     ----------
     modality : {'photon', 'proton'}
         Treatment modality, needs to be consistent with the dose calculation \
-        inputs;
+        inputs.
+
+    Attributes
+    ----------
+    modality : {'photon', 'proton'}
+        See 'Parameters'.
     """
 
     def __init__(
@@ -41,23 +46,12 @@ class PlanGenerator():
         hub = Datahub()
 
         # Log a message about the plan generation
-        hub.logger.display_info("Generating plan configuration for "
-                                f"{self.modality} treatment ...")
+        hub.logger.display_info(
+            f"Generating plan configuration for {self.modality} treatment ...")
 
         # Initialize the plan dictionary
-        plan_configuration = {'modality': self.modality}
-
-        # Check if the modality is photons
-        if self.modality == 'photon':
-
-            # Add a neutral RBE to the dictionary
-            plan_configuration['RBE'] = 1.0
-
-        # Else, check if the modality is protons
-        elif self.modality == 'proton':
-
-            # Add a constant RBE to the dictionary
-            plan_configuration['RBE'] = 1.1
+        plan_configuration = {'modality': self.modality,
+                              'RBE': 1.0 + 0.1*(self.modality == 'proton')}
 
         # Enter the plan dictionary into the datahub
         hub.plan_configuration = plan_configuration

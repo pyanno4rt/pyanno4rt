@@ -5,6 +5,7 @@
 # %% External package import
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QHBoxLayout, QLabel, QMainWindow, QPushButton,
                              QSizePolicy, QVBoxLayout, QWidget)
 from pyqtgraph import mkQApp, setConfigOptions
@@ -13,7 +14,9 @@ from pyqtgraph.Qt import QtGui
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import get_model_objectives, get_objectives
+from pyanno4rt.tools import (get_conventional_objectives,
+                             get_machine_learning_objectives,
+                             get_radiobiology_objectives)
 from pyanno4rt.visualization.visuals import (
     CtDoseSlicingWindowPyQt, DosimetricsTablePlotterMPL, DVHGraphPlotterMPL,
     FeatureSelectWindowPyQt, IterGraphPlotterMPL, MetricsGraphsPlotterMPL,
@@ -45,7 +48,7 @@ class Visualizer():
     def __init__(self, parent=None):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing visualizer class ...")
+        Datahub().logger.display_info("Initializing visualizer ...")
 
         if not parent:
 
@@ -72,8 +75,8 @@ class Visualizer():
 
     def launch(self):
         """Launch the visual analysis tool."""
-        # Log a message about the analysis tool launching
-        Datahub().logger.display_info("Launching visual analysis tool ...")
+        # Log a message about launching the visualizer
+        Datahub().logger.display_info("Launching visualizer ...")
 
         if not self.parent:
 
@@ -130,9 +133,9 @@ class MainWindow(QMainWindow):
         def add_logo(layout):
             """Create and add the pyanno4rt logo."""
             logo = QLabel(self)
-            pixmap = QtGui.QPixmap('./logo/logo_white.png')
-            pixmap = pixmap.scaled(int(pixmap.width()/10),
-                                   int(pixmap.height()/10))
+            pixmap = QtGui.QPixmap('./logo/logo_white_512.png')
+            pixmap = pixmap.scaled(int(pixmap.width()/2),
+                                   int(pixmap.height()/2))
             logo.setPixmap(pixmap)
             logo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             logo.setAlignment(Qt.AlignCenter)
@@ -183,44 +186,52 @@ class MainWindow(QMainWindow):
             # Connect the buttons with the onclick events
             button.clicked.connect(getattr(self, subclass.name).view)
 
-            # Disable the iteration value buttons if no tracker is present
-            # or if no objective should be displayed
-            if ((not hasattr(
-                    hub.optimization['problem'], 'tracker')
-                    or not any(
-                        objective.display for objective in objectives))
+            # Check if the iteration plot buttons should be disabled
+            if (not hasattr(hub.optimization['problem'], 'tracker')
+                    and subclass.name in (
+                        'iterations_plotter', 'ntcp_plotter')):
+                button.setEnabled(False)
+
+            # Check if the iteration values button should be disabled
+            if (not any(objective.display for objective in (
+                    *cv_objectives, *ml_objectives, *rb_objectives))
                     and subclass.name == 'iterations_plotter'):
                 button.setEnabled(False)
 
-            # Disable the iteration value buttons if no tracker is present
-            # or if no data objective should be displayed
-            if ((not hasattr(
-                    hub.optimization['problem'], 'tracker')
-                    or not any(
-                        objective.display for objective in data_objectives))
+            # Check if the (N)TCP values button should be disabled
+            if (not (any(objective.display for objective in ml_objectives)
+                     or any(objective.display for objective in rb_objectives
+                            if objective.name in ('Lyman-Kutcher-Burman-NTCP',
+                                                  'LQ Poisson TCP')))
                     and subclass.name == 'ntcp_plotter'):
                 button.setEnabled(False)
 
-            # Disable the data model buttons if no models are present
-            if (len(data_objectives) == 0
-                    and hasattr(subclass, 'DATA_DEPENDENT')):
-                button.setEnabled(False)
-
-            # Disable the features button if no features history exists
-            if (len(data_objectives) > 0 and
-                    all(objective.model_parameters['write_features'] is False
-                        for objective in data_objectives)
+            # Check if the feature iterations button should be disabled
+            if (all(objective.model_parameters['write_features'] is False
+                    for objective in ml_objectives)
                     and subclass.name == 'features_plotter'):
                 button.setEnabled(False)
 
-            # Disable the permutation importance button if no inspector is used
-            if (len(hub.model_inspections) == 0 and subclass.name in (
-                    'permutation_importance_plotter',)):
+            # Check if the metrics tables and graphs buttons should be disabled
+            if ((not hub.model_evaluations or len(hub.model_evaluations) == 0)
+                    and subclass.name in ('metrics_graphs_plotter',
+                                          'metrics_tables_plotter')):
                 button.setEnabled(False)
 
-            # Disable the metrics tables and graphs if no evaluator is used
-            if (len(hub.model_evaluations) == 0 and subclass.name in (
-                    'metrics_graphs_plotter', 'metrics_tables_plotter')):
+            # Check if the permutation importance button should be disabled
+            if ((not hub.model_inspections or len(hub.model_inspections) == 0)
+                    and subclass.name in ('permutation_importance_plotter',)):
+                button.setEnabled(False)
+
+            # Check if the plan evaluation buttons should be disabled
+            if (not hub.dose_histogram and not hub.dosimetrics
+                    and subclass.name in ('dvh_plotter',
+                                          'dosimetrics_plotter')):
+                button.setEnabled(False)
+
+            # Check if the CT/dose slice button should be disabled
+            if (hub.optimization['optimized_dose'] is None
+                    and subclass.name in ('ct_dose_plotter')):
                 button.setEnabled(False)
 
         # Run the constructor from the superclass
@@ -230,8 +241,11 @@ class MainWindow(QMainWindow):
         self.application = application
         self.standalone = standalone
 
+        # Set the window icon
+        self.setWindowIcon(QIcon('./logo/logo_white_icon.png'))
+
         # Set the window title
-        self.setWindowTitle("pyanno4rt - visual analysis tool")
+        self.setWindowTitle("pyanno4rt Visualizer")
 
         # Set the window style sheet
         self.setStyleSheet('background-color: black;')
@@ -362,9 +376,10 @@ class MainWindow(QMainWindow):
             text.setStyleSheet(label_styles[i])
             layouts[i].addWidget(text)
 
-        # Get all objectives and the data-dependent objectives
-        objectives = get_objectives(hub.segmentation)
-        data_objectives = get_model_objectives(hub.segmentation)
+        # Get all objectives
+        cv_objectives = get_conventional_objectives(hub.segmentation)
+        ml_objectives = get_machine_learning_objectives(hub.segmentation)
+        rb_objectives = get_radiobiology_objectives(hub.segmentation)
 
         # Initialize the counter
         counts = [0, 0, 0]
@@ -420,8 +435,8 @@ class MainWindow(QMainWindow):
         event : object of class `QCloseEvent`
             Instance of the class `QCloseEvent`.
         """
-        # Log a message about the analysis tool closing
-        Datahub().logger.display_info("Closing visual analysis tool ...")
+        # Log a message about closing the visualizer
+        Datahub().logger.display_info("Closing visualizer ...")
 
         # Check if the visual interface is handled as a standalone
         if self.standalone:

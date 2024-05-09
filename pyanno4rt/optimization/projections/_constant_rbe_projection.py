@@ -12,18 +12,19 @@ from pyanno4rt.optimization.projections import BackProjection
 
 class ConstantRBEProjection(BackProjection):
     """
-    Constant RBE projection class. Inherits from the class `Backprojection`.
+    Constant RBE projection class.
 
-    This class initializes the calculation methods with a linear dose \
-    projection and a constant RBE value of 1.1, which is suitable for proton \
-    treatment plan optimization.
+    This class provides an implementation of the abstract forward and \
+    backward projection methods in \
+    :class:`~pyanno4rt.optimization.projections._backprojection.Backprojection`\
+    by a linear function with a constant RBE value of 1.1.
     """
 
     def __init__(self):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing constant RBE projection "
-                                      "...")
+        Datahub().logger.display_info(
+            "Initializing constant RBE projection ...")
 
         # Call the superclass constructor
         super().__init__()
@@ -32,45 +33,38 @@ class ConstantRBEProjection(BackProjection):
             self,
             fluence):
         """
-        Compute the dose from the RBE-weighted fluence.
+        Compute the dose projection from the fluence vector.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence.
+            Values of the fluence vector.
 
         Returns
         -------
         ndarray
-            Values of the dose.
+            Values of the dose vector.
         """
-        # Initialize the datahub
-        hub = Datahub()
 
-        return (hub.dose_information['dose_influence_matrix'] @ (
-                hub.plan_configuration['RBE'] * fluence))
+        return (Datahub().dose_information['dose_influence_matrix'] @ (
+                Datahub().plan_configuration['RBE'] * fluence))
 
     def compute_fluence_gradient_result(
             self,
             dose_gradient):
         """
-        Compute the fluence gradient from the RBE-weighted dose gradient.
+        Compute the fluence gradient projection from the dose gradient.
 
         Parameters
         ----------
         dose_gradient : ndarray
-            Values of the dose derivatives.
-
-        fluence : ndarray
-            Values of the fluence.
+            Values of the dose gradient.
 
         Returns
         -------
         ndarray
-            Values of the fluence derivatives.
+            Values of the fluence gradient.
         """
-        # Initialize the datahub
-        hub = Datahub()
 
-        return (hub.dose_information['dose_influence_matrix'].T @ (
-                hub.plan_configuration['RBE'] * dose_gradient))
+        return (Datahub().dose_information['dose_influence_matrix'].T @ (
+                Datahub().plan_configuration['RBE'] * dose_gradient))

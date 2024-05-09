@@ -5,68 +5,80 @@
 # %% Function definition
 
 
-def check_components(key, value, subfunctions):
-    """Check the optimization components."""
-    # Check if the dictionary is empty
-    subfunctions[0](key, value.keys())
+def check_components(label, data, check_functions):
+    """
+    Check the optimization components.
+
+    Parameters
+    ----------
+    label : str
+        Label for the item to be checked ('components').
+
+    data : dict
+        Dictionary with the optimization components.
+
+    check_functions : tuple
+        Tuple with the individual check functions for the dictionary items.
+    """
 
     # Loop over the dictionary keys
-    for k in value:
+    for dict_key in data:
 
         # Get the value for the key
-        v = value[k]
+        dict_value = data[dict_key]
 
-        # Construct the component key string
-        component_key = ''.join((key, "['{}']".format(k)))
+        # Get the dictionary paths to check
+        dict_paths = tuple(f'{label}{string}' for string in (
+            f"['{dict_key}']{extension}"
+            for extension in ('', "['type']", "['instance']")))
 
-        # Check if the value is not a tuple or a list
-        subfunctions[1](component_key, v)
+        # Check if 'type' and 'instance' are unavailable keys
+        check_functions[0](dict_paths[0], dict_value)
 
-        # Check if the length of the value is not valid
-        subfunctions[2](component_key, v)
+        # Check if the component type is neither 'objective' nor 'constraint'
+        check_functions[1](dict_paths[1], dict_value['type'])
 
-        # Check if the first element is not supported
-        subfunctions[3](''.join((component_key, '[{}]'.format(0))), v[0])
+        # Get the component instance
+        instance = dict_value['instance']
 
-        # Check if the second element is not a dict, tuple or list
-        subfunctions[4](''.join((component_key, '[{}]'.format(0))), v[1])
+        # Check if the instance is neither dictionary nor list
+        check_functions[2](dict_paths[2], instance)
 
-        # Check if the second element is a list
-        if isinstance(v[1], list):
+        # Check if the instance is a list
+        if isinstance(instance, list):
 
-            # Check if the elements are dictionaries
-            subfunctions[5](''.join((component_key, '[{}]'.format(1))), v[1])
+            # Check if any of the instance elements is not a dictionary
+            check_functions[6](dict_paths[2], instance)
 
-            # Loop over the subdictionaries
-            for i, _ in enumerate(v[1]):
+            # Loop over the elements
+            for i, element in enumerate(instance):
 
-                # Check if dictionary keys are missing
-                subfunctions[6](
-                    ''.join((component_key, '[{}]'.format(1),
-                             '[{}]'.format(i))), v[1][i])
+                # Get the dictionary paths to check
+                paths = tuple(f'{dict_paths[0]}{string}' for string in (
+                    f"['instance'][{i}]{extension}"
+                    for extension in ('', "['class']", "['parameters']")))
 
-                # Check if the 'class' key is not valid
-                subfunctions[7](
-                    ''.join((component_key, '[{}]'.format(1),
-                             '[{}]'.format(i), "['class']")), v[1][i]['class'])
+                # Check if 'class' and 'parameters' are unavailable keys
+                check_functions[3](paths[0], element)
+
+                # Check if the 'class' key is invalid
+                check_functions[4](paths[1], element['class'])
 
                 # Check if the 'parameters' key is not a dictionary
-                subfunctions[8](
-                    ''.join((component_key, '[{}]'.format(1),
-                             '[{}]'.format(i), "['parameters']")),
-                    v[1][i]['parameters'])
+                check_functions[5](paths[2], element['parameters'])
 
         else:
 
-            # Check if dictionary keys are missing
-            subfunctions[6](''.join((component_key, '[{}]'.format(1))), v[1])
+            # Get the dictionary paths to check
+            paths = tuple(f'{dict_paths[0]}{string}' for string in (
+                f"['instance']{extension}"
+                for extension in ('', "['class']", "['parameters']")))
 
-            # Check if the 'class' key is not valid
-            subfunctions[7](
-                ''.join((component_key, '[{}]'.format(1), "['class']")),
-                v[1]['class'])
+            # Check if 'class' and 'parameters' are unavailable keys
+            check_functions[3](paths[0], instance)
+
+            # Check if the 'class' key is invalid
+            check_functions[4](paths[1], instance['class'])
 
             # Check if the 'parameters' key is not a dictionary
-            subfunctions[8](
-                ''.join((component_key, '[{}]'.format(1), "['parameters']")),
-                v[1]['parameters'])
+            check_functions[5](paths[2], instance['parameters'])

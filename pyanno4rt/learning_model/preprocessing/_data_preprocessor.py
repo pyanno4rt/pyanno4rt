@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from numpy import prod
+from numpy import array, prod
 from sklearn.pipeline import Pipeline
 
 # %% Internal package import
@@ -41,10 +41,14 @@ class DataPreprocessor():
 
     def __init__(
             self,
-            step_labels):
+            step_labels,
+            verbose=True):
 
-        # Log a message about the preprocessor initialization
-        Datahub().logger.display_info("Initializing data preprocessor ...")
+        # Check if verbose is True
+        if verbose:
+
+            # Log a message about the preprocessor initialization
+            Datahub().logger.display_info("Initializing data preprocessor ...")
 
         # Map the labels to the preprocessing algorithms
         catalogue = {'Equalizer': Equalizer(),
@@ -58,9 +62,9 @@ class DataPreprocessor():
         self.steps = tuple(catalogue[label] for label in self.labels)
 
         # Build the preprocessing pipeline
-        self.pipeline = self.build()
+        self.pipeline = self.build(verbose)
 
-    def build(self):
+    def build(self, verbose):
         """
         Build the preprocessing pipeline from the passed steps and step labels.
 
@@ -70,10 +74,14 @@ class DataPreprocessor():
             Instance of the class `Pipeline`, which provides a preprocessing \
             pipeline (chain of transformation algorithms).
         """
-        # Log a message about the pipeline steps
-        Datahub().logger.display_info("Building pipeline 'Input -> {} -> "
-                                      "Output' ..."
-                                      .format(' -> '.join(self.labels)))
+
+        # Check if verbose is True
+        if verbose:
+
+            # Log a message about the pipeline steps
+            Datahub().logger.display_info("Building pipeline 'Input -> {} -> "
+                                          "Output' ..."
+                                          .format(' -> '.join(self.labels)))
 
         return Pipeline(list(zip(self.labels, self.steps)))
 
@@ -147,4 +155,4 @@ class DataPreprocessor():
             if hasattr(step, 'compute_gradient') and callable(
                     getattr(step, 'compute_gradient')))
 
-        return list(prod(x) for x in zip(*step_gradients))
+        return array([prod(x) for x in zip(*step_gradients)])

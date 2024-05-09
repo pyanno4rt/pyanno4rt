@@ -2,11 +2,15 @@
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
+# %% External package import
+
+from warnings import warn
+
 # %% Internal package import
 
 from pyanno4rt.input_check.check_maps import (
-    configuration_map, evaluation_map, model_map, objective_map,
-    optimization_map, top_level_map)
+    component_map, configuration_map, evaluation_map, model_display_map,
+    model_map, optimization_map, top_level_map, tune_space_map)
 from pyanno4rt.tools import flatten
 
 # %% Class definition
@@ -16,25 +20,48 @@ class InputChecker():
     """
     Input checker class.
 
+    This class provides methods to perform input checks on the user-defined \
+    parameters for objects of any class from :mod:`~pyanno4rt.base`. It \
+    ensures the validity of the internal program steps with regard to the \
+    exogenous variables.
+
+    Attributes
+    ----------
+    check_map : dict
+        Dictionary with all mappings between parameter names and validity \
+        check functions.
+
+    Raises
+    ------
+    ValueError
+        If non-unique parameter names are found.
+
+    Notes
+    -----
+    The :class:`~pyanno4rt.input_check._input_checker.InputChecker` class \
+    relies on the uniqueness of the parameter names to create a \
+    dictionary-based mapping. Hence, make sure to assign unique labels for \
+    all parameters to be checked!
     """
 
     def __init__(self):
 
-        # Get the checking maps
-        check_maps = (top_level_map, configuration_map, optimization_map,
-                      evaluation_map, objective_map, model_map)
+        # Get all available check maps
+        check_maps = (component_map, configuration_map, evaluation_map,
+                      model_map, model_display_map, optimization_map,
+                      top_level_map, tune_space_map)
 
-        # Get the keys of the combined dictionaries
-        all_keys = tuple(flatten(
-            [dictionary.keys() for dictionary in check_maps]))
+        # Get all parameter names
+        parameter_names = tuple(flatten([
+            dictionary.keys() for dictionary in check_maps]))
 
         # Check if there are duplicate keys
-        if len(all_keys) != len(set(all_keys)):
+        if len(parameter_names) != len(set(parameter_names)):
 
             # Raise an error to indicate non-unique keys
             raise ValueError(
-                "The dictionaries to be checked should only contain unique "
-                "keys, but it seems that there are duplicates!")
+                "The check maps should only contain unique keys, but it seems "
+                "that there are duplicates within or between some maps!")
 
         # Build the full check map
         self.check_map = {key: value
@@ -45,80 +72,59 @@ class InputChecker():
             self,
             input_dictionary):
         """
-        Approve the input dictionary by running the check functions.
+        Approve the input dictionary items (parameter names and values) by \
+        running the corresponding check functions.
 
         Parameters
         ----------
         input_dictionary : dict
-            The dictionary whose items should be checked.
-
-        Raises
-        ------
-        TypeError
-            ...
-
-        ValueError
-            ...
+            Dictionary with the mappings between parameter names and values \
+            to be checked.
         """
+
+        # Set the additional check function arguments
+        args = {'solver': {
+                    'value_condition': input_dictionary.get('method')},
+                'algorithm': {
+                    'value_condition': input_dictionary.get('solver')},
+                'initial_fluence_vector': {
+                    'type_condition': input_dictionary.get(
+                        'initial_strategy')},
+                'time_variable_name': {
+                    'type_condition': input_dictionary.get('label_viewpoint')}
+                }
+
         # Loop over the dictionary keys
-        for key in input_dictionary:
+        for key, value in input_dictionary.items():
 
-            # Get the check functions from the check map
-            check_functions = self.check_map[key]
+            # Check if the key is included in the check map
+            if key in self.check_map:
 
-            # Get the value of the key
-            value = input_dictionary[key]
+                # Check if the key holds vector-like lower or upper bounds
+                if (key in ('lower_variable_bounds', 'upper_variable_bounds')
+                        and not isinstance(value, (int, float, type(None)))):
 
-            # Check if the value is mandatory but missing
-            if value is None and key not in ('target_imaging_resolution',
-                                             'initial_fluence_vector',
-                                             'lower_variable_bounds',
-                                             'upper_variable_bounds',
-                                             'model_parameters',
-                                             'model_folder_path',
-                                             'link',
-                                             'identifier'):
+                    # Add the corresponding additional argument
+                    args[key] = {'is_vector': True}
 
-                # Raise an error to indicate the missing value
-                raise TypeError(
-                    "Please specify the treatment plan parameter '{}'!"
-                    .format(key))
+                # Loop over the check functions
+                for function in self.check_map[key]:
 
-            # Loop over the check functions
-            for function in check_functions:
+                    # Get the additional arguments
+                    key_args = args.get(key, {})
 
-                # Check if the key is 'solver'
-                if key == 'solver':
+                    # Get the function arguments
+                    func_args = function.func.__code__.co_varnames
 
-                    # Run the check function w.r.t the optimization method
-                    function(key, value,
-                             value_group=input_dictionary['method'])
+                    # Get the additional arguments filtered by function
+                    filter_args = {arg: key_args[arg] for arg in func_args
+                                   if arg in key_args}
 
-                # Check if the key is 'algorithm'
-                elif key == 'algorithm':
+                    # Run the check function
+                    function(key, value, **filter_args)
 
-                    # Run the check function w.r.t the solver
-                    function(key, value,
-                             value_group=input_dictionary['solver'])
+            else:
 
-                # Check if the key is 'initial_fluence_vector'
-                elif key == 'initial_fluence_vector':
-
-                    # Run the check function w.r.t the data type
-                    function(key, value,
-                             type_group=input_dictionary['initial_strategy'])
-
-                # Check if the key is 'lower_variable_bounds' or
-                # 'upper_variable_bounds'
-                elif key in ('lower_variable_bounds', 'upper_variable_bounds'):
-
-                    # Run the check function w.r.t the value dimension
-                    function(key, value, value_group='scalar'
-                             if isinstance(input_dictionary[key], (int, float,
-                                                                   type(None)))
-                             else 'vector')
-
-                else:
-
-                    # Run the check function without conditions
-                    function(key, value)
+                # Raise a warning to indicate an uncheckable parameter
+                warn(f"The key '{key}' cannot be found in the check map and "
+                     "is therefore not approved!")

@@ -9,13 +9,13 @@ from collections.abc import Iterable
 # %% Function definition
 
 
-def flatten(iterable):
+def flatten(elements):
     """
     Convert a nested iterable to a flat one.
 
     Parameters
     ----------
-    iterable : iterable
+    elements : iterable
         (Nested) iterable to be flattened.
 
     Returns
@@ -25,15 +25,16 @@ def flatten(iterable):
     """
 
     # Loop over the elements of the iterable
-    for elem in iterable:
+    for element in elements:
 
-        # Check if the element is an iterable
-        if isinstance(elem, Iterable) and not isinstance(elem, (str, bytes)):
+        # Check if the element is an iterable again
+        if (isinstance(element, Iterable)
+                and not isinstance(element, (str, bytes))):
 
             # Recursively flatten the element
-            yield from flatten(elem)
+            yield from flatten(element)
 
         else:
 
             # Return the element
-            yield elem
+            yield element

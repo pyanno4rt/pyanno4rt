@@ -22,16 +22,16 @@ def copycat(base_class, path):
 
     Parameters
     ----------
-    base_class : class ``TreatmentPlan``
-        Treatment plan class from which to create the instance.
+    base_class : class from :mod:`~pyanno4rt.base`
+        The base treatment plan class from which to create an instance.
 
-    path : string
-        Directory path for the snapshot folder.
+    path : str
+        Directory path of the snapshot.
 
     Returns
     -------
-    object of class ``TreatmentPlan``
-        Treatment plan instance.
+    object of class from :mod:`~pyanno4rt.base`
+        The instantiated base treatment plan object.
     """
 
     def add_model_paths(inputs):
@@ -40,11 +40,11 @@ def copycat(base_class, path):
         def edit(component):
             """Edit a single component."""
 
-            # Check if the component has model parameters
-            # and if the model label is equal to the folder name
+            # Check if the component has model parameters and if the model
+            # label is equal to the folder name
             if ('model_parameters' in component['parameters']
-                and component['parameters']['model_parameters'][
-                    'model_label'] == basename(inputs[0])):
+                    and component['parameters']['model_parameters'][
+                        'model_label'] == basename(inputs[0])):
 
                 # Overwrite the model folder path of the component
                 component['parameters']['model_parameters'][
@@ -58,10 +58,11 @@ def copycat(base_class, path):
 
                         # Overwrite the model data path
                         component['parameters']['model_parameters'][
-                            'data_path'] = ''.join((inputs[0], '/', filename))
+                            'data_path'] = f'{inputs[0]}/{filename}'
 
-        # Get the component(s)
-        component = treatment_plan.optimization['components'][inputs[1]][1]
+        # Get the component instance(s)
+        component = treatment_plan.optimization[
+            'components'][inputs[1]]['instance']
 
         # Check if the component is a list
         if isinstance(component, list):
@@ -69,14 +70,14 @@ def copycat(base_class, path):
             # Apply the editing function to each element in the component
             apply(edit, component)
 
-        # Else, check if the component is a dict
+        # Else, check if the component is a dictionary
         elif isinstance(component, dict):
 
             # Edit the component
             edit(component)
 
     # Open a file stream
-    with open(''.join((path, '/input_parameters.json')), 'r',
+    with open(f'{path}/input_parameters.json', 'r',
               encoding='utf-8') as file:
 
         # Load the input parameter dictionaries
@@ -85,26 +86,26 @@ def copycat(base_class, path):
     # Loop over the path files
     for filename in listdir(path):
 
-        # Check if the patient data file exists
+        # Check if the current file holds the patient data
         if 'patient_data' in filename:
 
             # Overwrite the imaging path
             input_parameters['configuration']['imaging_path'] = (
-                ''.join((path, '/', filename)))
+                f'{path}/{filename}')
 
-        # Check if the dose influence matrix file exists
+        # Check if the current file holds the dose influence matrix
         elif 'dose_influence_matrix' in filename:
 
             # Overwrite the dose path
             input_parameters['configuration']['dose_path'] = (
-                ''.join((path, '/', filename)))
+                f'{path}/{filename}')
 
     # Initialize the treatment plan instance from the input parameters
     treatment_plan = base_class(**input_parameters)
 
     # Get the model folder paths
-    model_paths = (''.join((path, '/', folder_name))
-                   for folder_name in tuple(next(walk(path))[1]))
+    model_paths = (f'{path}/{folder_name}' for folder_name in tuple(
+        next(walk(path))[1]))
 
     # Add the model folder and data paths
     apply(add_model_paths,

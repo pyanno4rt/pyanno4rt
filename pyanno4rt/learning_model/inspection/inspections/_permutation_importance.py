@@ -4,17 +4,14 @@
 
 # %% External package import
 
-from os import environ
-environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
 from concurrent.futures import ThreadPoolExecutor
 from numpy import vstack
 from sklearn.base import clone
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
-from tensorflow.compat.v2.keras.callbacks import (EarlyStopping,
-                                                  ReduceLROnPlateau)
+from tensorflow.compat.v2.keras.callbacks import (
+    EarlyStopping, ReduceLROnPlateau)
 from tensorflow.compat.v2.keras.models import clone_model
 
 # %% Internal package import
@@ -145,7 +142,6 @@ class PermutationImportance():
 
             # Check if the model is either LR or SVM
             if self.model_class in ('Decision Tree',
-                                    'Extreme Gradient Boosting',
                                     'K-Nearest Neighbors',
                                     'Logistic Regression',
                                     'Naive Bayes',
@@ -252,7 +248,6 @@ class PermutationImportance():
         """
         # Check if the model either LR or SVM
         if self.model_class in ('Decision Tree',
-                                'Extreme Gradient Boosting',
                                 'K-Nearest Neighbors',
                                 'Logistic Regression',
                                 'Naive Bayes',

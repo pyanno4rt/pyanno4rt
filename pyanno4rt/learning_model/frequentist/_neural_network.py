@@ -8,7 +8,6 @@ from json import dump as jdump
 from json import load as jload
 from os.path import exists
 
-from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from h5py import File
 from hyperopt import fmin, hp, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
@@ -655,7 +654,7 @@ class NeuralNetworkModel():
                                'EarlyStopping_patience': 10}
 
             # Compute the objective function value (score) across all folds
-            fold_scores = ThreadPoolExecutor().map(
+            fold_scores = map(
                 compute_fold_score, (
                     (training_indices, validation_indices)
                     for (training_indices, validation_indices)
@@ -671,7 +670,8 @@ class NeuralNetworkModel():
             shuffle=True)
 
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps)
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
 
         # Map the score labels to the score functions
         scorers = {'Logloss': log_loss,
@@ -893,10 +893,11 @@ class NeuralNetworkModel():
             n_splits=oof_splits, random_state=4, shuffle=True)
 
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps)
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
 
         # Compute the returns (indices and labels) across all folds
-        fold_returns = ThreadPoolExecutor().map(
+        fold_returns = map(
             compute_fold_labels, (
                 (training_indices, validation_indices)
                 for (training_indices, validation_indices)

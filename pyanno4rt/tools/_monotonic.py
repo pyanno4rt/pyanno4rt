@@ -1,23 +1,22 @@
-"""Monotonicity check."""
+"""Monotonicity testing."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
 # %% Internal package import
 
-from pyanno4rt.tools import non_increasing
-from pyanno4rt.tools import non_decreasing
+from pyanno4rt.tools import non_decreasing, non_increasing
 
 # %% Function definition
 
 
 def monotonic(array):
     """
-    Check if an array is monotonic.
+    Test whether an array is monotonic.
 
     Parameters
     ----------
     array : ndarray
-        One-dimensional array to be checked.
+        One-dimensional input array.
 
     Returns
     -------

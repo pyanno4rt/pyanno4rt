@@ -15,12 +15,12 @@ from pyanno4rt.input_check.check_functions import check_type
 
 top_level_map = {
     'configuration': (
-        partial(check_type, key_type=dict),
+        partial(check_type, types=dict),
         ),
     'optimization': (
-        partial(check_type, key_type=dict),
+        partial(check_type, types=dict),
         ),
     'evaluation': (
-        partial(check_type, key_type=dict),
+        partial(check_type, types=dict),
         )
     }

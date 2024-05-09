@@ -59,34 +59,27 @@ class FeatureMapGenerator():
     def __init__(
             self,
             model_label,
-            dataset,
             fuzzy_matching):
 
         # Initialize the datahub
         hub = Datahub()
 
-        # Log a message about the feature map generation
-        hub.logger.display_info("Generating feature map ...")
+        # Log a message about the initialization of the class
+        hub.logger.display_info("Initializing feature map generator ...")
 
-        # Get the fuzzy matching indicator from the argument
+        # Get the instance attributes from the arguments
+        self.model_label = model_label
         self.fuzzy_matching = fuzzy_matching
 
-        # Generate the feature map
-        hub.feature_maps[model_label] = self.generate_map(dataset)
-
-    def generate_map(
+    def generate(
             self,
-            dataset):
+            data_information):
         """
         Generate the feature map by fuzzy or exact string matching.
 
         Parameters
         ----------
-        dataset : dict
-            Dictionary with the raw data set, the label viewpoint, the \
-            feature values and names, and the label values and names after \
-            modulation. In a compact way, this represents the input data for \
-            the learning models.
+        ...
 
         Returns
         -------
@@ -213,7 +206,7 @@ class FeatureMapGenerator():
             else (split[0], split[1], None) if len(split) == 2
             else (split[0], split[1], split[2])
             for split in map(methodcaller('split', '_'),
-                             dataset['feature_names']))
+                             data_information['feature_names']))
 
         # Decompose the splits into segments, definitions and parameters
         feature_segments, feature_definitions, feature_parameters = zip(
@@ -237,20 +230,25 @@ class FeatureMapGenerator():
 
         # Get the matches (values) for the feature map
         matches = ((get_segment_functions[feature_segments[i] in mapping_cache]
-                    (dataset['feature_names'][i],
+                    (data_information['feature_names'][i],
                      feature_segments[i])
                     if feature_segments[i] is not None else [None])
                    + get_definition_functions[
                        '_'.join(filter(None, (feature_definitions[i],
                                               feature_parameters[i])))
                        in mapping_cache](
-                           dataset['feature_names'][i], feature_definitions[i],
+                           data_information['feature_names'][i],
+                           feature_definitions[i],
                            feature_parameters[i])
-                   for i in range(len(dataset['feature_names'])))
+                   for i in range(len(data_information['feature_names'])))
 
         # Construct the output feature map
         feature_map = {feature_name: {label: value for label, value in zip(
             labels, match) if value is not None}
-            for feature_name, match in zip(dataset['feature_names'], matches)}
+            for feature_name, match in zip(data_information['feature_names'],
+                                           matches)}
+
+        # Enter the feature map into the datahub
+        hub.feature_maps[self.model_label] = feature_map
 
         return feature_map

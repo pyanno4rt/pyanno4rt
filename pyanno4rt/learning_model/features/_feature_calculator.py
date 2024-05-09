@@ -5,10 +5,10 @@
 # %% External package import
 
 from concurrent.futures import ThreadPoolExecutor
-from numpy import (array, array_equal, empty, fromiter, unravel_index, vstack,
-                   zeros)
+from numpy import (
+    array, array_equal, empty, fromiter, unravel_index, vstack, zeros)
 from scipy.ndimage import zoom
-from scipy.sparse import csr_matrix
+from scipy.sparse import lil_matrix
 from scipy.sparse import vstack as svstack
 
 # %% Internal package import
@@ -27,15 +27,9 @@ class FeatureCalculator():
     write_features : bool
         Indicator for tracking the feature values.
 
-    write_gradients : bool
-        Indicator for tracking the gradient matrices.
-
     Attributes
     ----------
     write_features : bool
-        See 'Parameters'.
-
-    write_gradients : bool
         See 'Parameters'.
 
     feature_history : ndarray or None
@@ -75,29 +69,26 @@ class FeatureCalculator():
 
     def __init__(
             self,
-            feature_map,
             write_features,
-            write_gradients):
+            verbose=True):
 
-        # Log a message about the feature calculator initialization
-        Datahub().logger.display_info("Initializing feature calculator ...")
+        # Check if verbose is True
+        if verbose:
 
-        # Get the instance attributes from the arguments
-        self.feature_map = feature_map
+            # Log a message about the initialization of the class
+            Datahub().logger.display_info(
+                "Initializing feature calculator ...")
+
+        # Get the feature writing indicator from the argument
         self.write_features = write_features
-        self.write_gradients = write_gradients
-
-        # Initialize the feature history if applicable
-        if write_features:
-            self.feature_history = empty(shape=(len(self.feature_map),))
-
-        # Initialize the gradient history if applicable
-        if write_gradients:
-            self.gradient_history = []
 
         # Initialize the radiomics/demographics dictionaries to store values
         self.radiomics = {}
         self.demographics = {}
+
+        # Initialize the feature map and history
+        self.feature_map = None
+        self.feature_history = None
 
         # Initialize the feature input dictionary
         self.feature_inputs = {'dose': None,
@@ -114,6 +105,37 @@ class FeatureCalculator():
         # Initialize the dose and the feature cache
         self.__dose_cache__ = array([])
         self.__feature_cache__ = array([])
+
+    def add_feature_map(
+            self,
+            feature_map,
+            return_self=False):
+        """
+        Add the feature map to the calculator.
+
+        Parameters
+        ----------
+        feature_map : dict
+            ...
+        """
+
+        # Log a message about the feature map addition
+        Datahub().logger.display_info(
+            "Adding feature map to the feature calculator ...")
+
+        # Initialize the feature map from the argument
+        self.feature_map = feature_map
+
+        # Check if the feature values should be stored in a history
+        if self.write_features:
+
+            # Initialize the feature history from the argument
+            self.feature_history = empty(shape=(len(self.feature_map),))
+
+        # Check if the instance should be returned
+        if return_self:
+
+            return self
 
     def precompute(
             self,
@@ -207,7 +229,8 @@ class FeatureCalculator():
     def featurize(
             self,
             dose,
-            segment):
+            segment,
+            no_cache=False):
         """
         Convert dose and segment information into the feature vector.
 
@@ -226,7 +249,8 @@ class FeatureCalculator():
         """
         # Check if the feature cache needs to be updated
         if (len(self.__feature_cache__) == 0
-                or self.__iteration__[0] != self.__iteration__[1]):
+                or self.__iteration__[0] != self.__iteration__[1]
+                or no_cache):
 
             # Synchronize the iteration numbers
             self.__iteration__[0] = self.__iteration__[1]
@@ -425,7 +449,7 @@ class FeatureCalculator():
 
             def get_default_gradient(_, __):
                 """Return a default gradient for non-dosiomic features."""
-                return csr_matrix((1, dose_information['number_of_voxels']))
+                return lil_matrix((1, dose_information['number_of_voxels']))
 
             # Map the feature types to the get functions
             get_functions = {'Dosiomics': get_dosiomic_gradient,
@@ -443,13 +467,4 @@ class FeatureCalculator():
         gradients = ThreadPoolExecutor().map(
             compute_feature_gradient, (*self.feature_map,))
 
-        # Build the gradient matrix by vertically stacking the gradient vectors
-        gradient_matrix = svstack(gradients)
-
-        # Check if the gradient history should be written
-        if self.write_gradients:
-
-            # Add the gradient matrix to the history
-            self.gradient_history.append(gradient_matrix)
-
-        return gradient_matrix
+        return svstack(tuple(gradients))

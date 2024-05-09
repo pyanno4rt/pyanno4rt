@@ -4,14 +4,12 @@ Learning model module.
 ==================================================================
 
 The module aims to provide methods and classes for data handling, \
-preprocessing, learning model training, inspection & evaluation.
+preprocessing, learning model fitting, inspection & evaluation.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-from ._data_model_handler import DataModelHandler
-
-from . import data
+from . import dataset
 from . import evaluation
 from . import features
 from . import frequentist
@@ -19,11 +17,13 @@ from . import inspection
 from . import losses
 from . import preprocessing
 
-__all__ = ['DataModelHandler',
-           'data',
+from ._data_model_handler import DataModelHandler
+
+__all__ = ['dataset',
            'evaluation',
            'features',
            'frequentist',
            'inspection',
            'losses',
-           'preprocessing']
+           'preprocessing',
+           'DataModelHandler']

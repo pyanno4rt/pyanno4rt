@@ -16,27 +16,21 @@ class Logger():
     """
     Logging class.
 
-    This class provides methods for configuring an instance of the logger, \
-    which includes multiple stream handlers and formatters to print messages \
-    at different levels.
+    This class provides methods to configure an instance of the logger, \
+    including multiple stream handlers and formatters to print messages at \
+    different levels.
 
     Parameters
     ----------
-    args : tuple
+    *args : tuple
         Tuple with optional (non-keyworded) logging parameters. The value \
-        ``args[0]`` refers to the label of the treatment plan, while \
-        ``args[1]`` specifies the minimum logging level.
+        args[0] refers to the label of the treatment plan, while args[1] \
+        specifies the minimum logging level.
 
     Attributes
     ----------
-    logger : object of class `Logger`
-        Instance of the class `Logger` from the 'logging' package, which \
-        takes a treatment plan label and a minimum logging level as input, \
-        and connects to a console and an object stream.
-
-    object_stream : object of class `StringIO`
-        Instance of the class `StringIO`, which provides an object \
-        representation of the logging output for further use (e.g. in the GUI).
+    logger : object of class :class:`~logging.Logger`
+        The external object used to interface the logging methods.
     """
 
     def __init__(
@@ -52,8 +46,10 @@ class Logger():
 
             # Log a message about the initialization of the class
             self.display_info("Initializing logger ...")
-            self.display_info("You are running python version "
-                              f"{python_version()} ...")
+
+            # Log a message about the python version used
+            self.display_info(
+                f"You are running Python version {python_version()} ...")
 
     def initialize_logger(
             self,
@@ -65,19 +61,12 @@ class Logger():
 
         Parameters
         ----------
-        label : string
+        label : str
             Label of the treatment plan instance.
 
         min_log_level : {'debug', 'info', 'warning', 'error', 'critical'}
             Minimum logging level for broadcasting messages to the console \
             and the object streams.
-
-        Returns
-        -------
-        logger : object of class `Logger`
-            Instance of the class `Logger` from the 'logging' package, which \
-            takes a treatment plan label and a minimum logging level as \
-            input, and connects to a console and an object stream.
         """
 
         # Map the values of 'min_log_level' to the logging levels of the module
@@ -87,7 +76,7 @@ class Logger():
                   'error': ERROR,
                   'critical': CRITICAL}
 
-        # Get the logger with the specific label
+        # Get the logger by the label
         logger = getLogger(name=f'pyanno4rt - {label}')
 
         # Set the basic logging level
@@ -96,25 +85,25 @@ class Logger():
         # Clear the handlers
         logger.handlers.clear()
 
-        # Initialize the system stream handler
+        # Initialize the console stream handler
         console_stream_handler = StreamHandler()
 
-        # Set the logging level for the stream handler
+        # Set the logging level for the console stream handler
         console_stream_handler.setLevel(level=levels[min_log_level])
 
-        # Initialize the text stream object
+        # Initialize the string IO object
         object_stream = StringIO()
 
-        # Initialize the string object stream handler
+        # Initialize the string IO stream handler
         object_stream_handler = StreamHandler(stream=object_stream)
 
-        # Set the logging level for the string object stream handler
+        # Set the logging level for the string IO stream handler
         object_stream_handler.setLevel(level=levels[min_log_level])
 
         # Initialize the output formatter
-        formatter = Formatter(fmt='%(asctime)s - %(name)s - '
-                              '%(levelname)s - %(message)s',
-                              datefmt='%Y-%m-%d %H:%M:%S')
+        formatter = Formatter(
+            fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S')
 
         # Add the output formatter to the stream handlers
         console_stream_handler.setFormatter(fmt=formatter)
@@ -124,7 +113,7 @@ class Logger():
         logger.addHandler(hdlr=console_stream_handler)
         logger.addHandler(hdlr=object_stream_handler)
 
-        # Suppress passing messages to the handlers of ancestor loggers
+        # Suppress message passing to the handlers of ancestor loggers
         logger.propagate = False
 
         return logger
@@ -135,29 +124,29 @@ class Logger():
             formatted_string,
             *args):
         """
-        Call the display function specified by ``level`` for the message \
-        given by ``formatted_string``.
+        Call the display function specified by `level` for the message \
+        given by `formatted_string`.
 
         Parameters
         ----------
         level : {'debug', 'info', 'warning', 'error', 'critical'}
             Level of the logging message.
 
-        formatted_string : string
+        formatted_string : str
             Formatted string to be displayed.
 
-        args : tuple
+        *args : tuple
             Optional display parameters.
         """
 
-        # Map the values of 'level' to the logging methods of the instance
+        # Map the values of 'level' to the logging methods of the attribute
         logging_methods = {'debug': self.logger.debug,
                            'info': self.logger.info,
                            'warning': self.logger.warning,
                            'error': self.logger.error,
                            'critical': self.logger.critical}
 
-        # Run the appropriate logging method
+        # Run the selected logging method
         logging_methods[level](formatted_string, *args)
 
     def display_debug(
@@ -169,10 +158,10 @@ class Logger():
 
         Parameters
         ----------
-        formatted_string : string
+        formatted_string : str
             Formatted string to be displayed.
 
-        args : tuple
+        *args : tuple
             Optional display parameters.
         """
 
@@ -187,10 +176,10 @@ class Logger():
 
         Parameters
         ----------
-        formatted_string : string
+        formatted_string : str
             Formatted string to be displayed.
 
-        args : tuple
+        *args : tuple
             Optional display parameters.
         """
 
@@ -205,10 +194,10 @@ class Logger():
 
         Parameters
         ----------
-        formatted_string : string
+        formatted_string : str
             Formatted string to be displayed.
 
-        args : tuple
+        *args : tuple
             Optional display parameters.
         """
 
@@ -223,10 +212,10 @@ class Logger():
 
         Parameters
         ----------
-        formatted_string : string
+        formatted_string : str
             Formatted string to be displayed.
 
-        args : tuple
+        *args : tuple
             Optional display parameters.
         """
 
@@ -241,10 +230,10 @@ class Logger():
 
         Parameters
         ----------
-        formatted_string : string
+        formatted_string : str
             Formatted string to be displayed.
 
-        args : tuple
+        *args : tuple
             Optional display parameters.
         """
 

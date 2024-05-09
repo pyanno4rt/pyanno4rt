@@ -3,10 +3,8 @@ Import functions module.
 
 ==================================================================
 
-The module aims to provide methods for importing patient data from different \
-input formats, i.e., CT data (from patient imaging) and segmentation data \
-(from image segmentation), and automatically converting them to appropriate \
-dictionary formats.
+This module aims to provide import functions to extract computed tomography \
+(CT) and segmentation data from the external data file(s).
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

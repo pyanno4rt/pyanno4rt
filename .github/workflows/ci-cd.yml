@@ -1,7 +1,7 @@
 # pyanno4rt CI/CD workflow
 
 # Name of the workflow
-name: pyanno4rt CI/CD
+name: CI/CD
 
 # Set the trigger events
 on:
@@ -15,53 +15,8 @@ on:
 # Define the jobs
 jobs:
 
-  test:
+  test-deploy:
 
-    # Set the operating system
-    runs-on: ubuntu-latest
-    
-    # Define the workflow steps
-    steps:
-
-    # Configure Python 3.11.6
-    - name: Configure Python 3.11.6
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11.6
-
-    # Check out the pyanno4rt repository
-    - name: Check out the pyanno4rt repository
-      uses: actions/checkout@v3
-    
-    # Install poetry
-    - name: Install poetry
-      uses: abatilo/actions-poetry@v2.1.0
-      with:
-        poetry-version: 1.5.1
-    
-    # Install the package dependencies
-    - name: Install the package dependencies with poetry
-      run: poetry install
-
-    # Run the test scripts with pytest
-    - name: Run the test scripts with pytest
-      run: poetry run pytest tests/ --cov=pyanno4rt --cov-report=lcov
-    
-    # Publish the coverage report to coveralls.io
-    - name: Publish the coverage report to coveralls.io
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ./coverage.lcov
-
-  deploy:
-  
-    # Only run the "deploy" job if the "test" job passes
-    needs: test
-    
-    # Only run the "deploy" job if code is pushed to the "master" branch
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && !contains(github.event.head_commit.message, 'chore(release):')
-    
     # Set the operating system
     runs-on: ubuntu-latest
     
@@ -94,104 +49,34 @@ jobs:
     # Install the package dependencies with poetry
     - name: Install the package dependencies with poetry
       run: poetry install
+
+    # Run the test scripts with pytest
+    - name: Run the test scripts with pytest
+      run: poetry run pytest tests/ --cov=pyanno4rt --cov-report=lcov
     
-    # Get the next release version with semantic-release
-    - name: Get the next release version with semantic-release
-      run: |
-        echo "VERSION=$(poetry run semantic-release version --print)" >> $GITHUB_ENV
-      
-    # Update the package version in pyproject.toml
-    - name: Update the package version in pyproject.toml
-      uses: ciiiii/toml-editor@1.0.0
+    # Publish the coverage report to coveralls.io
+    - name: Publish the coverage report to coveralls.io
+      uses: coverallsapp/github-action@master
       with:
-        file: "pyproject.toml"
-        key: "tool.poetry.version"
-        value: "${{ env.VERSION }}"
-    
-    # Build the the package distribution files with poetry
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ./coverage.lcov
+
+    # Build the package distribution files with poetry
     - name: Build the package distribution files with poetry
       run: poetry build
-      
-    # Check out the release changes
-    - name: Check out the release changes
-      id: changes
-      uses: simbo/changes-since-last-release-action@v1
+
+    # Publish the package to PyPI
+    - name: Publish the package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        line-prefix: "* "
-        include-hashes: false
-    
-    # Build the new package release
-    - name: Build the new package release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: "v${{ env.VERSION }}"
-        release_name: "v${{ env.VERSION }}"
-        body: |
-          Changes since ${{ steps.changes.outputs.last-tag }}:
-          ${{ steps.changes.outputs.log }}
-        draft: false
-        prerelease: false
-    
-    # Generate the changelog file
-    - name: Generate the changelog file
-      uses: orhun/git-cliff-action@v2
-      with:
-        config: cliff.toml
-        args: --verbose
-      env:
-        OUTPUT: CHANGELOG.md
-    
-    # Commit and push the updated pyproject.toml / CHANGELOG.md to GIT
-    - name: Commit and push the updated pyproject.toml / CHANGELOG.md to GIT
-      env: 
-        CI_COMMIT_MESSAGE: CI/CD build artifacts
-        CI_COMMIT_AUTHOR: Tim Ortkamp
-        CI_COMMIT_MAIL: tim.ortkamp@kit.edu
-      run: |
-        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-        git config --global user.email "${{ env.CI_COMMIT_MAIL }}"
-        git add pyproject.toml CHANGELOG.md
-        git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
-        git push
-    
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
+
     # Build the documentation for Read the Docs
     - name: Build the documentation for Read the Docs
       run: poetry run make html --directory docs/
 
-    # Publish the package to TestPyPI
-    - name: Publish the package to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.TEST_PYPI_TOKEN }}
-        repository-url: https://test.pypi.org/legacy/
-  
-  deploy-test:
-  
-    # Only run the "deploy-test" job if the "deploy" job passes
-    needs: deploy
-    
-    # Only run the "deploy-test" job if code is pushed to the "master" branch
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    
-    # Set the operating system
-    runs-on: ubuntu-latest
-    
-    # Define the workflow steps
-    steps:
-
-    # Configure Python 3.11.6
-    - name: Configure Python 3.11.6
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11.6
-  
-    # Test the installation from TestPyPI
-    - name: Test the installation from TestPyPI
+    # Test the installation from PyPI
+    - name: Test the installation from PyPI
       run: |
-          pip install \
-          --index-url https://test.pypi.org/simple/ \
-          --extra-index-url https://pypi.org/simple \
-          pyanno4rt
+          pip install pyanno4rt

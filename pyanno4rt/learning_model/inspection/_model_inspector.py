@@ -48,7 +48,7 @@ class ModelInspector():
             hyperparameters=None):
 
         # Log a message about the initialization of the model inspector
-        Datahub().logger.display_info("nitializing model inspector ...")
+        Datahub().logger.display_info("Initializing model inspector ...")
 
         # Get the instance attributes from the arguments
         self.model_name = model_name
@@ -82,12 +82,11 @@ class ModelInspector():
             Number of feature permutations to evaluate.
         """
         # Add the training permutation importances
-        self.inspections[
-            'permutation_importance_training'] = (
-                PermutationImportance(
-                    self.model_name, self.model_class,
-                    self.hyperparameters).compute(model, features, labels,
-                                                  number_of_repeats))
+        self.inspections['permutation_importance_training'] = (
+            PermutationImportance(
+                self.model_name, self.model_class,
+                self.hyperparameters).compute(model, features, labels,
+                                              number_of_repeats))
 
         # Add the validation permutation importances
         self.inspections['permutation_importance_validation'] = (
