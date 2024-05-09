@@ -3,26 +3,28 @@ Solvers module.
 
 ==================================================================
 
-The module aims to provide methods and classes for wrapping and running the \
-local and global solution algorithms from the integrated solver packages.
+This module aims to provide methods and classes for wrapping the local and \
+global solution algorithms from the integrated optimization packages.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-try:
-    from ._ipopt_solver import IpoptSolver
-except ImportError:
-    IpoptSolver = None
 from ._proxmin_solver import ProxminSolver
+from ._pyanno4rt_solver import Pyanno4rtSolver
 from ._pymoo_solver import PymooSolver
-from ._pypop7_solver import Pypop7Solver
+from ._pypop7_solver import PyPop7Solver
 from ._scipy_solver import SciPySolver
 
-from ._solvers_map import solvers_map
+from ._solver_map import solver_map
 
-__all__ = ['IpoptSolver',
-           'ProxminSolver',
+from . import configurations
+from . import internals
+
+__all__ = ['ProxminSolver',
+           'Pyanno4rtSolver',
            'PymooSolver',
-           'Pypop7Solver',
+           'PyPop7Solver',
            'SciPySolver',
-           'solvers_map']
+           'solver_map',
+           'configurations',
+           'internals']

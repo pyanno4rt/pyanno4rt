@@ -1,42 +1,65 @@
 # Installation
 
-<h3>User installation</h3>
+<h3>Python distribution</h3>
+
+You can install the latest distribution via:
 
 ```bash
 pip install pyanno4rt
 ```
 
+<br>
 <h3>Source code</h3>
+
+You can check the latest source code via:
 
 ```bash
 git clone https://github.com/pyanno4rt/pyanno4rt.git
 ```
 
+<br>
+<h3>Usage</h3>
+
+pyanno4rt has two main classes which provide a code-based and a UI-based interface:  <br><br>
+
+<i>Base class import for CLI/IDE</i>
+
+```python
+from pyanno4rt.base import TreatmentPlan
+```
+
+<i>GUI import</i>
+
+```python
+from pyanno4rt.gui import GraphicalUserInterface
+```
+
+<br>
 <h3>Dependencies</h3>
 
 <ul>
 	<li> python (>=3.10, <3.12)
 	<li> proxmin (>=0.6.12) </li>
-	<li> absl-py (>=2.0.0) </li>
+	<li> absl-py (>=2.1.0) </li>
 	<li> pydicom (>=2.4.4) </li>
-	<li> scikit-image (>=0.22.0) </li>
-	<li> h5py (>=3.10.0) </li>
-	<li> pandas (>=2.1.4) </li>
+	<li> scikit-image (>=0.23.2) </li>
+	<li> h5py (>=3.11.0) </li>
+	<li> pandas (>=2.2.1) </li>
 	<li> fuzzywuzzy (>=0.18.0) </li>
-	<li> jax (>=0.4.23) </li>
-	<li> jaxlib (>=0.4.23) </li>
-	<li> numba (>=0.58.1) </li>
-	<li> python-levenshtein (>=0.23.0) </li>
-	<li> scikit-learn (>=1.3.2) </li>
+	<li> jax (>=0.4.27) </li>
+	<li> jaxlib (>=0.4.27) </li>
+	<li> numba (>=0.59.1) </li>
+	<li> python-levenshtein (>=0.25.1) </li>
+	<li> scikit-learn (>=1.4.2) </li>
 	<li> tensorflow-io-gcs-filesystem (==0.34.0) </li>
 	<li> tensorflow (==2.14.0) </li>
 	<li> hyperopt (>=0.2.7) </li>
-	<li> xgboost (>=2.0.3) </li>
-	<li> pypop7 (>=0.0.78) </li>
 	<li> pymoo (>=0.6.1.1) </li>
 	<li> pyqt5-qt5 (==5.15.2) </li>
 	<li> pyqt5 (==5.15.10) </li>
-	<li> pyqtgraph (>=0.13.3) </li>
-	<li> ipython (>=8.19.0) </li>
+	<li> pyqtgraph (>=0.13.7) </li>
+	<li> ipython (>=8.24.0) </li>
+	<li> seaborn (>=0.13.2) </li>
+	<li> pypop7 (>=0.0.79) </li>
 </ul>
-We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. IPOPT is the only (optional) third-party dependency (you can find the respective tarballs for installation under pyanno4rt/optimization/solvers).<br/><br/>
+We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>

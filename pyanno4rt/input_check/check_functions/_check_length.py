@@ -2,43 +2,47 @@
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
+# %% External package import
+
+from operator import eq, ge, gt, le, lt
+
 # %% Function definition
 
 
-def check_length(key, value, reference, sign, type_group=(tuple, list)):
-    """Check if the vector length is not valid."""
+def check_length(label, data, reference, sign):
+    """
+    Check if the length of a vector-type object is invalid.
 
-    # Check if some value is passed
-    if value is not None:
+    Parameters
+    ----------
+    label : str
+        Label for the item to be checked.
 
-        # Check if the 'equal to' sign is applied
-        if sign == '==':
-            logical_value = len(value) == reference
+    data : list, tuple or ndarray
+        Vector-type object with length property.
 
-        # Check if the 'greater than' sign is applied
-        if sign == '>':
-            logical_value = len(value) > reference
+    reference : int
+        Reference value for the length comparison.
 
-        # Check if the 'greater equal' sign is applied
-        if sign == '>=':
-            logical_value = len(value) >= reference
+    sign : {'==', '>', '>=', '<', '<='}
+        Sign for the length comparison.
 
-        # Check if the 'smaller than' sign is applied
-        if sign == '<':
-            logical_value = len(value) < reference
+    Raises
+    ------
+    ValueError
+        If the vector-type object has an invalid length.
+    """
 
-        # Check if the 'smaller equal' sign is applied
-        if sign == '<=':
-            logical_value = len(value) <= reference
+    # Check if an input is passed
+    if data:
 
-        # Check if the logical value is False
-        if not logical_value:
+        # Create the operator dictionary
+        operator_dict = {'==': eq, '>=': ge, '>': gt, '<=': le, '<': lt}
 
-            # Raise an error to indicate a wrong vector length
+        # Check if the length of the vector-type object is invalid
+        if not operator_dict[sign](len(data), reference):
+
+            # Raise an error to indicate an invalid vector length
             raise ValueError(
-                "The treatment plan parameter '{}' has length {}, but should "
-                "be {} {}!"
-                .format(key,
-                        len(value),
-                        sign,
-                        reference))
+                f"The treatment plan parameter '{label}' has length "
+                f"{len(data)}, but should be {sign} {reference}!")

@@ -12,11 +12,12 @@ from pyanno4rt.optimization.projections import BackProjection
 
 class DoseProjection(BackProjection):
     """
-    Dose projection class. Inherits from the class `Backprojection`.
+    Dose projection class.
 
-    This class initializes the calculation methods with a linear dose \
-    projection and a neutral RBE value of 1.0, which is suitable for photon \
-    treatment plan optimization.
+    This class provides an implementation of the abstract forward and \
+    backward projection methods in \
+    :class:`~pyanno4rt.optimization.projections._backprojection.Backprojection`\
+    by a linear function with a neutral RBE value of 1.0.
     """
 
     def __init__(self):
@@ -31,38 +32,37 @@ class DoseProjection(BackProjection):
             self,
             fluence):
         """
-        Compute the dose from the fluence.
+        Compute the dose projection from the fluence vector.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence.
+            Values of the fluence vector.
 
         Returns
         -------
         ndarray
-            Values of the dose.
+            Values of the dose vector.
         """
+
         return Datahub().dose_information['dose_influence_matrix'] @ fluence
 
     def compute_fluence_gradient_result(
             self,
             dose_gradient):
         """
-        Compute the fluence gradient from the dose gradient.
+        Compute the fluence gradient projection from the dose gradient.
 
         Parameters
         ----------
         dose_gradient : ndarray
-            Values of the dose derivatives.
-
-        fluence : ndarray
-            Values of the fluence.
+            Values of the dose gradient.
 
         Returns
         -------
         ndarray
-            Values of the fluence derivatives.
+            Values of the fluence gradient.
         """
+
         return (Datahub().dose_information['dose_influence_matrix'].T
                 @ dose_gradient)

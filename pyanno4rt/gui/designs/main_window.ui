@@ -18,8 +18,8 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>3840</width>
-    <height>2160</height>
+    <width>2560</width>
+    <height>1440</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -49,10 +49,68 @@ background-color: rgb(0, 0, 0);</string>
     <item>
      <layout class="QVBoxLayout" name="body_layout">
       <item>
-       <layout class="QGridLayout" name="widget_layout">
+       <layout class="QGridLayout" name="widget_layout" columnstretch="1,1,1">
         <property name="spacing">
          <number>0</number>
         </property>
+        <item row="0" column="1">
+         <widget class="QWidget" name="logo_widget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>250</width>
+            <height>210</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>250</width>
+            <height>210</height>
+           </size>
+          </property>
+          <layout class="QHBoxLayout" name="logo_widget_layout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="logo_pixmap">
+             <property name="minimumSize">
+              <size>
+               <width>210</width>
+               <height>210</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>210</width>
+               <height>210</height>
+              </size>
+             </property>
+             <property name="pixmap">
+              <pixmap resource="../assets/resources.qrc">:/Logo/logo_white_square.png</pixmap>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QWidget" name="meta_settings_right_widget" native="true"/>
+        </item>
         <item row="4" column="0">
          <widget class="QWidget" name="composer_header" native="true">
           <property name="minimumSize">
@@ -86,6 +144,423 @@ background-color: rgb(0, 0, 0);</string>
            </item>
            <item>
             <widget class="Line" name="composer_header_line">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>2</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>2</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(211, 215, 207);</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QComboBox" name="plan_select_cbox">
+          <property name="minimumSize">
+           <size>
+            <width>250</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>250</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Ubuntu</family>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: rgb(211, 50, 50);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+          </property>
+          <property name="insertPolicy">
+           <enum>QComboBox::InsertAlphabetically</enum>
+          </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>18</width>
+            <height>18</height>
+           </size>
+          </property>
+          <item>
+           <property name="text">
+            <string/>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Create new plan</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../assets/resources.qrc">
+             <normaloff>:/lightred_icons/icons_lightred/plus-square.svg</normaloff>:/lightred_icons/icons_lightred/plus-square.svg</iconset>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QWidget" name="menu_left_widget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(0, 0, 0);
+border: 0px solid;
+border-color: rgb(186, 189, 182);</string>
+          </property>
+          <layout class="QHBoxLayout" name="menu_left_layout">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="load_pbutton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
+border: 1px solid;
+color: rgb(0, 0, 0);</string>
+             </property>
+             <property name="text">
+              <string>LOAD TPI</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../assets/resources.qrc">
+               <normaloff>:/black_icons/icons_black/upload.svg</normaloff>:/black_icons/icons_black/upload.svg</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>18</width>
+               <height>18</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="save_pbutton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
+border: 1px solid;
+color: rgb(0, 0, 0);</string>
+             </property>
+             <property name="text">
+              <string>SAVE TPI</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../assets/resources.qrc">
+               <normaloff>:/black_icons/icons_black/save.svg</normaloff>:/black_icons/icons_black/save.svg</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>18</width>
+               <height>18</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="drop_pbutton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
+border: 1px solid;
+color: rgb(0, 0, 0);</string>
+             </property>
+             <property name="text">
+              <string>DROP TPI</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../assets/resources.qrc">
+               <normaloff>:/black_icons/icons_black/trash-2.svg</normaloff>:/black_icons/icons_black/trash-2.svg</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>18</width>
+               <height>18</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QWidget" name="menu_right_widget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(0, 0, 0);
+border: 0px solid;
+border-color: rgb(186, 189, 182);</string>
+          </property>
+          <layout class="QHBoxLayout" name="menu_right_layout">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="settings_pbutton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
+border: 1px solid;
+color: rgb(0, 0, 0);</string>
+             </property>
+             <property name="text">
+              <string>SETTINGS</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../assets/resources.qrc">
+               <normaloff>:/black_icons/icons_black/settings.svg</normaloff>:/black_icons/icons_black/settings.svg</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>18</width>
+               <height>18</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="info_pbutton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
+border: 1px solid;
+color: rgb(0, 0, 0);</string>
+             </property>
+             <property name="text">
+              <string>INFO</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../assets/resources.qrc">
+               <normaloff>:/black_icons/icons_black/info.svg</normaloff>:/black_icons/icons_black/info.svg</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>18</width>
+               <height>18</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="exit_pbutton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(211, 215, 207);
+border-color: rgb(186, 189, 182);
+border: 1px solid;
+color: rgb(0, 0, 0);</string>
+             </property>
+             <property name="text">
+              <string>EXIT</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../assets/resources.qrc">
+               <normaloff>:/black_icons/icons_black/log-out.svg</normaloff>:/black_icons/icons_black/log-out.svg</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>18</width>
+               <height>18</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QWidget" name="workflow_header" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>250</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>250</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="workflow_header_layout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="workflow_header_label">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">color: rgb(211, 215, 207);</string>
+             </property>
+             <property name="text">
+              <string>Workflow</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="workflow_header_line">
              <property name="minimumSize">
               <size>
                <width>0</width>
@@ -178,21 +653,21 @@ border-color: rgb(211, 215, 207);</string>
                   <number>0</number>
                  </property>
                  <property name="leftMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="topMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="rightMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
                  <item>
                   <layout class="QVBoxLayout" name="image_layout">
-                   <property name="leftMargin">
-                    <number>6</number>
+                   <property name="spacing">
+                    <number>3</number>
                    </property>
                   </layout>
                  </item>
@@ -212,13 +687,13 @@ border-color: rgb(211, 215, 207);</string>
                 </property>
                 <layout class="QGridLayout" name="image_options_layout">
                  <property name="leftMargin">
-                  <number>6</number>
+                  <number>10</number>
                  </property>
                  <property name="topMargin">
                   <number>0</number>
                  </property>
                  <property name="rightMargin">
-                  <number>6</number>
+                  <number>10</number>
                  </property>
                  <property name="bottomMargin">
                   <number>16</number>
@@ -229,6 +704,31 @@ border-color: rgb(211, 215, 207);</string>
                  <property name="verticalSpacing">
                   <number>3</number>
                  </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="opacity_label">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Dose opacity</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="1">
                   <widget class="QLabel" name="slice_selection_label">
                    <property name="minimumSize">
@@ -249,9 +749,6 @@ border-color: rgb(211, 215, 207);</string>
                      <bold>true</bold>
                     </font>
                    </property>
-                   <property name="toolTip">
-                    <string>Selection of the CT/dose slice</string>
-                   </property>
                    <property name="text">
                     <string>Slice selection</string>
                    </property>
@@ -261,13 +758,13 @@ border-color: rgb(211, 215, 207);</string>
                   <widget class="QSpinBox" name="opacity_sbox">
                    <property name="minimumSize">
                     <size>
-                     <width>100</width>
+                     <width>120</width>
                      <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>120</width>
                      <height>30</height>
                     </size>
                    </property>
@@ -294,8 +791,8 @@ margin-right: 6px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="opacity_label">
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="slice_selection_pos">
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -314,16 +811,22 @@ margin-right: 6px;</string>
                      <bold>true</bold>
                     </font>
                    </property>
-                   <property name="toolTip">
-                    <string>Opacity of the dose distribution</string>
-                   </property>
                    <property name="text">
-                    <string>Dose opacity</string>
+                    <string/>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1">
+                 <item row="1" column="1" colspan="2">
                   <widget class="QScrollBar" name="slice_selection_sbar">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="minimumSize">
                     <size>
                      <width>153</width>
@@ -401,21 +904,28 @@ border-color: rgb(211, 215, 207);</string>
                  <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                 </property>
-                <layout class="QVBoxLayout" name="image_meta_layout_3">
-                 <property name="leftMargin">
+                <layout class="QVBoxLayout" name="dvh_meta_layout">
+                 <property name="spacing">
                   <number>0</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>10</number>
                  </property>
                  <property name="topMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="rightMargin">
-                  <number>0</number>
+                  <number>10</number>
                  </property>
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
                  <item>
-                  <layout class="QVBoxLayout" name="dvh_layout"/>
+                  <layout class="QVBoxLayout" name="dvh_layout">
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                  </layout>
                  </item>
                 </layout>
                </widget>
@@ -433,16 +943,16 @@ border-color: rgb(211, 215, 207);</string>
                 </property>
                 <layout class="QGridLayout" name="dvh_options_layout">
                  <property name="leftMargin">
-                  <number>6</number>
+                  <number>10</number>
                  </property>
                  <property name="topMargin">
                   <number>0</number>
                  </property>
                  <property name="rightMargin">
-                  <number>6</number>
+                  <number>10</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>12</number>
+                  <number>16</number>
                  </property>
                  <property name="horizontalSpacing">
                   <number>4</number>
@@ -450,18 +960,120 @@ border-color: rgb(211, 215, 207);</string>
                  <property name="verticalSpacing">
                   <number>3</number>
                  </property>
-                 <item row="0" column="4">
-                  <widget class="QLabel" name="maximum_label">
+                 <item row="1" column="5">
+                  <widget class="QLineEdit" name="minimum_ledit">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
-                     <height>0</height>
+                     <width>50</width>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
-                     <height>16777215</height>
+                     <width>180</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="3">
+                  <widget class="QLineEdit" name="std_ledit">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>50</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>180</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="4">
+                  <widget class="QLineEdit" name="maximum_ledit">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>50</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>180</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="4">
+                  <widget class="QLabel" name="maximum_label">
+                   <property name="minimumSize">
+                    <size>
+                     <width>50</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>180</width>
+                     <height>25</height>
                     </size>
                    </property>
                    <property name="font">
@@ -469,9 +1081,6 @@ border-color: rgb(211, 215, 207);</string>
                      <weight>75</weight>
                      <bold>true</bold>
                     </font>
-                   </property>
-                   <property name="toolTip">
-                    <string>Maximum segment dose</string>
                    </property>
                    <property name="text">
                     <string>Max</string>
@@ -481,18 +1090,18 @@ border-color: rgb(211, 215, 207);</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="6">
-                  <widget class="QLabel" name="minimum_label">
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="mean_label">
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
-                     <height>0</height>
+                     <width>50</width>
+                     <height>25</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
-                     <height>16777215</height>
+                     <width>180</width>
+                     <height>25</height>
                     </size>
                    </property>
                    <property name="font">
@@ -501,35 +1110,60 @@ border-color: rgb(211, 215, 207);</string>
                      <bold>true</bold>
                     </font>
                    </property>
-                   <property name="toolTip">
-                    <string>Minimum segment dose</string>
-                   </property>
                    <property name="text">
-                    <string>Min</string>
+                    <string>Mean</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="4">
-                  <widget class="QLineEdit" name="maximum_ledit">
+                 <item row="0" column="1">
+                  <widget class="QLabel" name="segment_label">
+                   <property name="minimumSize">
+                    <size>
+                     <width>80</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>400</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Segment</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QLineEdit" name="mean_ledit">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
-                     <height>25</height>
+                     <width>50</width>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
-                     <height>25</height>
+                     <width>180</width>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="styleSheet">
@@ -550,14 +1184,14 @@ border-color: rgb(186, 189, 182);</string>
                   <widget class="QLabel" name="std_label">
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
-                     <height>0</height>
+                     <width>50</width>
+                     <height>25</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
-                     <height>16777215</height>
+                     <width>180</width>
+                     <height>25</height>
                     </size>
                    </property>
                    <property name="font">
@@ -565,9 +1199,6 @@ border-color: rgb(186, 189, 182);</string>
                      <weight>75</weight>
                      <bold>true</bold>
                     </font>
-                   </property>
-                   <property name="toolTip">
-                    <string>Segment dose standard deviation</string>
                    </property>
                    <property name="text">
                     <string>Std</string>
@@ -577,18 +1208,18 @@ border-color: rgb(186, 189, 182);</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="mean_label">
+                 <item row="0" column="5">
+                  <widget class="QLabel" name="minimum_label">
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
-                     <height>0</height>
+                     <width>50</width>
+                     <height>25</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
-                     <height>16777215</height>
+                     <width>180</width>
+                     <height>25</height>
                     </size>
                    </property>
                    <property name="font">
@@ -597,11 +1228,8 @@ border-color: rgb(186, 189, 182);</string>
                      <bold>true</bold>
                     </font>
                    </property>
-                   <property name="toolTip">
-                    <string>Mean segment dose</string>
-                   </property>
                    <property name="text">
-                    <string>Mean</string>
+                    <string>Min</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -611,154 +1239,21 @@ border-color: rgb(186, 189, 182);</string>
                  <item row="1" column="1">
                   <widget class="QLineEdit" name="segment_ledit">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>80</width>
-                     <height>25</height>
+                     <width>140</width>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>200</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="6">
-                  <widget class="QLineEdit" name="minimum_ledit">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>60</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLabel" name="segment_label">
-                   <property name="minimumSize">
-                    <size>
-                     <width>80</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>200</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="toolTip">
-                    <string>Segment name</string>
-                   </property>
-                   <property name="text">
-                    <string>Segment</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="3">
-                  <widget class="QLineEdit" name="std_ledit">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>60</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QLineEdit" name="mean_ledit">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>60</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>100</width>
-                     <height>25</height>
+                     <width>400</width>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="styleSheet">
@@ -784,239 +1279,840 @@ border-color: rgb(186, 189, 182);</string>
           </widget>
          </widget>
         </item>
-        <item row="2" column="1">
-         <widget class="QComboBox" name="plan_select_cbox">
-          <property name="minimumSize">
-           <size>
-            <width>210</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>210</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <family>Ubuntu</family>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="cursor">
-           <cursorShape>PointingHandCursor</cursorShape>
-          </property>
-          <property name="toolTip">
-           <string>Select a treatment plan</string>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">color: rgb(251,90,91);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-          </property>
-          <property name="insertPolicy">
-           <enum>QComboBox::InsertAlphabetically</enum>
-          </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QComboBox::AdjustToContents</enum>
-          </property>
-          <property name="frame">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="2">
-         <widget class="QWidget" name="menu_right_widget" native="true">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>40</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>40</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(211, 215, 207);
-border: 0px solid;
-border-color: rgb(186, 189, 182);</string>
-          </property>
-          <layout class="QHBoxLayout" name="menu_right_layout">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QPushButton" name="settings_pbutton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="cursor">
-              <cursorShape>PointingHandCursor</cursorShape>
-             </property>
-             <property name="toolTip">
-              <string>Open the settings window</string>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
-border: 1px solid;
-color: rgb(0, 0, 0);</string>
-             </property>
-             <property name="text">
-              <string>SETTINGS</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../assets/resources.qrc">
-               <normaloff>:/black_icons/icons_black/settings.svg</normaloff>:/black_icons/icons_black/settings.svg</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>18</width>
-               <height>18</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="info_pbutton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="cursor">
-              <cursorShape>PointingHandCursor</cursorShape>
-             </property>
-             <property name="toolTip">
-              <string>Open the information window</string>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
-border: 1px solid;
-color: rgb(0, 0, 0);</string>
-             </property>
-             <property name="text">
-              <string>INFO</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../assets/resources.qrc">
-               <normaloff>:/black_icons/icons_black/info.svg</normaloff>:/black_icons/icons_black/info.svg</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>18</width>
-               <height>18</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="exit_pbutton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="cursor">
-              <cursorShape>PointingHandCursor</cursorShape>
-             </property>
-             <property name="toolTip">
-              <string>Exit the session and close the window</string>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
-border: 1px solid;
-color: rgb(0, 0, 0);</string>
-             </property>
-             <property name="text">
-              <string>EXIT</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../assets/resources.qrc">
-               <normaloff>:/black_icons/icons_black/log-out.svg</normaloff>:/black_icons/icons_black/log-out.svg</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>18</width>
-               <height>18</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QWidget" name="meta_settings_widget" native="true">
-          <layout class="QHBoxLayout" name="meta_settings_widget_layout">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-          </layout>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QWidget" name="workflow_header" native="true">
+        <item row="7" column="1">
+         <widget class="QWidget" name="workflow_widget" native="true">
           <property name="minimumSize">
            <size>
             <width>250</width>
             <height>0</height>
            </size>
           </property>
-          <layout class="QVBoxLayout" name="workflow_header_layout">
+          <property name="maximumSize">
+           <size>
+            <width>250</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(211, 215, 207);</string>
+          </property>
+          <layout class="QVBoxLayout" name="workflow_widget_layout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>6</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <layout class="QVBoxLayout" name="workflow_layout">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QTabWidget" name="tab_workflow">
+               <property name="currentIndex">
+                <number>0</number>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>50</width>
+                 <height>50</height>
+                </size>
+               </property>
+               <property name="documentMode">
+                <bool>true</bool>
+               </property>
+               <property name="movable">
+                <bool>true</bool>
+               </property>
+               <widget class="QWidget" name="tab_actions">
+                <property name="styleSheet">
+                 <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                </property>
+                <attribute name="icon">
+                 <iconset resource="../assets/resources.qrc">
+                  <normaloff>:/special_icons/icons_special/schedule-svgrepo-com.svg</normaloff>:/special_icons/icons_special/schedule-svgrepo-com.svg</iconset>
+                </attribute>
+                <attribute name="title">
+                 <string/>
+                </attribute>
+                <attribute name="toolTip">
+                 <string>Actions</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="tab_actions_meta_layout">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <layout class="QVBoxLayout" name="tab_actions_layout">
+                   <item>
+                    <widget class="QWidget" name="actions_widget" native="true">
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <layout class="QVBoxLayout" name="actions_layout">
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>10</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>10</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>10</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>10</number>
+                      </property>
+                      <item>
+                       <widget class="QPushButton" name="initialize_pbutton">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>INITIALIZE</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/black_icons/icons_black/play-circle.svg</normaloff>:/black_icons/icons_black/play-circle.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="chevron_init_conf">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;
+border-color: rgb(0, 0, 0);</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/white_icons/icons_white/chevrons-down.svg</normaloff>:/white_icons/icons_white/chevrons-down.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="configure_pbutton">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string> CONFIGURE</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/black_icons/icons_black/box.svg</normaloff>:/black_icons/icons_black/box.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="chevron_conf_opt">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;
+border-color: rgb(0, 0, 0);</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/white_icons/icons_white/chevrons-down.svg</normaloff>:/white_icons/icons_white/chevrons-down.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="optimize_pbutton">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string> OPTIMIZE</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/black_icons/icons_black/star.svg</normaloff>:/black_icons/icons_black/star.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="chevron_opt_eval">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;
+border-color: rgb(0, 0, 0);</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/white_icons/icons_white/chevrons-down.svg</normaloff>:/white_icons/icons_white/chevrons-down.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="evaluate_pbutton">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string> EVALUATE</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/black_icons/icons_black/award.svg</normaloff>:/black_icons/icons_black/award.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="chevron_eval_vis">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;
+border-color: rgb(0, 0, 0);</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/white_icons/icons_white/chevrons-down.svg</normaloff>:/white_icons/icons_white/chevrons-down.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="visualize_pbutton">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string> VISUALIZE</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/black_icons/icons_black/image.svg</normaloff>:/black_icons/icons_black/image.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="toolbox_spacer_top">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>35</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;
+border-color: rgb(0, 0, 0);</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="Line" name="toolbox_line">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>2</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>2</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">background-color: rgb(211, 215, 207);</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="toolbox_spacer_bottom">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>5</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>5</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;
+border-color: rgb(0, 0, 0);</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QWidget" name="toolbox_widget" native="true">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px;</string>
+                        </property>
+                        <layout class="QHBoxLayout" name="toolbox_meta_layout">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QHBoxLayout" name="toolbox_layout">
+                           <property name="spacing">
+                            <number>5</number>
+                           </property>
+                           <item>
+                            <widget class="QToolButton" name="show_parameter_tbutton">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="toolTip">
+                              <string>Show the plan parameters</string>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="icon">
+                              <iconset resource="../assets/resources.qrc">
+                               <normaloff>:/black_icons/icons_black/sliders.svg</normaloff>:/black_icons/icons_black/sliders.svg</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>20</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QToolButton" name="show_plan_tbutton">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="toolTip">
+                              <string>Show the plan data</string>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="icon">
+                              <iconset resource="../assets/resources.qrc">
+                               <normaloff>:/black_icons/icons_black/clipboard.svg</normaloff>:/black_icons/icons_black/clipboard.svg</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>20</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QToolButton" name="show_model_data_tbutton">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="toolTip">
+                              <string>Show the model data</string>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="icon">
+                              <iconset resource="../assets/resources.qrc">
+                               <normaloff>:/black_icons/icons_black/database.svg</normaloff>:/black_icons/icons_black/database.svg</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>20</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QToolButton" name="show_fmap_tbutton">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="toolTip">
+                              <string>Show the feature maps</string>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="icon">
+                              <iconset resource="../assets/resources.qrc">
+                               <normaloff>:/black_icons/icons_black/map.svg</normaloff>:/black_icons/icons_black/map.svg</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>20</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QToolButton" name="show_log_tbutton">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="toolTip">
+                              <string>Show the logging</string>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="icon">
+                              <iconset resource="../assets/resources.qrc">
+                               <normaloff>:/black_icons/icons_black/activity.svg</normaloff>:/black_icons/icons_black/activity.svg</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>20</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                     <zorder>chevron_conf_opt</zorder>
+                     <zorder>chevron_opt_eval</zorder>
+                     <zorder>chevron_eval_vis</zorder>
+                     <zorder>toolbox_spacer_top</zorder>
+                     <zorder>toolbox_widget</zorder>
+                     <zorder>toolbox_spacer_bottom</zorder>
+                     <zorder>toolbox_line</zorder>
+                     <zorder>chevron_init_conf</zorder>
+                     <zorder>configure_pbutton</zorder>
+                     <zorder>initialize_pbutton</zorder>
+                     <zorder>optimize_pbutton</zorder>
+                     <zorder>evaluate_pbutton</zorder>
+                     <zorder>visualize_pbutton</zorder>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QWidget" name="meta_settings_left_widget" native="true"/>
+        </item>
+        <item row="4" column="2">
+         <widget class="QWidget" name="ct_dose_header" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>42</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>42</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="ct_dose_header_layout">
            <property name="spacing">
             <number>0</number>
            </property>
            <item>
-            <widget class="QLabel" name="workflow_header_label">
+            <widget class="QLabel" name="ct_dose_header_label">
              <property name="font">
               <font>
                <weight>75</weight>
@@ -1027,12 +2123,12 @@ color: rgb(0, 0, 0);</string>
               <string notr="true">color: rgb(211, 215, 207);</string>
              </property>
              <property name="text">
-              <string>Workflow</string>
+              <string>Viewer</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="Line" name="workflow_header_line">
+            <widget class="Line" name="ct_dose_header_line">
              <property name="minimumSize">
               <size>
                <width>0</width>
@@ -1062,7 +2158,7 @@ color: rgb(0, 0, 0);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="iconSize">
            <size>
@@ -1118,7 +2214,7 @@ background-color: rgb(211, 215, 207);</string>
                  <x>0</x>
                  <y>0</y>
                  <width>369</width>
-                 <height>906</height>
+                 <height>912</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_configuration_meta_layout">
@@ -1212,14 +2308,11 @@ background-color: rgb(211, 215, 207);</string>
                         <bold>true</bold>
                        </font>
                       </property>
-                      <property name="toolTip">
-                       <string>Unique identifier for the treatment plan</string>
-                      </property>
                       <property name="styleSheet">
                        <string notr="true">border: 0px solid;</string>
                       </property>
                       <property name="text">
-                       <string>Treatment plan label*</string>
+                       <string>Treatment plan label</string>
                       </property>
                      </widget>
                     </item>
@@ -1265,9 +2358,6 @@ background-color: rgb(211, 215, 207);</string>
                         <bold>true</bold>
                        </font>
                       </property>
-                      <property name="toolTip">
-                       <string>Minimum logging level for which to display messages to the console</string>
-                      </property>
                       <property name="styleSheet">
                        <string notr="true">border: 0px solid;</string>
                       </property>
@@ -1306,7 +2396,7 @@ background-color: rgb(211, 215, 207);</string>
                       </property>
                       <property name="minimumSize">
                        <size>
-                        <width>150</width>
+                        <width>110</width>
                         <height>30</height>
                        </size>
                       </property>
@@ -1448,14 +2538,11 @@ border-color: rgb(186, 189, 182);</string>
                         <bold>true</bold>
                        </font>
                       </property>
-                      <property name="toolTip">
-                       <string>Modality for the patient treatment</string>
-                      </property>
                       <property name="styleSheet">
                        <string notr="true">border: 0px solid;</string>
                       </property>
                       <property name="text">
-                       <string>Modality*</string>
+                       <string>Modality</string>
                       </property>
                      </widget>
                     </item>
@@ -1500,9 +2587,6 @@ border-color: rgb(186, 189, 182);</string>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
-                      </property>
-                      <property name="toolTip">
-                       <string>Number of fractions according to the treatment scheme</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">border: 0px solid;</string>
@@ -1705,14 +2789,11 @@ border-color: rgb(186, 189, 182);</string>
                       <bold>true</bold>
                      </font>
                     </property>
-                    <property name="toolTip">
-                     <string>Path to the CT and segmentation data</string>
-                    </property>
                     <property name="styleSheet">
                      <string notr="true">border: 0px solid;</string>
                     </property>
                     <property name="text">
-                     <string>Imaging path*</string>
+                     <string>Imaging path</string>
                     </property>
                    </widget>
                   </item>
@@ -1766,7 +2847,7 @@ border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="sizeHint" stdset="0">
                        <size>
-                        <width>10</width>
+                        <width>5</width>
                         <height>30</height>
                        </size>
                       </property>
@@ -1837,7 +2918,7 @@ border-color: rgb(186, 189, 182);</string>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>190</width>
+                      <width>16777215</width>
                       <height>25</height>
                      </size>
                     </property>
@@ -1847,14 +2928,11 @@ border-color: rgb(186, 189, 182);</string>
                       <bold>true</bold>
                      </font>
                     </property>
-                    <property name="toolTip">
-                     <string>Target size of the CT/segmentation [mm] per dimension</string>
-                    </property>
                     <property name="styleSheet">
                      <string notr="true">border: 0px solid;</string>
                     </property>
                     <property name="text">
-                     <string>Target imaging resolution</string>
+                     <string>Target imaging resolution [mm]</string>
                     </property>
                    </widget>
                   </item>
@@ -1996,14 +3074,11 @@ border-color: rgb(186, 189, 182);</string>
                       <bold>true</bold>
                      </font>
                     </property>
-                    <property name="toolTip">
-                     <string>Path to the dose-influence matrix</string>
-                    </property>
                     <property name="styleSheet">
                      <string notr="true">border: 0px solid;</string>
                     </property>
                     <property name="text">
-                     <string>Dose matrix path*</string>
+                     <string>Dose matrix path</string>
                     </property>
                    </widget>
                   </item>
@@ -2057,7 +3132,7 @@ border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="sizeHint" stdset="0">
                        <size>
-                        <width>10</width>
+                        <width>5</width>
                         <height>30</height>
                        </size>
                       </property>
@@ -2145,7 +3220,7 @@ border-color: rgb(186, 189, 182);</string>
                      <string notr="true">border: 0px solid;</string>
                     </property>
                     <property name="text">
-                     <string>Dose grid resolution*</string>
+                     <string>Dose grid resolution [mm]</string>
                     </property>
                    </widget>
                   </item>
@@ -2280,21 +3355,18 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="update_configuration_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
                        <cursorShape>PointingHandCursor</cursorShape>
-                      </property>
-                      <property name="toolTip">
-                       <string>Update the configuration parameters</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">color: rgb(0, 0, 0);
@@ -2318,7 +3390,7 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="configuration_bottom_hspacer_center">
+                     <spacer name="configuration_bottom_hspacer_center_left">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -2337,21 +3409,18 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="reset_configuration_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
                        <cursorShape>PointingHandCursor</cursorShape>
-                      </property>
-                      <property name="toolTip">
-                       <string>Reset the configuration parameters</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">color: rgb(0, 0, 0);
@@ -2364,7 +3433,61 @@ border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="icon">
                        <iconset resource="../assets/resources.qrc">
-                        <normaloff>:/red_icons/icons_red/rotate-ccw.svg</normaloff>:/red_icons/icons_red/rotate-ccw.svg</iconset>
+                        <normaloff>:/goldIcons/icons_gold/rotate-ccw.svg</normaloff>:/goldIcons/icons_gold/rotate-ccw.svg</iconset>
+                      </property>
+                      <property name="iconSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="configuration_bottom_hspacer_center_right">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Fixed</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>10</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clear_configuration_pbutton">
+                      <property name="minimumSize">
+                       <size>
+                        <width>95</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>120</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="cursor">
+                       <cursorShape>PointingHandCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                      </property>
+                      <property name="text">
+                       <string>Clear</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../assets/resources.qrc">
+                        <normaloff>:/red_icons/icons_red/x.svg</normaloff>:/red_icons/icons_red/x.svg</iconset>
                       </property>
                       <property name="iconSize">
                        <size>
@@ -2388,6 +3511,22 @@ border-color: rgb(186, 189, 182);</string>
                      </spacer>
                     </item>
                    </layout>
+                  </item>
+                  <item>
+                   <spacer name="bottom_vspacer_configuration">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
                  </layout>
                 </item>
@@ -2437,9 +3576,9 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>0</y>
+                 <y>-431</y>
                  <width>418</width>
-                 <height>1132</height>
+                 <height>1138</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_optimization_meta_layout">
@@ -2522,11 +3661,8 @@ background-color: rgb(211, 215, 207);</string>
                       <bold>true</bold>
                      </font>
                     </property>
-                    <property name="toolTip">
-                     <string>Optimization components for the segmented structures</string>
-                    </property>
                     <property name="text">
-                     <string>Components*</string>
+                     <string>Components</string>
                     </property>
                    </widget>
                   </item>
@@ -2571,6 +3707,9 @@ border-color: rgb(186, 189, 182);</string>
                     </property>
                     <property name="spacing">
                      <number>5</number>
+                    </property>
+                    <property name="sortingEnabled">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -2797,9 +3936,6 @@ border-color: rgb(186, 189, 182);</string>
                         <bold>true</bold>
                        </font>
                       </property>
-                      <property name="toolTip">
-                       <string>Single- or multi-criteria optimization method</string>
-                      </property>
                       <property name="text">
                        <string>Method</string>
                       </property>
@@ -2846,9 +3982,6 @@ border-color: rgb(186, 189, 182);</string>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
-                      </property>
-                      <property name="toolTip">
-                       <string>Python package for solving the optimization problem</string>
                       </property>
                       <property name="text">
                        <string>Solver</string>
@@ -2992,13 +4125,8 @@ border-color: rgb(186, 189, 182);</string>
                        <string>scipy</string>
                       </property>
                       <property name="currentIndex">
-                       <number>4</number>
+                       <number>3</number>
                       </property>
-                      <item>
-                       <property name="text">
-                        <string>ipopt</string>
-                       </property>
-                      </item>
                       <item>
                        <property name="text">
                         <string>proxmin</string>
@@ -3083,9 +4211,6 @@ border-color: rgb(186, 189, 182);</string>
                         <bold>true</bold>
                        </font>
                       </property>
-                      <property name="toolTip">
-                       <string>Solution algorithm from the chosen package</string>
-                      </property>
                       <property name="text">
                        <string>Algorithm</string>
                       </property>
@@ -3132,9 +4257,6 @@ border-color: rgb(186, 189, 182);</string>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
-                      </property>
-                      <property name="toolTip">
-                       <string>Initialization strategy for the fluence vector</string>
                       </property>
                       <property name="text">
                        <string>Initialization strategy</string>
@@ -3359,9 +4481,6 @@ border-color: rgb(186, 189, 182);</string>
                         <bold>true</bold>
                        </font>
                       </property>
-                      <property name="toolTip">
-                       <string>Initial fluence vector for the optimization problem</string>
-                      </property>
                       <property name="text">
                        <string>Initial fluence vector</string>
                       </property>
@@ -3408,9 +4527,6 @@ border-color: rgb(186, 189, 182);</string>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
-                      </property>
-                      <property name="toolTip">
-                       <string>Reference plan for warm-start initialization</string>
                       </property>
                       <property name="text">
                        <string>Reference plan</string>
@@ -3651,9 +4767,6 @@ border-color: rgb(186, 189, 182);</string>
                       <weight>75</weight>
                       <bold>true</bold>
                      </font>
-                    </property>
-                    <property name="toolTip">
-                     <string>Lower and upper variable bounds</string>
                     </property>
                     <property name="text">
                      <string>Variable bounds</string>
@@ -3991,7 +5104,7 @@ border-color: rgb(186, 189, 182);</string>
                    </spacer>
                   </item>
                   <item>
-                   <layout class="QHBoxLayout" name="max_iter_cpu_labels_layout">
+                   <layout class="QHBoxLayout" name="max_iter_tolerance_labels_layout">
                     <item>
                      <widget class="QLabel" name="max_iter_label">
                       <property name="sizePolicy">
@@ -4018,16 +5131,13 @@ border-color: rgb(186, 189, 182);</string>
                         <bold>true</bold>
                        </font>
                       </property>
-                      <property name="toolTip">
-                       <string>Maximum number of iterations taken for the solver to converge</string>
-                      </property>
                       <property name="text">
                        <string>Maximum iterations</string>
                       </property>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="max_iter_cpu_labels_hspacer_between">
+                     <spacer name="max_iter_tolerance_labels_hspacer_between">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -4043,7 +5153,7 @@ border-color: rgb(186, 189, 182);</string>
                      </spacer>
                     </item>
                     <item>
-                     <widget class="QLabel" name="max_cpu_label">
+                     <widget class="QLabel" name="tolerance_label">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                         <horstretch>0</horstretch>
@@ -4068,16 +5178,13 @@ border-color: rgb(186, 189, 182);</string>
                         <bold>true</bold>
                        </font>
                       </property>
-                      <property name="toolTip">
-                       <string>Maximum CPU time taken for the solver to converge (in seconds)</string>
-                      </property>
                       <property name="text">
-                       <string>Maximum CPU time</string>
+                       <string>Tolerance</string>
                       </property>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="max_iter_cpu_labels_hspacer_right">
+                     <spacer name="max_iter_tolerance_labels_hspacer_right">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -4111,7 +5218,7 @@ border-color: rgb(186, 189, 182);</string>
                    </spacer>
                   </item>
                   <item>
-                   <layout class="QHBoxLayout" name="max_iter_cpu_fields_layout">
+                   <layout class="QHBoxLayout" name="max_iter_tolerance_fields_layout">
                     <item>
                      <widget class="QSpinBox" name="max_iter_sbox">
                       <property name="sizePolicy">
@@ -4159,7 +5266,7 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="max_iter_cpu_fields_hspacer_between">
+                     <spacer name="max_iter_tolerance_fields_hspacer_between">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -4175,7 +5282,7 @@ border-color: rgb(186, 189, 182);</string>
                      </spacer>
                     </item>
                     <item>
-                     <widget class="QLineEdit" name="max_cpu_ledit">
+                     <widget class="QLineEdit" name="tolerance_ledit">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                         <horstretch>0</horstretch>
@@ -4201,7 +5308,7 @@ border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="text">
-                       <string>3000.0</string>
+                       <string>0.001</string>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignCenter</set>
@@ -4209,7 +5316,7 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="max_iter_cpu_fields_hspacer_right">
+                     <spacer name="max_iter_tolerance_fields_hspacer_right">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -4261,21 +5368,18 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="update_optimization_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
                        <cursorShape>PointingHandCursor</cursorShape>
-                      </property>
-                      <property name="toolTip">
-                       <string>Update the configuration parameters</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">color: rgb(0, 0, 0);
@@ -4299,7 +5403,7 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="optimization_bottom_hspacer_center">
+                     <spacer name="optimization_bottom_hspacer_center_left">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -4318,21 +5422,18 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="reset_optimization_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
                        <cursorShape>PointingHandCursor</cursorShape>
-                      </property>
-                      <property name="toolTip">
-                       <string>Reset the configuration parameters</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">color: rgb(0, 0, 0);
@@ -4356,6 +5457,60 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
+                     <spacer name="optimization_bottom_hspacer_center_right">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Fixed</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>10</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clear_optimization_pbutton">
+                      <property name="minimumSize">
+                       <size>
+                        <width>95</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>120</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="cursor">
+                       <cursorShape>PointingHandCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                      </property>
+                      <property name="text">
+                       <string>Clear</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../assets/resources.qrc">
+                        <normaloff>:/red_icons/icons_red/x.svg</normaloff>:/red_icons/icons_red/x.svg</iconset>
+                      </property>
+                      <property name="iconSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
                      <spacer name="optimization_bottom_hspacer_right">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -4369,6 +5524,19 @@ border-color: rgb(186, 189, 182);</string>
                      </spacer>
                     </item>
                    </layout>
+                  </item>
+                  <item>
+                   <spacer name="bottom_vspacer_optimization">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
                  </layout>
                 </item>
@@ -4420,7 +5588,7 @@ background-color: rgb(211, 215, 207);</string>
                  <x>0</x>
                  <y>0</y>
                  <width>369</width>
-                 <height>790</height>
+                 <height>796</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_evaluation_meta_layout">
@@ -5158,7 +6326,7 @@ border-color: rgb(186, 189, 182);</string>
                   <item>
                    <layout class="QHBoxLayout" name="evaluation_content_bottom_layout">
                     <item>
-                     <spacer name="evaluation_content_bottom_hspacer_left">
+                     <spacer name="evaluation_bottom_hspacer_left">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -5174,21 +6342,18 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="update_evaluation_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
                        <cursorShape>PointingHandCursor</cursorShape>
-                      </property>
-                      <property name="toolTip">
-                       <string>Update the configuration parameters</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">color: rgb(0, 0, 0);
@@ -5212,7 +6377,7 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="evaluation_content_bottom_hspacer_center">
+                     <spacer name="evaluation_bottom_hspacer_center_left">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -5231,21 +6396,18 @@ border-color: rgb(186, 189, 182);</string>
                      <widget class="QPushButton" name="reset_evaluation_pbutton">
                       <property name="minimumSize">
                        <size>
-                        <width>100</width>
-                        <height>40</height>
+                        <width>95</width>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
                         <width>120</width>
-                        <height>40</height>
+                        <height>35</height>
                        </size>
                       </property>
                       <property name="cursor">
                        <cursorShape>PointingHandCursor</cursorShape>
-                      </property>
-                      <property name="toolTip">
-                       <string>Reset the configuration parameters</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">color: rgb(0, 0, 0);
@@ -5269,7 +6431,61 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="evaluation_content_bottom_hspacer_right">
+                     <spacer name="evaluation_bottom_hspacer_center_right">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Fixed</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>10</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clear_evaluation_pbutton">
+                      <property name="minimumSize">
+                       <size>
+                        <width>95</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>120</width>
+                        <height>35</height>
+                       </size>
+                      </property>
+                      <property name="cursor">
+                       <cursorShape>PointingHandCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                      </property>
+                      <property name="text">
+                       <string>Clear</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../assets/resources.qrc">
+                        <normaloff>:/red_icons/icons_red/x.svg</normaloff>:/red_icons/icons_red/x.svg</iconset>
+                      </property>
+                      <property name="iconSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="evaluation_bottom_hspacer_right">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -5283,20 +6499,20 @@ border-color: rgb(186, 189, 182);</string>
                     </item>
                    </layout>
                   </item>
+                  <item>
+                   <spacer name="bottom_vspacer_evaluation">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
                  </layout>
-                </item>
-                <item>
-                 <spacer name="bottom_vspacer">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
                 </item>
                </layout>
               </widget>
@@ -5305,792 +6521,6 @@ border-color: rgb(186, 189, 182);</string>
            </layout>
           </widget>
          </widget>
-        </item>
-        <item row="7" column="1">
-         <widget class="QWidget" name="workflow_widget" native="true">
-          <property name="minimumSize">
-           <size>
-            <width>250</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>250</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(0, 0, 0);
-color: rgb(211, 215, 207);</string>
-          </property>
-          <layout class="QVBoxLayout" name="workflow_widget_layout">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <property name="leftMargin">
-            <number>6</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>6</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <layout class="QVBoxLayout" name="workflow_layout">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QTabWidget" name="tab_workflow">
-               <property name="currentIndex">
-                <number>0</number>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>50</width>
-                 <height>50</height>
-                </size>
-               </property>
-               <property name="documentMode">
-                <bool>true</bool>
-               </property>
-               <property name="movable">
-                <bool>true</bool>
-               </property>
-               <widget class="QWidget" name="tab_actions">
-                <property name="styleSheet">
-                 <string notr="true">border: 1px solid;
-border-color: rgb(211, 215, 207);</string>
-                </property>
-                <attribute name="icon">
-                 <iconset resource="../assets/resources.qrc">
-                  <normaloff>:/special_icons/icons_special/schedule-svgrepo-com.svg</normaloff>:/special_icons/icons_special/schedule-svgrepo-com.svg</iconset>
-                </attribute>
-                <attribute name="title">
-                 <string/>
-                </attribute>
-                <attribute name="toolTip">
-                 <string>Actions</string>
-                </attribute>
-                <layout class="QVBoxLayout" name="tab_actions_meta_layout">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="leftMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>0</number>
-                 </property>
-                 <item>
-                  <layout class="QVBoxLayout" name="tab_actions_layout">
-                   <item>
-                    <widget class="QWidget" name="actions_widget" native="true">
-                     <property name="styleSheet">
-                      <string notr="true"/>
-                     </property>
-                     <layout class="QVBoxLayout" name="actions_layout">
-                      <property name="spacing">
-                       <number>0</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>9</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>9</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>9</number>
-                      </property>
-                      <item>
-                       <widget class="QPushButton" name="configure_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="font">
-                         <font>
-                          <weight>75</weight>
-                          <bold>true</bold>
-                         </font>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="toolTip">
-                         <string>Configure the treatment plan</string>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string> CONFIGURE</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/black_icons/icons_black/box.svg</normaloff>:/black_icons/icons_black/box.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="chevron_conf_opt">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>22</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">border: 0px solid;
-border-color: rgb(0, 0, 0);</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/white_icons/icons_white/chevrons-down.svg</normaloff>:/white_icons/icons_white/chevrons-down.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="optimize_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="font">
-                         <font>
-                          <weight>75</weight>
-                          <bold>true</bold>
-                         </font>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="toolTip">
-                         <string>Optimize the treatment plan</string>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string> OPTIMIZE</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/black_icons/icons_black/star.svg</normaloff>:/black_icons/icons_black/star.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="chevron_opt_eval">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>22</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">border: 0px solid;
-border-color: rgb(0, 0, 0);</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/white_icons/icons_white/chevrons-down.svg</normaloff>:/white_icons/icons_white/chevrons-down.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="evaluate_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="font">
-                         <font>
-                          <weight>75</weight>
-                          <bold>true</bold>
-                         </font>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="toolTip">
-                         <string>Evaluate the treatment plan</string>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string> EVALUATE</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/black_icons/icons_black/award.svg</normaloff>:/black_icons/icons_black/award.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="chevron_eval_vis">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">border: 0px solid;
-border-color: rgb(0, 0, 0);</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/white_icons/icons_white/chevrons-down.svg</normaloff>:/white_icons/icons_white/chevrons-down.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="visualize_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="font">
-                         <font>
-                          <weight>75</weight>
-                          <bold>true</bold>
-                         </font>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="toolTip">
-                         <string>Visualize the treatment plan</string>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string> VISUALIZE</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/black_icons/icons_black/image.svg</normaloff>:/black_icons/icons_black/image.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="empty_vis_comp">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">border: 0px solid;
-border-color: rgb(0, 0, 0);</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/white_icons/icons_white/circle.svg</normaloff>:/white_icons/icons_white/circle.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>14</width>
-                          <height>14</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="compose_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>16777215</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                        <property name="font">
-                         <font>
-                          <weight>75</weight>
-                          <bold>true</bold>
-                         </font>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="toolTip">
-                         <string>Compose the treatment plan</string>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(211, 215, 207);
-background-color: rgb(22, 22, 22);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string> COMPOSE</string>
-                        </property>
-                        <property name="icon">
-                         <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/white_icons/icons_white/music.svg</normaloff>:/white_icons/icons_white/music.svg</iconset>
-                        </property>
-                        <property name="iconSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                </layout>
-               </widget>
-               <widget class="QWidget" name="tab_console">
-                <property name="styleSheet">
-                 <string notr="true">border: 1px solid;
-border-color: rgb(211, 215, 207);</string>
-                </property>
-                <attribute name="icon">
-                 <iconset resource="../assets/resources.qrc">
-                  <normaloff>:/special_icons/icons_special/send-logging-svgrepo-com.svg</normaloff>:/special_icons/icons_special/send-logging-svgrepo-com.svg</iconset>
-                </attribute>
-                <attribute name="title">
-                 <string/>
-                </attribute>
-                <attribute name="toolTip">
-                 <string>Console output</string>
-                </attribute>
-                <layout class="QVBoxLayout" name="tab_logging_meta_layout">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="leftMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>0</number>
-                 </property>
-                 <item>
-                  <layout class="QVBoxLayout" name="tab_console_layout">
-                   <item>
-                    <widget class="QTextEdit" name="console_tedit">
-                     <property name="font">
-                      <font>
-                       <pointsize>10</pointsize>
-                      </font>
-                     </property>
-                     <property name="html">
-                      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                </layout>
-               </widget>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QWidget" name="menu_left_widget" native="true">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>40</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>40</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(211, 215, 207);
-border: 0px solid;
-border-color: rgb(186, 189, 182);</string>
-          </property>
-          <layout class="QHBoxLayout" name="menu_left_layout">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QPushButton" name="load_pbutton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="cursor">
-              <cursorShape>PointingHandCursor</cursorShape>
-             </property>
-             <property name="toolTip">
-              <string>Load the treatment plan from a snapshot folder</string>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
-border: 1px solid;
-color: rgb(0, 0, 0);</string>
-             </property>
-             <property name="text">
-              <string>LOAD TPI</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../assets/resources.qrc">
-               <normaloff>:/black_icons/icons_black/upload.svg</normaloff>:/black_icons/icons_black/upload.svg</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>18</width>
-               <height>18</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="save_pbutton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="cursor">
-              <cursorShape>PointingHandCursor</cursorShape>
-             </property>
-             <property name="toolTip">
-              <string>Save the treatment plan to a snapshot folder</string>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
-border: 1px solid;
-color: rgb(0, 0, 0);</string>
-             </property>
-             <property name="text">
-              <string>SAVE TPI</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../assets/resources.qrc">
-               <normaloff>:/black_icons/icons_black/save.svg</normaloff>:/black_icons/icons_black/save.svg</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>18</width>
-               <height>18</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="drop_pbutton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="cursor">
-              <cursorShape>PointingHandCursor</cursorShape>
-             </property>
-             <property name="toolTip">
-              <string>Remove the current treatment plan</string>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">border-color: rgb(186, 189, 182);
-border: 1px solid;
-color: rgb(0, 0, 0);</string>
-             </property>
-             <property name="text">
-              <string>DROP TPI</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../assets/resources.qrc">
-               <normaloff>:/black_icons/icons_black/trash-2.svg</normaloff>:/black_icons/icons_black/trash-2.svg</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>18</width>
-               <height>18</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QWidget" name="logo_widget" native="true">
-          <property name="minimumSize">
-           <size>
-            <width>250</width>
-            <height>210</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>250</width>
-            <height>210</height>
-           </size>
-          </property>
-          <layout class="QHBoxLayout" name="logo_widget_layout">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="logo_pixmap">
-             <property name="minimumSize">
-              <size>
-               <width>210</width>
-               <height>210</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>210</width>
-               <height>210</height>
-              </size>
-             </property>
-             <property name="pixmap">
-              <pixmap resource="../assets/resources.qrc">:/Logo/logo_white_square.png</pixmap>
-             </property>
-             <property name="scaledContents">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="4" column="2">
-         <widget class="QWidget" name="ct_dose_header" native="true">
-          <layout class="QVBoxLayout" name="ct_dose_header_layout">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="ct_dose_header_label">
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: rgb(211, 215, 207);</string>
-             </property>
-             <property name="text">
-              <string>Viewer</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="Line" name="ct_dose_header_line">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>2</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>2</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">background-color: rgb(211, 215, 207);</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QWidget" name="top_spacer_left_widget" native="true"/>
         </item>
        </layout>
       </item>

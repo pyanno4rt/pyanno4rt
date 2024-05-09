@@ -5,13 +5,32 @@
 # %% Function definition
 
 
-def check_subtype(key, value, key_type, type_group=(tuple, list)):
-    """Check if the subvalue types are not valid."""
-    if (isinstance(value, type_group)
-            and not all(isinstance(val, key_type) for val in value)):
+def check_subtype(label, data, types):
+    """
+    Check if any element type in a list or tuple is invalid.
 
-        # Raise an error to indicate some wrong subvalue type
+    Parameters
+    ----------
+    label : str
+        Label for the item to be checked.
+
+    data : list or tuple
+        List or tuple with the element types to be checked.
+
+    types : type or tuple
+        Single type or tuple with the allowed element types.
+
+    Raises
+    ------
+    TypeError
+        If one or more elements of the data have an invalid type.
+    """
+
+    # Check if the data is a list or tuple with invalid element types
+    if (isinstance(data, (list, tuple))
+            and not all(isinstance(element, types) for element in data)):
+
+        # Raise an error to indicate one or more elements with invalid type
         raise TypeError(
-            "One or more elements of the treatment plan parameter '{}' have "
-            "the wrong data type!"
-            .format(key))
+            f"One or more elements of the treatment plan parameter '{label}' "
+            "have an invalid data type!")

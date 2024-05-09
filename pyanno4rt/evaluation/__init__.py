@@ -3,14 +3,14 @@ Treatment plan evaluation module.
 
 ==================================================================
 
-The module aims to provide methods and classes to evaluate the generated \
+This module aims to provide methods and classes to evaluate the generated \
 treatment plans.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-from ._dosimetrics import Dosimetrics
-from ._dvh import DVH
+from ._dosimetrics_evaluator import DosimetricsEvaluator
+from ._dvh_evaluator import DVHEvaluator
 
-__all__ = ['Dosimetrics',
-           'DVH']
+__all__ = ['DosimetricsEvaluator',
+           'DVHEvaluator']

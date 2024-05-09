@@ -1,9 +1,14 @@
 # Ignore local files
-script.py
+launcher.sh
+demo.ipynb
+tp_conv.py
+tp_dcm.py
+tp_ml_only.py
+tp_rb.py
+tp_tac.py
 
 # Ignore local folders
 external/
-coinhsl/
 snaps/
 
 # Ignore unwanted file types

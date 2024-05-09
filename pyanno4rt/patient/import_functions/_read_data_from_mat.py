@@ -1,4 +1,4 @@
-"""MATLAB (.mat) data reading."""
+"""MATLAB data reading."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -15,7 +15,7 @@ def read_data_from_mat(path):
 
     Parameters
     ----------
-    path : string
+    path : str
         Path to the MATLAB file.
 
     Returns

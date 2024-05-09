@@ -19,19 +19,26 @@ class PatientLoader():
     """
     Patient loading class.
 
-    This class provides methods for importing patient data from different \
-    input formats, i.e., CT data (from patient imaging) and segmentation \
-    data (from image segmentation), and automatically converting them to \
-    appropriately formatted dictionaries.
+    This class provides methods to load patient data from different input \
+    formats and generate the computed tomography (CT) and segmentation \
+    dictionaries.
 
     Parameters
     ----------
-    imaging_path : string
+    imaging_path : str
         Path to the CT and segmentation data.
 
     target_imaging_resolution : None or list
         Imaging resolution for post-processing interpolation of the CT and \
         segmentation data.
+
+    Attributes
+    ----------
+    imaging_path : str
+        See 'Parameters'.
+
+    target_imaging_resolution : None or list
+        See 'Parameters'.
     """
 
     def __init__(
@@ -47,22 +54,22 @@ class PatientLoader():
         self.target_imaging_resolution = target_imaging_resolution
 
     def load(self):
-        """Load the patient imaging data from the path."""
+        """Load the patient data from the path."""
 
         # Initialize the datahub
         hub = Datahub()
 
         # Map the path extensions to the sources and import functions
-        sources = {'': ('dicom', import_from_dcm),
-                   '.mat': ('matlab', import_from_mat),
-                   '.p': ('python', import_from_p)}
+        sources = {'': ('DICOM folder', import_from_dcm),
+                   '.mat': ('MATLAB file', import_from_mat),
+                   '.p': ('Python file', import_from_p)}
 
         # Get the source and import function from the extension
         source, importer = sources[splitext(self.imaging_path)[1]]
 
         # Log a message about the import of the patient imaging data
-        hub.logger.display_info("Importing CT and segmentation data "
-                                f"from {source} format ...")
+        hub.logger.display_info(
+            f"Importing CT and segmentation data from {source} ...")
 
         # Enter the patient imaging data into the datahub
         hub.computed_tomography, hub.segmentation = importer(

@@ -9,7 +9,6 @@ from json import load as jload
 from os.path import exists
 from pickle import dump, load
 
-from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from hyperopt import fmin, hp, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
 from numpy import empty
@@ -423,7 +422,7 @@ class SupportVectorMachineModel():
             prediction_model = SVC(**hyperparameters)
 
             # Compute the objective function value (score) across all folds
-            fold_scores = ThreadPoolExecutor().map(
+            fold_scores = map(
                 compute_fold_score, (
                     (training_indices, validation_indices)
                     for (training_indices, validation_indices)
@@ -439,7 +438,8 @@ class SupportVectorMachineModel():
             shuffle=True)
 
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps)
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
 
         # Map the score labels to the score functions
         scorers = {'Logloss': log_loss,
@@ -611,10 +611,11 @@ class SupportVectorMachineModel():
             n_splits=oof_splits, random_state=4, shuffle=True)
 
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps)
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
 
         # Compute the returns (indices and labels) across all folds
-        fold_returns = ThreadPoolExecutor().map(
+        fold_returns = map(
             compute_fold_labels, (
                 (training_indices, validation_indices)
                 for (training_indices, validation_indices)

@@ -1,56 +1,57 @@
-"""Segmentation dictionary generation from DICOM (.dcm) file."""
+"""DICOM folder-based segmentation dictionary generation."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
 # %% External package import
 
 from colorsys import hsv_to_rgb
-from numpy import (append, array, column_stack, ravel_multi_index, sort,
-                   where, zeros)
+from numpy import (
+    append, array, column_stack, ravel_multi_index, sort, where, zeros)
 from scipy.interpolate import interp1d
 from skimage.draw import polygon2mask
 
 # %% Function definition
 
 
-def generate_segmentation_from_dcm(data, ct_data, ct_dict):
+def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
     """
-    Generate the segmentation dictionary.
+    Generate the segmentation dictionary from a folder with DICOM (.dcm) files.
 
     Parameters
     ----------
-    data : object of class `FileDataset`
-        Instance of the class `FileDataset`, which contains information on \
+    data : object of class :class:`pydicom.dataset.FileDataset`
+        The :class:`pydicom.dataset.FileDataset` object with information on \
         the segmented structures.
 
-    ct_data : tuple
-        Tuple of 'FileDataset' instances with information on the CT slices.
+    slices : tuple
+        Tuple of :class:`pydicom.dataset.FileDataset` objects with \
+        information on the CT slices.
 
-    ct_dict : dict
+    computed_tomography : dict
         Dictionary with information on the CT images.
 
     Returns
     -------
     segmentation : dict
         Dictionary with information on the segmented structures.
+
+    Raises
+    ------
+    ValueError
+        If the contour sequence for a segment includes out-of-slice points.
     """
-
-    def convert_hsv_to_rgb(hue, saturation, value):
-        """Convert colors from the HSV to the RBG space."""
-
-        return hsv_to_rgb(hue, saturation, value)
 
     def generate_colors(length):
         """Generate a tuple of specific length with different RGB colors."""
 
-        return tuple(array(convert_hsv_to_rgb(value/(length + 1), 1.0, 1.0))
+        return tuple(array(hsv_to_rgb(value/(length+1), 1.0, 1.0))
                      for value in range(length))
 
-    def compute_segment_indices():
+    def compute_segment_indices(ct_slices, computed_tomography, roi_contour):
         """Compute the (sorted) binary segment indices."""
 
         # Initialize the segment cube
-        segment_cube = zeros(ct_dict['cube_dimensions'])
+        segment_cube = zeros(computed_tomography['cube_dimensions'])
 
         # Loop over the contour sequences
         for sequence in roi_contour.ContourSequence._list:
@@ -59,19 +60,17 @@ def generate_segmentation_from_dcm(data, ct_data, ct_dict):
             if sequence.ContourGeometricType != 'POINT':
 
                 # Get the grid points of the sequence
-                points_x = sequence.ContourData._list[0::3]
-                points_y = sequence.ContourData._list[1::3]
-                points_z = sequence.ContourData._list[2::3]
+                points_x, points_y, points_z = (
+                    sequence.ContourData._list[i::3] for i in range(3))
 
-                # Check if the endpoints are different from the starting points
-                if (points_x[-1] != points_x[0]
-                        or points_y[-1] != points_y[0]
-                        or points_z[-1] != points_z[0]):
+                # Loop over the grid point dimensions
+                for points in (points_x, points_y, points_z):
 
-                    # Close the contour polygon by adding the starting points
-                    points_x = append(points_x, points_x[0])
-                    points_y = append(points_y, points_y[0])
-                    points_z = append(points_z, points_z[0])
+                    # Check if the endpoint differs from the starting point
+                    if points[-1] != points[0]:
+
+                        # Close the contour polygon by adding the first point
+                        points = append(points, points[0])
 
                 # Round the z-points to account for numerical issues
                 points_z = [1e-10 * round(1e10 * value) for value in points_z]
@@ -84,31 +83,32 @@ def generate_segmentation_from_dcm(data, ct_data, ct_dict):
                         f"The contour sequence for the segment {segment} "
                         "includes out-of-slice points!")
 
-                # Check if CT data exists for the current contour slice
-                if min(ct_dict['z']) <= points_z[0] <= max(ct_dict['z']):
+                # Check if the current contour slice lies within the data
+                if (min(computed_tomography['z'])
+                        <= points_z[0]
+                        <= max(computed_tomography['z'])):
 
-                    # Interpolate the axis points in x
-                    interpolated_x = interp1d(
-                        ct_dict['x'], range(ct_dict['cube_dimensions'][1]),
-                        'linear', fill_value='extrapolate')(points_x)
-
-                    # Interpolate the axis points in y
-                    interpolated_y = interp1d(
-                        ct_dict['y'], range(ct_dict['cube_dimensions'][0]),
-                        'linear', fill_value='extrapolate')(points_y)
+                    # Interpolate the points on the x- and y-axis
+                    interpolated_x, interpolated_y = (interp1d(
+                        computed_tomography[axis[0]],
+                        range(computed_tomography['cube_dimensions'][axis[1]]),
+                        'linear', fill_value='extrapolate')(axis[2])
+                        for axis in (('x', 1, points_x), ('y', 0, points_y)))
 
                     # Convert the polygon vertices into a binary mask
                     mask = polygon2mask(
-                        ct_dict['cube_dimensions'][:2],
+                        computed_tomography['cube_dimensions'][:2],
                         column_stack((interpolated_y, interpolated_x))
                         + (0, 0.5))
 
-                    # Get the CT slice indices for the current sequence
+                    # Get the computed tomography slice indices
                     ct_slice_indices = [
-                        index for index, value in enumerate(ct_dict['z'])
-                        if (points_z[0] - int(ct_data[0].SliceThickness)/2
+                        index for index, value in enumerate(
+                            computed_tomography['z'])
+                        if (points_z[0] - int(ct_slices[0].SliceThickness)/2
                             <= value
-                            < points_z[0] + int(ct_data[0].SliceThickness)/2)]
+                            < points_z[0] + int(ct_slices[0].SliceThickness)/2)
+                        ]
 
                     # Loop over the slice indices
                     for index in ct_slice_indices:
@@ -116,12 +116,9 @@ def generate_segmentation_from_dcm(data, ct_data, ct_dict):
                         # Enter the binary mask into the segment cube
                         segment_cube[:, :, index] = mask
 
-        # Get the segment indices
-        segment_indices = ravel_multi_index(
-            where(segment_cube == 1),
-            ct_dict['cube_dimensions'], order='F')
-
-        return sort(segment_indices)
+        return sort(ravel_multi_index(
+            where(segment_cube == 1), computed_tomography['cube_dimensions'],
+            order='F'))
 
     # Get the default color tuple
     default_colors = generate_colors(len(data.ROIContourSequence._list))
@@ -142,21 +139,19 @@ def generate_segmentation_from_dcm(data, ct_data, ct_dict):
 
         # Add the first-layer backbone to the dictionary
         segmentation[segment] = {
-            key: None
-            for key in ('index', 'type', 'raw_indices', 'prioritized_indices',
-                        'resized_indices', 'parameters', 'objective',
-                        'constraint')
-            }
+            key: None for key in (
+                'index', 'type', 'raw_indices', 'prioritized_indices',
+                'resized_indices', 'parameters', 'objective', 'constraint')}
 
         # Add the second-layer backbone to the dictionary
         segmentation[segment]['parameters'] = {
-            key: None
-            for key in ('priority', 'alphaX', 'betaX', 'visibleColor')}
+            key: None for key in (
+                'priority', 'alphaX', 'betaX', 'visibleColor')}
 
         # Add the segment index to the dictionary
         segmentation[segment]['index'] = int(roi_contour.ReferencedROINumber)-1
 
-        # Check if the segment is a target
+        # Check if the segment is a target volume
         if any(string in segment.lower() for string in (
                 'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor')):
 
@@ -182,9 +177,8 @@ def generate_segmentation_from_dcm(data, ct_data, ct_dict):
         if hasattr(roi_contour, 'ROIDisplayColor'):
 
             # Add the visible color to the dictionary
-            segmentation[segment]['parameters']['visibleColor'] = array([
-                int(number) / 255
-                for number in roi_contour.ROIDisplayColor._list])
+            segmentation[segment]['parameters']['visibleColor'] = array(
+                [int(num)/255 for num in roi_contour.ROIDisplayColor._list])
 
         else:
 
@@ -197,6 +191,7 @@ def generate_segmentation_from_dcm(data, ct_data, ct_dict):
                 and roi_contour.ContourSequence):
 
             # Add the segment indices to the dictionary
-            segmentation[segment]['raw_indices'] = compute_segment_indices()
+            segmentation[segment]['raw_indices'] = compute_segment_indices(
+                ct_slices, computed_tomography, roi_contour)
 
     return dict(sorted(segmentation.items()))

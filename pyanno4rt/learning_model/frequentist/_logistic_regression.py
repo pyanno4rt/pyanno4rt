@@ -9,7 +9,6 @@ from json import load as jload
 from os.path import exists
 from pickle import dump, load
 
-from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from hyperopt import fmin, hp, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
 from numpy import empty
@@ -184,18 +183,21 @@ class LogisticRegressionModel():
         self.hyperparameter_path = None
 
         # Create the configuration dictionary with the modeling information
-        self.configuration = {'data': [dataset['feature_values'].shape[0],
-                                       dataset['feature_names'],
+        self.configuration = {'data': [dataset['feature_names'],
+                                       dataset['feature_values'].shape[0],
+                                       dataset['label_name'],
                                        dataset['label_values'].shape[0],
-                                       dataset['label_names']],
-                              'label_viewpoint': dataset['label_viewpoint'],
+                                       dataset['time_variable_name'],
+                                       dataset['time_variable_name']],
                               'label_bounds': dataset['label_bounds'],
+                              'label_viewpoint': dataset.get(
+                                  'label_viewpoint'),
                               'preprocessing_steps': preprocessing_steps,
                               'tune_space': {
                                   'C': tune_space.get(
                                       'C', [2**-5, 2**10]),
                                   'penalty': tune_space.get(
-                                      'penalty', ['none', 'l1', 'l2']),
+                                      'penalty', ['l1', 'l2']),
                                   'tol': tune_space.get(
                                       'tol', [1e-4, 1e-5, 1e-6]),
                                   'class_weight': tune_space.get(
@@ -410,13 +412,13 @@ class LogisticRegressionModel():
                                'class_weight': proposal['class_weight'],
                                'random_state': 3,
                                'solver': 'saga',
-                               'max_iter': 100000}
+                               'max_iter': int(1e6)}
 
             # Initialize the model from the hyperparameter dictionary
             prediction_model = LogisticRegression(**hyperparameters)
 
             # Compute the objective function value (score) across all folds
-            fold_scores = ThreadPoolExecutor().map(
+            fold_scores = map(
                 compute_fold_score, (
                     (training_indices, validation_indices)
                     for (training_indices, validation_indices)
@@ -432,7 +434,8 @@ class LogisticRegressionModel():
             shuffle=True)
 
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps)
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
 
         # Map the score labels to the score functions
         scorers = {'Logloss': log_loss,
@@ -450,9 +453,7 @@ class LogisticRegressionModel():
                                           self.configuration[
                                               'tune_space']['C'][1])}
                                      for norm in self.configuration[
-                                             'tune_space']['penalty']
-                                     if norm != 'none'],
-                                   *[{'penalty': 'none', 'C': 0.01}]]),
+                                             'tune_space']['penalty']]]),
             'tol': hp.choice(
                 'tol',
                 self.configuration['tune_space']['tol']),
@@ -505,7 +506,7 @@ class LogisticRegressionModel():
                                'class_weight'],
                            'random_state': 3,
                            'solver': 'saga',
-                           'max_iter': 100000}
+                           'max_iter': int(1e6)}
 
         # Initialize the model from the hyperparameter dictionary
         prediction_model = LogisticRegression(**hyperparameters)
@@ -600,10 +601,11 @@ class LogisticRegressionModel():
             n_splits=oof_splits, random_state=4, shuffle=True)
 
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps)
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
 
         # Compute the returns (indices and labels) across all folds
-        fold_returns = ThreadPoolExecutor().map(
+        fold_returns = map(
             compute_fold_labels, (
                 (training_indices, validation_indices)
                 for (training_indices, validation_indices)
@@ -763,11 +765,6 @@ class LogisticRegressionModel():
         """
         Read the logistic regression outcome prediction model hyperparameters \
         from the hyperparameter file path.
-
-        Parameters
-        ----------
-        verbose : bool
-            Indicator for displaying logging information.
 
         Returns
         -------

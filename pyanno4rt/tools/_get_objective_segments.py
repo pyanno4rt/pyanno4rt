@@ -1,4 +1,4 @@
-"""Objective segments return."""
+"""Objective segment retrieval."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -11,7 +11,7 @@ from pyanno4rt.tools import flatten
 
 def get_objective_segments(segmentation):
     """
-    Return a tuple with the segments associated with each objective.
+    Get a tuple with the segments associated with the objectives.
 
     Parameters
     ----------
@@ -21,11 +21,11 @@ def get_objective_segments(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with the segments associated with each objective.
+        Flattened tuple with the segments associated with the objectives.
     """
 
-    return tuple(flatten([segment]*len(segmentation[segment]['objective'])
-                         if isinstance(segmentation[segment]['objective'],
-                                       (tuple, list))
-                         else [segment] for segment in segmentation
-                         if segmentation[segment]['objective']))
+    return tuple(flatten(
+        [segment]*len(segmentation[segment]['objective'])
+        if isinstance(segmentation[segment]['objective'], tuple)
+        else [segment] for segment in segmentation
+        if segmentation[segment]['objective']))

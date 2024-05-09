@@ -1,4 +1,4 @@
-"""DICOM (.dcm) data reading."""
+"""DICOM data reading."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -16,27 +16,26 @@ def read_data_from_dcm(path):
 
     Parameters
     ----------
-    path : string
+    path : str
         Path to the DICOM folder.
 
     Returns
     -------
     computed_tomography_data : tuple
-        Tuple of 'FileDataset' instances with information on the CT slices.
+        Tuple of :class:`pydicom.dataset.FileDataset` objects with \
+        information on the CT slices.
 
-    segmentation_data : object of class `FileDataset`
-        Instance of the class `FileDataset`, which contains information on \
-        the segmented structures.
+    segmentation_data : object of class :class:`pydicom.dataset.FileDataset`
+        The object representation of the segmentation data.
     """
 
     # Load the DICOM files
-    files = [dcmread(''.join((path, filename)))
-             for filename in listdir(path)]
+    files = tuple(dcmread(f'{path}{file}') for file in listdir(path))
 
-    # Get the (sorted) CT data files
+    # Get the (axially ordered) CT data files
     computed_tomography_data = tuple(sorted(
         [file for file in files if hasattr(file, 'PixelData')],
-        key=lambda x: x.ImagePositionPatient._list[2]))
+        key=lambda file: file.ImagePositionPatient._list[2]))
 
     # Get the segmentation data file
     segmentation_data = next(

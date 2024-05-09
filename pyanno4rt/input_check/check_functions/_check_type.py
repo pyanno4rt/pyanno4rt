@@ -5,27 +5,44 @@
 # %% Function definition
 
 
-def check_type(key, value, key_type, type_group=None, value_group=None):
-    """Check if the input data type is not valid."""
-    # Check if no type group applies and the data type is not valid
-    if type_group is None and not isinstance(value, key_type):
+def check_type(label, data, types, type_condition=None):
+    """
+    Check if the input data type is invalid.
 
-        # Raise an error to indicate a wrong data type
+    Parameters
+    ----------
+    label : str
+        Label for the item to be checked.
+
+    data
+        Input data with arbitrary type to be checked.
+
+    types : tuple or dict
+        Tuple or dictionary with the allowed data types.
+
+    type_condition : str
+        Value of the conditional variable (used as a selector if types is a \
+        dictionary).
+
+    Raises
+    ------
+    TypeError
+        If the input data has an invalid type.
+    """
+
+    # Check if no condition applies but the data type is invalid
+    if type_condition is None and not isinstance(data, types):
+
+        # Raise an error to indicate an invalid data type
         raise TypeError(
-            "The treatment plan parameter '{}' has data type {}, but should "
-            "be from {}!"
-            .format(key,
-                    type(value),
-                    key_type))
+            f"The treatment plan parameter '{label}' has data type "
+            f"{type(data)}, but should be from {types}!")
 
-    # Else, check if a type group applies but the data type is not valid
-    elif (type_group is not None
-          and not isinstance(value, key_type[type_group])):
+    # Check if a condition applies but the data type is invalid
+    if (type_condition is not None
+            and not isinstance(data, types[type_condition])):
 
-        # Raise an error to indicate a wrong data type
+        # Raise an error to indicate an invalid data type
         raise TypeError(
-            "The treatment plan parameter '{}' has data type {}, but should "
-            "be from {}!"
-            .format(key,
-                    type(value),
-                    key_type[type_group]))
+            f"The treatment plan parameter '{label}' has data type "
+            f"{type(data)}, but should be from {types[type_condition]}!")

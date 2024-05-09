@@ -21,11 +21,6 @@ project = 'pyanno4rt'
 copyright = '2024, Karlsruhe Institute of Technology'
 author = 'Tim Ortkamp'
 
-# The full version, including alpha/beta/rc tags
-version = '0.1.0'
-release = '0.1.0'
-
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -33,18 +28,14 @@ release = '0.1.0'
 # ones.
 extensions = [
 	'myst_nb',
+	'sphinx_copybutton',
 	'sphinx.ext.autodoc',
 	'autoapi.extension',
 	'sphinx.ext.napoleon',
-	'sphinx.ext.viewcode'
+	'sphinx.ext.viewcode',
+	'sphinx_favicon',
+	'sphinx_last_updated_by_git'
 ]
-
-# AutoAPI settings
-autoapi_dirs = ["../pyanno4rt"]
-autoapi_type = "python"
-autoapi_ignore = ["*/resources_rc.py", "*/main_window.py", "*/info_window.py", "*/settings_window.py"]
-
-master_doc = 'index'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -70,5 +61,65 @@ html_logo = '../logo/logo_white.png'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-def setup (app):
-    app.add_css_file('css/custom.css')
+
+# Add the favicons
+favicons = [
+    'android-chrome-192x192.png',
+    'android-chrome-512x512.png',
+    'apple-touch-icon.png',
+    'favicon.ico',
+    'favicon-16x16.png',
+    'favicon-32x32.png'
+    ]
+
+# -- MystNB options
+nb_execution_mode = 'off'
+
+# -- Napoleon options
+napoleon_include_init_with_doc = False
+
+# -- AutoAPI configuration ---------------------------------------------------
+
+autodoc_typehints = 'signature'
+
+autoapi_type = 'python'
+autoapi_dirs = ['../pyanno4rt']
+autoapi_template_dir = '_templates/autoapi'
+autoapi_options = [
+    'members',
+    'undoc-members',
+    'show-inheritance',
+    'show-module-summary',
+    'imported-members',
+]
+
+autoapi_ignore = ['*/resources_rc.py', '*/info_window.py', '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py', '*/settings_window.py', '*/text_window.py', '*/tree_window.py']
+
+# -- Custom auto_summary() macro ---------------------------------------------------
+
+def contains(seq, item):
+    """Jinja2 custom test to check existence in a container.
+
+    Example of use:
+    {% set class_methods = methods|selectattr("properties", "contains", "classmethod") %}
+
+    Related doc: https://jinja.palletsprojects.com/en/3.1.x/api/#custom-tests
+    """
+    return item in seq
+
+
+def prepare_jinja_env(jinja_env) -> None:
+    """Add `contains` custom test to Jinja environment."""
+    jinja_env.tests["contains"] = contains
+
+autoapi_prepare_jinja_env = prepare_jinja_env
+
+# Custom role for labels used in auto_summary() tables.
+rst_prolog = """
+.. role:: summarylabel
+"""
+
+# Related custom CSS
+html_css_files = [
+    'css/custom.css',
+]

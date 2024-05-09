@@ -1,4 +1,4 @@
-"""Instance snapshots."""
+"""Instance snapshot."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -11,7 +11,7 @@ from shutil import copy
 
 # %% Internal package import
 
-from pyanno4rt.tools import apply, get_model_objectives
+from pyanno4rt.tools import apply, get_machine_learning_objectives
 
 # %% Function definition
 
@@ -19,57 +19,61 @@ from pyanno4rt.tools import apply, get_model_objectives
 def snapshot(instance, path, include_patient_data=False,
              include_dose_matrix=False, include_model_data=False):
     """
-    Take a snapshot of a treatment plan instance.
+    Take a snapshot of a treatment plan.
 
     Parameters
     ----------
-    instance : object of class `TreatmentPlan`
-        Instance of the class `TreatmentPlan`.
+    instance : object of class from :mod:`~pyanno4rt.base`
+        The base treatment plan class from which to take a snapshot.
 
-    path : string
-        Path for the storage of the snapshot folder.
+    path : str
+        Directory path for the snapshot (folder).
 
-    include_patient_data : bool, default = False
-        Indicator for the storage of the patient data (computed tomography,
-        segmentation).
+        .. note:: If the specified path does not reference an existing \
+            folder, one is created automatically.
 
-    include_dose_matrix : bool, default = False
+    include_patient_data : bool, default=False
+        Indicator for the storage of the external patient data, i.e., \
+        computed tomography and segmentation data.
+
+    include_dose_matrix : bool, default=False
         Indicator for the storage of the dose-influence matrix.
 
-    include_model_data : bool, default = False
-        Indicator for the storage of each model-specific dataset.
+    include_model_data : bool, default=False
+        Indicator for the storage of the outcome model-related dataset(s).
 
-    Notes
-    -----
-    If the function parameter ``path`` does not reference an existing folder, \
-    it will automatically create one.
+    Raises
+    ------
+    AttributeError
+        If the treatment plan instance has not been configured yet.
     """
 
     # Check if any required attribute is missing
-    if not all(hasattr(instance, attribute) for attribute in
-               ('logger', 'datahub')):
+    if any(getattr(instance, attribute) is None for attribute in
+           ('logger', 'datahub', 'input_checker', 'patient_loader',
+           'plan_generator', 'dose_info_generator')):
 
         # Raise an error to indicate a missing attribute
         raise AttributeError(
             "Please configure the treatment plan before taking a snapshot!")
 
-    def save_model_data(data):
-        """Create the data files for a model."""
+    def save_ml_model(data):
+        """Create and save the machine learning model data files."""
 
-        # Build the path for the respective model folder
-        model_file_path = ''.join((snap_path, '/', data[0]))
+        # Build the model folder path
+        model_path = f'{snap_path}/{data[0]}'
 
         # Check if the model folder does not yet exist
-        if not exists(model_file_path):
+        if not exists(model_path):
 
             # Create a new folder for the model files
-            mkdir(model_file_path)
+            mkdir(model_path)
 
         # Get the model object
         model = data[1]
 
         # Set the file path to the current location
-        model.set_file_paths(model_file_path)
+        model.set_file_paths(model_path)
 
         # Write the prediction model to a file
         model.write_model_to_file(model.prediction_model)
@@ -87,11 +91,10 @@ def snapshot(instance, path, include_patient_data=False,
             _, extension = splitext(data[2])
 
             # Copy the raw data set into a new file
-            copy(data[2],
-                 ''.join((model_file_path, '/', 'model_data', extension)))
+            copy(data[2], f'{model_path}/model_data{extension}')
 
     # Build the snapshot folder path
-    snap_path = ''.join((path, '/', instance.configuration['label']))
+    snap_path = f"{path}/{instance.configuration['label']}"
 
     # Check if the folder path does not already exists
     if not exists(snap_path):
@@ -105,30 +108,30 @@ def snapshot(instance, path, include_patient_data=False,
                           'evaluation': instance.evaluation}
 
     # Open a file stream
-    with open(''.join((snap_path, '/', 'input_parameters.json')), 'w',
-              encoding="utf-8") as file:
+    with open(f'{snap_path}/input_parameters.json', 'w',
+              encoding='utf-8') as file:
 
         # Dump the input dictionaries to the file
         dump(input_dictionaries, file, sort_keys=False, indent=4)
 
-    # Get the object stream value
+    # Get the object stream value from the logger
     stream_value = instance.logger.logger.handlers[1].stream.getvalue()
 
     # Open a file stream
-    with open(''.join((snap_path, '/', instance.datahub.label, '.log')), 'w',
-              encoding="utf-8") as file:
+    with open(f'{snap_path}/{instance.datahub.label}.log', 'w',
+              encoding='utf-8') as file:
 
         # Print the stream value to the file
         print(stream_value, file=file)
 
-    # Get the learning model data
-    model_data = (
-        (objective.model.model_label, objective.model,
-         objective.model_parameters['data_path'])
-        for objective in get_model_objectives(instance.datahub.segmentation))
+    # Get the machine learning model data
+    ml_model_data = ((objective.model.model_label, objective.model,
+                      objective.model_parameters['data_path'])
+                     for objective in get_machine_learning_objectives(
+                             instance.datahub.segmentation))
 
-    # Save the data for each model
-    apply(save_model_data, model_data)
+    # Save the data for the machine learning model(s)
+    apply(save_ml_model, ml_model_data)
 
     # Check if the patient data should be saved
     if include_patient_data:
@@ -138,7 +141,7 @@ def snapshot(instance, path, include_patient_data=False,
 
         # Copy the input file into a new file
         copy(instance.configuration['imaging_path'],
-             ''.join((snap_path, '/', 'patient_data', extension)))
+             f'{snap_path}/patient_data{extension}')
 
     # Check if the dose influence matrix data should be saved
     if include_dose_matrix:
@@ -148,4 +151,4 @@ def snapshot(instance, path, include_patient_data=False,
 
         # Copy the input file into a new file
         copy(instance.configuration['dose_path'],
-             ''.join((snap_path, '/', 'dose_influence_matrix', extension)))
+             f'{snap_path}/dose_influence_matrix{extension}')

@@ -3,9 +3,8 @@ Logging module.
 
 ==================================================================
 
-The module aims to provide methods and classes for configuring an instance of \
-the logger, which includes multiple stream handlers and formatters to print \
-messages at different levels.
+This module aims to provide methods and classes to configure an instance of \
+the logger.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

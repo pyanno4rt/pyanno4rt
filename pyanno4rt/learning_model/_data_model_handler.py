@@ -7,7 +7,7 @@ from math import inf
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model.data import Dataset
+from pyanno4rt.learning_model.dataset import TabularDataGenerator
 from pyanno4rt.learning_model.features import (
     FeatureMapGenerator, FeatureCalculator)
 
@@ -18,74 +18,58 @@ class DataModelHandler():
     """
     Data & learning model handling class.
 
-    This class implements methods to handle the base data set, generate the \
-    feature map (associating each feature with the corresponding segment and \
-    definition from the feature catalogue) and initialize the feature \
-    calculator for the parent learning model.
+    This class implements methods to handle the integration of the base \
+    dataset, the feature map generator and the feature calculator.
 
     Parameters
     ----------
-    data_path : string
-        Path to the data set used for fitting the learning models.
+    data_path : str
+        Path to the data set used for fitting the machine learning model.
 
-    feature_filter : tuple or list
-        A (sub)set of the feature names as an iterable and a value from \
-        {'retain', 'remove'} as an indicator for retaining or removing the \
-        (sub)set prior to the modeling process, all features are retained if \
-        no value is passed.
+    feature_filter : dict, default={'features': [], 'filter_mode': 'remove'}
+        Dictionary with a list of feature names and a value from \
+        {'retain', 'remove'} as an indicator for retaining/removing the \
+        features prior to model fitting.
 
-    label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', 'profile'}
+    label_bounds : list, default=[1, 1]
+        Bounds for the label values to binarize into positive (value lies \
+        inside the bounds) and negative class (value lies outside the bounds).
+
+    label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', \
+                       'profile'}, default='long-term'
         Time of observation for the presence of tumor control and/or normal \
-        tissue complication events. The values can be described as follows:
+        tissue complication events.
 
-        - 'early' : observation period between 0 and 6 months after treatment;
-        - 'late' : observation period between 6 and 15 months after treatment;
-        - 'long-term' : observation period between 15 and 24 months after \
-           treatment;
-        - 'longitudinal' : no observation period, time after treatment is \
-           included as a covariate;
-        - 'profile' : TCP/NTCP profiling over time, multi-label scenario \
-           with one label per month (up to 24 labels in total).
+    fuzzy_matching : bool, default=True
+        Indicator for the use of fuzzy string matching to generate the \
+        feature map (if False, exact string matching is applied).
 
-    label_bounds : tuple or list
-        Bounds for the label values to binarize them into positive and \
-        negative class, i.e., label values within the specified bounds will \
-        be interpreted as a binary 1.
-
-    fuzzy_matching : bool
-        Indicator for the use of fuzzy string matching (if False, exact \
-        string matching is applied) to generate the mapping between features, \
-        segmented structures and calculation functions. Only used when \
-        data-driven components are present.
-
-    write_features : bool
-        Indicator for writing the iteratively computed feature vectors to the \
-        feature history. Only used when data-driven components are present.
-
-    write_gradients : bool
-        Indicator for writing the iteratively computed feature gradient \
-        matrices to the gradient history. Only used when data-driven \
-        components are present.
+    write_features : bool, default=True
+        Indicator for writing the iteratively calculated feature vectors into \
+        a feature history.
 
     Attributes
     ----------
-    data : object of class `Dataset`
-        Instance of the class `Dataset`, which provides a preprocessed \
-        version of the raw dataset along with its individual components.
+    model_label : str
+        See 'Parameters'.
 
-    feature_map_generator : object of class `FeatureMapGenerator`
-        Instance of the class `FeatureMapGenerator`, which generates a \
-        feature map that links each feature to its related segment and \
-        computation/differentiation function. This is based on fuzzy or exact \
-        string matching, depending on the boolean value of the parameter \
-        ``fuzzy_string_matching``.
+    data_path : str
+        See 'Parameters'.
 
-    feature_calculator : object of class `FeatureCalculator`
-        Instance of the class `FeatureCalculator`, which holds methods to \
-        (re-)compute the feature vector and gradient matrix for changing dose \
-        input. It may also store histories of features and gradients, \
-        depending on the values of the parameters ``write_feat`` and \
-        ``write_grad``.
+    write_features : bool
+        See 'Parameters'.
+
+    dataset : object of class \
+        :class:`~pyanno4rt.learning_model.dataset._tabular_data_generator.TabularDataGenerator`
+        The object used to handle the base dataset.
+
+    feature_map_generator : object of class \
+        :class:`~pyanno4rt.learning_model.features._feature_map_generator.FeatureMapGenerator`
+        The object used to map the dataset features to the feature definitions.
+
+    feature_calculator : object of class \
+        :class:`~pyanno4rt.learning_model.features._feature_calculator.FeatureCalculator`
+        The object used to (re-)calculate the feature values and gradients.
     """
 
     def __init__(
@@ -93,80 +77,84 @@ class DataModelHandler():
             model_label,
             data_path,
             feature_filter,
-            label_viewpoint,
+            label_name,
             label_bounds,
+            time_variable_name,
+            label_viewpoint,
             fuzzy_matching,
-            write_features,
-            write_gradients):
+            write_features):
 
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the model label from the argument
+        # Loop over the model-related datahub attributes
+        for attribute in ('datasets', 'feature_maps', 'model_instances',
+                          'model_inspections', 'model_evaluations'):
+
+            # Check if the attribute has not been initialized yet
+            if not getattr(hub, attribute):
+
+                # Initialize the attribute
+                setattr(hub, attribute, {})
+
+        # Get the instance attributes from the arguments
         self.model_label = model_label
+        self.data_path = data_path
+        self.write_features = write_features
 
-        # Check if the lower label bound is None
-        if label_bounds[0] is None:
+        # Check if the data path leads to a tabular data file
+        if data_path.endswith('.csv'):
 
-            # Replace the lower bound default with negative infinity
-            label_bounds[0] = -inf
+            # Transform the label bounds by replacing None with limit values
+            label_bounds = [
+                label_bounds[index] if label_bounds[index] is not None
+                else (-1)**(index+1)*inf for index in range(2)]
 
-        # Check if the upper label bound is None
-        if label_bounds[1] is None:
+            # Initialize the tabular dataset generator
+            self.dataset = TabularDataGenerator(
+                model_label=model_label,
+                feature_filter=feature_filter,
+                label_name=label_name,
+                label_bounds=label_bounds,
+                time_variable_name=time_variable_name,
+                label_viewpoint=label_viewpoint)
 
-            # Replace the upper bound default with infinity
-            label_bounds[1] = inf
-
-        # Initialize the dataset
-        self.data = Dataset(
-            model_label=model_label, data_path=data_path,
-            feature_filter=feature_filter, label_viewpoint=label_viewpoint,
-            label_bounds=label_bounds)
-
-        # Generate the feature map
+        # Initialize the feature map generator
         self.feature_map_generator = FeatureMapGenerator(
-            model_label, hub.datasets[model_label], fuzzy_matching)
+            model_label, fuzzy_matching)
 
         # Initialize the feature calculator
-        self.feature_calculator = FeatureCalculator(
-            hub.feature_maps[model_label], write_features,
-            write_gradients)
+        self.feature_calculator = FeatureCalculator(write_features)
 
-    def process_histories(
-            self,
-            label):
-        """
-        Process the feature and gradient histories from the feature \
-        calculator.
+    def integrate(self):
+        """Integrate the learning model-related classes."""
 
-        Parameters
-        ----------
-        label : string
-            Label for the model.
-        """
+        # Generate the data information dictionary
+        data_information = self.dataset.generate(self.data_path)
+
+        # Generate the feature map
+        feature_map = self.feature_map_generator.generate(data_information)
+
+        # Add the feature map to the feature calculator
+        self.feature_calculator.add_feature_map(feature_map)
+
+    def process_feature_history(self):
+        """Process the feature history from the feature calculator."""
+
         # Initialize the datahub
         hub = Datahub()
 
-        # Check if the feature history is non-existent
-        if not hasattr(self.feature_calculator, 'feature_history'):
+        # Check if the feature history has been written
+        if self.write_features:
 
-            # Log a message about the unavailability of the feature history
-            hub.logger.display_info("Feature history retrieval is not "
-                                    "performed for '{}' ..."
-                                    .format(label))
+            # Transform the feature history into a dictionary
+            self.feature_calculator.feature_history = dict(zip(
+                (*hub.feature_maps[self.model_label],),
+                (*self.feature_calculator.feature_history[1:, :].transpose(),)
+                ))
+
         else:
-            # Convert the feature history array into a dictionary
-            self.feature_calculator.feature_history = dict(
-                zip((*hub.feature_maps[self.model_label],),
-                    (*self.feature_calculator.feature_history[1:, :]
-                     .transpose(),)))
 
-        # Check if the gradient history is non-existent
-        if not hasattr(self.feature_calculator, 'gradient_history'):
-
-            # Log a message about the unavailability of the gradient history
-            hub.logger.display_info("Gradient history retrieval is not "
-                                    "performed for '{}' ..."
-                                    .format(label))
-
-            # Note: changing the gradient history format is not necessary
+            # Log a message about the non-writing of the feature history
+            hub.logger.display_info("Feature history has not been written for "
+                                    f"'{self.model_label}' ...")

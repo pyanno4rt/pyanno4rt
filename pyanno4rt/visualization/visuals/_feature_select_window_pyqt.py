@@ -16,7 +16,8 @@ from pyqtgraph.Qt import QtGui
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import get_model_objectives
+from pyanno4rt.tools import (
+    get_machine_learning_constraints, get_machine_learning_objectives)
 
 # %% Set options
 
@@ -553,7 +554,7 @@ class FeatureWidget(QWidget):
 
         # Get the corresponding values from the feature history
         values = tuple(feature_history[
-            self.combo_box.feature_box.currentText()][index-1]
+            self.combo_box_feature.feature_box.currentText()][index-1]
             for index in indices)
 
         # Overlay the plot points with a red circle
@@ -622,7 +623,7 @@ class FeatureSelectWindowPyQt(QMainWindow):
     # Set the class attributes for the visual interface integration
     category = "Optimization problem analysis"
     name = "features_plotter"
-    label = "Iterative feature calculation plot (pyqtgraph)"
+    label = "Iterative feature calculation plot"
 
     def view(self):
         """Open the full-screen view on the feature selection window."""
@@ -635,18 +636,20 @@ class FeatureSelectWindowPyQt(QMainWindow):
 
         # Get the feature histories from the feature calculators
         self.feature_histories = {
-            objective.model.model_label:
-                objective.data_model_handler.feature_calculator.feature_history
-            for objective in get_model_objectives(hub.segmentation)
-            if hasattr(objective.data_model_handler.feature_calculator,
+            component.model.model_label:
+                component.data_model_handler.feature_calculator.feature_history
+            for component in (
+                    get_machine_learning_constraints(hub.segmentation)
+                    + get_machine_learning_objectives(hub.segmentation))
+            if hasattr(component.data_model_handler.feature_calculator,
                        'feature_history')}
 
         def add_logo(layout):
             """Create and add the pyanno4rt logo."""
             logo = QLabel(self)
-            pixmap = QtGui.QPixmap('./logo/logo_white.png')
-            pixmap = pixmap.scaled(int(pixmap.width()/10),
-                                   int(pixmap.height()/10))
+            pixmap = QtGui.QPixmap('./logo/logo_white_512.png')
+            pixmap = pixmap.scaled(int(pixmap.width()/2),
+                                   int(pixmap.height()/2))
             logo.setPixmap(pixmap)
             logo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             logo.setAlignment(Qt.AlignCenter)

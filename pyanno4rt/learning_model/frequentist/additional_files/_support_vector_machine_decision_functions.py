@@ -131,7 +131,7 @@ def linear_decision_gradient(svm, _):
     ndarray
         Gradient of the decision function with linear kernel.
     """
-    return svm.coef_
+    return svm.coef_.reshape(-1)
 
 
 def rbf_decision_gradient(svm, features):
@@ -160,7 +160,7 @@ def rbf_decision_gradient(svm, features):
 
     return sum(svm.dual_coef_[0, i]
                * rbf_gradient(features, svm.support_vectors_[i, :])
-               for i, _ in enumerate(svm.support_vectors_))[0]
+               for i, _ in enumerate(svm.support_vectors_))[0].reshape(-1)
 
 
 def poly_decision_gradient(svm, features):
@@ -189,7 +189,7 @@ def poly_decision_gradient(svm, features):
     return sum(svm.dual_coef_[0, i]
                * poly_gradient(features, svm.support_vectors_[i, :],
                                svm.coef0, svm.degree)
-               for i, _ in enumerate(svm.support_vectors_))
+               for i, _ in enumerate(svm.support_vectors_)).reshape(-1)
 
 
 def sigmoid_decision_gradient(svm, features):
@@ -218,4 +218,4 @@ def sigmoid_decision_gradient(svm, features):
     return sum(svm.dual_coef_[0, i]
                * sigmoid_gradient(features, svm.support_vectors_[i, :],
                                   svm.coef0)
-               for i, _ in enumerate(svm.support_vectors_))
+               for i, _ in enumerate(svm.support_vectors_)).reshape(-1)

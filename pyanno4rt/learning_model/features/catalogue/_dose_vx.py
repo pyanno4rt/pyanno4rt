@@ -6,7 +6,7 @@
 
 from jax import grad, jit
 import jax.numpy as jnp
-from scipy.sparse import csr_matrix
+from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -56,7 +56,7 @@ class DoseVx(DosiomicFeature):
             DoseVx.gradient_is_jitted = True
 
         # Initialize the gradient vector
-        gradient = csr_matrix((1, args[0]))
+        gradient = lil_matrix((1, args[0]))
 
         # Insert the gradient values at the indices of the segment
         gradient[:, args[1]] = DoseVx.gradient_function(level, dose)

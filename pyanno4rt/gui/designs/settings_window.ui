@@ -141,9 +141,6 @@ border-color: rgb(186, 189, 182);</string>
       <bold>true</bold>
      </font>
     </property>
-    <property name="toolTip">
-     <string>Display resolution of the application</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">border: 0px solid;</string>
     </property>
@@ -165,9 +162,6 @@ border-color: rgb(186, 189, 182);</string>
       <weight>75</weight>
       <bold>true</bold>
      </font>
-    </property>
-    <property name="toolTip">
-     <string>Frontend main language</string>
     </property>
     <property name="styleSheet">
      <string notr="true">border: 0px solid;</string>
@@ -255,9 +249,6 @@ border-color: rgb(186, 189, 182);</string>
     <property name="cursor">
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
-    <property name="toolTip">
-     <string>Include the dose-influence matrix file in the snapshot folder</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">border: 0px;
 color: rgb(0, 0, 0);</string>
@@ -266,7 +257,7 @@ color: rgb(0, 0, 0);</string>
      <string>Include dose-influence matrix</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="reset_pbutton">
+   <widget class="QPushButton" name="reset_settings_pbutton">
     <property name="geometry">
      <rect>
       <x>560</x>
@@ -277,9 +268,6 @@ color: rgb(0, 0, 0);</string>
     </property>
     <property name="cursor">
      <cursorShape>PointingHandCursor</cursorShape>
-    </property>
-    <property name="toolTip">
-     <string>Reset to default settings</string>
     </property>
     <property name="styleSheet">
      <string notr="true">color: rgb(0, 0, 0);
@@ -306,9 +294,6 @@ border-color: rgb(186, 189, 182);</string>
       <bold>true</bold>
      </font>
     </property>
-    <property name="toolTip">
-     <string>Display light mode for the application</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">border: 0px solid;</string>
     </property>
@@ -316,7 +301,7 @@ border-color: rgb(186, 189, 182);</string>
      <string>Light mode</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="incl_patData_check">
+   <widget class="QCheckBox" name="incl_img_data_check">
     <property name="geometry">
      <rect>
       <x>410</x>
@@ -328,15 +313,12 @@ border-color: rgb(186, 189, 182);</string>
     <property name="cursor">
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
-    <property name="toolTip">
-     <string>Include the CT and segmentation data file(s) in the snapshot folder</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">border: 0px;
 color: rgb(0, 0, 0);</string>
     </property>
     <property name="text">
-     <string>Include patient data</string>
+     <string>Include CT/segmentation data</string>
     </property>
    </widget>
    <widget class="QComboBox" name="resolution_cbox">
@@ -359,6 +341,9 @@ border-color: rgb(186, 189, 182);</string>
     </property>
     <property name="currentIndex">
      <number>0</number>
+    </property>
+    <property name="frame">
+     <bool>false</bool>
     </property>
     <item>
      <property name="text">
@@ -432,15 +417,6 @@ border-color: rgb(186, 189, 182);</string>
        <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
      </property>
     </item>
-    <item>
-     <property name="text">
-      <string>3840x2160</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../assets/resources.qrc">
-       <normaloff>:/lightblue_icons/icons_lightblue/eye.svg</normaloff>:/lightblue_icons/icons_lightblue/eye.svg</iconset>
-     </property>
-    </item>
    </widget>
    <widget class="QCheckBox" name="incl_model_data_check">
     <property name="geometry">
@@ -454,15 +430,12 @@ border-color: rgb(186, 189, 182);</string>
     <property name="cursor">
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
-    <property name="toolTip">
-     <string>Include the model training data file(s) in the snapshot folder</string>
-    </property>
     <property name="styleSheet">
      <string notr="true">border: 0px;
 color: rgb(0, 0, 0);</string>
     </property>
     <property name="text">
-     <string>Include model data</string>
+     <string>Include model training data</string>
     </property>
    </widget>
    <widget class="QLabel" name="save_tpi_label">
@@ -513,7 +486,7 @@ color: rgb(0, 0, 0);</string>
      <string notr="true">border-color: rgb(0, 0, 0);</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="save_pbutton">
+   <widget class="QPushButton" name="save_settings_pbutton">
     <property name="geometry">
      <rect>
       <x>640</x>
@@ -525,12 +498,9 @@ color: rgb(0, 0, 0);</string>
     <property name="cursor">
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
-    <property name="toolTip">
-     <string>Save changes, apply them and close the settings window</string>
-    </property>
     <property name="styleSheet">
-     <string notr="true">color: rgb(243, 243, 243);
-background-color: rgb(196, 92, 38);
+     <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
     </property>
@@ -544,14 +514,14 @@ border-color: rgb(186, 189, 182);</string>
    <zorder>language_label</zorder>
    <zorder>language_cbox</zorder>
    <zorder>incl_dij_check</zorder>
-   <zorder>reset_pbutton</zorder>
+   <zorder>reset_settings_pbutton</zorder>
    <zorder>light_model_label</zorder>
-   <zorder>incl_patData_check</zorder>
+   <zorder>incl_img_data_check</zorder>
    <zorder>resolution_cbox</zorder>
    <zorder>incl_model_data_check</zorder>
    <zorder>save_tpi_label</zorder>
    <zorder>save_tpi_line</zorder>
-   <zorder>save_pbutton</zorder>
+   <zorder>save_settings_pbutton</zorder>
    <zorder>general_settings_line</zorder>
   </widget>
  </widget>

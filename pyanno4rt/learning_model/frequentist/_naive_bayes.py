@@ -10,7 +10,6 @@ from os.path import exists
 from pickle import dump, load
 from statistics import mean
 
-from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from hyperopt import fmin, hp, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
 from numpy import empty
@@ -22,7 +21,7 @@ from sklearn.metrics import roc_auc_score
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.preprocessing import DataPreprocessor
-from pyanno4rt.learning_model.losses import log_loss
+from pyanno4rt.learning_model.losses import brier_loss, log_loss
 from pyanno4rt.learning_model.inspection import ModelInspector
 from pyanno4rt.learning_model.evaluation import ModelEvaluator
 
@@ -34,7 +33,7 @@ class NaiveBayesModel():
     Naive Bayes outcome prediction model class.
 
     This class enables building an individual preprocessing pipeline, fit the \
-    k-naive Bayes model from the input data, inspect the model, make \
+    naive Bayes model from the input data, inspect the model, make \
     predictions with the model, and assess the predictive performance using \
     multiple evaluation metrics.
 
@@ -166,33 +165,21 @@ class NaiveBayesModel():
             tune_splits,
             inspect_model,
             evaluate_model,
-            oof_splits):
+            oof_splits,
+            display_options):
 
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the information units from the datahub
-        model_instances = hub.model_instances
-        model_inspections = hub.model_inspections
-        model_evaluations = hub.model_evaluations
-
-        # Get the model label from the argument
+        # Get the instance attributes from the arguments
         self.model_label = model_label
-
-        # Get the model folder path from the argument
         self.model_folder_path = model_folder_path
+        self.preprocessing_steps = preprocessing_steps
 
-        # Initialize the data preprocessor
-        self.preprocessor = DataPreprocessor(preprocessing_steps)
-
-        # Fit the data preprocessor to the input feature values
-        self.preprocessor.fit(dataset['feature_values'])
-
-        # Transform the input feature values with the preprocessor
-        self.features = self.preprocess(dataset['feature_values'])
-
-        # Get the input label values from the dataset
-        self.labels = dataset['label_values']
+        # Initialize the file paths
+        self.model_path = None
+        self.configuration_path = None
+        self.hyperparameter_path = None
 
         # Create the configuration dictionary with the modeling information
         self.configuration = {'data': [dataset['feature_values'].shape[0],
@@ -204,105 +191,55 @@ class NaiveBayesModel():
                               'preprocessing_steps': preprocessing_steps,
                               'tune_space': {
                                   'priors': tune_space.get(
-                                      'priors', [None, [1-mean(self.labels),
-                                                        mean(self.labels)]]),
+                                      'priors', [
+                                          None,
+                                          [1-mean(dataset['label_values']),
+                                           mean(dataset['label_values'])]]),
                                   'var_smoothing': tune_space.get(
                                       'var_smoothing', [1e-12, 1])},
                               'tune_evaluations': tune_evaluations,
                               'tune_score': tune_score,
                               'tune_splits': tune_splits}
 
+        # Initialize the data preprocessor
+        self.preprocessor = DataPreprocessor(preprocessing_steps)
+
+        # Fit the data preprocessor and transform the input feature values
+        self.preprocessed_features = self.preprocessor.fit_transform(
+            dataset['feature_values'])
+
         # Initialize the boolean flag to indicate model updates
         self.updated_model = False
 
         # Get the naive Bayes model and its hyperparameters
         self.prediction_model, self.hyperparameters = (
-            self.get_prediction_model())
+            self.get_model(dataset['feature_values'], dataset['label_values']))
 
-        # Check if the model has been updated or is unregistered in the datahub
-        if self.updated_model or self.model_label not in model_instances:
+        # Check if the model has been updated or not yet registered
+        if self.updated_model or self.model_label not in hub.model_instances:
 
             # Add the model instance to the datahub
-            model_instances[self.model_label] = {
+            hub.model_instances[self.model_label] = {
                 'prediction_model': self.prediction_model,
                 'configuration': self.configuration,
                 'hyperparameters': self.hyperparameters}
 
-        # Check if the model should be first-time/repeatedly inspected
-        if (inspect_model and (self.updated_model or self.model_label
-                               not in (*model_inspections,))):
+        # Check if the model should be inspected
+        if inspect_model:
 
-            # Initialize the model inspector
-            self.inspector = ModelInspector(
-                model_name=self.model_label,
-                model_class='Naive Bayes')
+            # Inspect the model
+            self.inspect(dataset['label_values'])
 
-            # Run the model inspections
-            self.inspector.compute(model=self.prediction_model,
-                                   features=self.features,
-                                   labels=self.labels,
-                                   number_of_repeats=30)
+        # Check if the model should be evaluated
+        if evaluate_model:
 
-            # Add the model inspector to the datahub
-            model_inspections[self.model_label] = self.inspector
+            # Evaluate the model
+            self.evaluate(dataset['feature_values'], dataset['label_values'],
+                          oof_splits)
 
-        # Else, check if the inspection should be retrieved from the datahub
-        elif inspect_model:
-
-            # Log a message about the inspector retrieval
-            hub.logger.display_info("Retrieving model inspector from datahub "
-                                    "...")
-
-            # Get the model inspector from the datahub
-            self.inspector = model_inspections[self.model_label]
-
-        # Check if the model should be first-time/repeatedly evaluated
-        if (evaluate_model and (self.updated_model or self.model_label
-                                not in (*model_evaluations,))):
-
-            # Predict the training and OOF labels
-            self.training_prediction = self.predict(self.features)
-            self.oof_prediction = self.predict_oof(oof_splits)
-
-            # Initialize the model evaluator
-            self.evaluator = ModelEvaluator(
-                model_name=self.model_label,
-                true_labels=self.labels)
-
-            # Run the model evaluations
-            self.evaluator.compute(predicted_labels=(self.training_prediction,
-                                                     self.oof_prediction))
-
-            # Add the model evaluator to the datahub
-            model_evaluations[self.model_label] = self.evaluator
-
-        # Else, check if the evaluation should be retrieved from the datahub
-        elif evaluate_model:
-
-            # Log a message about the evaluator retrieval
-            hub.logger.display_info("Retrieving model evaluator from datahub "
-                                    "...")
-
-            # Get the model evaluator from the datahub
-            self.evaluator = model_evaluations[self.model_label]
-
-    def set_file_paths(
-            self,
-            base_path):
-        """
-        Set the paths for model, configuration and hyperparameter files.
-
-        Parameters
-        ----------
-        base_path : string
-            Base path from which to access the model files.
-        """
-        # Set the specific model, configuration and hyperparameter file paths
-        self.model_path = ''.join((base_path, '/', 'Model.sav'))
-        self.configuration_path = ''.join((base_path, '/',
-                                           'Configuration.json'))
-        self.hyperparameter_path = ''.join((base_path, '/',
-                                            'Hyperparameters.json'))
+        # Update the display options in the datahub
+        hub.model_instances[self.model_label]['display_options'] = (
+            display_options)
 
     def preprocess(
             self,
@@ -320,9 +257,13 @@ class NaiveBayesModel():
         ndarray
             Array of transformed feature values.
         """
+
         return self.preprocessor.transform(features)
 
-    def get_prediction_model(self):
+    def get_model(
+            self,
+            features,
+            labels):
         """
         Get the naive Bayes outcome prediction model by reading from the \
         model file path, the datahub, or by training.
@@ -333,25 +274,25 @@ class NaiveBayesModel():
             Instance of the class `GaussianNB`, which holds methods to make \
             predictions from the naive Bayes model.
         """
+
         # Check if the model files can be loaded from the model folder path
         if self.model_folder_path:
 
             # Set the base path to the model folder path
             self.set_file_paths(self.model_folder_path)
 
-            if all(exists(path) for path in (
+            # Check if all required files exists and if the configuration
+            # dictionary equals the external configuration file content
+            if (all(exists(path) for path in (
                     self.model_path, self.configuration_path,
-                    self.hyperparameter_path)):
+                    self.hyperparameter_path)) and
+                    self.configuration == self.read_configuration_from_file()):
 
-                # Check if the configuration dictionary of the class equals the
-                # content of the external configuration file
-                if self.configuration == self.read_configuration_from_file():
+                # Set the update flag to False
+                self.updated_model = False
 
-                    # Set the update flag to False
-                    self.updated_model = False
-
-                    return (self.read_model_from_file(),
-                            self.read_hyperparameters_from_file())
+                return (self.read_model_from_file(),
+                        self.read_hyperparameters_from_file())
 
         # Else, check if the model files can be loaded from the datahub
         else:
@@ -359,130 +300,32 @@ class NaiveBayesModel():
             # Initialize the datahub
             hub = Datahub()
 
-            # Check if the model is stored in the datahub
-            if self.model_label in hub.model_instances:
+            # Check if the model is already registered and if the configuration
+            # dictionary equals the external configuration file content
+            if (self.model_label in hub.model_instances and
+                self.configuration == hub.model_instances[
+                    self.model_label]['configuration']):
 
-                # Check if the configuration dictionary of the class equals the
-                # content of the configuration dictionary in the datahub
-                if self.configuration == hub.model_instances[
-                        self.model_label]['configuration']:
+                # Set the update flag to False
+                self.updated_model = False
 
-                    # Set the update flag to False
-                    self.updated_model = False
-
-                    return (
-                        hub.model_instances[
+                return (hub.model_instances[
                             self.model_label]['prediction_model'],
                         hub.model_instances[
                             self.model_label]['hyperparameters'])
 
-        # Otherwise, fit a new model
-        prediction_model, hyperparameters = self.train()
+        # Otherwise, train the outcome prediction model on the data
+        prediction_model, hyperparameters = self.train(features, labels)
 
         # Set the update flag to True
         self.updated_model = True
 
         return prediction_model, hyperparameters
 
-    def read_model_from_file(self):
-        """
-        Read the naive Bayes outcome prediction model from the model file path.
-
-        Returns
-        -------
-        object of class `GaussianNB`
-            Instance of the class `GaussianNB`, which holds methods to make \
-            predictions from the naive Bayes model.
-        """
-        # Log a message about the model file reading
-        Datahub().logger.display_info("Reading '{}' model from file ..."
-                                      .format(self.model_label))
-
-        return load(open(self.model_path, 'rb'))
-
-    def write_model_to_file(
+    def tune_hyperparameters_with_bayes(
             self,
-            prediction_model):
-        """
-        Write the naive Bayes outcome prediction model to the model file path.
-
-        Parameters
-        ----------
-        prediction_model : object of class `GaussianNB`
-            Instance of the class `GaussianNB`, which holds methods to make \
-            predictions from the naive Bayes model.
-        """
-        # Dump the model to the model file path
-        dump(prediction_model, open(self.model_path, 'wb'))
-
-    def read_configuration_from_file(self):
-        """
-        Read the configuration dictionary from the configuration file path.
-
-        Returns
-        -------
-        dict
-            Dictionary with information for the modeling, i.e., the dataset, \
-            the preprocessing steps, and the hyperparameter search space.
-        """
-        # Log a message about the configuration file reading
-        Datahub().logger.display_info("Reading '{}' configuration from file "
-                                      "..."
-                                      .format(self.model_label))
-
-        return jload(open(self.configuration_path, 'r'))
-
-    def write_configuration_to_file(
-            self,
-            configuration):
-        """
-        Write the configuration dictionary to the configuration file path.
-
-        Parameters
-        ----------
-        configuration : dict
-            Dictionary with information for the modeling, i.e., the dataset, \
-            the preprocessing steps, and the hyperparameter search space.
-        """
-        # Dump the configuration dictionary to the configuration file path
-        jdump(configuration, open(self.configuration_path, 'w'),
-              sort_keys=False, indent=4)
-
-    def read_hyperparameters_from_file(self):
-        """
-        Read the naive Bayes outcome prediction model hyperparameters from \
-        the hyperparameter file path.
-
-        Returns
-        -------
-        dict
-            Dictionary with the hyperparameter names and values for the naive \
-            Bayes outcome prediction model.
-        """
-        # Log a message about the parameter file reading
-        Datahub().logger.display_info("Reading '{}' hyperparameters from file "
-                                      "..."
-                                      .format(self.model_label))
-
-        return jload(open(self.hyperparameter_path, 'r'))
-
-    def write_hyperparameters_to_file(
-            self,
-            hyperparameters):
-        """
-        Write the hyperparameter dictionary to the hyperparameter file path.
-
-        Parameters
-        ----------
-        hyperparameters : dict
-            Dictionary with the hyperparameter names and values for the naive \
-            Bayes outcome prediction model.
-        """
-        # Dump the hyperparameter dictionary to the hyperparameter file path
-        jdump(hyperparameters, open(self.hyperparameter_path, 'w'),
-              sort_keys=False, indent=4)
-
-    def tune_hyperparameters_with_bayes(self):
+            features,
+            labels):
         """
         Tune the hyperparameters of the naive Bayes model via sequential \
         model-based optimization using the tree-structured Parzen estimator. \
@@ -495,53 +338,66 @@ class NaiveBayesModel():
             Dictionary with the hyperparameter names and values tuned via \
             Bayesian hyperparameter optimization.
         """
+
+        # Initialize the datahub
+        hub = Datahub()
+
         # Log a message about the hyperparameter tuning
-        Datahub().logger.display_info("Applying Bayesian hyperparameter "
-                                      "tuning ...")
+        hub.logger.display_info("Applying Bayesian hyperparameter tuning ...")
 
         def objective(proposal, trials, space):
             """Compute the objective function for a set of hyperparameters."""
 
             def compute_fold_score(indices):
                 """Compute the score for a single train-validation split."""
-                # Get the training and validation indices from the argument
-                training_indices = indices[0]
-                validation_indices = indices[1]
 
                 # Get the training and validation splits
-                train_validation_split = (self.features[training_indices],
-                                          self.features[validation_indices],
-                                          self.labels[training_indices],
-                                          self.labels[validation_indices])
+                train_validate_split = [features[indices[0]],
+                                        features[indices[1]],
+                                        labels[indices[0]],
+                                        labels[indices[1]]]
+
+                # Fit the preprocessor and transform the training features
+                train_validate_split[0] = preprocessor.fit_transform(
+                    train_validate_split[0])
+
+                # Transform the validation features
+                train_validate_split[1] = preprocessor.transform(
+                    train_validate_split[1])
 
                 # Fit the model with the training split
-                prediction_model.fit(train_validation_split[0],
-                                     train_validation_split[2])
+                prediction_model.fit(train_validate_split[0],
+                                     train_validate_split[2])
 
-                # Predict the labels for the validation split
-                predicted_labels = prediction_model.predict_proba(
-                        train_validation_split[1])[:, 1]
+                # Get the training score
+                training_score = -scorers[self.configuration['tune_score']](
+                    train_validate_split[2], prediction_model.predict_proba(
+                        train_validate_split[0])[:, 1])
 
-                return -scores[self.configuration['tune_score']](
-                    train_validation_split[3], predicted_labels)
+                # Get the validation score
+                validation_score = -scorers[self.configuration['tune_score']](
+                    train_validate_split[3], prediction_model.predict_proba(
+                        train_validate_split[1])[:, 1])
 
-            # Check if the selected hyperparameter set has already been \
+                return max(training_score, validation_score)
+
+            # Check if the selected hyperparameter set has already been
             # evaluated from the past trials
             for trial in trials:
 
                 # Check if the trial has been accepted
                 if trial['result']['status'] == STATUS_OK:
 
-                    # Get the hyperparameter assignments from the trial
-                    values = trial['misc']['vals']
-
                     # Reduce the assignments to the given values
                     reduced_values = {key: value[0]
-                                      for key, value in values.items()
+                                      for key, value
+                                      in trial['misc']['vals'].items()
                                       if value}
 
-                    # Return a failure if the proposed set equals the trial set
+                    # Check if the proposed set equals the trial set
                     if proposal == space_eval(space, reduced_values):
+
+                        # Return an error status
                         return {'status': STATUS_FAIL}
 
             # Create a dictionary with the model hyperparameters
@@ -550,14 +406,15 @@ class NaiveBayesModel():
             # Initialize the model from the hyperparameter dictionary
             prediction_model = GaussianNB(**hyperparameters)
 
-            # Compute the objective function value (loss) across all folds
-            losses = map(
-                compute_fold_score,
-                ((train_indices, validation_indices)
-                 for (train_indices, validation_indices)
-                 in cross_validator.split(self.features, self.labels)))
+            # Compute the objective function value (score) across all folds
+            fold_scores = map(
+                compute_fold_score, (
+                    (training_indices, validation_indices)
+                    for (training_indices, validation_indices)
+                    in cross_validator.split(features, labels)))
 
-            return {'loss': mean(losses), 'params': hyperparameters,
+            return {'loss': max(fold_scores),
+                    'params': hyperparameters,
                     'status': STATUS_OK}
 
         # Initialize the stratified k-fold cross-validator
@@ -565,9 +422,14 @@ class NaiveBayesModel():
             n_splits=self.configuration['tune_splits'], random_state=4,
             shuffle=True)
 
+        # Initialize the data preprocessor
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
+
         # Map the score labels to the score functions
-        scores = {'log_loss': log_loss,
-                  'roc_auc_score': roc_auc_score}
+        scorers = {'Logloss': log_loss,
+                   'Brier score': brier_loss,
+                   'AUC': roc_auc_score}
 
         # Define the search space for the hyperparameters
         space = {
@@ -579,9 +441,6 @@ class NaiveBayesModel():
                 self.configuration['tune_space']['var_smoothing'][1])
             }
 
-        # State the algorithm for the sequential search
-        tpe_algorithm = tpe.suggest
-
         # Generate a trials object to store the evaluation history
         bayes_trials = Trials()
 
@@ -589,7 +448,7 @@ class NaiveBayesModel():
         tuned_hyperparameters = fmin(fn=partial(objective, trials=bayes_trials,
                                                 space=space),
                                      space=space,
-                                     algo=tpe_algorithm,
+                                     algo=tpe.suggest,
                                      max_evals=self.configuration[
                                          'tune_evaluations'],
                                      trials=bayes_trials,
@@ -597,7 +456,10 @@ class NaiveBayesModel():
 
         return tuned_hyperparameters
 
-    def train(self):
+    def train(
+            self,
+            features,
+            labels):
         """
         Train the naive Bayes outcome prediction model.
 
@@ -607,11 +469,13 @@ class NaiveBayesModel():
             Instance of the class `GaussianNB`, which holds methods to make \
             predictions from the naive Bayes model.
         """
+
         # Log a message about the model fitting
         Datahub().logger.display_info("Fitting the model to the data ...")
 
         # Get the tuned hyperparameters from the Bayesian optimization
-        tuned_hyperparameters = self.tune_hyperparameters_with_bayes()
+        tuned_hyperparameters = self.tune_hyperparameters_with_bayes(features,
+                                                                     labels)
 
         # Create a dictionary with the model hyperparameters
         hyperparameters = {**tuned_hyperparameters}
@@ -619,8 +483,8 @@ class NaiveBayesModel():
         # Initialize the model from the hyperparameter dictionary
         prediction_model = GaussianNB(**hyperparameters)
 
-        # Fit the model with the data
-        prediction_model.fit(self.features, self.labels)
+        # Fit the model with the preprocessed data
+        prediction_model.fit(self.preprocessed_features, labels)
 
         return prediction_model, hyperparameters
 
@@ -640,6 +504,7 @@ class NaiveBayesModel():
         float or ndarray
             Floating-point label prediction or array of label predictions.
         """
+
         # Check if the feature array has only a single row
         if features.shape[0] == 1:
 
@@ -651,6 +516,8 @@ class NaiveBayesModel():
 
     def predict_oof(
             self,
+            features,
+            labels,
             oof_splits):
         """
         Predict the out-of-folds (OOF) labels using a stratified k-fold \
@@ -666,50 +533,235 @@ class NaiveBayesModel():
         ndarray
             Array with the out-of-folds label predictions.
         """
+
         # Log a message about the out-of-folds prediction
-        Datahub().logger.display_info("Performing {}-fold cross-validation to "
-                                      "yield out-of-folds predictions ..."
-                                      .format(str(oof_splits)))
+        Datahub().logger.display_info(f"Performing {oof_splits}-fold "
+                                      "cross-validation to yield "
+                                      "out-of-folds predictions ...")
 
         def compute_fold_labels(indices):
             """Compute the out-of-folds labels for a single fold."""
-            # Get the function parameters from the arguments
-            training_indices = indices[0]
-            validation_indices = indices[1]
 
             # Get the training and validation splits
-            train_validation_split = (self.features[training_indices],
-                                      self.features[validation_indices],
-                                      self.labels[training_indices])
+            train_validate_split = [features[indices[0]],
+                                    features[indices[1]],
+                                    labels[indices[0]]]
+
+            # Fit the preprocessor and transform the training features
+            train_validate_split[0] = preprocessor.fit_transform(
+                train_validate_split[0])
+
+            # Transform the validation features
+            train_validate_split[1] = preprocessor.transform(
+                train_validate_split[1])
 
             # Initialize the model from the hyperparameter dictionary
             prediction_model = GaussianNB(**self.hyperparameters)
 
             # Fit the model with the training split
-            prediction_model.fit(train_validation_split[0],
-                                 train_validation_split[2])
+            prediction_model.fit(train_validate_split[0],
+                                 train_validate_split[2])
 
-            # Predict the labels for the validation split
-            oof_fold_labels = prediction_model.predict_proba(
-                train_validation_split[1])[:, 1]
-
-            return validation_indices, oof_fold_labels
+            return (indices[1], prediction_model.predict_proba(
+                train_validate_split[1])[:, 1])
 
         # Initialize the out-of-folds label prediction array
-        oof_prediction = empty((len(self.labels),))
+        oof_prediction = empty((len(labels),))
 
         # Initialize the stratified k-fold cross-validator
-        cross_validator = StratifiedKFold(n_splits=oof_splits, random_state=4,
-                                          shuffle=True)
+        cross_validator = StratifiedKFold(
+            n_splits=oof_splits, random_state=4, shuffle=True)
 
-        # Compute the out-of-folds labels across all folds
-        oof_results = ThreadPoolExecutor().map(
-            compute_fold_labels,
-            ((train_indices, validation_indices)
-             for (train_indices, validation_indices)
-             in cross_validator.split(self.features, self.labels)))
+        # Initialize the data preprocessor
+        preprocessor = DataPreprocessor(self.preprocessing_steps,
+                                        verbose=False)
 
-        for result in oof_results:
-            oof_prediction[result[0]] = result[1]
+        # Compute the returns (indices and labels) across all folds
+        fold_returns = map(
+            compute_fold_labels, (
+                (training_indices, validation_indices)
+                for (training_indices, validation_indices)
+                in cross_validator.split(features, labels)))
+
+        # Loop over the fold returns
+        for fold_indices, fold_labels in fold_returns:
+
+            # Insert the fold labels at the fold indices
+            oof_prediction[fold_indices] = fold_labels
 
         return oof_prediction
+
+    def inspect(
+            self,
+            labels):
+        """."""
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Check if the model should be first-time/repeatedly inspected
+        if (self.model_label not in (*hub.model_inspections,)
+                or self.updated_model):
+
+            # Initialize the model inspector
+            inspector = ModelInspector(
+                model_name=self.model_label,
+                model_class='Naive Bayes')
+
+            # Run the model inspections
+            inspector.compute(model=self.prediction_model,
+                              features=self.preprocessed_features,
+                              labels=labels,
+                              number_of_repeats=30)
+
+            # Add the model inspector to the datahub
+            hub.model_inspections[self.model_label] = inspector
+
+    def evaluate(
+            self,
+            features,
+            labels,
+            oof_splits):
+        """."""
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Check if the model should be first-time/repeatedly evaluated
+        if (self.model_label not in (*hub.model_evaluations,)
+                or self.updated_model):
+
+            # Initialize the model evaluator
+            evaluator = ModelEvaluator(
+                model_name=self.model_label,
+                true_labels=labels)
+
+            # Run the model evaluations on training and OOF predictions
+            evaluator.compute(predicted_labels=(
+                self.predict(self.preprocessed_features),
+                self.predict_oof(features, labels, oof_splits)))
+
+            # Add the model evaluator to the datahub
+            hub.model_evaluations[self.model_label] = evaluator
+
+    def set_file_paths(
+            self,
+            base_path):
+        """
+        Set the paths for model, configuration and hyperparameter files.
+
+        Parameters
+        ----------
+        base_path : string
+            Base path from which to access the model files.
+        """
+
+        # Set the model, configuration and hyperparameter file paths
+        (self.model_path, self.configuration_path,
+         self.hyperparameter_path) = (''.join((base_path, '/', filename))
+                                      for filename in ('model.sav',
+                                                       'configuration.json',
+                                                       'hyperparameters.json'))
+
+    def read_model_from_file(self):
+        """
+        Read the naive Bayes outcome prediction model from the model file path.
+
+        Returns
+        -------
+        object of class `GaussianNB`
+            Instance of the class `GaussianNB`, which holds methods to make \
+            predictions from the naive Bayes model.
+        """
+
+        # Log a message about the model file reading
+        Datahub().logger.display_info(f"Reading '{self.model_label}' model "
+                                      "from file ...")
+
+        return load(open(self.model_path, 'rb'))
+
+    def write_model_to_file(
+            self,
+            prediction_model):
+        """
+        Write the naive Bayes outcome prediction model to the model file path.
+
+        Parameters
+        ----------
+        prediction_model : object of class `GaussianNB`
+            Instance of the class `GaussianNB`, which holds methods to make \
+            predictions from the naive Bayes model.
+        """
+
+        # Dump the model to the model file path
+        with open(self.model_path, 'wb') as file:
+            dump(prediction_model, file)
+
+    def read_configuration_from_file(self):
+        """
+        Read the configuration dictionary from the configuration file path.
+
+        Returns
+        -------
+        dict
+            Dictionary with information for the modeling, i.e., the dataset, \
+            the preprocessing steps, and the hyperparameter search space.
+        """
+
+        # Log a message about the configuration file reading
+        Datahub().logger.display_info(f"Reading '{self.model_label}' "
+                                      "configuration from file ...")
+
+        return jload(open(self.configuration_path, 'r', encoding='utf-8'))
+
+    def write_configuration_to_file(
+            self,
+            configuration):
+        """
+        Write the configuration dictionary to the configuration file path.
+
+        Parameters
+        ----------
+        configuration : dict
+            Dictionary with information for the modeling, i.e., the dataset, \
+            the preprocessing steps, and the hyperparameter search space.
+        """
+
+        # Dump the configuration dictionary to the configuration file path
+        with open(self.configuration_path, 'w', encoding='utf-8') as file:
+            jdump(configuration, file, sort_keys=False, indent=4)
+
+    def read_hyperparameters_from_file(self):
+        """
+        Read the naive Bayes outcome prediction model hyperparameters from \
+        the hyperparameter file path.
+
+        Returns
+        -------
+        dict
+            Dictionary with the hyperparameter names and values for the \
+            naive Bayes outcome prediction model.
+        """
+
+        # Log a message about the parameter file reading
+        Datahub().logger.display_info(f"Reading '{self.model_label}' "
+                                      "hyperparameters from file ...")
+
+        return jload(open(self.hyperparameter_path, 'r', encoding='utf-8'))
+
+    def write_hyperparameters_to_file(
+            self,
+            hyperparameters):
+        """
+        Write the hyperparameter dictionary to the hyperparameter file path.
+
+        Parameters
+        ----------
+        hyperparameters : dict
+            Dictionary with the hyperparameter names and values for the \
+            naive Bayes outcome prediction model.
+        """
+
+        # Dump the hyperparameter dictionary to the hyperparameter file path
+        with open(self.hyperparameter_path, 'w', encoding='utf-8') as file:
+            jdump(hyperparameters, file, sort_keys=False, indent=4)

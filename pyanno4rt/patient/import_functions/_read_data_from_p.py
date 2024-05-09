@@ -1,4 +1,4 @@
-"""Python (.p) data reading."""
+"""Python data reading."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -15,7 +15,7 @@ def read_data_from_p(path):
 
     Parameters
     ----------
-    path : string
+    path : str
         Path to the Python file.
 
     Returns

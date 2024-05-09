@@ -14,57 +14,58 @@ class BackProjection():
     """
     Backprojection superclass.
 
-    This class serves as an abstract superclass for different types of \
-    projections between the fluence and the dose. It provides a caching \
-    system and methods to get/compute the dose and the fluence gradient.
+    This class provides caching attributes, methods to get/compute the dose \
+    and the fluence gradient, and abstract methods to implement projection \
+    rules within the inheriting classes.
 
     Attributes
     ----------
-    __fluence_cache__ : ndarray
-        Cache array for the fluence vector.
-
     __dose__ : ndarray
-        Dose vector computed from ``__fluence_cache__``.
+        Current (cached) dose vector.
 
-    __dose_gradient_cache__ : ndarray
-        Cache array for the dose gradient.
+    __dose_gradient__ : ndarray
+        Current (cached) dose gradient.
+
+    __fluence__ : ndarray
+        Current (cached) fluence vector.
 
     __fluence_gradient__ : ndarray
-        Fluence gradient computed from ``__dose_gradient_cache__``.
+        Current (cached) fluence gradient.
     """
 
     def __init__(self):
 
-        # Initialize the instance attributes
-        self.__fluence_cache__ = array([])
+        # Initialize the dose, dose gradient, fluence and fluence gradient
         self.__dose__ = array([])
-        self.__dose_gradient_cache__ = array([])
+        self.__dose_gradient__ = array([])
+        self.__fluence__ = array([])
         self.__fluence_gradient__ = array([])
 
     def compute_dose(
             self,
             fluence):
         """
-        Return the (cached) dose vector.
+        Compute the dose vector from the fluence and update the cache.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence.
+            Values of the fluence vector.
 
         Returns
         -------
         ndarray
-            Values of the dose.
+            Values of the dose vector.
         """
-        # Check if the passed fluence is not equal to the cached fluence
-        if not array_equal(self.__fluence_cache__, fluence):
+
+        # Check if the cached fluence does not resemble the input
+        if not array_equal(self.__fluence__, fluence):
 
             # Compute the dose vector from the fluence
             self.__dose__ = self.compute_dose_result(fluence)
 
             # Update the cached fluence
-            self.__fluence_cache__ = fluence
+            self.__fluence__ = fluence
 
         return self.__dose__
 
@@ -72,30 +73,29 @@ class BackProjection():
             self,
             dose_gradient):
         """
-        Return the (cached) fluence gradient.
+        Compute the fluence gradient from the dose gradient and update the \
+        cache.
 
         Parameters
         ----------
         dose_gradient : ndarray
-            Values of the dose derivatives.
-
-        fluence : ndarray
-            Values of the fluence.
+            Values of the dose gradient.
 
         Returns
         -------
         ndarray
-            Values of the fluence derivatives.
+            Values of the fluence gradient.
         """
-        # Check if the passed dose gradient is not equal to the cached gradient
-        if not array_equal(self.__dose_gradient_cache__, dose_gradient):
+
+        # Check if the cached dose gradient does not resemble the input
+        if not array_equal(self.__dose_gradient__, dose_gradient):
 
             # Compute the fluence gradient from the dose gradient
             self.__fluence_gradient__ = self.compute_fluence_gradient_result(
                 dose_gradient)
 
             # Update the cached dose gradient
-            self.__dose_gradient_cache__ = dose_gradient
+            self.__dose_gradient__ = dose_gradient
 
         return self.__fluence_gradient__
 
@@ -106,8 +106,9 @@ class BackProjection():
         Returns
         -------
         ndarray
-            Values of the dose.
+            Values of the dose vector.
         """
+
         return self.__dose__
 
     def get_fluence_gradient(self):
@@ -117,8 +118,9 @@ class BackProjection():
         Returns
         -------
         ndarray
-            Values of the fluence derivatives.
+            Values of the fluence gradient.
         """
+
         return self.__fluence_gradient__
 
     @abstractmethod
@@ -126,17 +128,17 @@ class BackProjection():
             self,
             fluence):
         """
-        Compute the dose from the fluence.
+        Compute the dose projection from the fluence vector.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence.
+            Values of the fluence vector.
 
         Returns
         -------
         ndarray
-            Values of the dose.
+            Values of the dose vector.
         """
 
     @abstractmethod
@@ -144,18 +146,15 @@ class BackProjection():
             self,
             dose_gradient):
         """
-        Compute the fluence gradient from the dose gradient.
+        Compute the fluence gradient projection from the dose gradient.
 
         Parameters
         ----------
         dose_gradient : ndarray
-            Values of the dose derivatives.
-
-        fluence : ndarray
-            Values of the fluence.
+            Values of the dose gradient.
 
         Returns
         -------
         ndarray
-            Values of the fluence derivatives.
+            Values of the fluence gradient.
         """

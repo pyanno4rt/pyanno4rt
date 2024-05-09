@@ -6,7 +6,7 @@
 
 from jax import grad, jit
 import jax.numpy as jnp
-from scipy.sparse import csr_matrix
+from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -62,5 +62,5 @@ class DoseGradient(DosiomicFeature):
             # Set 'gradient_is_jitted' to True for one-time jitting
             DoseGradient.gradient_is_jitted = True
 
-        return csr_matrix(DoseGradient.gradient_function(
+        return lil_matrix(DoseGradient.gradient_function(
             axis, dose, *args).reshape(-1))

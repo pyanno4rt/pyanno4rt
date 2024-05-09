@@ -1,24 +1,25 @@
-"""PyPOP7 wrapper."""
+"""PyPop7 wrapper."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
-# Package: https://pypop.readthedocs.io/en/latest/
+# Reference: https://pypop.readthedocs.io/en/latest/
+# Paper: https://doi.org/10.48550/arXiv.2212.05652
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.solvers.algorithms import get_pypop7_configuration
+from pyanno4rt.optimization.solvers.configurations import configure_pypop7
 
 # %% Class definition
 
 
-class Pypop7Solver():
+class PyPop7Solver():
     """
-    PyPOP7 wrapper class.
+    PyPop7 wrapper class.
 
-    This class provides methods for wrapping the PyPOP7 solver, including the \
-    initialization of the algorithms from the arguments set in the treatment \
-    plan, the composition of a PyPOP7-compatible optimization problem, and a \
-    method to start the algorithms.
+    This class serves as a wrapper for the population-based optimization \
+    algorithms from the PyPop7 solver. It takes the problem structure, \
+    configures the selected algorithm, and defines the method to run the \
+    solver.
 
     Parameters
     ----------
@@ -28,9 +29,10 @@ class Pypop7Solver():
     number_of_constraints : int
         Number of constraints.
 
-    problem_instance : object of class `LexicographicOptimization`, \
-    `ParetoOptimization`, or `WeightedSumOptimization`
-        Instance of the optimization problem.
+    problem_instance : object of class \
+        :class:`~pyanno4rt.optimization.methods._lexicographic_optimization.LexicographicOptimization`\
+        :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`
+        The object representing the optimization problem.
 
     lower_variable_bounds : list
         Lower bounds on the decision variables.
@@ -44,22 +46,25 @@ class Pypop7Solver():
     upper_constraint_bounds : list
         Upper bounds on the constraints.
 
-    algorithm : string
+    algorithm : str
         Label for the solution algorithm.
 
-    max_iter : int
-        Maximum number of iterations taken for the solver to converge.
+    initial_fluence : ndarray
+        Initial fluence vector.
 
-    max_cpu_time : float
-        Maximum CPU time taken for the solver to converge.
+    max_iter : int
+        Maximum number of iterations.
+
+    tolerance : float
+        Precision goal for the objective function value.
 
     Attributes
     ----------
-    fun : object of class `function`
-        Function from the PyPOP7 library to be called with ``arguments``.
+    fun : object
+        The object representing the optimization algorithm.
 
     arguments : dict
-        Dictionary with the arguments used to configure ``fun``.
+        Dictionary with the function arguments.
     """
 
     def __init__(
@@ -72,26 +77,25 @@ class Pypop7Solver():
             lower_constraint_bounds,
             upper_constraint_bounds,
             algorithm,
+            initial_fluence,
             max_iter,
-            max_cpu_time):
+            tolerance):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing PyPOP7 solver with {} ..."
-                                      .format(algorithm))
+        Datahub().logger.display_info(
+            f"Initializing PyPop7 solver with {algorithm} algorithm ...")
 
-        # Get the algorithm from the argument
-        self.algorithm = algorithm
-
-        # Get the optimizer function and the arguments
-        self.fun, self.arguments = get_pypop7_configuration(
+        # Get the callable optimization function and its arguments
+        self.fun, self.arguments = configure_pypop7(
             number_of_variables, problem_instance, lower_variable_bounds,
-            upper_variable_bounds, algorithm, max_iter, max_cpu_time)
+            upper_variable_bounds, lower_constraint_bounds,
+            upper_constraint_bounds, algorithm, max_iter, tolerance)
 
-    def start(
+    def run(
             self,
             initial_fluence):
         """
-        Run the PyPOP7 solver.
+        Run the PyPop7 solver.
 
         Parameters
         ----------
@@ -103,21 +107,15 @@ class Pypop7Solver():
         ndarray
             Optimized fluence vector.
 
-        string
-            Description of the cause of termination.
+        str
+            Description for the cause of termination.
         """
-        # Enter the initial fluence into the problem
+
+        # Enter the initial fluence into the arguments dictionary
         self.arguments['options']['mean'] = initial_fluence
         self.arguments['options']['x'] = initial_fluence
 
-        # Print the initial statements
-        print("\n***************************************************")
-        print("Running the {} algorithm from the PyPOP7 package"
-              .format(self.algorithm.upper()))
-        print("***************************************************\n")
-
         # Solve the optimization problem
-        optimizer = self.fun(**self.arguments)
-        result = optimizer.optimize()
+        result = self.fun(**self.arguments).optimize()
 
         return result['best_so_far_x'], result['termination_signal']

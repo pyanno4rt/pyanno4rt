@@ -3,9 +3,8 @@ Datahub module.
 
 ==================================================================
 
-The module aims to provide a singleton implementation for centralizing the \
-data structures generated across the pyanno4rt program to efficiently manage \
-and distribute information units.
+This module aims to provide methods and classes to centralize and distribute \
+information units within each treatment plan.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

@@ -45,7 +45,7 @@ class DVHGraphPlotterMPL():
     # Set the class attributes for the visual interface integration
     category = "Treatment plan evaluation"
     name = "dvh_plotter"
-    label = "Dose-volume histogram (matplotlib)"
+    label = "Dose-volume histogram"
 
     def view(self):
         """Open the full-screen view on the dose-volume histogram."""
@@ -56,10 +56,10 @@ class DVHGraphPlotterMPL():
         hub.logger.display_info("Opening dose-volume histogram (DVH) ...")
 
         # Get the segmentation and histogram dictionaries from the datahub
-        histogram = hub.histogram
-        segments = tuple(segment for segment in (*histogram,)
+        dose_histogram = hub.dose_histogram
+        segments = tuple(segment for segment in (*dose_histogram,)
                          if segment != 'evaluation_points'
-                         and segment in histogram['display_segments'])
+                         and segment in dose_histogram['display_segments'])
 
         # Get the colormap
         colors = get_cmap('turbo')(linspace(0, 1.0, len(segments)))
@@ -78,8 +78,8 @@ class DVHGraphPlotterMPL():
         # Add the dose-volume histogram curve for each segment
         for segment in segments:
 
-            axis.plot(histogram['evaluation_points'],
-                      histogram[segment]['dvh_values'],
+            axis.plot(dose_histogram['evaluation_points'],
+                      dose_histogram[segment]['dvh_values'],
                       linewidth=1.7,
                       color=segment_styles[segment][0],
                       linestyle=segment_styles[segment][1])
@@ -95,11 +95,11 @@ class DVHGraphPlotterMPL():
         x_step = min(
             (0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100),
             key=lambda x: abs(ceil(
-                max(histogram['evaluation_points'])/x)-20))
+                max(dose_histogram['evaluation_points'])/x)-20))
 
         # Set x- and y-ticks
         axis.set_xticks(tuple(i*x_step for i in range(
-            int(ceil(max(histogram['evaluation_points']))/x_step)+1)))
+            int(ceil(max(dose_histogram['evaluation_points']))/x_step)+1)))
         axis.set_yticks(tuple(i*5 for i in range(21)))
 
         # Set the x- and y-limits

@@ -7,13 +7,14 @@
 from IPython import get_ipython
 from itertools import tee
 from matplotlib.pyplot import get_current_fig_manager, subplots
-from numpy import ceil, divide
+from numpy import array, ceil, divide
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.tools import (
-    get_objectives, get_objective_segments, sigmoid)
+    get_all_constraints, get_all_objectives, get_constraint_segments,
+    get_objective_segments, sigmoid)
 
 # %% Set options
 
@@ -51,7 +52,7 @@ class NTCPGraphPlotterMPL():
     # Set the class attributes for the visual interface integration
     category = "Optimization problem analysis"
     name = "ntcp_plotter"
-    label = "Iterative (N)TCP value plot (matplotlib)"
+    label = "Iterative (N)TCP value plot"
 
     def view(self):
         """Open the full-screen view on the iterative (N)TCP value plot."""
@@ -67,29 +68,53 @@ class NTCPGraphPlotterMPL():
 
         def get_labels_tracks_objectives():
             """Get the legend labels, the tracks, and the model objectives."""
+
             # Determine the segment/objective pairs
-            groups = tuple(group for group in tuple(zip(
+            groups_obj = tuple(group for group in tuple(zip(
                 get_objective_segments(segmentation),
-                get_objectives(segmentation)))
-                if group[1].DEPENDS_ON_MODEL and group[1].display)
+                get_all_objectives(segmentation)))
+                if group[1].RETURNS_OUTCOME and group[1].display)
 
             # Convert the pairs into an appropriate format
-            groups = ((group[0], str([group[0]]), group[1].name,
-                       group[1].weight, group[1])
-                      if group[1].link is None
-                      else ("[{}]".format(", ".join([group[0]]+group[1].link)),
-                            str([group[0]]+group[1].link), group[1].name,
-                            group[1].weight, group[1])
-                      for group in groups)
+            groups_obj = ((group[0], str([group[0]]), group[1].name,
+                           group[1].weight, group[1])
+                          if group[1].link is None
+                          else ("[{}]".format(", ".join([group[0]]+group[1].link)),
+                                str([group[0]]+group[1].link), group[1].name,
+                                group[1].weight, group[1])
+                          for group in groups_obj)
 
             # Multiplicate the pairs generator
-            groups = tee(groups, 3)
+            groups_obj = tee(groups_obj, 3)
+
+            # Determine the segment/constraint pairs
+            groups_cons = tuple(group for group in tuple(zip(
+                get_constraint_segments(segmentation),
+                get_all_constraints(segmentation)))
+                if group[1].RETURNS_OUTCOME and group[1].display)
+
+            # Convert the pairs into an appropriate format
+            groups_cons = ((group[0], str([group[0]]), group[1].name,
+                           group[1].weight, group[1])
+                           if group[1].link is None
+                           else ("[{}]".format(", ".join([group[0]]+group[1].link)),
+                                 str([group[0]]+group[1].link), group[1].name,
+                                 group[1].weight, group[1])
+                           for group in groups_cons)
+
+            # Multiplicate the pairs generator
+            groups_cons = tee(groups_cons, 3)
 
             return (tuple(r" $\rightarrow$ ".join((group[0], group[2]))
-                          for group in groups[0]),
+                          for group in groups_obj[0])
+                    + tuple(r" $\rightarrow$ ".join((group[0], group[2]))
+                            for group in groups_cons[0]),
                     tuple(divide(tracker[group[1]+'-'+group[2]], group[3])
-                          for group in groups[1]),
-                    tuple(group[4] for group in groups[2]))
+                          for group in groups_obj[1])
+                    + tuple(array(tracker[group[1]+'-'+group[2]])
+                            for group in groups_cons[1]),
+                    tuple(group[4] for group in groups_obj[2])
+                    + tuple(group[4] for group in groups_cons[2]))
 
         # Determine the step length on the x-axis
         x_step = min(
@@ -106,13 +131,33 @@ class NTCPGraphPlotterMPL():
         # Loop over the number of tracks
         for i, _ in enumerate(tracks):
 
-            # Check if the track belongs to the DT, EGB, KNN, NB or RF model
-            if any(model_name in labels[i] for model_name in (
-                    'Decision Tree', 'Extreme Gradient Boosting',
-                    'K-Nearest Neighbors', 'Naive Bayes', 'Random Forest')):
+            # Check if the track belongs to the LKB model
+            if 'Lyman-Kutcher-Burman NTCP' in labels[i]:
 
                 # Plot the track
                 axis.plot(range(1, tracks[i].size+1), tracks[i], '.-')
+
+            # Check if the track belongs to the LQ Poisson TCP model
+            if 'LQ Poisson TCP' in labels[i]:
+
+                # Plot the track
+                axis.plot(range(1, tracks[i].size+1), -tracks[i], '.-')
+
+            # Check if the track belongs to the DT, EGB, KNN, NB or RF model
+            if any(model_name in labels[i] for model_name in (
+                    'Decision Tree', 'K-Nearest Neighbors', 'Naive Bayes',
+                    'Random Forest')):
+
+                # Check if the model predicts NTCP
+                if 'NTCP' in model_objectives[i].name:
+
+                    # Plot the track
+                    axis.plot(range(1, tracks[i].size+1), tracks[i], '.-')
+
+                else:
+
+                    # Plot the track
+                    axis.plot(range(1, tracks[i].size+1), -tracks[i], '.-')
 
             # Check if the track belongs to the LR or NN model
             if any(model_name in labels[i] for model_name in (

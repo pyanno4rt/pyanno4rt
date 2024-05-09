@@ -1,29 +1,20 @@
 """Pymoo wrapper."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
-# Package: https://pymoo.org/
+# Reference: https://pymoo.org/
 
 # %% External package import
 
-from numpy import array, clip, mean
-from numpy.random import uniform
-
-from pymoo.algorithms.moo.nsga3 import NSGA3
-from pymoo.core.problem import ElementwiseProblem
-from pymoo.core.population import Population
-from pymoo.operators.crossover.sbx import SBX
-from pymoo.operators.mutation.pm import PM
-from pymoo.optimize import minimize
-from pymoo.termination.default import DefaultMultiObjectiveTermination
-from pymoo.termination.robust import RobustTermination
-from pymoo.util.display.column import Column
-from pymoo.util.display.output import Output
-from pymoo.util.ref_dirs import get_reference_directions
+from numpy import mean
+from pymoo.core.callback import Callback
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import get_objectives
+from pyanno4rt.optimization.solvers.configurations import configure_pymoo
+from pyanno4rt.tools import (
+    get_all_constraints, get_all_objectives, get_constraint_segments,
+    get_objective_segments)
 
 # %% Class definition
 
@@ -32,10 +23,10 @@ class PymooSolver():
     """
     Pymoo wrapper class.
 
-    This class provides methods for wrapping the Pymoo solver, including the \
-    initialization of the algorithms from the arguments set in the treatment \
-    plan, the composition of a Pymoo-compatible optimization problem, the \
-    algorithm and termination instances, and a method to start the algorithms.
+    This class serves as a wrapper for the multi-objective (Pareto) \
+    optimization algorithms from the Pymoo solver. It takes the problem \
+    structure, configures the selected algorithm, and defines the method to \
+    run the solver.
 
     Parameters
     ----------
@@ -45,9 +36,9 @@ class PymooSolver():
     number_of_constraints : int
         Number of constraints.
 
-    problem_instance : object of class `LexicographicOptimization`, \
-    `ParetoOptimization`, or `WeightedSumOptimization`
-        Instance of the optimization problem.
+    problem_instance : object of class \
+        :class:`~pyanno4rt.optimization.methods._pareto_optimization.ParetoOptimization`\
+        The object representing the (Pareto) optimization problem.
 
     lower_variable_bounds : list
         Lower bounds on the decision variables.
@@ -61,27 +52,32 @@ class PymooSolver():
     upper_constraint_bounds : list
         Upper bounds on the constraints.
 
-    algorithm : string
+    algorithm : str
         Label for the solution algorithm.
 
-    max_iter : int
-        Maximum number of iterations taken for the solver to converge.
+    initial_fluence : ndarray
+        Initial fluence vector.
 
-    max_cpu_time : float
-        Maximum CPU time taken for the solver to converge.
+    max_iter : int
+        Maximum number of iterations.
+
+    tolerance : float
+        Precision goal for the objective function value.
 
     Attributes
     ----------
-    problem : object of class `PymooProblem`
-        Instance of the class `PymooProblem`, which represents the multi-\
-        objective optimization problem.
+    fun : callable
+        Minimization function from the Pymoo library.
 
-    algorithm : object of class `NSGA3`
-        Instance of the class `NSGA3`, which represents the solution algorithm.
+    algorithm_object : object of class from :mod:`pymoo.algorithms`
+        The object representing the solution algorithm.
 
-    termination : object of class `DefaultMultiObjectiveTermination`
-        Instance of the class `DefaultMultiObjectiveTermination`, which \
-        represents the problem termination criteria.
+    problem : object of class from :mod:`pymoo.core.problem`
+        The object representing the Pymoo-compatible structure of the \
+        multi-objective (Pareto) optimization problem.
+
+    termination : object of class from :mod:`pymoo.termination`
+        The object representing the termination criterion.
     """
 
     def __init__(
@@ -94,71 +90,29 @@ class PymooSolver():
             lower_constraint_bounds,
             upper_constraint_bounds,
             algorithm,
+            initial_fluence,
             max_iter,
-            max_cpu_time):
+            tolerance):
 
         # Initialize the datahub
         hub = Datahub()
 
         # Log a message about the initialization of the class
-        hub.logger.display_info("Initializing Pymoo solver with {} ..."
-                                .format(algorithm))
+        hub.logger.display_info(
+            f"Initializing Pymoo solver with {algorithm} algorithm ...")
 
-        # Initialize the Pymoo problem instance
-        self.problem = PymooProblem(
-            number_of_variables=number_of_variables,
-            number_of_objectives=len(get_objectives(hub.segmentation)),
-            problem_instance=problem_instance,
-            lower_variable_bounds=lower_variable_bounds,
-            upper_variable_bounds=[1e12]*len(upper_variable_bounds))
+        # Get the callable optimization function and the solver objects
+        self.fun, self.algorithm_object, self.problem, self.termination = (
+            configure_pymoo(
+                number_of_variables, len(get_all_objectives(hub.segmentation)),
+                number_of_constraints, problem_instance, lower_variable_bounds,
+                upper_variable_bounds, lower_constraint_bounds,
+                upper_constraint_bounds, algorithm, initial_fluence, max_iter,
+                tolerance))
 
-        # Set the number of points to evaluate
-        number_of_points = 100
-
-        # Initialize and evaluate the initial population
-        initial_population = Population.new(
-            "X", clip(uniform(
-                low=0, high=0.5323,
-                size=(number_of_points, number_of_variables)),
-                a_min=0, a_max=None))
-
-        # Get the reference directions from the Riesz s-Energy
-        reference_directions = get_reference_directions(
-            "energy", len(get_objectives(hub.segmentation)), number_of_points,
-            seed=1)
-
-        # Initialize the algorithm instance
-        if algorithm == 'NSGA3':
-            self.algorithm = NSGA3(ref_dirs=reference_directions,
-                                   pop_size=number_of_points,
-                                   n_offsprings=number_of_points,
-                                   sampling=initial_population,
-                                   crossover=SBX(prob=0.9, eta=20),
-                                   mutation=PM(prob=1/number_of_variables,
-                                               eta=20),
-                                   eliminate_duplicates=True)
-
-        # Initialize the termination instance
-        self.termination = RobustTermination(
-            DefaultMultiObjectiveTermination(
-                ftol=1e-3, n_max_gen=max_iter), period=30)
-
-    def __str__(self):
-        """
-        Print the class attributes.
-
-        Returns
-        -------
-        string
-            Class attributes as a formatted string.
-        """
-        return '\n'.join(("Pymoo wrapper class attributes:",
-                          "----------------------------------",
-                          str((*self.__dict__,))))
-
-    def start(
+    def run(
             self,
-            initial_fluence):
+            _):
         """
         Run the Pymoo solver.
 
@@ -169,132 +123,82 @@ class PymooSolver():
 
         Returns
         -------
-        result.X
-            Optimized fluence vector.
+        ndarray
+            Optimized (Pareto) set of fluence vectors.
 
-        result.message
-            Description of the cause of termination.
+        str
+            Description for the cause of termination.
         """
+
         # Solve the optimization problem
-        result = minimize(self.problem, self.algorithm, self.termination,
-                          seed=1, save_history=False, verbose=True,
-                          output=CustomOutput(
-                              len(get_objectives(Datahub().segmentation))))
+        result = self.fun(self.problem, self.algorithm_object,
+                          self.termination, seed=1, save_history=False,
+                          verbose=False, callback=CustomCallback())
 
         return result.X, result.message
 
 
-class PymooProblem(ElementwiseProblem):
+class CustomCallback(Callback):
     """
-    Pymoo optimization problem class.
-
-    Parameters
-    ----------
-    number_of_variables : int
-        Number of decision variables.
-
-    number_of_objectives : int
-        Number of objective functions.
-
-    problem_instance : object of class `LexicographicOptimization`, \
-    `ParetoOptimization`, or `WeightedSumOptimization`
-        Instance of the optimization problem.
-
-    lower_variable_bounds : ndarray
-        Lower bounds on the decision variables.
-
-    upper_variable_bounds : ndarray
-        Upper bounds on the decision variables.
+    Custom callback object for the Pymoo solver.
 
     Attributes
     ----------
-    problem_instance : object of class `LexicographicOptimization`, \
-    `ParetoOptimization`, or `WeightedSumOptimization`
-        See 'Parameters'.
+    objective_names : tuple
+        Tuple with the compound names of the objective functions.
+
+    constraint_names : tuple
+        Tuple with the compound names of the constraint functions.
     """
 
-    def __init__(
-            self,
-            number_of_variables,
-            number_of_objectives,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds):
-
-        # Call the superclass constructor
-        super().__init__(n_var=number_of_variables,
-                         n_obj=number_of_objectives,
-                         xl=array(lower_variable_bounds),
-                         xu=array(upper_variable_bounds))
-
-        # Get the problem instance from the argument
-        self.problem_instance = problem_instance
-
-    def _evaluate(
-            self,
-            x,
-            out,
-            *args,
-            **kwargs):
-        """
-        Evaluate the set of objective functions.
-
-        Parameters
-        ----------
-        x : ndarray
-            Values of the decision variables.
-
-        out : dict
-            Dictionary with the objective and constraint values.
-
-        args : tuple
-            Non-keyworded (optional) input arguments.
-
-        kwargs : tuple
-            Keyworded (optional) input arguments.
-        """
-        # Insert the vector of objective values into the dictionary
-        # value = self.problem_instance.objective(x)
-        # alpha = 0.1
-        # out['F'] = [(1-alpha)*val + (alpha/len(value))*sum(value)
-        #             for val in value]
-        out['F'] = self.problem_instance.objective(x)
-
-        # Insert the vector of constraint values into the dictionary
-        out['G'] = self.problem_instance.constraint(x)
-
-
-class CustomOutput(Output):
-    """."""
-
-    def __init__(
-            self,
-            number_of_objectives):
+    def __init__(self):
 
         # Call the superclass constructor
         super().__init__()
 
-        # Get the instance attribute from the argument
-        self.number_of_objectives = number_of_objectives
+        # Get the objective names
+        self.objective_names = tuple(
+            f"mod. {objective.name}-{segment}" for objective, segment in zip(
+                get_all_objectives(Datahub().segmentation),
+                get_objective_segments(Datahub().segmentation)))
 
-        # Set the variables for the output columns
-        for n in range(self.number_of_objectives):
-            name = ''.join(('fmean_', str(n+1)))
-            setattr(self, name, Column(name, width=8))
-            self.columns.append(getattr(self, name))
+        # Get the constraint names
+        self.constraint_names = tuple(
+            f"{constraint.name}-{segment}" for constraint, segment in zip(
+                get_all_constraints(Datahub().segmentation),
+                get_constraint_segments(Datahub().segmentation)))
 
-    def update(
+    def notify(
             self,
             algorithm):
-        """."""
-        # Update the algorithm
-        super().update(algorithm)
+        """
+        Log the intermediate results after each iteration.
 
-        # Get the current means for all objective space dimension
-        objective_mean_per_dimension = mean(algorithm.pop.get("F"), axis=0)
+        Parameters
+        ----------
+        algorithm : object of class from :mod:`pymoo.algorithms`
+            The object representing the solution algorithm.
+        """
 
-        # Set the values for the output columns
-        for n in range(self.number_of_objectives):
-            name = ''.join(('fmean_', str(n+1)))
-            attr = getattr(self, name)
-            attr.set(objective_mean_per_dimension[n])
+        # Get the output string from the objective data
+        output_string = ', '.join((
+            f"{round(value, 4)} ({name})" for value, name in zip(
+                mean(algorithm.pop.get("F"), axis=0), self.objective_names)))
+
+        # Check if any constraints have been passed
+        if len(self.constraint_names) > 0:
+
+            # Get the mean values for each constraint
+            values = mean(algorithm.pop.get("G"), axis=0)
+
+            # Get the constraint value string
+            add_string = ', '.join((
+                f"{[round(values[i], 4), round(values[i+1], 4)]} ({name})"
+                for i, name in enumerate(self.constraint_names)))
+
+            # Add the constraint value string to the output string
+            output_string = f"{output_string}, {add_string}"
+
+        # Log a message about the intermediate mean objective function values
+        Datahub().logger.display_info(
+            f"At generation {algorithm.n_gen}: {output_string}")
