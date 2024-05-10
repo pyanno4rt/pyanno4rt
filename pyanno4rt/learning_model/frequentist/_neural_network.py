@@ -15,8 +15,7 @@ from numpy import empty
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
 
-from tensorflow.compat.v2.keras.callbacks import (EarlyStopping,
-                                                  ReduceLROnPlateau)
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 # %% Internal package import
 
@@ -219,11 +218,14 @@ class NeuralNetworkModel():
         self.hyperparameter_path = None
 
         # Create the configuration dictionary with the modeling information
-        self.configuration = {'data': [dataset['feature_values'].shape[0],
-                                       dataset['feature_names'],
+        self.configuration = {'data': [dataset['feature_names'],
+                                       dataset['feature_values'].shape[0],
+                                       dataset['label_name'],
                                        dataset['label_values'].shape[0],
-                                       dataset['label_names']],
-                              'label_viewpoint': dataset['label_viewpoint'],
+                                       dataset['time_variable_name'],
+                                       dataset['time_variable_name']],
+                              'label_viewpoint': dataset.get(
+                                  'label_viewpoint'),
                               'label_bounds': dataset['label_bounds'],
                               'preprocessing_steps': preprocessing_steps,
                               'architecture': architecture,
@@ -826,10 +828,10 @@ class NeuralNetworkModel():
         if features.shape[0] == 1:
 
             # Return a single label prediction value
-            return predictor(features)[0][0]
+            return predictor(features)[0][0].numpy()
 
         # Otherwise, return an array with label predictions
-        return predictor(features)[:, 0]
+        return predictor(features)[:, 0].numpy()
 
     def predict_oof(
             self,

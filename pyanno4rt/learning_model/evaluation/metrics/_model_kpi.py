@@ -11,7 +11,7 @@ from sklearn.metrics import (accuracy_score, brier_score_loss,
                              cohen_kappa_score, f1_score, hamming_loss,
                              jaccard_score, matthews_corrcoef, precision_score,
                              recall_score, roc_auc_score)
-from tensorflow.compat.v2.keras.losses import binary_crossentropy
+from tensorflow.keras.losses import binary_crossentropy
 
 # %% Internal package import
 

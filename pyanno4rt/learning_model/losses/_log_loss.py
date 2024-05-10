@@ -5,7 +5,7 @@
 # %% External package import
 
 from tensorflow.compat.v2 import cast, float64
-from tensorflow.compat.v2.keras.losses import binary_crossentropy
+from tensorflow.keras.losses import binary_crossentropy
 
 # %% Function definition
 

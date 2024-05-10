@@ -5,9 +5,9 @@
 # %% External package import
 
 from numpy import log
-from tensorflow.compat.v2.keras import Input, Model
-from tensorflow.compat.v2.keras.initializers import Constant
-from tensorflow.compat.v2.keras.layers import (
+from tensorflow.keras import Input, Model
+from tensorflow.keras.initializers import Constant
+from tensorflow.keras.layers import (
     BatchNormalization, Dense, Dropout)
 from tensorflow.keras.constraints import non_neg
 
@@ -47,7 +47,7 @@ def build_iocnn(
         input-output convex neural network architecture.
     """
     # Initialize the network input
-    inputs = Input(input_shape, name='input')
+    inputs = Input((input_shape,), name='input')
 
     # Define the input layer by dropout and dense layers
     hidden = BatchNormalization()(inputs)
@@ -118,7 +118,7 @@ def build_standard_nn(
         standard neural network architecture.
     """
     # Initialize the network input
-    inputs = Input(input_shape, name='input')
+    inputs = Input((input_shape,), name='input')
 
     # Define the input layer by normalization, dropout and dense layers
     hidden = BatchNormalization()(inputs)

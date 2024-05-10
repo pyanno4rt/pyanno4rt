@@ -41,15 +41,6 @@
 		</ul>
 	</li>
 	<br>
-	<li> <b>Fluence vector initialization strategies</b>
-		<br>
-		<ul> 
-			<li> Data medoid initialization </li>
-			<li> Tumor coverage initialization </li>
-			<li> Warm start initialization </li>
-		</ul>
-	</li>
-	<br>
 	<li> <b>Multi-objective treatment plan optimization</b>
 		<br>
 		<ul>
@@ -57,6 +48,13 @@
 				<ul>
 					<li> Constant RBE projection </li>
 					<li> Dose projection </li>
+				</ul>
+			</li>
+			<li> Fluence initialization strategies
+				<ul>
+					<li> Data medoid initialization </li>
+					<li> Tumor coverage initialization </li>
+					<li> Warm start initialization </li>
 				</ul>
 			</li>
 			<li> Optimization methods
@@ -166,21 +164,21 @@ from pyanno4rt.gui import GraphicalUserInterface
 <h3>Dependencies</h3>
 
 <ul>
-	<li> python (>=3.10, <3.12)
+	<li> python (>=3.10, <3.11)
 	<li> proxmin (>=0.6.12) </li>
 	<li> absl-py (>=2.1.0) </li>
 	<li> pydicom (>=2.4.4) </li>
 	<li> scikit-image (>=0.23.2) </li>
 	<li> h5py (>=3.11.0) </li>
-	<li> pandas (>=2.2.1) </li>
+	<li> pandas (>=2.2.2) </li>
 	<li> fuzzywuzzy (>=0.18.0) </li>
-	<li> jax (>=0.4.27) </li>
-	<li> jaxlib (>=0.4.27) </li>
+	<li> jax (>=0.4.28) </li>
+	<li> jaxlib (>=0.4.28) </li>
 	<li> numba (>=0.59.1) </li>
 	<li> python-levenshtein (>=0.25.1) </li>
 	<li> scikit-learn (>=1.4.2) </li>
-	<li> tensorflow-io-gcs-filesystem (==0.34.0) </li>
-	<li> tensorflow (==2.14.0) </li>
+	<li> tensorflow (==2.11.1) </li>
+	<li> tensorflow-io-gcs-filesystem (==0.31.0) </li>
 	<li> hyperopt (>=0.2.7) </li>
 	<li> pymoo (>=0.6.1.1) </li>
 	<li> pyqt5-qt5 (==5.15.2) </li>
@@ -190,7 +188,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> seaborn (>=0.13.2) </li>
 	<li> pypop7 (>=0.0.79) </li>
 </ul>
-We are using Python version 3.11.6 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>
+We are using Python version 3.10.13 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>
 
 # Development
 

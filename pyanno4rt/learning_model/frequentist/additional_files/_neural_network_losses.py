@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from tensorflow.compat.v2.keras.losses import (
+from tensorflow.keras.losses import (
     BinaryCrossentropy, BinaryFocalCrossentropy, KLDivergence)
 
 # %% Loss map

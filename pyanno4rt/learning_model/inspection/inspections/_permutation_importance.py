@@ -10,9 +10,9 @@ from sklearn.base import clone
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
-from tensorflow.compat.v2.keras.callbacks import (
+from tensorflow.keras.callbacks import (
     EarlyStopping, ReduceLROnPlateau)
-from tensorflow.compat.v2.keras.models import clone_model
+from tensorflow.keras.models import clone_model
 
 # %% Internal package import
 

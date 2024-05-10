@@ -12,12 +12,6 @@
 [![GitHub Contributors](https://img.shields.io/github/contributors/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/graphs/contributors)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-<p align="center">
-<img src="https://github.com/pyanno4rt/pyanno4rt/blob/develop/logo/logo_white.png?raw=true" alt="logo" width="600">
-</p>
-
-<h3 align='center'>Python-based Advanced Numerical Nonlinear Optimization for Radiotherapy</h3>
-
 ---
 
 # General information
@@ -43,15 +37,6 @@
 		</ul>
 	</li>
 	<br>
-	<li> <b>Fluence vector initialization strategies</b>
-		<br>
-		<ul> 
-			<li> Data medoid initialization </li>
-			<li> Tumor coverage initialization </li>
-			<li> Warm start initialization </li>
-		</ul>
-	</li>
-	<br>
 	<li> <b>Multi-objective treatment plan optimization</b>
 		<br>
 		<ul>
@@ -59,6 +44,13 @@
 				<ul>
 					<li> Constant RBE projection </li>
 					<li> Dose projection </li>
+				</ul>
+			</li>
+			<li> Fluence initialization strategies
+				<ul>
+					<li> Data medoid initialization </li>
+					<li> Tumor coverage initialization </li>
+					<li> Warm start initialization </li>
 				</ul>
 			</li>
 			<li> Optimization methods

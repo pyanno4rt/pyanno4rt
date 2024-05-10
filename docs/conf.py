@@ -10,10 +10,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import inspect
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
-
+sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
@@ -32,7 +32,7 @@ extensions = [
 	'sphinx.ext.autodoc',
 	'autoapi.extension',
 	'sphinx.ext.napoleon',
-	'sphinx.ext.viewcode',
+	'sphinx.ext.linkcode',
 	'sphinx_favicon',
 	'sphinx_last_updated_by_git'
 ]
@@ -80,8 +80,6 @@ napoleon_include_init_with_doc = False
 
 # -- AutoAPI configuration ---------------------------------------------------
 
-autodoc_typehints = 'signature'
-
 autoapi_type = 'python'
 autoapi_dirs = ['../pyanno4rt']
 autoapi_template_dir = '_templates/autoapi'
@@ -113,6 +111,41 @@ def prepare_jinja_env(jinja_env) -> None:
     jinja_env.tests["contains"] = contains
 
 autoapi_prepare_jinja_env = prepare_jinja_env
+
+# Options for the linkcode extension
+# ----------------------------------
+# Resolve function
+# This function is used to populate the (source) links in the API
+def linkcode_resolve(domain, info):
+
+    import pyanno4rt
+
+    def find_source():
+        obj = sys.modules[info['module']]
+        for part in info['fullname'].split('.'):
+            try:
+                obj = getattr(obj, part)
+            except:
+                return None
+        if inspect.isclass(obj) or inspect.isfunction(obj):
+            sl = inspect.getsourcelines(obj)
+            if sl:
+                if obj.__module__ == 'builtins':
+                    return obj.__qualname__, sl[1], sl[1] + len(sl[0])-1
+                return obj.__module__,  sl[1], sl[1] + len(sl[0])-1
+            return None
+        else:
+            return None
+
+    if domain != 'py' or info['module'] in ['', '_custom_styles']:
+        return None
+
+    source = find_source()
+    if source:
+    	filename = source[0].replace('.', '/') + '.py'
+    	return f"https://github.com/pyanno4rt/pyanno4rt/blob/master/{filename}#L{source[1]}-L{source[2]}"
+    
+    return None
 
 # Custom role for labels used in auto_summary() tables.
 rst_prolog = """
