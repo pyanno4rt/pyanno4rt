@@ -1,38 +1,36 @@
-"""Neural network outcome prediction model."""
+"""Neural network model."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
 # %% External package import
 
-from json import dump as jdump
-from json import load as jload
+from json import dump as jdump, load as jload
 from os.path import exists
 
 from functools import partial
 from h5py import File
 from hyperopt import fmin, hp, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
-from numpy import empty
-from sklearn.model_selection import StratifiedKFold
+from numpy import array, empty, where
 from sklearn.metrics import roc_auc_score
-
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model.preprocessing import DataPreprocessor
-from pyanno4rt.learning_model.frequentist.additional_files import (
-    build_iocnn, build_standard_nn, loss_map, optimizer_map)
-from pyanno4rt.learning_model.losses import brier_loss, log_loss
-from pyanno4rt.learning_model.inspection import ModelInspector
 from pyanno4rt.learning_model.evaluation import ModelEvaluator
+from pyanno4rt.learning_model.frequentist.addons import (
+    build_iocnn, build_standard_nn, loss_map, optimizer_map)
+from pyanno4rt.learning_model.inspection import ModelInspector
+from pyanno4rt.learning_model.losses import loss_map as score_loss_map
+from pyanno4rt.learning_model.preprocessing import DataPreprocessor
+from pyanno4rt.tools import compare_dictionaries
 
 # %% Class definition
 
 
 class NeuralNetworkModel():
     """
-    Neural network outcome prediction model class.
+    Neural network model class.
 
     This class enables building an individual preprocessing pipeline, fit the \
     neural network model from the input data, inspect the model, make \
@@ -198,10 +196,8 @@ class NeuralNetworkModel():
             tune_space,
             tune_evaluations,
             tune_score,
-            tune_splits,
             inspect_model,
             evaluate_model,
-            oof_splits,
             display_options):
 
         # Initialize the datahub
@@ -218,70 +214,60 @@ class NeuralNetworkModel():
         self.hyperparameter_path = None
 
         # Create the configuration dictionary with the modeling information
-        self.configuration = {'data': [dataset['feature_names'],
-                                       dataset['feature_values'].shape[0],
-                                       dataset['label_name'],
-                                       dataset['label_values'].shape[0],
-                                       dataset['time_variable_name'],
-                                       dataset['time_variable_name']],
-                              'label_viewpoint': dataset.get(
-                                  'label_viewpoint'),
-                              'label_bounds': dataset['label_bounds'],
-                              'preprocessing_steps': preprocessing_steps,
-                              'architecture': architecture,
-                              'max_hidden_layers': max_hidden_layers,
-                              'tune_space': {
-                                  'input_neuron_number': tune_space.get(
-                                      'input_neuron_number',
-                                      [2**x for x in range(1, 12)]),
-                                  'input_activation': tune_space.get(
-                                      'input_activation',
-                                      ['elu', 'gelu', 'leaky_relu', 'linear',
-                                       'relu', 'softmax', 'softplus',
-                                       'swish']),
-                                  'hidden_neuron_number': tune_space.get(
-                                      'hidden_neuron_number',
-                                      [2**x for x in range(1, 12)]),
-                                  'hidden_activation': tune_space.get(
-                                      'hidden_activation',
-                                      ['elu', 'gelu', 'leaky_relu', 'linear',
-                                       'relu', 'softmax', 'softplus',
-                                       'swish']),
-                                  'input_dropout_rate': tune_space.get(
-                                      'input_dropout_rate',
-                                      [0.0, 0.1, 0.25, 0.5, 0.75]),
-                                  'hidden_dropout_rate': tune_space.get(
-                                      'input_dropout_rate',
-                                      [0.0, 0.1, 0.25, 0.5, 0.75]),
-                                  'batch_size': tune_space.get(
-                                      'batch_size', [4, 8, 16, 32]),
-                                  'learning_rate': tune_space.get(
-                                      'learning_rate', [1e-5, 1e-2]),
-                                  'optimizer': tune_space.get(
-                                      'optimizer', ['Adam', 'Ftrl', 'SGD']),
-                                  'loss': tune_space.get(
-                                      'loss', ['BCE', 'FocalBCE', 'KLD'])},
-                              'tune_evaluations': tune_evaluations,
-                              'tune_score': tune_score,
-                              'tune_splits': tune_splits}
+        self.configuration = {
+            'feature_names': dataset['feature_names'],
+            'feature_values': dataset['feature_values'],
+            'label_name': dataset['label_name'],
+            'label_values': dataset['label_values'],
+            'time_variable_name': dataset['time_variable_name'],
+            'time_variable_values': dataset['time_variable_values'],
+            'tune_folds': dataset['tune_folds'],
+            'oof_folds': dataset['oof_folds'],
+            'label_bounds': dataset['label_bounds'],
+            'label_viewpoint': dataset.get('label_viewpoint'),
+            'preprocessing_steps': preprocessing_steps,
+            'architecture': architecture,
+            'max_hidden_layers': max_hidden_layers,
+            'tune_space': {
+                'input_neuron_number': tune_space.get(
+                    'input_neuron_number', [2**x for x in range(1, 12)]),
+                'input_activation': tune_space.get(
+                    'input_activation', [
+                        'elu', 'gelu', 'leaky_relu', 'linear', 'relu',
+                        'softmax', 'softplus', 'swish']),
+                'hidden_neuron_number': tune_space.get(
+                    'hidden_neuron_number', [2**x for x in range(1, 12)]),
+                'hidden_activation': tune_space.get(
+                    'hidden_activation', [
+                        'elu', 'gelu', 'leaky_relu', 'linear', 'relu',
+                        'softmax', 'softplus', 'swish']),
+                'input_dropout_rate': tune_space.get(
+                    'input_dropout_rate', [0.0, 0.1, 0.25, 0.5, 0.75]),
+                'hidden_dropout_rate': tune_space.get(
+                    'input_dropout_rate', [0.0, 0.1, 0.25, 0.5, 0.75]),
+                'batch_size': tune_space.get('batch_size', [4, 8, 16, 32]),
+                'learning_rate': tune_space.get('learning_rate', [1e-5, 1e-2]),
+                'optimizer': tune_space.get(
+                    'optimizer', ['Adam', 'Ftrl', 'SGD']),
+                'loss': tune_space.get('loss', ['BCE', 'FocalBCE', 'KLD'])},
+            'tune_evaluations': tune_evaluations,
+            'tune_score': tune_score}
 
         # Initialize the data preprocessor
         self.preprocessor = DataPreprocessor(preprocessing_steps)
 
         # Fit the data preprocessor and transform the input feature values
-        self.preprocessed_features = self.preprocessor.fit_transform(
-            dataset['feature_values'])
-
-        # Set the preprocessed input label values
-        self.preprocessed_labels = dataset['label_values']
+        self.preprocessed_features, self.preprocessed_labels = (
+            self.preprocessor.fit_transform(
+                dataset['feature_values'], dataset['label_values']))
 
         # Initialize the boolean flag to indicate model updates
         self.updated_model = False
 
-        # Get the predictive neural network model and its hyperparameters
+        # Get the logistic regression model and its hyperparameters
         self.prediction_model, self.hyperparameters = (
-            self.get_prediction_model(dataset['feature_values'],
-                                      dataset['label_values']))
+            self.get_prediction_model(
+                dataset['feature_values'], dataset['label_values']))
 
         # Get the optimizable neural network model
         self.optimization_model = self.get_optimization_model(
@@ -300,15 +286,23 @@ class NeuralNetworkModel():
         # Check if the model should be inspected
         if inspect_model:
 
+            # Initialize the model inspector
+            self.inspector = ModelInspector(model_label)
+
             # Inspect the model
-            self.inspect(dataset['label_values'])
+            self.inspect(
+                dataset['feature_values'], dataset['label_values'],
+                dataset['oof_folds'])
 
         # Check if the model should be evaluated
         if evaluate_model:
 
+            # Initialize the model evaluator
+            self.evaluator = ModelEvaluator(model_label)
+
             # Evaluate the model
-            self.evaluate(dataset['feature_values'], dataset['label_values'],
-                          oof_splits)
+            self.evaluate(
+                dataset['feature_values'], dataset['label_values'])
 
         # Update the display options in the datahub
         hub.model_instances[self.model_label]['display_options'] = (
@@ -331,7 +325,7 @@ class NeuralNetworkModel():
             Array of transformed feature values.
         """
 
-        return self.preprocessor.transform(features)
+        return self.preprocessor.transform(features)[0]
 
     def get_prediction_model(
             self,
@@ -359,7 +353,8 @@ class NeuralNetworkModel():
             if (all(exists(path) for path in (
                     self.model_path, self.configuration_path,
                     self.hyperparameter_path)) and
-                    self.configuration == self.read_configuration_from_file()):
+                    compare_dictionaries(self.configuration,
+                                         self.read_configuration_from_file())):
 
                 # Set the update flag to False
                 self.updated_model = False
@@ -375,17 +370,18 @@ class NeuralNetworkModel():
 
             # Check if the model is already registered and if the configuration
             # dictionary equals the external configuration file content
-            if (self.model_label in hub.model_instances and
-                self.configuration == hub.model_instances[
-                    self.model_label]['configuration']):
+            if (self.model_label in hub.model_instances
+                and compare_dictionaries(
+                    self.configuration, hub.model_instances[
+                        self.model_label]['configuration'])):
 
                 # Set the update flag to False
                 self.updated_model = False
 
-                return (hub.model_instances[
-                    self.model_label]['prediction_model'],
-                    hub.model_instances[
-                    self.model_label]['hyperparameters'])
+                return (
+                    hub.model_instances[self.model_label]['prediction_model'],
+                    hub.model_instances[self.model_label]['hyperparameters']
+                    )
 
         # Otherwise, train the outcome prediction model on the data
         prediction_model, hyperparameters = self.train(features, labels)
@@ -478,8 +474,7 @@ class NeuralNetworkModel():
             prediction_model,
             features,
             labels,
-            hyperparameters,
-            validation_data=None):
+            hyperparameters):
         """
         Compile and fit the neural network outcome prediction model to the \
         input data.
@@ -499,9 +494,6 @@ class NeuralNetworkModel():
             Dictionary with the hyperparameter names and values for the \
             neural network outcome prediction model.
 
-        validation_data : tuple
-            Optional validation features and labels for the fitting procedure.
-
         Returns
         -------
         prediction_model : object of class `Functional`
@@ -516,43 +508,34 @@ class NeuralNetworkModel():
             loss=loss_map[hyperparameters['loss']]())
 
         # Fit the model with the training data
-        prediction_model.fit(features,
-                             labels,
-                             batch_size=hyperparameters['batch_size'],
-                             epochs=hyperparameters['epochs'],
-                             validation_data=validation_data,
-                             verbose=0,
-                             callbacks=[
-                                 ReduceLROnPlateau(
-                                     monitor='val_loss'
-                                     if validation_data else 'loss',
-                                     min_delta=0,
-                                     factor=hyperparameters[
-                                         'ReduceLROnPlateau_factor'],
-                                     patience=hyperparameters[
-                                         'ReduceLROnPlateau_patience'],
-                                     mode='min',
-                                     verbose=0),
-                                 EarlyStopping(
-                                     monitor='val_loss'
-                                     if validation_data else 'loss',
-                                     min_delta=0,
-                                     patience=hyperparameters[
-                                         'EarlyStopping_patience'],
-                                     mode='min',
-                                     baseline=None,
-                                     restore_best_weights=True,
-                                     verbose=0)
-                             ],
-                             class_weight={
-                                 0: (1/sum(self.preprocessed_labels == 0)
-                                     * (2*len(self.preprocessed_labels))),
-                                 1: (1/sum(self.preprocessed_labels == 1)
-                                     * (2*len(self.preprocessed_labels)))})
+        prediction_model.fit(
+            features,
+            labels,
+            batch_size=hyperparameters['batch_size'],
+            epochs=hyperparameters['epochs'],
+            verbose=0,
+            callbacks=[
+                ReduceLROnPlateau(
+                    monitor='loss',
+                    min_delta=0,
+                    factor=hyperparameters['ReduceLROnPlateau_factor'],
+                    patience=hyperparameters['ReduceLROnPlateau_patience'],
+                    mode='min',
+                    verbose=0),
+                EarlyStopping(
+                    monitor='loss',
+                    min_delta=0,
+                    patience=hyperparameters['EarlyStopping_patience'],
+                    mode='min',
+                    baseline=None,
+                    restore_best_weights=True,
+                    verbose=0)],
+            class_weight={0: (1/sum(labels == 0)*(2*len(labels))),
+                          1: (1/sum(labels == 1)*(2*len(labels)))})
 
         return prediction_model
 
-    def tune_hyperparameters_with_bayes(
+    def tune_hyperparameters(
             self,
             features,
             labels):
@@ -569,9 +552,11 @@ class NeuralNetworkModel():
             Bayesian hyperparameter optimization.
         """
 
+        # Initialize the datahub
+        hub = Datahub()
+
         # Log a message about the hyperparameter tuning
-        Datahub().logger.display_info("Applying Bayesian hyperparameter "
-                                      "tuning ...")
+        hub.logger.display_info("Applying Bayesian hyperparameter tuning ...")
 
         def objective(proposal, trials, space):
             """Compute the objective function for a set of hyperparameters."""
@@ -580,18 +565,20 @@ class NeuralNetworkModel():
                 """Compute the score for a single train-validation split."""
 
                 # Get the training and validation splits
-                train_validate_split = [features[indices[0]],
-                                        features[indices[1]],
-                                        labels[indices[0]],
-                                        labels[indices[1]]]
+                train_validate_split = [
+                    features[indices[0]], features[indices[1]],
+                    labels[indices[0]], labels[indices[1]]
+                    ]
 
-                # Fit the preprocessor and transform the training features
-                train_validate_split[0] = preprocessor.fit_transform(
-                    train_validate_split[0])
+                # Fit the preprocessor & transform the training features/labels
+                train_validate_split[0], train_validate_split[2] = (
+                    preprocessor.fit_transform(
+                       train_validate_split[0], train_validate_split[2]))
 
-                # Transform the validation features
-                train_validate_split[1] = preprocessor.transform(
-                    train_validate_split[1])
+                # Transform the validation features/labels
+                train_validate_split[1], train_validate_split[3] = (
+                    preprocessor.transform(
+                        train_validate_split[1], train_validate_split[3]))
 
                 # Build the model architecture
                 prediction_model = self.build_network(
@@ -601,19 +588,16 @@ class NeuralNetworkModel():
                 # Compile and fit the model to the input data
                 prediction_model = self.compile_and_fit(
                     prediction_model, train_validate_split[0],
-                    train_validate_split[2], hyperparameters,
-                    [train_validate_split[1], train_validate_split[3]])
+                    train_validate_split[2], hyperparameters)
 
                 # Get the training score
                 training_score = -scorers[self.configuration['tune_score']](
-                    train_validate_split[2],
-                    prediction_model.predict(
+                    train_validate_split[2], prediction_model.predict(
                         train_validate_split[0], verbose=0)[:, 0])
 
                 # Get the validation score
                 validation_score = -scorers[self.configuration['tune_score']](
-                    train_validate_split[3],
-                    prediction_model.predict(
+                    train_validate_split[3], prediction_model.predict(
                         train_validate_split[1], verbose=0)[:, 0])
 
                 return max(training_score, validation_score)
@@ -656,29 +640,24 @@ class NeuralNetworkModel():
                                'EarlyStopping_patience': 10}
 
             # Compute the objective function value (score) across all folds
-            fold_scores = map(
-                compute_fold_score, (
-                    (training_indices, validation_indices)
-                    for (training_indices, validation_indices)
-                    in cross_validator.split(features, labels)))
+            fold_scores = map(compute_fold_score, (
+                (training_indices, validation_indices)
+                for training_indices, validation_indices in (
+                    (where(self.configuration['tune_folds'] != number),
+                     where(self.configuration['tune_folds'] == number))
+                    for number in set(self.configuration['tune_folds']))
+                ))
 
             return {'loss': max(fold_scores),
                     'params': hyperparameters,
                     'status': STATUS_OK}
 
-        # Initialize the stratified k-fold cross-validator
-        cross_validator = StratifiedKFold(
-            n_splits=self.configuration['tune_splits'], random_state=4,
-            shuffle=True)
-
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps,
-                                        verbose=False)
+        preprocessor = DataPreprocessor(
+            self.preprocessing_steps, verbose=False)
 
         # Map the score labels to the score functions
-        scorers = {'Logloss': log_loss,
-                   'Brier score': brier_loss,
-                   'AUC': roc_auc_score}
+        scorers = {'AUC': roc_auc_score, **score_loss_map}
 
         # Define the search space for the hyperparameters
         space = {
@@ -732,14 +711,10 @@ class NeuralNetworkModel():
         bayes_trials = Trials()
 
         # Run the optimization algorithm to get the tuned hyperparameters
-        tuned_hyperparameters = fmin(fn=partial(objective, trials=bayes_trials,
-                                                space=space),
-                                     space=space,
-                                     algo=tpe.suggest,
-                                     max_evals=self.configuration[
-                                         'tune_evaluations'],
-                                     trials=bayes_trials,
-                                     return_argmin=False)
+        tuned_hyperparameters = fmin(
+            fn=partial(objective, trials=bayes_trials, space=space),
+            space=space, algo=tpe.suggest, max_evals=self.configuration[
+                'tune_evaluations'], trials=bayes_trials, return_argmin=False)
 
         return tuned_hyperparameters
 
@@ -760,9 +735,8 @@ class NeuralNetworkModel():
         # Log a message about the model fitting
         Datahub().logger.display_info("Fitting the model to the data ...")
 
-        # Get the tuned hyperparameters from the Bayesian optimization
-        tuned_hyperparameters = self.tune_hyperparameters_with_bayes(features,
-                                                                     labels)
+        # Get the tuned hyperparameters
+        tuned_hyperparameters = self.tune_hyperparameters(features, labels)
 
         # Create a dictionary with the model hyperparameters
         hyperparameters = {**tuned_hyperparameters['hidden_layers'],
@@ -785,13 +759,13 @@ class NeuralNetworkModel():
 
         # Build the model architecture
         prediction_model = self.build_network(
-            self.preprocessed_features.shape[1], labels.ndim, hyperparameters,
-            squash_output=True)
+            self.preprocessed_features.shape[1], self.preprocessed_labels.ndim,
+            hyperparameters, squash_output=True)
 
         # Compile and fit the model to the preprocessed data
         prediction_model = self.compile_and_fit(
-            prediction_model, self.preprocessed_features, labels,
-            hyperparameters)
+            prediction_model, self.preprocessed_features,
+            self.preprocessed_labels, hyperparameters)
 
         return prediction_model, hyperparameters
 
@@ -817,12 +791,16 @@ class NeuralNetworkModel():
             Floating-point label prediction or array of label predictions.
         """
 
-        # Map the squashing indicator to the neural network model types
-        predictors = {True: self.prediction_model,
-                      False: self.optimization_model}
+        # Check if the output should be squashed
+        if squash_output:
 
-        # Select the predictor
-        predictor = predictors[squash_output]
+            # Apply the prediction model
+            predictor = self.prediction_model
+
+        else:
+
+            # Apply the optimization model
+            predictor = self.optimization_model
 
         # Check if the feature array has only a single row
         if features.shape[0] == 1:
@@ -836,8 +814,7 @@ class NeuralNetworkModel():
     def predict_oof(
             self,
             features,
-            labels,
-            oof_splits):
+            labels):
         """
         Predict the out-of-folds (OOF) labels using a stratified k-fold \
         cross-validation.
@@ -854,25 +831,25 @@ class NeuralNetworkModel():
         """
 
         # Log a message about the out-of-folds prediction
-        Datahub().logger.display_info(f"Performing {oof_splits}-fold "
-                                      "cross-validation to yield "
-                                      "out-of-folds predictions ...")
+        Datahub().logger.display_info(
+            f"Performing {len(set(self.configuration['oof_folds']))}-fold "
+            "cross-validation to yield out-of-folds predictions ...")
 
         def compute_fold_labels(indices):
             """Compute the out-of-folds labels for a single fold."""
 
             # Get the training and validation splits
-            train_validate_split = [features[indices[0]],
-                                    features[indices[1]],
-                                    labels[indices[0]]]
+            train_validate_split = [
+                features[indices[0]], features[indices[1]], labels[indices[0]]]
 
-            # Fit the preprocessor and transform the training features
-            train_validate_split[0] = preprocessor.fit_transform(
-                train_validate_split[0])
+            # Fit the preprocessor & transform the training features/labels
+            train_validate_split[0], train_validate_split[2] = (
+                preprocessor.fit_transform(
+                    train_validate_split[0], train_validate_split[2]))
 
             # Transform the validation features
             train_validate_split[1] = preprocessor.transform(
-                train_validate_split[1])
+                train_validate_split[1])[0]
 
             # Build the model architecture
             prediction_model = self.build_network(
@@ -885,25 +862,23 @@ class NeuralNetworkModel():
                 train_validate_split[2], self.hyperparameters)
 
             return (indices[1],
-                    prediction_model(train_validate_split[1])[:, 0])
+                    prediction_model(train_validate_split[1])[:, 0].numpy())
 
         # Initialize the out-of-folds label prediction array
         oof_prediction = empty((len(labels),))
 
-        # Initialize the stratified k-fold cross-validator
-        cross_validator = StratifiedKFold(
-            n_splits=oof_splits, random_state=4, shuffle=True)
-
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps,
-                                        verbose=False)
+        preprocessor = DataPreprocessor(
+            self.preprocessing_steps, verbose=False)
 
         # Compute the returns (indices and labels) across all folds
-        fold_returns = map(
-            compute_fold_labels, (
+        fold_returns = map(compute_fold_labels, (
                 (training_indices, validation_indices)
-                for (training_indices, validation_indices)
-                in cross_validator.split(features, labels)))
+                for training_indices, validation_indices in (
+                    (where(self.configuration['tune_folds'] != number),
+                     where(self.configuration['tune_folds'] == number))
+                    for number in set(self.configuration['tune_folds']))
+                ))
 
         # Loop over the fold returns
         for fold_indices, fold_labels in fold_returns:
@@ -915,57 +890,34 @@ class NeuralNetworkModel():
 
     def inspect(
             self,
-            labels):
+            features,
+            labels,
+            oof_folds):
         """."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Check if the model should be first-time/repeatedly inspected
-        if (self.model_label not in (*hub.model_inspections,)
+        if (self.model_label not in Datahub().model_inspections
                 or self.updated_model):
 
-            # Initialize the model inspector
-            inspector = ModelInspector(
-                model_name=self.model_label,
-                model_class='Neural Network',
-                hyperparameters=self.hyperparameters)
-
-            # Run the model inspections
-            inspector.compute(model=self.prediction_model,
-                              features=self.preprocessed_features,
-                              labels=labels,
-                              number_of_repeats=30)
-
-            # Add the model inspector to the datahub
-            hub.model_inspections[self.model_label] = inspector
+            # Compute the model inspections
+            self.inspector.compute(
+                self.prediction_model, self.hyperparameters, features, labels,
+                self.preprocessing_steps, 30, oof_folds)
 
     def evaluate(
             self,
             features,
-            labels,
-            oof_splits):
+            labels):
         """."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Check if the model should be first-time/repeatedly evaluated
-        if (self.model_label not in (*hub.model_evaluations,)
+        if (self.model_label not in Datahub().model_evaluations
                 or self.updated_model):
 
-            # Initialize the model evaluator
-            evaluator = ModelEvaluator(
-                model_name=self.model_label,
-                true_labels=labels)
-
-            # Run the model evaluations on training and OOF predictions
-            evaluator.compute(predicted_labels=(
-                self.predict(self.preprocessed_features),
-                self.predict_oof(features, labels, oof_splits)))
-
-            # Add the model evaluator to the datahub
-            hub.model_evaluations[self.model_label] = evaluator
+            # Run the model training and out-of-folds evaluations
+            self.evaluator.compute(
+                labels, (self.predict(self.preprocessed_features),
+                         self.predict_oof(features, labels)))
 
     def set_file_paths(
             self,
@@ -980,11 +932,9 @@ class NeuralNetworkModel():
         """
 
         # Set the model, configuration and hyperparameter file paths
-        (self.model_path, self.configuration_path,
-         self.hyperparameter_path) = (''.join((base_path, '/', filename))
-                                      for filename in ('model.h5',
-                                                       'configuration.json',
-                                                       'hyperparameters.json'))
+        self.model_path, self.configuration_path, self.hyperparameter_path = (
+            f'{base_path}/{filename}' for filename in (
+                'model.h5', 'configuration.json', 'hyperparameters.json'))
 
     def read_model_from_file(self):
         """
@@ -999,8 +949,8 @@ class NeuralNetworkModel():
         """
 
         # Log a message about the model file reading
-        Datahub().logger.display_info(f"Reading '{self.model_label}' model "
-                                      "from file ...")
+        Datahub().logger.display_info(
+            f"Reading '{self.model_label}' model from file ...")
 
         # Open a stream to the model file path
         with File(self.model_path, 'r') as file:
@@ -1063,11 +1013,23 @@ class NeuralNetworkModel():
             Dictionary with information for the modeling, i.e., the dataset, \
             the preprocessing steps, and the hyperparameter search space.
         """
-        # Log a message about the configuration file reading
-        Datahub().logger.display_info(f"Reading '{self.model_label}' "
-                                      "configuration from file ...")
 
-        return jload(open(self.configuration_path, 'r', encoding='utf-8'))
+        # Log a message about the configuration file reading
+        Datahub().logger.display_info(
+            f"Reading '{self.model_label}' configuration from file ...")
+
+        # Get the configuration
+        configuration = jload(
+            open(self.configuration_path, 'r', encoding='utf-8'))
+
+        # Loop over the converted keys
+        for key in ('feature_values', 'label_values', 'time_variable_values',
+                    'tune_folds', 'oof_folds'):
+
+            # Convert the list into an array
+            configuration[key] = array(configuration[key])
+
+        return configuration
 
     def write_configuration_to_file(
             self,
@@ -1081,6 +1043,13 @@ class NeuralNetworkModel():
             Dictionary with information for the modeling, i.e., the dataset, \
             the preprocessing steps, and the hyperparameter search space.
         """
+
+        # Loop over the array keys
+        for key in ('feature_values', 'label_values', 'time_variable_values',
+                    'tune_folds', 'oof_folds'):
+
+            # Convert the array into a list
+            configuration[key] = configuration[key].tolist()
 
         # Dump the configuration dictionary to the configuration file path
         with open(self.configuration_path, 'w', encoding='utf-8') as file:
@@ -1099,8 +1068,8 @@ class NeuralNetworkModel():
         """
 
         # Log a message about the parameter file reading
-        Datahub().logger.display_info(f"Reading '{self.model_label}' "
-                                      "hyperparameters from file ...")
+        Datahub().logger.display_info(
+            f"Reading '{self.model_label}' hyperparameters from file ...")
 
         return jload(open(self.hyperparameter_path, 'r', encoding='utf-8'))
 

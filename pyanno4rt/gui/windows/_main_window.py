@@ -4,13 +4,15 @@
 
 # %% External package import
 
+from functools import partial
 from os.path import abspath, dirname
 from json import loads
+from numpy import zeros
 from PyQt5.QtCore import QDir, QEvent, Qt
 from PyQt5.QtGui import QCursor, QIcon, QPixmap
-from PyQt5.QtWidgets import (QApplication, QComboBox, QFileDialog, QHeaderView,
-                             QListWidgetItem, QMainWindow, QMessageBox,
-                             QSpinBox)
+from PyQt5.QtWidgets import (
+    QApplication, QComboBox, QFileDialog, QHeaderView, QListWidget,
+    QListWidgetItem, QMainWindow, QMenu, QMessageBox, QSpinBox)
 
 # %% Internal package import
 
@@ -18,10 +20,13 @@ from pyanno4rt.base import TreatmentPlan
 from pyanno4rt.gui.compilations.main_window import Ui_main_window
 from pyanno4rt.gui.custom_widgets import DVHWidget, SliceWidget
 from pyanno4rt.gui.styles._custom_styles import (
-    cbox, ledit, pbutton_menu, pbutton_composer, pbutton_workflow, selector,
-    tab, tbutton_composer, tbutton_workflow)
+    cbox, ledit, pbutton_menu, pbutton_composer, pbutton_workflow, sbox,
+    selector, tab, tbutton_composer, tbutton_workflow)
 from pyanno4rt.gui.windows import (
-    InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow, TreeWindow)
+    CompareWindow, InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow,
+    TreeWindow)
+from pyanno4rt.gui.windows.components import component_window_map
+from pyanno4rt.optimization.components import component_map
 from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, load_list_from_file, snapshot)
 
@@ -72,17 +77,21 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Initialize the GUI optimization components
         self.plan_components = {}
 
-        # 
+        # Initialize the current component window
+        self.current_component_window = None
+
+        # Initialize the last selected plan
         self.last_selection = ''
 
         # Initialize the child windows
         self.plan_creation_window = PlanCreationWindow(self)
         self.settings_window = SettingsWindow(self)
         self.info_window = InfoWindow(self)
-        self.parameter_window = TreeWindow('Plan parameters', self)
-        self.plan_window = TreeWindow('Plan data', self)
-        self.model_data_window = TreeWindow('Model data', self)
-        self.feature_map_window = TreeWindow('Feature maps', self)
+        self.compare_window = CompareWindow(self)
+        self.parameter_window = TreeWindow('Plan Parameters Viewer', self)
+        self.plan_window = TreeWindow('Plan Data Viewer', self)
+        self.model_data_window = TreeWindow('Model Data Viewer', self)
+        self.feature_map_window = TreeWindow('Feature Maps Viewer', self)
         self.log_window = LogWindow(self)
 
         # Initialize the custom widgets
@@ -113,18 +122,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Install the custom event filters
             getattr(self, box).installEventFilter(self)
 
-        # Install the custom event filter in the plan creation window
-        getattr(self.plan_creation_window,
-                'new_plan_ref_cbox').installEventFilter(
-                    self.plan_creation_window)
-
-        # Loop over the QComboBox elements in the settings window
-        for box in ('language_cbox', 'light_mode_cbox', 'resolution_cbox'):
-
-            # Install the custom event filters
-            getattr(self.settings_window, box).installEventFilter(
-                self.settings_window)
-
         # Disable some fields initially
         self.set_disabled((
             'save_pbutton', 'drop_pbutton', 'update_configuration_pbutton',
@@ -132,11 +129,21 @@ class MainWindow(QMainWindow, Ui_main_window):
             'reset_configuration_pbutton', 'reset_optimization_pbutton',
             'reset_evaluation_pbutton', 'initialize_pbutton',
             'configure_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
-            'visualize_pbutton', 'show_parameter_tbutton',
-            'show_plan_tbutton', 'show_fmap_tbutton',
-            'show_model_data_tbutton', 'show_log_tbutton',
-            'components_minus_tbutton', 'components_edit_tbutton',
-            'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox'))
+            'visualize_pbutton', 'actions_show_parameter_tbutton',
+            'actions_show_plan_tbutton', 'actions_show_fmap_tbutton',
+            'actions_show_model_data_tbutton', 'actions_show_log_tbutton',
+            'comp_show_parameter_tbutton', 'comp_show_plan_tbutton',
+            'comp_show_fmap_tbutton', 'comp_show_model_data_tbutton',
+            'comp_show_log_tbutton', 'compare_pbutton', 'baseline_cbox',
+            'reference_cbox', 'components_minus_tbutton',
+            'components_edit_tbutton', 'init_fluence_ledit',
+            'init_fluence_tbutton', 'ref_plan_cbox', 'opacity_sbox',
+            'slice_selection_sbar'))
+
+        # Disable the tab widgets initially
+        self.composer_widget.widget(0).setEnabled(False)
+        self.composer_widget.widget(1).setEnabled(False)
+        self.composer_widget.widget(2).setEnabled(False)
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -148,8 +155,32 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_styles({'composer_widget': tab,
                          'tab_workflow': tab,
                          'viewer_widget': tab,
+                         'plan_ledit': ledit,
+                         'log_level_cbox': cbox,
+                         'modality_cbox': cbox,
+                         'nfx_sbox': sbox,
+                         'img_path_ledit': ledit,
+                         'img_res_ledit': ledit,
+                         'dose_path_ledit': ledit,
+                         'dose_res_ledit': ledit,
+                         'method_cbox': cbox,
+                         'solver_cbox': cbox,
+                         'algorithm_cbox': cbox,
+                         'init_strat_cbox': cbox,
                          'init_fluence_ledit': ledit,
                          'ref_plan_cbox': cbox,
+                         'lower_var_ledit': ledit,
+                         'lower_var_tbutton': tbutton_composer,
+                         'upper_var_ledit': ledit,
+                         'upper_var_tbutton': tbutton_composer,
+                         'max_iter_sbox': sbox,
+                         'tolerance_ledit': ledit,
+                         'dvh_type_cbox': cbox,
+                         'n_points_sbox': sbox,
+                         'ref_vol_ledit': ledit,
+                         'ref_dose_ledit': ledit,
+                         'display_segments_ledit': ledit,
+                         'opacity_sbox': sbox,
                          'load_pbutton': pbutton_menu,
                          'save_pbutton': pbutton_menu,
                          'drop_pbutton': pbutton_menu,
@@ -179,11 +210,19 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'optimize_pbutton': pbutton_workflow,
                          'evaluate_pbutton': pbutton_workflow,
                          'visualize_pbutton': pbutton_workflow,
-                         'show_parameter_tbutton': tbutton_workflow,
-                         'show_plan_tbutton': tbutton_workflow,
-                         'show_model_data_tbutton': tbutton_workflow,
-                         'show_fmap_tbutton': tbutton_workflow,
-                         'show_log_tbutton': tbutton_workflow,
+                         'actions_show_parameter_tbutton': tbutton_workflow,
+                         'actions_show_plan_tbutton': tbutton_workflow,
+                         'actions_show_model_data_tbutton': tbutton_workflow,
+                         'actions_show_fmap_tbutton': tbutton_workflow,
+                         'actions_show_log_tbutton': tbutton_workflow,
+                         'comp_show_parameter_tbutton': tbutton_workflow,
+                         'comp_show_plan_tbutton': tbutton_workflow,
+                         'comp_show_model_data_tbutton': tbutton_workflow,
+                         'comp_show_fmap_tbutton': tbutton_workflow,
+                         'comp_show_log_tbutton': tbutton_workflow,
+                         'baseline_cbox': cbox,
+                         'reference_cbox': cbox,
+                         'compare_pbutton': pbutton_workflow,
                          'expand_tree_pbutton': pbutton_composer,
                          'collapse_tree_pbutton': pbutton_composer,
                          'close_tree_pbutton': pbutton_composer,
@@ -198,6 +237,13 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'new_modality_cbox': cbox,
                          'new_img_path_tbutton': tbutton_composer,
                          'new_dose_path_tbutton': tbutton_composer})
+
+        # Add dropdown menu to component adding button
+        menu = QMenu()
+        for key in component_map:
+            menu.addAction(key, partial(self.open_component_window, key))
+        self.components_plus_tbutton.setPopupMode(2)
+        self.components_plus_tbutton.setMenu(menu)
 
         # Connect the event signals
         self.connect_signals()
@@ -223,6 +269,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'save_pbutton': self.save_tpi,
                 'settings_pbutton': self.open_settings_window,
                 'info_pbutton': self.open_info_window,
+                'compare_pbutton': self.open_compare_window,
                 'exit_pbutton': self.exit_window,
                 'drop_pbutton': self.open_question_dialog,
                 'update_configuration_pbutton': self.open_question_dialog,
@@ -237,6 +284,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'img_path_tbutton': self.add_imaging_path,
                 'dose_path_tbutton': self.add_dose_matrix_path,
                 'components_minus_tbutton': self.remove_component,
+                'components_edit_tbutton': self.edit_component,
                 'init_fluence_tbutton': self.add_initial_fluence_vector,
                 'lower_var_tbutton': self.add_lower_var_bounds,
                 'upper_var_tbutton': self.add_upper_var_bounds,
@@ -245,11 +293,16 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'optimize_pbutton': self.optimize,
                 'evaluate_pbutton': self.evaluate,
                 'visualize_pbutton': self.visualize,
-                'show_parameter_tbutton': self.open_parameter_window,
-                'show_plan_tbutton': self.open_plan_window,
-                'show_model_data_tbutton': self.open_model_data_window,
-                'show_fmap_tbutton': self.open_feature_map_window,
-                'show_log_tbutton': self.open_log_window
+                'actions_show_parameter_tbutton': self.open_parameter_window,
+                'actions_show_plan_tbutton': self.open_plan_window,
+                'actions_show_model_data_tbutton': self.open_model_data_window,
+                'actions_show_fmap_tbutton': self.open_feature_map_window,
+                'actions_show_log_tbutton': self.open_log_window,
+                'comp_show_parameter_tbutton': self.open_parameter_window,
+                'comp_show_plan_tbutton': self.open_plan_window,
+                'comp_show_model_data_tbutton': self.open_model_data_window,
+                'comp_show_fmap_tbutton': self.open_feature_map_window,
+                'comp_show_log_tbutton': self.open_log_window
                 }.items():
 
             # Connect the 'clicked' signal
@@ -269,7 +322,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         for key, value in {
                 'plan_select_cbox': self.select_plan,
                 'init_strat_cbox': self.update_by_initial_strategy,
-                'ref_plan_cbox': self.update_by_reference
+                'ref_plan_cbox': self.update_by_reference,
+                'baseline_cbox': self.update_compare_button,
+                'reference_cbox': self.update_compare_button
                 }.items():
 
             # Connect the 'currentTextChanged' signal
@@ -277,7 +332,10 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Loop over the fieldnames with 'textChanged' events
         for key, value in {
-                'plan_ledit': self.update_by_plan_label,
+                'plan_ledit': self.update_init_button,
+                'img_path_ledit': self.update_init_button,
+                'dose_path_ledit': self.update_init_button,
+                'dose_res_ledit': self.update_init_button,
                 'init_fluence_ledit': self.update_by_initial_fluence
                 }.items():
 
@@ -331,6 +389,17 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Else, return the even
         return super().eventFilter(source, event)
+
+    def mousePressEvent(self, event):
+
+        super(QListWidget, self.components_lwidget).mousePressEvent(event)
+        super(QListWidget, self.display_metrics_lwidget).mousePressEvent(event)
+
+        if not self.components_lwidget.indexAt(event.pos()).isValid():
+            self.components_lwidget.clearSelection()
+
+        if not self.display_metrics_lwidget.indexAt(event.pos()).isValid():
+            self.display_metrics_lwidget.clearSelection()
 
     def set_initial_plan(
             self,
@@ -505,8 +574,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         if label not in (self.plan_select_cbox.itemText(i)
                          for i in range(self.plan_select_cbox.count())):
 
-            # Add the instance to the dictionary
+            # Add the instance to the dictionaries
             self.plans[label] = treatment_plan
+            self.plan_components[label] = {}
 
             # Add the loaded instance label to the selector
             self.plan_select_cbox.insertItem(0, label)
@@ -523,15 +593,20 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Set the icon path on the red frame
             icon_path = (":/lightred_icons/icons_lightred/plus-square.svg")
 
-            # Initialize the icon object 
+            # Initialize the icon object
             icon = QIcon()
 
-            # Add the pixmap to the icon 
+            # Add the pixmap to the icon
             icon.addPixmap(QPixmap(icon_path), QIcon.Normal, QIcon.Off)
 
             # 
             self.plan_select_cbox.insertItem(
                 self.plan_select_cbox.count(), icon, 'Create new plan')
+
+        else:
+
+            # Select the loaded instance label
+            self.plan_select_cbox.setCurrentText(label)
 
     def load_tpi(self):
         """Load the treatment plan from a snapshot folder."""
@@ -604,6 +679,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Remove the label from the list
                 self.optimized_plans.remove(label)
 
+                # Remove the label from the comparison plans
+                self.update_comparison_plans()
+
     def select_plan(self):
         """Select a treatment plan."""
 
@@ -668,13 +746,22 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'update_configuration_pbutton', 'update_optimization_pbutton',
                 'update_evaluation_pbutton', 'reset_configuration_pbutton',
                 'reset_optimization_pbutton', 'reset_evaluation_pbutton',
-                'show_parameter_tbutton'))
+                'actions_show_parameter_tbutton',
+                'comp_show_parameter_tbutton'))
 
             # Disable specific fields
             self.set_disabled((
                 'initialize_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
-                'visualize_pbutton', 'show_plan_tbutton', 'show_log_tbutton',
-                'show_model_data_tbutton', 'show_fmap_tbutton'))
+                'visualize_pbutton', 'actions_show_plan_tbutton',
+                'actions_show_log_tbutton', 'actions_show_model_data_tbutton',
+                'actions_show_fmap_tbutton', 'comp_show_plan_tbutton',
+                'comp_show_log_tbutton', 'comp_show_model_data_tbutton',
+                'comp_show_fmap_tbutton'))
+
+            # Disable the tab widgets
+            self.composer_widget.widget(0).setEnabled(True)
+            self.composer_widget.widget(1).setEnabled(True)
+            self.composer_widget.widget(2).setEnabled(True)
 
             # Set the line edit cursor positions to zero
             self.set_zero_line_cursor((
@@ -689,7 +776,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.log_window.update_log_output()
 
                 # Enable the plan data and logging tool buttons
-                self.set_enabled(('show_plan_tbutton', 'show_log_tbutton'))
+                self.set_enabled((
+                    'actions_show_plan_tbutton', 'actions_show_log_tbutton',
+                    'comp_show_plan_tbutton', 'comp_show_log_tbutton'))
 
             # Check if the selected plan has been configured
             if (instance.datahub and all(isinstance(getattr(
@@ -732,6 +821,15 @@ class MainWindow(QMainWindow, Ui_main_window):
                     optimized_dose = instance.datahub.optimization[
                         'optimized_dose']
 
+                    # Check if the plan has already been optimized
+                    if selection not in self.optimized_plans:
+
+                        # Append the treatment plan to the optimized plans list
+                        self.optimized_plans.append(selection)
+
+                        # Update the comparison plans
+                        self.update_comparison_plans()
+
                     # Add the dose image to the slice widget
                     self.slice_widget.add_dose(optimized_dose)
 
@@ -760,7 +858,10 @@ class MainWindow(QMainWindow, Ui_main_window):
 
                 # Enable the model data and feature maps tool button
                 self.set_enabled((
-                    'show_model_data_tbutton', 'show_fmap_tbutton'))
+                    'actions_show_model_data_tbutton',
+                    'actions_show_fmap_tbutton',
+                    'comp_show_model_data_tbutton',
+                    'comp_show_fmap_tbutton'))
 
         else:
 
@@ -782,10 +883,18 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'reset_configuration_pbutton', 'reset_optimization_pbutton',
                 'reset_evaluation_pbutton', 'initialize_pbutton',
                 'configure_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
-                'visualize_pbutton', 'show_parameter_tbutton',
-                'show_plan_tbutton', 'show_fmap_tbutton',
-                'show_model_data_tbutton', 'show_log_tbutton',
-                'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox'))
+                'visualize_pbutton', 'actions_show_parameter_tbutton',
+                'actions_show_plan_tbutton', 'actions_show_fmap_tbutton',
+                'actions_show_model_data_tbutton', 'actions_show_log_tbutton',
+                'comp_show_parameter_tbutton', 'comp_show_plan_tbutton',
+                'comp_show_fmap_tbutton', 'comp_show_model_data_tbutton',
+                'comp_show_log_tbutton', 'init_fluence_ledit',
+                'init_fluence_tbutton', 'ref_plan_cbox'))
+
+            # Disable the tab widgets
+            self.composer_widget.widget(0).setEnabled(False)
+            self.composer_widget.widget(1).setEnabled(False)
+            self.composer_widget.widget(2).setEnabled(False)
 
             # Reset the slice widget
             self.slice_widget.reset_images()
@@ -900,7 +1009,9 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Enable specific fields
         self.set_enabled((
-            'optimize_pbutton', 'show_plan_tbutton', 'show_log_tbutton'))
+            'optimize_pbutton', 'actions_show_plan_tbutton',
+            'actions_show_log_tbutton', 'comp_show_plan_tbutton',
+            'comp_show_log_tbutton'))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -926,32 +1037,51 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Set the waiting cursor
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
-        try:
+        #try:
 
-            # Get the treatment plan instance
-            instance = self.plans[self.plan_ledit.text()]
+        # Get the treatment plan instance
+        instance = self.plans[self.plan_ledit.text()]
 
-            # Optimize the treatment plan
-            instance.optimize()
+        # Optimize the treatment plan
+        instance.optimize()
+
+        # Check if the plan has already been optimized
+        if self.plan_ledit.text() not in self.optimized_plans:
 
             # Append the treatment plan to the optimized plans list
             self.optimized_plans.append(self.plan_ledit.text())
 
-            # Get the optimized dose array
-            optimized_dose = instance.datahub.optimization['optimized_dose']
+            # Update the comparison plans
+            self.update_comparison_plans()
 
-            # Add the dose image to the slice widget
-            self.slice_widget.add_dose(optimized_dose)
+        # Get the optimized dose array
+        optimized_dose = instance.datahub.optimization['optimized_dose']
 
-        except Exception as error:
+        # Check if any dose contours have been computed
+        if self.slice_widget.dose_contours:
 
-            # Set back to the arrow cursor
-            QApplication.restoreOverrideCursor()
+            # Loop over the dose contours
+            for contour in self.slice_widget.dose_contours:
 
-            # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", str(error))
+                # Update the dose contour lines
+                contour.setData(zeros(self.slice_widget.dose_cube[
+                    :, :, self.slice_widget.slice].shape))
 
-            return False
+        self.slice_widget.dose_cube = None
+        self.slice_widget.dose_contours = None
+
+        # Add the dose image to the slice widget
+        self.slice_widget.add_dose(optimized_dose)
+
+        # except Exception as error:
+
+        #     # Set back to the arrow cursor
+        #     QApplication.restoreOverrideCursor()
+
+        #     # Show a warning message box
+        #     QMessageBox.warning(self, "pyanno4rt", str(error))
+
+        #     return False
 
         # Update the images of the slice widget
         self.slice_widget.update_images()
@@ -970,7 +1100,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                 instance.datahub.model_evaluations)):
 
             # Enable the model data and feature maps tool button
-            self.set_enabled(('show_model_data_tbutton', 'show_fmap_tbutton'))
+            self.set_enabled((
+                'actions_show_model_data_tbutton',
+                'actions_show_fmap_tbutton',
+                'comp_show_model_data_tbutton',
+                'comp_show_fmap_tbutton'))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1064,42 +1198,72 @@ class MainWindow(QMainWindow, Ui_main_window):
     def update_configuration(self):
         """Update the configuration parameters."""
 
-        # Overwrite the configuration dictionary of the current instance
-        self.plans[self.plan_ledit.text()].update(
-            self.transform_configuration_to_dict())
+        try:
 
-        # Disable specific fields
-        self.set_disabled((
-            'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton'))
+            # Overwrite the configuration dictionary of the current instance
+            self.plans[self.plan_ledit.text()].update(
+                self.transform_configuration_to_dict())
 
-        # Set the line edit cursor positions to zero
-        self.set_zero_line_cursor((
-            'plan_ledit', 'img_path_ledit', 'dose_path_ledit'))
+            # Disable specific fields
+            self.set_disabled((
+                'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton'))
+
+            # Set the line edit cursor positions to zero
+            self.set_zero_line_cursor((
+                'plan_ledit', 'img_path_ledit', 'dose_path_ledit'))
+
+        except Exception as error:
+
+            # Show a warning message box
+            QMessageBox.warning(self, "pyanno4rt", str(error))
+
+            return False
 
     def update_optimization(self):
         """Update the optimization parameters."""
 
-        # Overwrite the optimization dictionary of the current instance
-        self.plans[self.plan_ledit.text()].update(
-            self.transform_optimization_to_dict())
+        try:
 
-        # Disable specific fields
-        self.set_disabled(('evaluate_pbutton', 'visualize_pbutton'))
+            # Overwrite the optimization dictionary of the current instance
+            self.plans[self.plan_ledit.text()].update(
+                self.transform_optimization_to_dict())
 
-        # Set the line edit cursor positions to zero
-        self.set_zero_line_cursor((
-            'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit'))
+            # Disable specific fields
+            self.set_disabled(('evaluate_pbutton', 'visualize_pbutton'))
+
+            # Set the line edit cursor positions to zero
+            self.set_zero_line_cursor((
+                'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit'))
+
+        except Exception as error:
+
+            # Show a warning message box
+            QMessageBox.warning(self, "pyanno4rt", str(error))
+
+            return False
 
     def update_evaluation(self):
         """Update the evaluation parameters."""
 
-        # Overwrite the evaluation dictionary of the current instance
-        self.plans[self.plan_ledit.text()].update(
-            self.transform_evaluation_to_dict())
+        try:
 
-        # Set the line edit cursor positions to zero
-        self.set_zero_line_cursor((
-            'ref_vol_ledit', 'ref_dose_ledit', 'display_segments_ledit'))
+            # Overwrite the evaluation dictionary of the current instance
+            self.plans[self.plan_ledit.text()].update(
+                self.transform_evaluation_to_dict())
+
+            # Disable specific fields
+            self.set_disabled(('visualize_pbutton'))
+
+            # Set the line edit cursor positions to zero
+            self.set_zero_line_cursor((
+                'ref_vol_ledit', 'ref_dose_ledit', 'display_segments_ledit'))
+
+        except Exception as error:
+
+            # Show a warning message box
+            QMessageBox.warning(self, "pyanno4rt", str(error))
+
+            return False
 
     def set_configuration(self):
         """Set the configuration parameters."""
@@ -1148,14 +1312,8 @@ class MainWindow(QMainWindow, Ui_main_window):
     def set_optimization(self):
         """Set the optimization parameters."""
 
-        # Get the optimization dictionary
-        optimization = self.plans[self.plan_ledit.text()].optimization
-
-        # Clear the component list
-        self.components_lwidget.clear()
-
-        # Loop over the components
-        for segment, component in optimization['components'].items():
+        def set_single_component(segment, component):
+            """."""
 
             # Check if the component is an objective
             if component['type'] == 'objective':
@@ -1176,113 +1334,79 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Add the pixmap to the icon
             icon.addPixmap(QPixmap(icon_path), QIcon.Normal, QIcon.Off)
 
-            # Check if the component instance is a dictionary
-            if isinstance(component['instance'], dict):
+            # Get the component parameters
+            parameters = component['instance']['parameters']
 
-                # Get the component parameters
-                parameters = component['instance']['parameters']
+            # Check if the identifier parameter is specified
+            if 'identifier' in parameters:
 
-                # Check if the identifier parameter is specified
-                if 'identifier' in parameters:
-
-                    # Get the identifier string
-                    identifier = parameters['identifier']
-
-                else:
-
-                    # Set the identifier to None
-                    identifier = None
-
-                # Check if the embedding parameter is specified
-                if 'embedding' in parameters:
-
-                    # Get the embedding string
-                    embedding = ''.join(('embedding: ',
-                                         str(parameters['embedding'])))
-
-                else:
-
-                    # Set the embedding string to the default
-                    embedding = 'embedding: active'
-
-                # Check if the weight parameter is specified
-                if 'weight' in parameters:
-
-                    # Get the weight string
-                    weight = ''.join(('weight: ', str(parameters['weight'])))
-
-                else:
-
-                    # Set the weight string to the default
-                    weight = 'weight: 1'
-
-                # Join the segment and class name
-                component_string = ' - '.join((substring for substring in (
-                    segment, component['instance']['class'], identifier,
-                    embedding, weight) if substring))
-
-                # Add the icon with the component string to the list
-                self.components_lwidget.addItem(
-                    QListWidgetItem(icon, component_string))
-
-                # Add the component to the components dictionary of the GUI
-                self.plan_components[component_string] = {segment: component}
+                # Get the identifier string
+                identifier = parameters['identifier']
 
             else:
 
-                # Loop over the instances
-                for instance in component['instance']:
+                # Set the identifier to None
+                identifier = None
 
-                    # Get the component parameters
-                    parameters = instance['parameters']
+            # Check if the embedding parameter is specified
+            if 'embedding' in parameters:
 
-                    # Check if the identifier parameter is specified
-                    if 'identifier' in parameters:
+                # Get the embedding string
+                embedding = ''.join(('embedding: ',
+                                     str(parameters['embedding'])))
 
-                        # Get the identifier string
-                        identifier = parameters['identifier']
+            else:
 
-                    else:
+                # Set the embedding string to the default
+                embedding = 'embedding: active'
 
-                        # Set the identifier to None
-                        identifier = None
+            # Check if the weight parameter is specified
+            if 'weight' in parameters:
 
-                    # Check if the embedding parameter is specified
-                    if 'embedding' in parameters:
+                # Get the weight string
+                weight = ''.join(('weight: ',
+                                  str(float(parameters['weight']))))
 
-                        # Get the embedding string
-                        embedding = ''.join(('embedding: ',
-                                             str(parameters['embedding'])))
+            else:
 
-                    else:
+                # Set the weight string to the default
+                weight = 'weight: 1'
 
-                        # Set the embedding string to the default
-                        embedding = 'embedding: active'
+            # Join the segment and class name
+            component_string = ' - '.join((substring for substring in (
+                segment, component['instance']['class'], identifier,
+                embedding, weight) if substring))
 
-                    # Check if the weight parameter is specified
-                    if 'weight' in parameters:
+            # Add the icon with the component string to the list
+            self.components_lwidget.addItem(
+                QListWidgetItem(icon, component_string))
 
-                        # Get the weight string
-                        weight = ''.join(('weight: ',
-                                          str(parameters['weight'])))
+            # Add the component to the components dictionary of the GUI
+            self.plan_components[self.plan_ledit.text()][component_string] = (
+                {segment: component})
 
-                    else:
+        # Get the optimization dictionary
+        optimization = self.plans[self.plan_ledit.text()].optimization
 
-                        # Set the weight string to the default
-                        weight = 'weight: 1'
+        # Clear the component list
+        self.components_lwidget.clear()
 
-                    # Join the segment and class name
-                    component_string = ' - '.join((substring for substring in (
-                        segment, instance['class'], identifier, embedding,
-                        weight) if substring))
+        # Loop over the components
+        for segment, component in optimization['components'].items():
 
-                    # Add the icon with the component string to the list
-                    self.components_lwidget.addItem(
-                        QListWidgetItem(icon, component_string))
+            # Check if the component is a list
+            if isinstance(component, list):
 
-                    # Add the component to the components dictionary of the GUI
-                    self.plan_components[component_string] = {
-                        segment: component}
+                # Loop over the component list
+                for element in component:
+
+                    # Set the component element
+                    set_single_component(segment, element)
+
+            else:
+
+                # Set the component
+                set_single_component(segment, component)
 
         # Set the optimization method
         self.method_cbox.setCurrentText(optimization['method'])
@@ -1352,7 +1476,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.max_iter_sbox.setValue(optimization['max_iter'])
 
         # Set the tolerance
-        self.tolerance_ledit.setText(str(optimization['tolerance']))
+        self.tolerance_ledit.setText(
+            '' if optimization['tolerance'] == 0.001
+            else str(optimization['tolerance']))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1371,14 +1497,19 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.n_points_sbox.setValue(evaluation['number_of_points'])
 
         # Set the reference volume
-        self.ref_vol_ledit.setText(str(evaluation['reference_volume']))
+        self.ref_vol_ledit.setText(
+            '' if evaluation['reference_volume'] == [2, 5, 50, 95, 98]
+            else str(evaluation['reference_volume']))
 
         # Set the reference dose values
-        self.ref_dose_ledit.setText(str(evaluation['reference_dose']))
+        self.ref_dose_ledit.setText(
+            '' if evaluation['reference_dose'] == []
+            else str(evaluation['reference_dose']))
 
         # Set the display segments
         self.display_segments_ledit.setText(
-            str(evaluation['display_segments']).replace("\'", ''))
+            '' if evaluation['display_segments'] == []
+            else str(evaluation['display_segments']).replace("\'", ''))
 
         # Loop over the display metrics
         for index in range(self.display_metrics_lwidget.count()):
@@ -1547,6 +1678,27 @@ class MainWindow(QMainWindow, Ui_main_window):
             Dictionary with the optimization parameters.
         """
 
+        # Initialize the components dictionary
+        components = {}
+
+        # Loop over the components
+        for component in self.plan_components.get(
+                self.plan_ledit.text(), {}).values():
+
+            # Get the key and value of the component
+            (key, value), = component.items()
+
+            # Check if the key is already included in the dictionary
+            if key in components:
+
+                # Create a list of values
+                components[key] = [components[key], value]
+
+            else:
+
+                # Enter the value into the dictionary
+                components[key] = value
+
         # Get the initial fluence sources
         sources = (self.init_fluence_ledit.text(),
                    self.ref_plan_cbox.currentText())
@@ -1561,9 +1713,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Create the optimization dictionary from the input fields
         optimization = {
-            'components': {key: value
-                           for subdict in self.plan_components.values()
-                           for key, value in subdict.items()},
+            'components': components,
             'method': self.method_cbox.currentText(),
             'solver': self.solver_cbox.currentText(),
             'algorithm': self.algorithm_cbox.currentText(),
@@ -1640,10 +1790,14 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.plan_creation_window.new_plan_ref_cbox.setEnabled(False)
 
         # 
-        self.plan_creation_window.new_plan_ledit.clear()
+        self.plan_creation_window.create_plan_pbutton.setEnabled(False)
 
         # 
+        self.plan_creation_window.new_plan_ledit.clear()
         self.plan_creation_window.new_plan_ref_cbox.clear()
+        self.plan_creation_window.new_img_path_ledit.clear()
+        self.plan_creation_window.new_dose_path_ledit.clear()
+        self.plan_creation_window.new_dose_res_ledit.clear()
 
         # 
         self.plan_creation_window.new_plan_ref_cbox.addItem('None')
@@ -1689,11 +1843,108 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Show the window
         self.info_window.show()
 
-    def exit_window(self):
-        """Exit the session and close the window."""
+    def open_compare_window(self):
+        """Open the plan comparison window."""
 
-        # Close the window
-        self.close()
+        # 
+        baseline = self.plans[self.baseline_cbox.currentText()]
+        reference = self.plans[self.reference_cbox.currentText()]
+
+        # 
+        if (baseline.datahub.computed_tomography['cube'].shape ==
+                reference.datahub.computed_tomography['cube'].shape):
+
+            # 
+            self.compare_window.baseline_label.setText(
+                self.baseline_cbox.currentText())
+            self.compare_window.reference_label.setText(
+                self.reference_cbox.currentText())
+
+            # 
+            self.compare_window.baseline_slice_widget.reset_images()
+            self.compare_window.reference_slice_widget.reset_images()
+
+            # 
+            self.compare_window.baseline_slice_widget.add_ct(
+                baseline, baseline.datahub.computed_tomography['cube'])
+            self.compare_window.reference_slice_widget.add_ct(
+                reference, reference.datahub.computed_tomography['cube'])
+
+            # Get the axial dimension of the CT cube
+            axial_length = baseline.datahub.computed_tomography[
+                'cube_dimensions'][2]
+
+            # Add the segments to the slice widget
+            self.compare_window.baseline_slice_widget.add_segments(
+                baseline.datahub.computed_tomography,
+                baseline.datahub.segmentation)
+            self.compare_window.reference_slice_widget.add_segments(
+                reference.datahub.computed_tomography,
+                reference.datahub.segmentation)
+
+            # Set the range of the slice selection scrollbar
+            self.compare_window.slice_selection_sbar.setRange(
+                0, axial_length-1)
+
+            # Set the initial scrollbar value
+            self.compare_window.slice_selection_sbar.setValue(
+                int((axial_length-1)/2))
+
+            # Set the initial position label
+            self.compare_window.slice_selection_pos.setText(''.join((
+                'z = ', str(self.compare_window.baseline_slice_widget.slice),
+                ' mm')))
+
+            # Get the joint minimum and maximum dose
+            minima = [min(
+                baseline.datahub.optimization[
+                    'optimized_dose'][:, :, index].min(),
+                reference.datahub.optimization[
+                    'optimized_dose'][:, :, index].min())
+                for index in range(axial_length)]
+            maxima = [max(
+                baseline.datahub.optimization[
+                    'optimized_dose'][:, :, index].max(),
+                reference.datahub.optimization[
+                    'optimized_dose'][:, :, index].max())
+                for index in range(axial_length)]
+
+            # Add the dose image to the slice widget
+            self.compare_window.baseline_slice_widget.add_dose(
+                baseline.datahub.optimization['optimized_dose'],
+                minima, maxima)
+            self.compare_window.reference_slice_widget.add_dose(
+                reference.datahub.optimization['optimized_dose'],
+                minima, maxima)
+
+            # 
+            self.compare_window.baseline_slice_widget.update_images()
+            self.compare_window.reference_slice_widget.update_images()
+
+            # Set the position of the window
+            self.compare_window.position()
+
+            # Show the window
+            self.compare_window.show()
+
+        else:
+
+            message = ("Baseline and reference treatment plan have different "
+                       "CT cube dimensions. Please select treatment plans "
+                       "with equal dimensions for comparison!")
+
+            QMessageBox.information(self, 'pyanno4rt', message)
+
+    def open_component_window(self, name):
+        """Open a component window."""
+
+        self.current_component_window = component_window_map[name](self)
+
+        # Set the position of the window
+        self.current_component_window.position()
+
+        # Show the window
+        self.current_component_window.show()
 
     def open_parameter_window(self):
         """Open the plan parameter window."""
@@ -1915,7 +2166,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         """Remove the selected component from the instance."""
 
         # Remove the component from the GUI components dictionary
-        del self.plan_components[self.components_lwidget.currentItem().text()]
+        del self.plan_components[self.plan_ledit.text()][
+            self.components_lwidget.currentItem().text()]
 
         # Remove the item from the list widget
         self.components_lwidget.takeItem(self.components_lwidget.currentRow())
@@ -1926,6 +2178,29 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Disable specific fields
         self.set_disabled((
             'components_minus_tbutton', 'components_edit_tbutton'))
+
+    def edit_component(self):
+        """Open a component window."""
+
+        # 
+        component = self.plan_components[self.plan_ledit.text()][
+            self.components_lwidget.currentItem().text()]
+
+        # 
+        for value in component.values():
+
+            # 
+            self.current_component_window = component_window_map[
+                value['instance']['class']](self)
+
+        # Set the position of the window
+        self.current_component_window.position()
+
+        # 
+        self.current_component_window.load(component)
+
+        # Show the window
+        self.current_component_window.show()
 
     def add_initial_fluence_vector(self):
         """Add the initial fluence vector from a file."""
@@ -1987,19 +2262,28 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Set the upper variable bounds field cursor position to zero
             self.upper_var_ledit.setCursorPosition(0)
 
-    def update_by_plan_label(self):
+    def update_init_button(self):
         """."""
 
         # 
-        if self.plan_ledit.text() != '':
-
-            # 
-            self.initialize_pbutton.setEnabled(True)
-
-        else:
+        if self.plan_ledit.text() in self.plans:
 
             # 
             self.initialize_pbutton.setEnabled(False)
+
+        else:
+
+            if any(text == '' for text in (
+                self.plan_ledit.text(), self.img_path_ledit.text(),
+                    self.dose_path_ledit.text(), self.dose_res_ledit.text())):
+
+                # 
+                self.initialize_pbutton.setEnabled(False)
+
+            else:
+
+                # 
+                self.initialize_pbutton.setEnabled(True)
 
     def update_by_initial_strategy(self):
         """Update the GUI by the initial strategy."""
@@ -2087,10 +2371,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         elif self.solver_cbox.currentText() == 'pymoo':
 
             # Add the algorithm options to the combo box
-            self.algorithm_cbox.addItems(['NSGA-3'])
+            self.algorithm_cbox.addItems(['NSGA3'])
 
             # Set the default algorithm option
-            self.algorithm_cbox.setCurrentText('NSGA-3')
+            self.algorithm_cbox.setCurrentText('NSGA3')
 
         # Else, check if the solver is 'pypop7'
         elif self.solver_cbox.currentText() == 'pypop7':
@@ -2125,3 +2409,57 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Add the available reference plans to the combo box
         self.ref_plan_cbox.addItems(plans)
+
+    def update_comparison_plans(self):
+        """."""
+
+        # Initialize the plans by the default empty label
+        plans = ['']
+
+        # Extend the plans by all optimized plans
+        plans.extend(self.optimized_plans)
+
+        # 
+        self.baseline_cbox.clear()
+        self.reference_cbox.clear()
+
+        # 
+        self.baseline_cbox.addItems(plans)
+        self.reference_cbox.addItems(plans)
+
+        # 
+        if len(self.optimized_plans) > 1:
+
+            # 
+            self.baseline_cbox.setEnabled(True)
+            self.reference_cbox.setEnabled(True)
+
+        else:
+
+            # 
+            self.baseline_cbox.setEnabled(False)
+            self.reference_cbox.setEnabled(False)
+
+    def update_compare_button(self):
+        """."""
+
+        # 
+        if (self.baseline_cbox.currentText()
+                != self.reference_cbox.currentText()
+                and all(text != '' for text in (
+                    self.baseline_cbox.currentText(),
+                    self.reference_cbox.currentText()))):
+
+            # 
+            self.compare_pbutton.setEnabled(True)
+
+        else:
+
+            # 
+            self.compare_pbutton.setEnabled(False)
+
+    def exit_window(self):
+        """Exit the session and close the window."""
+
+        # Close the window
+        self.close()

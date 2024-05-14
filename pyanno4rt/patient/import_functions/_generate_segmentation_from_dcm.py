@@ -54,14 +54,14 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
         segment_cube = zeros(computed_tomography['cube_dimensions'])
 
         # Loop over the contour sequences
-        for sequence in roi_contour.ContourSequence._list:
+        for sequence in roi_contour.ContourSequence:
 
             # Check if the geometric type is different from 'POINT'
             if sequence.ContourGeometricType != 'POINT':
 
                 # Get the grid points of the sequence
                 points_x, points_y, points_z = (
-                    sequence.ContourData._list[i::3] for i in range(3))
+                    sequence.ContourData[i::3] for i in range(3))
 
                 # Loop over the grid point dimensions
                 for points in (points_x, points_y, points_z):
@@ -73,7 +73,7 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
                         points = append(points, points[0])
 
                 # Round the z-points to account for numerical issues
-                points_z = [1e-10 * round(1e10 * value) for value in points_z]
+                points_z = [1e-10*round(1e10*value) for value in points_z]
 
                 # Check if contour points outside the slice exist
                 if len(set(points_z)) > 1:
@@ -103,12 +103,11 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
 
                     # Get the computed tomography slice indices
                     ct_slice_indices = [
-                        index for index, value in enumerate(
-                            computed_tomography['z'])
-                        if (points_z[0] - int(ct_slices[0].SliceThickness)/2
+                        index
+                        for index, value in enumerate(computed_tomography['z'])
+                        if (points_z[0]-int(ct_slices[0].SliceThickness)/2
                             <= value
-                            < points_z[0] + int(ct_slices[0].SliceThickness)/2)
-                        ]
+                            < points_z[0]+int(ct_slices[0].SliceThickness)/2)]
 
                     # Loop over the slice indices
                     for index in ct_slice_indices:
@@ -121,17 +120,17 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
             order='F'))
 
     # Get the default color tuple
-    default_colors = generate_colors(len(data.ROIContourSequence._list))
+    default_colors = generate_colors(len(data.ROIContourSequence))
 
     # Initialize the segmentation dictionary
     segmentation = {}
 
     # Loop over the ROI contours
-    for roi_contour in data.ROIContourSequence._list:
+    for roi_contour in data.ROIContourSequence:
 
         # Find the corresponding ROI structure from the index number
         roi_structure = next(
-            sequence for sequence in data.StructureSetROISequence._list
+            sequence for sequence in data.StructureSetROISequence
             if roi_contour.ReferencedROINumber == sequence.ROINumber)
 
         # Get the structure name
@@ -178,7 +177,7 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
 
             # Add the visible color to the dictionary
             segmentation[segment]['parameters']['visibleColor'] = array(
-                [int(num)/255 for num in roi_contour.ROIDisplayColor._list])
+                [int(num)/255 for num in roi_contour.ROIDisplayColor])
 
         else:
 

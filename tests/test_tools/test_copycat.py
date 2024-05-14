@@ -21,15 +21,15 @@ def test_copycat():
             'min_log_level': 'info',
             'modality': 'photon',
             'number_of_fractions': 30,
-            'imaging_path': './docs/example_patient_data.mat',
+            'imaging_path': './docs/TG_119_data.mat',
             'target_imaging_resolution': None,
-            'dose_matrix_path': './docs/example_photon_dij.mat',
-            'dose_resolution': [5, 5, 5]
+            'dose_matrix_path': './docs/TG_119_photonDij.mat',
+            'dose_resolution': [6, 6, 6]
             },
 
         optimization={
             'components': {
-                'PAROTID_LT': {
+                'Core': {
                     'type': 'objective',
                     'instance': {
                         'class': 'Squared Overdosing',
@@ -39,37 +39,17 @@ def test_copycat():
                             }
                         }
                     },
-                'PAROTID_RT': {
-                    'type': 'objective',
-                    'instance': {
-                        'class': 'Squared Overdosing',
-                        'parameters': {
-                            'maximum_dose': 25,
-                            'weight': 100,
-                            }
-                        }
-                    },
-                'PTV63': {
+                'OuterTarget': {
                     'type': 'objective',
                     'instance': {
                         'class': 'Squared Deviation',
                         'parameters': {
-                            'target_dose': 63,
+                            'target_dose': 60,
                             'weight': 1000
                             }
                         }
                     },
-                'PTV70': {
-                    'type': 'objective',
-                    'instance': {
-                        'class': 'Squared Deviation',
-                        'parameters': {
-                            'target_dose': 70,
-                            'weight': 1000,
-                            }
-                        },
-                    },
-                'SKIN': {
+                'BODY': {
                     'type': 'objective',
                     'instance': {
                         'class': 'Squared Overdosing',

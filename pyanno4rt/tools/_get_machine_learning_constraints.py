@@ -25,7 +25,7 @@ def get_machine_learning_constraints(segmentation):
         functions.
     """
 
-    return tuple(objective for objective in flatten(
+    return tuple(constraint for constraint in flatten(
         segmentation[segment]['constraint'] for segment in segmentation
         if segmentation[segment]['constraint'])
-        if objective.RETURNS_OUTCOME and objective.DEPENDS_ON_DATA)
+        if constraint.RETURNS_OUTCOME and constraint.DEPENDS_ON_DATA)

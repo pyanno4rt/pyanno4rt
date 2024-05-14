@@ -34,7 +34,9 @@ class DVHWidget(QWidget):
         dvh_layout.addWidget(self.plot_graph)
 
         self.plot_graph.getPlotItem().hideAxis('bottom')
+        self.plot_graph.getPlotItem().hideAxis('top')
         self.plot_graph.getPlotItem().hideAxis('left')
+        self.plot_graph.getPlotItem().hideAxis('right')
         self.plot_graph.getPlotItem().hideButtons()
 
         self.segments = None
@@ -65,7 +67,7 @@ class DVHWidget(QWidget):
                                                  'display_segments'))
 
         # Get the colormap
-        colors = colormap.get('turbo', 'matplotlib').getLookupTable(
+        colors = colormap.get('jet', 'matplotlib').getLookupTable(
             nPts=len(self.segments))
 
         # Set the line styles
@@ -78,11 +80,18 @@ class DVHWidget(QWidget):
             zip(self.segments, tuple(zip(colors, line_styles))))
 
         self.plot_graph.getPlotItem().showAxis('bottom')
+        self.plot_graph.getPlotItem().showAxis('top')
         self.plot_graph.getPlotItem().showAxis('left')
+        self.plot_graph.getPlotItem().showAxis('right')
 
-        self.plot_graph.showGrid(x=True, y=True, alpha=0.3)
-        self.plot_graph.setLabels(left="Relative volume [%]",
-                                  bottom="Dose per fraction [Gy]")
+        self.plot_graph.showGrid(x=True, y=True, alpha=0.2)
+        self.plot_graph.setLabels(
+            left=" ", right=" ", top=" ", bottom=" ")
+
+        # ax_right = self.plot_graph.getAxis('right')
+        # ax_right.setTicks([])
+        # ax_top = self.plot_graph.getAxis('top')
+        # ax_top.setTicks([])
 
         # Set the signal proxy to update the crosshair at mouse moves
         self.crosshair_update = SignalProxy(
@@ -99,7 +108,7 @@ class DVHWidget(QWidget):
         # 
         self.plot_graph.plotItem.vb.setLimits(
             xMin=0, xMax=max(dose_histogram['evaluation_points']),
-            yMin=0, yMax=101)
+            yMin=-0.1, yMax=100.1)
 
         # 
         self.plot_graph.plotItem.vb.enableAutoRange()
@@ -135,7 +144,9 @@ class DVHWidget(QWidget):
 
         self.plot_graph.clear()
         self.plot_graph.getPlotItem().hideAxis('bottom')
+        self.plot_graph.getPlotItem().hideAxis('top')
         self.plot_graph.getPlotItem().hideAxis('left')
+        self.plot_graph.getPlotItem().hideAxis('right')
         self.plot_graph.setTitle(None)
         if hasattr(self, 'crosshair_update'):
             delattr(self, 'crosshair_update')
@@ -197,6 +208,16 @@ class DVHWidget(QWidget):
                     "%0.2f</span>, <span style='color: #FFAE42; "
                     "font-size: 11pt'>vRel: %0.1f</span>"
                     % (mouse_point.x(), mouse_point.y()))
+
+            else:
+
+                # Update the graph title
+                self.plot_graph.setTitle(
+                    "<span style='color: #FFAE42; "
+                    "font-size: 11pt'>dose/fx: "
+                    "%0.2f</span>, <span style='color: #FFAE42; "
+                    "font-size: 11pt'>vRel: %0.1f</span>"
+                    % (0, 0.0))
 
             # Update the positions of vertical and horizontal lines
             self.vertical_line.setPos(mouse_point.x())

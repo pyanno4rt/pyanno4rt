@@ -69,8 +69,8 @@ class WeightedSumOptimization():
         self.constraints = constraints
 
         # Initialize the tracker dictionary
-        self.tracker = {key: []
-                        for key in tuple(objectives) + tuple(constraints)}
+        self.tracker = {label: []
+                        for label in tuple(objectives) + tuple(constraints)}
 
     def objective(
             self,
@@ -227,7 +227,7 @@ class WeightedSumOptimization():
             # Compute the constraint function value
             constraint_value = instance.compute_value(
                 tuple(dose[segmentation[segment]['resized_indices']]
-                      for segment in segments), segments)
+                      for segment in segments), segments) * instance.weight
 
             # Check if the objective value should be tracked
             if track:
@@ -283,7 +283,7 @@ class WeightedSumOptimization():
                 # Return the value of the constraint jacobian function
                 return instance.compute_gradient(
                     tuple(dose[segmentation[segment]['resized_indices']]
-                          for segment in segments), segments)
+                          for segment in segments), segments) * instance.weight
 
             # Otherwise, return zero array
             return array([0.0]*Datahub().dose_information['number_of_voxels'])

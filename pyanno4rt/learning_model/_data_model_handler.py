@@ -26,25 +26,33 @@ class DataModelHandler():
     data_path : str
         Path to the data set used for fitting the machine learning model.
 
-    feature_filter : dict, default={'features': [], 'filter_mode': 'remove'}
+    feature_filter : dict
         Dictionary with a list of feature names and a value from \
         {'retain', 'remove'} as an indicator for retaining/removing the \
         features prior to model fitting.
 
-    label_bounds : list, default=[1, 1]
+    label_bounds : list
         Bounds for the label values to binarize into positive (value lies \
         inside the bounds) and negative class (value lies outside the bounds).
 
     label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', \
-                       'profile'}, default='long-term'
+                       'profile'}
         Time of observation for the presence of tumor control and/or normal \
         tissue complication events.
 
-    fuzzy_matching : bool, default=True
+    tune_splits : int
+        Number of splits for the stratified cross-validation within each \
+        hyperparameter optimization step.
+
+    oof_splits : int
+        Number of splits for the stratified cross-validation within the \
+        out-of-folds evaluation step.
+
+    fuzzy_matching : bool
         Indicator for the use of fuzzy string matching to generate the \
         feature map (if False, exact string matching is applied).
 
-    write_features : bool, default=True
+    write_features : bool
         Indicator for writing the iteratively calculated feature vectors into \
         a feature history.
 
@@ -81,6 +89,8 @@ class DataModelHandler():
             label_bounds,
             time_variable_name,
             label_viewpoint,
+            tune_splits,
+            oof_splits,
             fuzzy_matching,
             write_features):
 
@@ -117,7 +127,9 @@ class DataModelHandler():
                 label_name=label_name,
                 label_bounds=label_bounds,
                 time_variable_name=time_variable_name,
-                label_viewpoint=label_viewpoint)
+                label_viewpoint=label_viewpoint,
+                tune_splits=tune_splits,
+                oof_splits=oof_splits)
 
         # Initialize the feature map generator
         self.feature_map_generator = FeatureMapGenerator(

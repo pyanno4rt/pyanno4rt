@@ -9,7 +9,7 @@ from pyanno4rt.datahub import Datahub
 # %% Internal package import
 
 from pyanno4rt.learning_model.evaluation.metrics import (
-    F1Score, ModelKPI, PRScore, ROCScore)
+    auc_pr, auc_roc, f1, kpi)
 
 # %% Class definition
 
@@ -18,75 +18,55 @@ class ModelEvaluator():
     """
     Model evaluation class.
 
-    This class provides a collection of evaluation metrics to be computed in \
-    a single method call.
+    This class provides the computation method for a number of evaluation \
+    metrics on a machine learning outcome model.
 
     Parameters
     ----------
-    model_name : string
-        Name of the learning model.
-
-    true_labels : ndarray
-        Ground truth values for the labels to predict.
+    model_label : str
+        Label for the machine learning outcome model.
 
     Attributes
     ----------
-    model_name : string
+    model_label: str
         See 'Parameters'.
-
-    true_labels : ndarray
-        See 'Parameters'.
-
-    evaluations : dict
-        Dictionary with the evaluation metrics.
     """
 
     def __init__(
             self,
-            model_name,
-            true_labels):
+            model_label):
 
         # Log a message about the initialization of the model evaluator
         Datahub().logger.display_info("Initializing model evaluator ...")
 
-        # Get the instance attributes from the arguments
-        self.model_name = model_name
-        self.true_labels = true_labels
-
-        # Initialize the dictionary with the evaluations
-        self.evaluations = {}
+        # Get the model label from the arguments
+        self.model_label = model_label
 
     def compute(
             self,
+            true_labels,
             predicted_labels):
         """
         Compute the evaluation metrics.
 
         Parameters
         ----------
+        true_labels : ndarray
+            Ground truth label values.
+
         predicted_labels : tuple
-            Tuple of arrays with the labels predicted by the learning model. \
-            The first array holds the training prediction labels, the second \
-            holds the out-of-folds prediction labels.
+            Tuple of arrays with the training and out-of-folds labels \
+            predicted by the machine learning outcome model.
         """
-        # Compute the AUC-ROC scores
-        auc_roc = ROCScore(self.model_name, self.true_labels).compute(
-            predicted_labels)
 
-        # Compute the AUC-PR scores
-        auc_pr = PRScore(self.model_name, self.true_labels).compute(
-            predicted_labels)
+        # Precompute the F1 scores
+        f1_scores = f1(true_labels, predicted_labels)
 
-        # Compute the F1 scores
-        f1 = F1Score(self.model_name, self.true_labels).compute(
-            predicted_labels)
-
-        # Compute the Model KPIs
-        kpi = ModelKPI(self.model_name, self.true_labels).compute(
-            predicted_labels, tuple(f1[1].values()))
-
-        # Update the evaluations dictionary with the metrics results
-        self.evaluations.update({'indicators': kpi,
-                                 'auc_roc': auc_roc,
-                                 'auc_pr': auc_pr,
-                                 'f1': f1})
+        # Enter the model evaluation metrics into the datahub
+        Datahub().model_evaluations[self.model_label] = {
+            'auc_pr': auc_pr(true_labels, predicted_labels),
+            'auc_roc': auc_roc(true_labels, predicted_labels),
+            'f1': f1_scores,
+            'kpi': kpi(true_labels, predicted_labels,
+                       tuple(f1_scores[source]['best']
+                             for source in ('Training', 'Out-of-folds')))}

@@ -100,7 +100,7 @@ class ParetoOptimization():
             # Compute the objective function value
             objective_value = instance.compute_value(
                 tuple(dose[segmentation[segment]['resized_indices']]
-                      for segment in segments), segments)
+                      for segment in segments), segments) * instance.weight
 
             # Check if the instance is set to active
             if instance.embedding == 'active':
@@ -154,7 +154,7 @@ class ParetoOptimization():
             # Get the constraint function value
             constraint_value = instance.compute_value(
                 tuple(dose[segmentation[segment]['resized_indices']]
-                      for segment in segments), segments)
+                      for segment in segments), segments) * instance.weight
 
             # Check if the instance is set to active
             if instance.embedding == 'active':

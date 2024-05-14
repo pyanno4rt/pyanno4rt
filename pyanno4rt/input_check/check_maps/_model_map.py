@@ -12,6 +12,11 @@ from pyanno4rt.input_check.check_functions import (
     check_regular_extension, check_feature_filter, check_key_in_dict,
     check_length, check_path, check_subtype, check_type, check_value,
     check_value_in_set)
+from pyanno4rt.learning_model.losses import loss_map
+from pyanno4rt.learning_model.preprocessing.cleaners import cleaner_map
+from pyanno4rt.learning_model.preprocessing.reducers import reducer_map
+from pyanno4rt.learning_model.preprocessing.samplers import sampler_map
+from pyanno4rt.learning_model.preprocessing.transformers import transformer_map
 
 # %% Map definition
 
@@ -62,8 +67,8 @@ model_map = {
     'preprocessing_steps': (
         partial(check_type, types=list),
         partial(check_subtype, types=str),
-        partial(check_value_in_set, options=(
-            'Equalizer', 'StandardScaler', 'Whitening'))
+        partial(check_value_in_set, options=tuple(
+            {**cleaner_map, **reducer_map, **sampler_map, **transformer_map}))
         ),
     'architecture': (
         partial(check_type, types=str),
@@ -82,7 +87,7 @@ model_map = {
         ),
     'tune_score': (
         partial(check_type, types=str),
-        partial(check_value_in_set, options=('Logloss', 'Brier score', 'AUC'))
+        partial(check_value_in_set, options=tuple(('AUC', *loss_map)))
         ),
     'tune_splits': (
         partial(check_type, types=int),

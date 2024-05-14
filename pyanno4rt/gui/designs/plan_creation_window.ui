@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>plan_create_window</class>
- <widget class="QMainWindow" name="plan_create_window">
+ <class>plan_creation_window</class>
+ <widget class="QMainWindow" name="plan_creation_window">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>

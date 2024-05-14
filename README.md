@@ -1,6 +1,7 @@
 [![CI/CD](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml)
 ![Read the Docs](https://img.shields.io/readthedocs/pyanno4rt)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyanno4rt)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/pyanno4rt)
 [![Coverage Status](https://coveralls.io/repos/github/pyanno4rt/pyanno4rt/badge.svg)](https://coveralls.io/github/pyanno4rt/pyanno4rt)
 [![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
 [![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 
@@ -188,7 +189,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> seaborn (>=0.13.2) </li>
 	<li> pypop7 (>=0.0.79) </li>
 </ul>
-We are using Python version 3.10.13 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>
+We are using Python version 3.10.14 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>
 
 # Development
 
@@ -206,10 +207,11 @@ We are using Python version 3.10.13 with the Spyder IDE version 5.4.5 for develo
 
 pyanno4rt is open for new contributors of all experience levels. Please get in contact with us (see "Help and support") to discuss the format of your contribution.
 
-Note: the 'docs' folder includes example files with CT, segmentation and dose-influence matrix data for an example head-and-neck patient from the CORT dataset<sup>1</sup>, which can be used for development. The example files are stored with Git Large File Storage (LFS), which you need to install before checking out the source code to be able to access them. <br><br>
+Note: the "docs" folder on Github includes example files with CT/segmentation data and the photon dose-influence matrix for the TG-119 case, a standard test phantom which can be used for development. You will find more realistic patient data e.g. in the CORT dataset<sup>1</sup> or the TROTS dataset<sup>2</sup>. <br><br>
 
 <sub>
-<sup>1</sup>D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". <i>GigaScience</i> 3.1 (2014).
+<sup>1</sup>D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". <i>GigaScience</i> 3.1 (2014). <br>
+<sup>2</sup>S. Breedveld, B. Heijmen. "Data for TROTS - The Radiotherapy Optimisation Test Set". <i>Data in Brief</i> (2017).
 </sub>
 <br><br>
 

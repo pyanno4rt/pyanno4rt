@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.tools import compare_dictionaries
 
 # %% Class definition
 
@@ -39,13 +40,16 @@ class ConventionalComponentClass(metaclass=ABCMeta):
     weight : int or float
         Weight of the component function.
 
+    rank : int
+        Rank of the component in the lexicographic order.
+
     bounds : None or list
         Constraint bounds for the component.
 
     link : None or list
         Other segments used for joint evaluation.
 
-    identifier : str
+    identifier : None or str
         Additional string for naming the component.
 
     display : bool
@@ -71,13 +75,16 @@ class ConventionalComponentClass(metaclass=ABCMeta):
     weight : float
         See 'Parameters'.
 
+    rank : int
+        See 'Parameters'.
+
     bounds : list
         See 'Parameters'.
 
     link : list
         See 'Parameters'.
 
-    identifier : str
+    identifier : None or str
         See 'Parameters'.
 
     display : bool
@@ -101,6 +108,7 @@ class ConventionalComponentClass(metaclass=ABCMeta):
             parameter_value,
             embedding,
             weight,
+            rank,
             bounds,
             link,
             identifier,
@@ -131,6 +139,7 @@ class ConventionalComponentClass(metaclass=ABCMeta):
         self.parameter_value = list(parameter_value)
         self.embedding = embedding
         self.weight = float(weight)
+        self.rank = rank
         self.bounds = [None, None] if bounds is None else bounds
         self.link = [] if link is None else link
         self.identifier = identifier
@@ -142,6 +151,15 @@ class ConventionalComponentClass(metaclass=ABCMeta):
         # Set the component flags
         self.RETURNS_OUTCOME = False
         self.DEPENDS_ON_DATA = False
+
+    def __eq__(self, other):
+        """Compare an instance with another object."""
+
+        return (all(self.__dict__[key] == other.__dict__[key]
+                    for key in ('name', 'link', 'identifier'))
+                and compare_dictionaries(
+                    self.__dict__.get('model_parameters', {}),
+                    other.__dict__.get('model_parameters', {})))
 
     def get_parameter_value(self):
         """

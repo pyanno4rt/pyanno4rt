@@ -42,6 +42,23 @@ cbox = ('''
             }
         ''')
 
+# Set the stylesheet for the standard spin box fields
+sbox = ('''
+        QSpinBox {
+            color: rgb(0, 0, 0);
+            background-color: rgb(238, 238, 236);
+            border: 1px solid;
+            border-color: rgb(186, 189, 182);
+            }
+        QSpinBox QAbstractItemView {
+            color: rgb(0, 0, 0);
+            background-color: rgb(238, 238, 236);
+            }
+        QSpinBox:disabled {
+            color: rgb(153, 153, 153);
+            }
+        ''')
+
 # Set the stylesheet for the selector
 selector = ('''
             QComboBox {
@@ -126,6 +143,9 @@ tbutton_composer = ('''
                         }
                     QToolButton:hover {
                         background-color: rgb(246, 246, 245);
+                        }
+                    QToolButton::menu-indicator {
+                        image: none;
                         }
                     ''')
 

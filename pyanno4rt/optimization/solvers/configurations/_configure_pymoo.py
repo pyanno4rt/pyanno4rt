@@ -238,6 +238,6 @@ class PymooProblem(ElementwiseProblem):
         constraint_values = self.problem_instance.constraint(x)
 
         # Add the constraint values to the output dictionary
-        out['G'] = [[self.lower_constraint_bounds[i]-value,
-                     value-self.upper_constraint_bounds[i]]
-                    for i, value in enumerate(constraint_values)]
+        out['G'] = [[self.lower_constraint_bounds[index]-value,
+                     value-self.upper_constraint_bounds[index]]
+                    for index, value in enumerate(constraint_values)]

@@ -9,16 +9,16 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_plan_create_window(object):
-    def setupUi(self, plan_create_window):
-        plan_create_window.setObjectName("plan_create_window")
-        plan_create_window.setWindowModality(QtCore.Qt.ApplicationModal)
-        plan_create_window.resize(400, 600)
-        plan_create_window.setMinimumSize(QtCore.QSize(400, 600))
-        plan_create_window.setMaximumSize(QtCore.QSize(400, 600))
-        plan_create_window.setStyleSheet("color: rgb(0, 0, 0);\n"
+class Ui_plan_creation_window(object):
+    def setupUi(self, plan_creation_window):
+        plan_creation_window.setObjectName("plan_creation_window")
+        plan_creation_window.setWindowModality(QtCore.Qt.ApplicationModal)
+        plan_creation_window.resize(400, 600)
+        plan_creation_window.setMinimumSize(QtCore.QSize(400, 600))
+        plan_creation_window.setMaximumSize(QtCore.QSize(400, 600))
+        plan_creation_window.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);")
-        self.body_widget = QtWidgets.QWidget(plan_create_window)
+        self.body_widget = QtWidgets.QWidget(plan_creation_window)
         self.body_widget.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
@@ -192,27 +192,27 @@ class Ui_plan_create_window(object):
         self.new_dose_res_sublabel.setMaximumSize(QtCore.QSize(16777215, 30))
         self.new_dose_res_sublabel.setStyleSheet("border: 0px solid;")
         self.new_dose_res_sublabel.setObjectName("new_dose_res_sublabel")
-        plan_create_window.setCentralWidget(self.body_widget)
+        plan_creation_window.setCentralWidget(self.body_widget)
 
-        self.retranslateUi(plan_create_window)
+        self.retranslateUi(plan_creation_window)
         self.new_plan_ref_cbox.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(plan_create_window)
+        QtCore.QMetaObject.connectSlotsByName(plan_creation_window)
 
-    def retranslateUi(self, plan_create_window):
+    def retranslateUi(self, plan_creation_window):
         _translate = QtCore.QCoreApplication.translate
-        plan_create_window.setWindowTitle(_translate("plan_create_window", "Plan Creator"))
-        self.close_plan_pbutton.setText(_translate("plan_create_window", "Close"))
-        self.create_plan_pbutton.setText(_translate("plan_create_window", "Create"))
-        self.new_plan_label.setText(_translate("plan_create_window", "Treatment plan label"))
-        self.new_plan_ref_label.setText(_translate("plan_create_window", "Reference plan"))
-        self.new_plan_ref_cbox.setItemText(0, _translate("plan_create_window", "None"))
-        self.new_img_path_tbutton.setToolTip(_translate("plan_create_window", "Add the CT and segmentation data from a folder"))
-        self.new_img_path_label.setText(_translate("plan_create_window", "Imaging path"))
-        self.new_dose_path_tbutton.setToolTip(_translate("plan_create_window", "Add the dose-influence matrix from a folder"))
-        self.new_dose_path_label.setText(_translate("plan_create_window", "Dose matrix path"))
-        self.new_modality_label.setText(_translate("plan_create_window", "Modality"))
-        self.new_modality_cbox.setItemText(0, _translate("plan_create_window", "photon"))
-        self.new_modality_cbox.setItemText(1, _translate("plan_create_window", "proton"))
-        self.new_dose_res_label.setToolTip(_translate("plan_create_window", "Size of the dose grid in [mm] per dimension"))
-        self.new_dose_res_label.setText(_translate("plan_create_window", "Dose grid resolution [mm]"))
-        self.new_dose_res_sublabel.setText(_translate("plan_create_window", "[x, y, z]"))
+        plan_creation_window.setWindowTitle(_translate("plan_creation_window", "Plan Creator"))
+        self.close_plan_pbutton.setText(_translate("plan_creation_window", "Close"))
+        self.create_plan_pbutton.setText(_translate("plan_creation_window", "Create"))
+        self.new_plan_label.setText(_translate("plan_creation_window", "Treatment plan label"))
+        self.new_plan_ref_label.setText(_translate("plan_creation_window", "Reference plan"))
+        self.new_plan_ref_cbox.setItemText(0, _translate("plan_creation_window", "None"))
+        self.new_img_path_tbutton.setToolTip(_translate("plan_creation_window", "Add the CT and segmentation data from a folder"))
+        self.new_img_path_label.setText(_translate("plan_creation_window", "Imaging path"))
+        self.new_dose_path_tbutton.setToolTip(_translate("plan_creation_window", "Add the dose-influence matrix from a folder"))
+        self.new_dose_path_label.setText(_translate("plan_creation_window", "Dose matrix path"))
+        self.new_modality_label.setText(_translate("plan_creation_window", "Modality"))
+        self.new_modality_cbox.setItemText(0, _translate("plan_creation_window", "photon"))
+        self.new_modality_cbox.setItemText(1, _translate("plan_creation_window", "proton"))
+        self.new_dose_res_label.setToolTip(_translate("plan_creation_window", "Size of the dose grid in [mm] per dimension"))
+        self.new_dose_res_label.setText(_translate("plan_creation_window", "Dose grid resolution [mm]"))
+        self.new_dose_res_sublabel.setText(_translate("plan_creation_window", "[x, y, z]"))

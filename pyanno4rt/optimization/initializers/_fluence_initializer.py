@@ -36,7 +36,7 @@ class FluenceInitializer():
     initial_strategy : str
         Initialization strategy for the fluence vector.
 
-    initial_fluence_vector: list or None
+    initial_fluence_vector: None or list
         User-defined initial fluence vector for the optimization problem.
 
     Attributes
@@ -44,7 +44,7 @@ class FluenceInitializer():
     initial_strategy : str
         See 'Parameters'.
 
-    initial_fluence_vector : list or None
+    initial_fluence_vector : None or list
         See 'Parameters'.
     """
 
@@ -320,7 +320,7 @@ class FluenceInitializer():
             target_objective = segmentation[target]['objective']
 
             # Check if the objective is a tuple
-            if isinstance(target_objective, tuple):
+            if isinstance(target_objective, list):
 
                 # Return the dose parameters from all objectives
                 return (tuple(objective.parameter_value[index]

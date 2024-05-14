@@ -96,6 +96,9 @@ class SciPySolver():
             lower_constraint_bounds, upper_constraint_bounds, algorithm,
             max_iter, tolerance, self.callback)
 
+        # Initialize the layer indicator (for 'lexicographic' method)
+        self.layer = None
+
         # Initialize the iteration counter
         self.counter = 1
 
@@ -116,7 +119,7 @@ class SciPySolver():
                          f"f={round(intermediate_result['fun'], 4)}")
 
         # Check if any constraints have been passed to the algorithm
-        if 'constraints' in self.arguments:
+        if 'constraints' in self.arguments.get(self.layer, self.arguments):
 
             # Add the constraint values to the output string
             output_string = (
@@ -149,28 +152,107 @@ class SciPySolver():
             Description for the cause of termination.
         """
 
-        # Check if the algorithm is different from 'TNC'
-        if self.arguments['method'] != 'TNC':
+        # Initialize the datahub
+        hub = Datahub()
 
-            # Set the base output string
-            output_string = (
-                "At iterate 0: "
-                f"f={round(self.arguments['fun'](initial_fluence), 4)}")
+        # Check if the optimization problem is lexicographic
+        if self.arguments.pop('lexicographic'):
 
-            # Check if the constraint function is included in the arguments
-            if 'cfun' in self.arguments:
+            # Get all ranks from the arguments dictionary
+            ranks = tuple(self.arguments)
 
-                # Get the initial constraint value
-                constraint_value = self.arguments.pop('cfun')(initial_fluence)
+            # Get tracker, objectives and constraints from the datahub
+            tracker = hub.optimization['problem'].tracker
+            objectives = hub.optimization['problem'].objectives
+            constraints = hub.optimization['problem'].constraints
 
-                # Add the initial constraint value to the output string
+            # Loop over the argument subdictionaries
+            for rank, arguments in self.arguments.items():
+
+                # Log a message about the lexicographic rank
+                hub.logger.display_info(
+                    f"Considering lexicography at rank {rank} ...")
+
+                # Set the current layer for the callback
+                self.layer = rank
+
+                # Get the initial objective value
+                objective_value = arguments['fun'](initial_fluence, False)
+
+                # Set the base output string
                 output_string = (
-                    f"{output_string}, g={around(constraint_value, 4)}")
+                    f"At iterate {self.counter-1}: "
+                    f"f={round(objective_value, 4)}")
 
-            # Log a message about the initial function value(s)
-            Datahub().logger.display_info(output_string)
+                # Check if the constraint function is included
+                if 'cfun' in arguments:
 
-        # Solve the optimization problem
-        result = self.fun(x0=initial_fluence, **self.arguments)
+                    # Get the initial constraint value
+                    constraint_value = arguments.pop('cfun')(
+                        initial_fluence, False)
+
+                    # Add the initial constraint value to the output string
+                    output_string = (
+                        f"{output_string}, g={around(constraint_value, 4)}")
+
+                # Log a message about the initial function value(s)
+                hub.logger.display_info(output_string)
+
+                # Solve the optimization problem of the current rank
+                result = self.fun(x0=initial_fluence, **arguments)
+
+                # Update the initial fluence for the next layer
+                initial_fluence = result.x
+
+                # Check if the current rank is not from the final layer
+                if rank != ranks[-1]:
+
+                    # Get the value of the next rank
+                    next_rank = ranks[ranks.index(rank)+1]
+
+                    # Get the previous ranks
+                    prev_ranks = ranks[:ranks.index(next_rank)]
+
+                    # Get the constraint labels with the index positions
+                    constraint_index = {
+                        label: tuple(constraints[next_rank]).index(label)
+                        for label in (label for rank in prev_ranks
+                                      for label in objectives[rank])}
+
+                    # Loop over the constraint-index pairs
+                    for label, index in constraint_index.items():
+
+                        # Adapt the upper bound by the current best value
+                        self.arguments[next_rank]['constraints'].ub[index] = (
+                            tracker[label][-1])
+
+        else:
+
+            # Check if the algorithm is different from 'TNC'
+            if self.arguments['method'] != 'TNC':
+
+                # Get the initial objective value
+                objective_value = self.arguments['fun'](initial_fluence, False)
+
+                # Set the base output string
+                output_string = (
+                    f"At iterate 0: f={round(objective_value, 4)}")
+
+                # Check if the constraint function is included
+                if 'cfun' in self.arguments:
+
+                    # Get the initial constraint value
+                    constraint_value = self.arguments.pop('cfun')(
+                        initial_fluence, False)
+
+                    # Add the initial constraint value to the output string
+                    output_string = (
+                        f"{output_string}, g={around(constraint_value, 4)}")
+
+                # Log a message about the initial function value(s)
+                Datahub().logger.display_info(output_string)
+
+            # Solve the optimization problem
+            result = self.fun(x0=initial_fluence, **self.arguments)
 
         return result.x, result.message

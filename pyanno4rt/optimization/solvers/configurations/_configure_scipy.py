@@ -5,7 +5,8 @@
 
 # %% External package import
 
-from scipy.optimize import BFGS, minimize, NonlinearConstraint
+from functools import partial
+from scipy.optimize import minimize, NonlinearConstraint, SR1
 
 # %% Function definition
 
@@ -63,57 +64,117 @@ def configure_scipy(problem_instance, lower_variable_bounds,
     # Set the optimization function
     fun = minimize
 
-    # Initialize the arguments dictionary
-    arguments = {'fun': problem_instance.objective,
-                 'jac': problem_instance.gradient,
-                 'bounds': tuple(
-                     zip(lower_variable_bounds, upper_variable_bounds)),
-                 'tol': tolerance,
-                 'callback': None}
-
     # Check if the algorithm is 'L-BFGS-B'
     if algorithm == 'L-BFGS-B':
 
-        # Update by the arguments of the 'L-BFGS-B' algorithm
-        arguments |= {'method': 'L-BFGS-B',
-                      'options': {'disp': False,
-                                  'ftol': tolerance,
-                                  'maxiter': max_iter,
-                                  'maxls': 20},
-                      'callback': callback}
+        # Initialize the arguments of the 'L-BFGS-B' algorithm
+        arguments = {'lexicographic': False,
+                     'fun': problem_instance.objective,
+                     'jac': problem_instance.gradient,
+                     'method': 'L-BFGS-B',
+                     'bounds': tuple(
+                         zip(lower_variable_bounds, upper_variable_bounds)),
+                     'tol': tolerance,
+                     'options': {'disp': False,
+                                 'ftol': tolerance,
+                                 'maxiter': max_iter,
+                                 'maxls': 20},
+                     'callback': callback}
 
     # Else, check if the algorithm is 'TNC'
     elif algorithm == 'TNC':
 
-        # Update by the arguments of the 'TNC' algorithm
-        arguments |= {'method': 'TNC',
-                      'options': {'disp': True,
-                                  'maxCGit': 0,
-                                  'eta': -1,
-                                  'stepmx': 0,
-                                  'ftol': tolerance,
-                                  'maxfun': max_iter}
-                      }
+        # Initialize the arguments of the 'TNC' algorithm
+        arguments = {'lexicographic': False,
+                     'fun': problem_instance.objective,
+                     'jac': problem_instance.gradient,
+                     'method': 'TNC',
+                     'bounds': tuple(
+                         zip(lower_variable_bounds, upper_variable_bounds)),
+                     'tol': tolerance,
+                     'options': {'disp': True,
+                                 'maxCGit': 0,
+                                 'eta': -1,
+                                 'stepmx': 0,
+                                 'ftol': tolerance,
+                                 'maxfun': max_iter}
+                     }
 
     # Else, check if the algorithm is 'trust-constr'
     elif algorithm == 'trust-constr':
 
-        # Update by the arguments of the 'trust-constr' algorithm
-        arguments |= {'method': 'trust-constr',
-                      'options': {'disp': False,
-                                  'verbose': 0,
-                                  'initial_tr_radius': 1,
-                                  'maxiter': max_iter},
-                      'callback': callback}
+        # Check if the method is 'lexicographic'
+        if type(problem_instance).__name__ == 'LexicographicOptimization':
 
-        # Check if any constraints have been passed
-        if len(problem_instance.constraints) > 0:
+            # Initialize the arguments by the multi-rank items
+            arguments = {
+                rank: {
+                    'fun': partial(problem_instance.objective, layer=rank),
+                    'jac': partial(problem_instance.gradient, layer=rank),
+                    'method': 'trust-constr',
+                    'bounds': tuple(
+                        zip(lower_variable_bounds, upper_variable_bounds)),
+                    'tol': tolerance,
+                    'options': {'disp': False,
+                                'verbose': 0,
+                                'initial_tr_radius': 1,
+                                'sparse_jacobian': True,
+                                'factorization_method': 'AugmentedSystem',
+                                'maxiter': max_iter},
+                    'callback': callback}
+                for rank in problem_instance.objectives}
 
-            # Update the arguments by the constraints object
-            arguments |= {'constraints': NonlinearConstraint(
-                        problem_instance.constraint, lower_constraint_bounds,
-                        upper_constraint_bounds, jac=problem_instance.jacobian,
-                        hess=BFGS()),
+            # Loop over the argument ranks
+            for rank in arguments:
+
+                # Check if any constraints have been passed at the rank
+                if (lower_constraint_bounds[rank],
+                        upper_constraint_bounds[rank]) != ([], []):
+
+                    # Update the arguments by the constraint items
+                    arguments[rank] |= {
+                        'constraints': NonlinearConstraint(
+                            partial(problem_instance.constraint, layer=rank),
+                            lower_constraint_bounds[rank],
+                            upper_constraint_bounds[rank],
+                            jac=partial(problem_instance.jacobian, layer=rank),
+                            hess=SR1()),
+                        'cfun': partial(
+                            problem_instance.constraint, layer=rank)}
+
+            # Add the indicator for the 'lexicographic' method
+            arguments |= {'lexicographic': True}
+
+        else:
+
+            # Initialize the arguments of the 'trust-constr' algorithm
+            arguments = {
+                'lexicographic': False,
+                'fun': problem_instance.objective,
+                'jac': problem_instance.gradient,
+                'method': 'trust-constr',
+                'bounds': tuple(
+                    zip(lower_variable_bounds, upper_variable_bounds)),
+                'tol': tolerance,
+                'options': {'disp': False,
+                            'verbose': 0,
+                            'initial_tr_radius': 1,
+                            'sparse_jacobian': True,
+                            'factorization_method': 'AugmentedSystem',
+                            'maxiter': max_iter},
+                'callback': callback}
+
+            # Check if any constraints have been passed
+            if (lower_constraint_bounds, upper_constraint_bounds) != ([], []):
+
+                # Update the arguments by the constraint items
+                arguments |= {
+                    'constraints': NonlinearConstraint(
+                        problem_instance.constraint,
+                        lower_constraint_bounds,
+                        upper_constraint_bounds,
+                        jac=problem_instance.jacobian,
+                        hess=SR1()),
                     'cfun': problem_instance.constraint}
 
     return fun, arguments

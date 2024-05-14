@@ -4,8 +4,7 @@ Data preprocessing module.
 ==================================================================
 
 The module aims to provide methods and classes for data preprocessing, i.e., \
-for building up a flexible preprocessing pipeline with data cleaning, \
-reduction, and transformation algorithms.
+data cleaning, reduction, (re-)sampling and transformation.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

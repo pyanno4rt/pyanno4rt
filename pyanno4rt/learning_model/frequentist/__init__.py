@@ -20,7 +20,7 @@ from ._neural_network import NeuralNetworkModel
 from ._random_forest import RandomForestModel
 from ._support_vector_machine import SupportVectorMachineModel
 
-from . import additional_files
+from . import addons
 
 __all__ = ['DecisionTreeModel',
            'KNeighborsModel',
@@ -29,4 +29,4 @@ __all__ = ['DecisionTreeModel',
            'NeuralNetworkModel',
            'RandomForestModel',
            'SupportVectorMachineModel',
-           'additional_files']
+           'addons']

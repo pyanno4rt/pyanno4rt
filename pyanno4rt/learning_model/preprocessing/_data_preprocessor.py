@@ -1,158 +1,159 @@
-"""Data preprocessing pipeline."""
+"""Data preprocessing."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
 # %% External package import
 
-from numpy import array, prod
-from sklearn.pipeline import Pipeline
+from numpy import prod, vstack
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model.preprocessing.transformers import (
-    Equalizer, StandardScaler, Whitening)
+from pyanno4rt.learning_model.preprocessing.cleaners import cleaner_map
+from pyanno4rt.learning_model.preprocessing.reducers import reducer_map
+from pyanno4rt.learning_model.preprocessing.samplers import sampler_map
+from pyanno4rt.learning_model.preprocessing.transformers import transformer_map
 
 # %% Class definition
 
 
 class DataPreprocessor():
     """
-    Data preprocessing pipeline class.
+    Data preprocessing class.
 
     Parameters
     ----------
-    step_labels : tuple
-        Tuple with the preprocessing pipeline elements (labels of the \
-        respective preprocessing algorithm classes).
+    sequence : list
+        Labels for the preprocessing algorithm classes (sequential).
+
+    verbose : bool, default=True
+        Indicator for the display of logging messages.
 
     Attributes
     ----------
-    labels : tuple
-        Tuple with the step labels.
-
-    steps : tuple
-        Tuple with the preprocessing algorithms.
-
-    pipeline : object of class `Pipeline`
-        Instance of the class `Pipeline`, which provides a preprocessing \
-        pipeline (chain of transformation algorithms).
+    steps : dict
+        Dictionary with the preprocessing steps as pairs of labels and \
+        corresponding preprocessing algorithm classes.
     """
 
     def __init__(
             self,
-            step_labels,
+            sequence,
             verbose=True):
 
-        # Check if verbose is True
+        # Check if a message should be printed
         if verbose:
 
-            # Log a message about the preprocessor initialization
+            # Log a message about the initialization of the class
             Datahub().logger.display_info("Initializing data preprocessor ...")
 
-        # Map the labels to the preprocessing algorithms
-        catalogue = {'Equalizer': Equalizer(),
-                     'StandardScaler': StandardScaler(),
-                     'Whitening': Whitening()}
+        # Merge the preprocessing algorithm maps
+        preprocessing_map = {
+            **cleaner_map, **reducer_map, **sampler_map, **transformer_map}
 
-        # Get the preprocessing step labels
-        self.labels = step_labels
+        # Check if the sequence is empty
+        if len(sequence) == 0:
 
-        # Get the preprocessing algorithms related to the labels
-        self.steps = tuple(catalogue[label] for label in self.labels)
+            # Overwrite the sequence by the identity step
+            sequence = ['Identity']
 
-        # Build the preprocessing pipeline
-        self.pipeline = self.build(verbose)
-
-    def build(self, verbose):
-        """
-        Build the preprocessing pipeline from the passed steps and step labels.
-
-        Returns
-        -------
-        object of class `Pipeline`
-            Instance of the class `Pipeline`, which provides a preprocessing \
-            pipeline (chain of transformation algorithms).
-        """
-
-        # Check if verbose is True
+        # Check if a message should be printed
         if verbose:
 
-            # Log a message about the pipeline steps
-            Datahub().logger.display_info("Building pipeline 'Input -> {} -> "
-                                          "Output' ..."
-                                          .format(' -> '.join(self.labels)))
+            # Log a message about the pipeline build
+            Datahub().logger.display_info(
+                f"Building pipeline 'Input -> {' -> '.join(sequence)} -> "
+                "Output' ...")
 
-        return Pipeline(list(zip(self.labels, self.steps)))
-
-    def fit(
-            self,
-            features):
-        """
-        Fit the preprocessing pipeline with the input features.
-
-        Parameters
-        ----------
-        features : ndarray
-            Values of the input features.
-        """
-        self.pipeline.fit(features)
+        # Generate the preprocessing steps dictionary
+        self.steps = dict(zip(
+            sequence, (preprocessing_map[label]() for label in sequence)))
 
     def transform(
             self,
-            features):
+            features,
+            labels=None):
         """
-        Transform the input features with the preprocessing pipeline.
-
-        Returns
-        -------
-        ndarray
-            Array of transformed feature values.
-        """
-        return self.pipeline.transform(features)
-
-    def fit_transform(
-            self,
-            features):
-        """
-        Fit and transform the input features with the preprocessing pipeline.
+        Transform the input features/labels.
 
         Parameters
         ----------
         features : ndarray
             Values of the input features.
 
+        labels : ndarray, default=None
+            Values of the input labels.
+
         Returns
         -------
         ndarray
-            Array of transformed feature values.
-        """
-        # Fit the preprocessing pipeline
-        self.pipeline.fit(features)
+            Transformed values of the input features.
 
-        return self.pipeline.transform(features)
+        None or ndarray
+            Transformed values of the input labels.
+        """
+
+        # Loop over the preprocessing algorithms
+        for algorithm in self.steps.values():
+
+            # Transform the features and labels
+            features, labels = algorithm.transform(features, labels)
+
+        return features, labels
+
+    def fit_transform(
+            self,
+            features,
+            labels=None):
+        """
+        Fit the preprocessor and transform the input features/labels.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray, default=None
+            Values of the input labels.
+
+        Returns
+        -------
+        ndarray
+            Transformed values of the input features.
+
+        None or ndarray
+            Transformed values of the input labels.
+        """
+
+        # Loop over the preprocessing algorithms
+        for algorithm in self.steps.values():
+
+            # Fit the algorithm
+            algorithm.fit(features, labels)
+
+            # Transform the features and labels
+            features, labels = algorithm.transform(features, labels)
+
+        return features, labels
 
     def gradientize(
             self,
             features):
         """
-        Compute the gradient of the preprocessing pipeline w.r.t the input \
-        features.
+        Compute the preprocessing gradient w.r.t the input features.
 
         Parameters
         ----------
         features : ndarray
-            Array of transformed feature values.
+            Values of the input features.
 
         Returns
         -------
-        list
-            Input feature gradients for the full preprocessing pipeline.
+        ndarray
+            Value of the preprocessing gradient.
         """
-        # Get the gradient for each preprocessing step
-        step_gradients = tuple(
-            step.compute_gradient(features) for step in self.steps
-            if hasattr(step, 'compute_gradient') and callable(
-                    getattr(step, 'compute_gradient')))
 
-        return array([prod(x) for x in zip(*step_gradients)])
+        return prod(vstack(tuple(
+            step.compute_gradient(features) for step in self.steps.values()
+            if hasattr(step, 'compute_gradient') and callable(
+                    step.compute_gradient))), axis=0)

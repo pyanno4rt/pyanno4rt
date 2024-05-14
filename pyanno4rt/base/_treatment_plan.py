@@ -77,7 +77,7 @@ class TreatmentPlan():
                 included in a single file (.mat or .p) or a series of files \
                 (.dcm), whose content follows the pyanno4rt data structure.
 
-        - target_imaging_resolution : list or None, default=None
+        - target_imaging_resolution : None or list, default=None
             Imaging resolution for post-processing interpolation of the CT \
             and segmentation data, only used if a list is passed.
 
@@ -105,9 +105,8 @@ class TreatmentPlan():
                 - <3> parameter dictionary for the component (see the \
                   component classes for details)
 
-                Multiple objective functions or constraints can be assigned \
-                simultaneously by passing a list of class/parameter \
-                dictionaries for the 'instance' key.
+                Multiple objectives and/or constraints can be assigned by \
+                passing a list of dictionaries for each segment of interest.
 
                 The following components are currently available:
 
@@ -187,9 +186,8 @@ class TreatmentPlan():
             - 'pypop7': population-based algorithms provided by PyPop7
             - 'scipy' : local algorithms provided by SciPy
 
-            .. note:: The 'pareto' method currently only works with the \
-                'pymoo' solver option. Constraints are not supported by the \
-                'pypop7' solver option.
+            .. note:: The 'lexicographic' method currently only works with \
+                'scipy', while the 'pareto' method only works with 'pymoo'.
 
         - algorithm : str
             Solution algorithm from the chosen solver:
@@ -204,7 +202,7 @@ class TreatmentPlan():
 
                 - 'NSGA3' : non-dominated sorting genetic algorithm III
 
-            - solver='pypop7' : {'LMCMA', 'LMMAES'}, default='LMMAES'
+            - solver='pypop7' : {'LMCMA', 'LMMAES'}, default='LMCMA'
 
                 - 'LMCMA' : limited-memory covariance matrix adaptation
                 - 'LMMAES' : limited-memory matrix adaptation evolution \
@@ -218,8 +216,8 @@ class TreatmentPlan():
                 - 'TNC' : truncated Newton method
                 - 'trust-constr' : trust-region constrained method
 
-            .. note:: Constraints are supported by all algorithms except the \
-                'L-BFGS-B' algorithm.
+            .. note:: Constraints are currently only supported by 'NSGA3' \
+                and 'trust-constr'.
 
         - initial_strategy : {'data-medoid', 'target-coverage', \
                               'warm-start'}, default='target-coverage'
@@ -238,15 +236,15 @@ class TreatmentPlan():
                 similarity. Otherwise, the initial fluence vector may lose \
                 its individual representativeness.
 
-        - initial_fluence_vector : list or None, default=None
+        - initial_fluence_vector : None or list, default=None
             User-defined initial fluence vector for the optimization problem, \
             only used if initial_strategy='warm-start' (see the class \
             :class:`~pyanno4rt.optimization.initializers._fluence_initializer.FluenceInitializer`).
 
-        - lower_variable_bounds : int, float, list or None, default=0
+        - lower_variable_bounds : None, int, float, or list, default=0
             Lower bound(s) on the decision variables.
 
-        - upper_variable_bounds : int, float, list or None, default=None
+        - upper_variable_bounds : None, int, float, or list, default=None
             Upper bound(s) on the decision variables.
 
         .. note:: There are two options to set lower and upper bounds for the \
@@ -265,7 +263,7 @@ class TreatmentPlan():
         - tolerance : float, default=1e-3
             Precision goal for the objective function value.
 
-    evaluation : dict, default={}
+    evaluation : None or dict, default=None
         Dictionary with the treatment plan evaluation parameters.
 
         - dvh_type : {'cumulative', 'differential'}, default=cumulative'
@@ -280,19 +278,19 @@ class TreatmentPlan():
         - reference_dose : list, default=[]
             Reference dose values for which to evaluate the DVH values.
 
-            .. note:: If the default value [] is used, reference dose \
+            .. note:: If the default value is used, reference dose \
                 levels will be determined automatically.
 
         - display_segments : list, default=[]
             Names of the segmented structures to be displayed.
 
-            .. note:: If the default value [] is used, all segments will \
+            .. note:: If the default value is used, all segments will \
                 be displayed.
 
         - display_metrics : list, default=[]
             Names of the plan evaluation metrics to be displayed.
 
-            .. note:: If the default value [] is used, all metrics will be \
+            .. note:: If the default value is used, all metrics will be \
                 displayed.
 
                 The following metrics are currently available:
@@ -321,39 +319,39 @@ class TreatmentPlan():
         :class:`~pyanno4rt.input_check._input_checker.InputChecker`
         The object used to approve the input dictionaries.
 
-    logger : object of class \
+    logger : None or object of class \
         :class:`~pyanno4rt.logging._logger.Logger`
         The internal object used to print and store logging messages.
 
-    datahub : object of class \
+    datahub : None or object of class \
         :class:`~pyanno4rt.datahub._datahub.Datahub`
         The object used to manage and distribute information units.
 
-    patient_loader : object of class \
+    patient_loader : None or object of class \
         :class:`~pyanno4rt.patient._patient_loader.PatientLoader`
         The object used to import and type-convert CT and segmentation data.
 
-    plan_generator : object of class \
+    plan_generator : None or object of class \
         :class:`~pyanno4rt.plan._plan_generator.PlanGenerator`
         The object used to set and type-convert plan properties.
 
-    dose_info_generator : object of class \
+    dose_info_generator : None or object of class \
         :class:`~pyanno4rt.dose_info._dose_info_generator.DoseInfoGenerator`
         The object used to specify and type-convert dose (grid) properties.
 
-    fluence_optimizer : object of class \
+    fluence_optimizer : None or object of class \
         :class:`~pyanno4rt.optimization._fluence_optimizer.FluenceOptimizer`
         The object used to solve the fluence optimization problem.
 
-    dose_histogram : object of class \
+    dose_histogram : None or object of class \
         :class:`~pyanno4rt.evaluation._dvh.DVHEvaluator`
         The object used to evaluate the dose-volume histogram (DVH).
 
-    dosimetrics : object of class \
+    dosimetrics : None or object of class \
         :class:`~pyanno4rt.evaluation._dosimetrics.DosimetricsEvaluator`
         The object used to evaluate the dosimetrics.
 
-    visualizer : object of class \
+    visualizer : None or object of class \
         :class:`~pyanno4rt.visualization._visualizer.Visualizer`
         The object used to visualize the treatment plan.
 
@@ -361,7 +359,7 @@ class TreatmentPlan():
     -------
     Our Read the Docs page (https://pyanno4rt.readthedocs.io/en/latest/) \
     features a step-by-step example for the application of this class. You \
-    will also find code templates there, e.g. for the components.
+    will also find code templates there, e.g. for the optimization components.
     """
 
     def __init__(
@@ -408,7 +406,7 @@ class TreatmentPlan():
                 'algorithm',
                 'pgm' if optimization.get('solver') == 'proxmin'
                 else 'NSGA3' if optimization.get('solver') == 'pymoo'
-                else 'LMMAES' if optimization.get('solver') == 'pypop7'
+                else 'LMCMA' if optimization.get('solver') == 'pypop7'
                 else 'L-BFGS-B'),
             'initial_strategy': optimization.get(
                 'initial_strategy', 'target-coverage'),
@@ -588,11 +586,10 @@ class TreatmentPlan():
 
         Parameters
         ----------
-        parent : object of class \
+        parent : None or object of class \
             :class:`~pyanno4rt.gui.windows._main_window.MainWindow`, \
                 default=None
-            The (optional) object used as a parent window for the \
-            visualization interface.
+            The object used as a parent window for the visualization interface.
 
         Raises
         ------

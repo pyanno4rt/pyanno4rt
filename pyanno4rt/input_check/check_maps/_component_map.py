@@ -37,6 +37,9 @@ component_map = {
         partial(check_type, types=(int, float)),
         partial(check_value, reference=0, sign='>')
         ),
+    'rank': (
+        partial(check_type, types=int),
+        partial(check_value, reference=0, sign='>')),
     'bounds': (
         partial(check_type, types=(type(None), list)),
         partial(check_length, reference=2, sign='=='),

@@ -21,7 +21,7 @@ def sigmoid(value, multiplier=1, summand=0):
     multiplier : int or float, default=1
         Multiplicative coefficient in the linear term.
 
-    summand : int or float, summand=0
+    summand : int or float, default=0
         Additive coefficient in the linear term.
 
     Returns

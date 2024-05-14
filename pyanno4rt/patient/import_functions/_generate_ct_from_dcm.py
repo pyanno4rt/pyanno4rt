@@ -51,9 +51,9 @@ def generate_ct_from_dcm(data, resolution):
 
         # Check if the grid resolutions are inconsistent
         if any(len(set(resolutions)) != 1 for resolutions in zip(
-                *((file.PixelSpacing._list[1].real,
-                   file.PixelSpacing._list[0].real,
-                   file.SpacingBetweenSlices.real)
+                *((file.PixelSpacing[1],
+                   file.PixelSpacing[0],
+                   file.SliceThickness)
                   for file in data))):
 
             # Raise an error to indicate an inconsistency
@@ -63,8 +63,7 @@ def generate_ct_from_dcm(data, resolution):
 
         # Check if the image positions are inconsistent
         if any(len(set(positions)) != 1 for positions in zip(
-                *((file.ImagePositionPatient._list[1].real,
-                   file.ImagePositionPatient._list[0].real)
+                *((file.ImagePositionPatient[1], file.ImagePositionPatient[0])
                   for file in data))):
 
             # Raise an error to indicate an inconsistency
@@ -74,8 +73,7 @@ def generate_ct_from_dcm(data, resolution):
 
         # Check if the dimensionalities are inconsistent
         if any(len(set(dimensions)) != 1 for dimensions in zip(
-                *((file.Columns.real, file.Rows.real)
-                  for file in data))):
+                *((file.Columns, file.Rows) for file in data))):
 
             # Raise an error to indicate an inconsistency
             raise ValueError(
@@ -146,25 +144,23 @@ def generate_ct_from_dcm(data, resolution):
 
     # Add the grid resolution to the dictionary
     computed_tomography['resolution'] = {
-        'x': data[0].PixelSpacing._list[1].real,
-        'y': data[0].PixelSpacing._list[0].real,
-        'z': data[0].SpacingBetweenSlices.real}
+        'x': data[0].PixelSpacing[1],
+        'y': data[0].PixelSpacing[0],
+        'z': data[0].SliceThickness}
 
     # Add the grid points in x to the dictionary
     computed_tomography['x'] = array([
-        data[0].ImagePositionPatient._list[0]
-        + factor*data[0].PixelSpacing._list[1].real
-        for factor in range(data[0].Columns.real)])
+        data[0].ImagePositionPatient[0] + factor*data[0].PixelSpacing[1]
+        for factor in range(data[0].Columns)])
 
     # Add the grid points in y to the dictionary
     computed_tomography['y'] = array([
-        data[0].ImagePositionPatient._list[1]
-        + factor*data[0].PixelSpacing._list[0].real
-        for factor in range(data[0].Rows.real)])
+        data[0].ImagePositionPatient[1] + factor*data[0].PixelSpacing[0]
+        for factor in range(data[0].Rows)])
 
     # Add the grid points in z to the dictionary
     computed_tomography['z'] = array([
-        file.ImagePositionPatient._list[2] for file in data])
+        file.ImagePositionPatient[2] for file in data])
 
     # Add the cube dimensions to the dictionary
     computed_tomography['cube_dimensions'] = array(

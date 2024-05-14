@@ -24,10 +24,10 @@ class MinimumDVH(ConventionalComponentClass):
 
     Parameters
     ----------
-    target_dose : int or float, default=None
+    target_dose : int or float
         Target value for the dose.
 
-    quantile_volume : int or float, default=None
+    quantile_volume : int or float
         Volume level at which to evaluate the dose quantile.
 
     embedding : {'active', 'passive'}, default='active'
@@ -38,13 +38,16 @@ class MinimumDVH(ConventionalComponentClass):
     weight : int or float, default=1.0
         Weight of the component function.
 
+    rank : int, default=1
+        Rank of the component in the lexicographic order.
+
     bounds : None or list, default=None
         Constraint bounds for the component.
 
     link : None or list, default=None
         Other segments used for joint evaluation.
 
-    identifier : str, default=None
+    identifier : None or str, default=None
         Additional string for naming the component.
 
     display : bool, default=True
@@ -62,6 +65,7 @@ class MinimumDVH(ConventionalComponentClass):
             quantile_volume=None,
             embedding='active',
             weight=1.0,
+            rank=1,
             bounds=None,
             link=None,
             identifier=None,
@@ -74,6 +78,7 @@ class MinimumDVH(ConventionalComponentClass):
                          parameter_value=(target_dose, quantile_volume),
                          embedding=embedding,
                          weight=weight,
+                         rank=rank,
                          bounds=bounds,
                          link=link,
                          identifier=identifier,

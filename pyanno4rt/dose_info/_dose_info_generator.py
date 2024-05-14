@@ -109,18 +109,42 @@ class DoseInfoGenerator():
 
             try:
 
-                # Read the dose-influence matrix from version < 7.3
-                dose_information['dose_influence_matrix'] = csr_matrix(
-                    loadmat(self.dose_matrix_path)['Dij'][0][0])
+                # Load the dose-influence matrix from version < 7.3
+                dose_matrix = loadmat(self.dose_matrix_path)['Dij']
+
+                # Check if the dose-influence matrix is an array of object
+                if dose_matrix.shape == (1, 1):
+
+                    # Get the sparse dose-influence matrix from the object
+                    dose_information['dose_influence_matrix'] = csr_matrix(
+                        dose_matrix[0][0])
+
+                else:
+
+                    # Get the sparse dose-influence matrix directly
+                    dose_information['dose_influence_matrix'] = csr_matrix(
+                        dose_matrix)
 
             except NotImplementedError:
 
                 # Open a file stream
                 with File(self.dose_matrix_path, 'r') as file:
 
-                    # Read the dose-influence matrix from version >= 7.3
-                    dose_information['dose_influence_matrix'] = csr_matrix(
-                        file['Dij'][0][0])
+                    # Load the dose-influence matrix from version >= 7.3
+                    dose_matrix = file['Dij']
+
+                    # Check if the dose-influence matrix is an array of object
+                    if dose_matrix.shape == (1, 1):
+
+                        # Get the sparse dose-influence matrix from the object
+                        dose_information['dose_influence_matrix'] = csr_matrix(
+                            dose_matrix[0][0])
+
+                    else:
+
+                        # Get the sparse dose-influence matrix directly
+                        dose_information['dose_influence_matrix'] = csr_matrix(
+                            dose_matrix)
 
         # Else, check if the dose path leads to a numpy binary file
         elif self.dose_matrix_path.endswith('.npy'):

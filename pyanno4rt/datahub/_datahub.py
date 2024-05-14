@@ -28,62 +28,62 @@ class Datahub():
         Dictionary with pairs of treatment plan labels and associated \
         :class:`~pyanno4rt.datahub._datahub.Datahub` objects.
 
-    label : str
+    label : None or str
         Label of the current active treatment plan instance.
 
-    input_checker : object of class \
+    input_checker : None or object of class \
         :class:`~pyanno4rt.input_check._input_checker.InputChecker`
         The object used to approve the input dictionaries.
 
-    logger : object of class \
+    logger : None or object of class \
         :class:`~pyanno4rt.logging._logger.Logger`
         The object used to print and store logging messages.
 
-    computed_tomography : dict
+    computed_tomography : None or dict
         Dictionary with information on the CT images.
 
-    segmentation : dict
+    segmentation : None or dict
         Dictionary with information on the segmented structures.
 
-    plan_configuration : dict
+    plan_configuration : None or dict
         Dictionary with information on the plan configuration.
 
-    dose_information : dict
+    dose_information : None or dict
         Dictionary with information on the dose grid.
 
-    optimization : dict
+    optimization : None or dict
         Dictionary with information on the fluence optimization.
 
-    datasets : dict
+    datasets : None or dict
         Dictionary with pairs of model labels and associated external \
         datasets used for model fitting. Each dataset is a dictionary itself, \
         holding information on the raw data and the features/labels.
 
-    feature_maps : dict
+    feature_maps : None or dict
         Dictionary with pairs of model labels and associated feature maps. \
         Each feature map holds links between the features from the respective \
         dataset, the segments, and the definitions from the feature catalogue.
 
-    model_instances : dict
+    model_instances : None or dict
         Dictionary with pairs of model labels and associated model instances, \
         i.e., the prediction model, the model configuration dictionary, and \
         the model hyperparameters obtained from hyperparameter tuning.
 
-    model_inspections : dict
+    model_inspections : None or dict
         Dictionary with pairs of model labels and associated model \
         inspectors. Each inspector holds information on the inspection \
         measures calculated.
 
-    model_evaluations : dict
+    model_evaluations : None or dict
         Dictionary with pairs of model labels and associated model \
         evaluators. Each evaluator holds information on the evaluation \
         measures calculated.
 
-    dose_histogram : dict
+    dose_histogram : None or dict
         Dictionary with information on the cumulative or differential \
         dose-volume histogram for each segmented structure.
 
-    dosimetrics : dict
+    dosimetrics : None or dict
         Dictionary with information on the dosimetrics for each segmented \
         structure.
     """
@@ -95,7 +95,6 @@ class Datahub():
     label = None
     input_checker = None
     logger = None
-    object_stream = None
     computed_tomography = None
     segmentation = None
     plan_configuration = None

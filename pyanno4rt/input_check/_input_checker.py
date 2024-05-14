@@ -86,7 +86,9 @@ class InputChecker():
         args = {'solver': {
                     'value_condition': input_dictionary.get('method')},
                 'algorithm': {
-                    'value_condition': input_dictionary.get('solver')},
+                    'value_condition': (
+                        f"{input_dictionary.get('method')}/"
+                        f"{input_dictionary.get('solver')}")},
                 'initial_fluence_vector': {
                     'type_condition': input_dictionary.get(
                         'initial_strategy')},

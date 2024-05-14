@@ -24,7 +24,7 @@ class SquaredUnderdosing(ConventionalComponentClass):
 
     Parameters
     ----------
-    minimum_dose : int or float, default=None
+    minimum_dose : int or float
         Minimum value for the dose.
 
     embedding : {'active', 'passive'}, default='active'
@@ -35,13 +35,16 @@ class SquaredUnderdosing(ConventionalComponentClass):
     weight : int or float, default=1.0
         Weight of the component function.
 
+    rank : int, default=1
+        Rank of the component in the lexicographic order.
+
     bounds : None or list, default=None
         Constraint bounds for the component.
 
     link : None or list, default=None
         Other segments used for joint evaluation.
 
-    identifier : str, default=None
+    identifier : None or str, default=None
         Additional string for naming the component.
 
     display : bool, default=True
@@ -58,6 +61,7 @@ class SquaredUnderdosing(ConventionalComponentClass):
             minimum_dose=None,
             embedding='active',
             weight=1.0,
+            rank=1,
             bounds=None,
             link=None,
             identifier=None,
@@ -70,6 +74,7 @@ class SquaredUnderdosing(ConventionalComponentClass):
                          parameter_value=(minimum_dose,),
                          embedding=embedding,
                          weight=weight,
+                         rank=rank,
                          bounds=bounds,
                          link=link,
                          identifier=identifier,

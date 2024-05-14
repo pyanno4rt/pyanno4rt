@@ -4,20 +4,20 @@
 
 # %% External package import
 
-from os.path import abspath, dirname
-from PyQt5.QtCore import QDir
-from PyQt5.QtWidgets import QFileDialog, QMainWindow
+from os.path import abspath, dirname, isfile
+from PyQt5.QtCore import QDir, QEvent
+from PyQt5.QtWidgets import QComboBox, QFileDialog, QMainWindow, QSpinBox
 
 # %% Internal package import
 
 from pyanno4rt.base import TreatmentPlan
 from pyanno4rt.gui.compilations.plan_creation_window import (
-    Ui_plan_create_window)
+    Ui_plan_creation_window)
 
 # %% Class definition
 
 
-class PlanCreationWindow(QMainWindow, Ui_plan_create_window):
+class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
     """
     Plan creation window for the application.
 
@@ -38,6 +38,9 @@ class PlanCreationWindow(QMainWindow, Ui_plan_create_window):
         # Build the UI main window
         self.setupUi(self)
 
+        # Install the custom event filter in the plan creation window
+        self.new_plan_ref_cbox.installEventFilter(self)
+
         # Loop over the fieldnames with 'clicked' events
         for key, value in {
                 'new_img_path_tbutton': self.add_imaging_path,
@@ -49,7 +52,15 @@ class PlanCreationWindow(QMainWindow, Ui_plan_create_window):
 
         # 
         self.new_plan_ledit.textChanged.connect(
-            self.update_by_new_plan_label)
+            self.update_create_button)
+        self.new_plan_ref_cbox.currentTextChanged.connect(
+            self.update_create_button)
+        self.new_img_path_ledit.textChanged.connect(
+            self.update_create_button)
+        self.new_dose_path_ledit.textChanged.connect(
+            self.update_create_button)
+        self.new_dose_res_ledit.textChanged.connect(
+            self.update_create_button)
 
         # 
         self.new_plan_ref_cbox.currentTextChanged.connect(
@@ -60,6 +71,36 @@ class PlanCreationWindow(QMainWindow, Ui_plan_create_window):
 
         # 
         self.close_plan_pbutton.clicked.connect(self.close)
+
+    def eventFilter(
+            self,
+            source,
+            event):
+        """
+        Customize the event filters.
+
+        Parameters
+        ----------
+        source : ...
+            ...
+
+        event : ...
+            ...
+
+        Returns
+        -------
+        ...
+        """
+
+        # Check if a mouse wheel event applies to QComboBox or QSpinBox
+        if (event.type() == QEvent.Wheel and
+                isinstance(source, (QComboBox, QSpinBox))):
+
+            # Filter the event
+            return True
+
+        # Else, return the even
+        return super().eventFilter(source, event)
 
     def position(self):
         """."""
@@ -73,18 +114,30 @@ class PlanCreationWindow(QMainWindow, Ui_plan_create_window):
         # Set the shifted geometry
         self.setGeometry(geometry)
 
-    def update_by_new_plan_label(self):
+    def update_create_button(self):
         """."""
 
         # 
-        if self.new_plan_ledit.text() in (
+        if (self.new_plan_ledit.text() in (
                 self.parent.plan_select_cbox.itemText(i)
-                for i in range(self.parent.plan_select_cbox.count())):
+                for i in range(self.parent.plan_select_cbox.count()))
+                or any(text == '' for text in (
+                    self.new_plan_ledit.text(),
+                    self.new_img_path_ledit.text(),
+                    self.new_dose_path_ledit.text(),
+                    self.new_dose_res_ledit.text()))):
 
             # 
             self.create_plan_pbutton.setEnabled(False)
 
         else:
+
+            # 
+            self.create_plan_pbutton.setEnabled(True)
+
+        # 
+        if (self.new_plan_ledit.text() != ''
+                and self.new_plan_ref_cbox.currentText() != 'None'):
 
             # 
             self.create_plan_pbutton.setEnabled(True)
@@ -201,8 +254,8 @@ class PlanCreationWindow(QMainWindow, Ui_plan_create_window):
             self.parent.dose_res_ledit.setText(
                 str(self.new_dose_res_ledit.text()))
 
-            # Set the default objectives
-            
+            # 
+            self.parent.initialize()
 
         # 
         self.parent.plan_ledit.setReadOnly(True)

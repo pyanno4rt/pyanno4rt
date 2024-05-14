@@ -62,4 +62,4 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> seaborn (>=0.13.2) </li>
 	<li> pypop7 (>=0.0.79) </li>
 </ul>
-We are using Python version 3.10.13 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>
+We are using Python version 3.10.14 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>

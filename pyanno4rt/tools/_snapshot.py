@@ -51,11 +51,11 @@ def snapshot(instance, path, include_patient_data=False,
     # Check if any required attribute is missing
     if any(getattr(instance, attribute) is None for attribute in
            ('logger', 'datahub', 'input_checker', 'patient_loader',
-           'plan_generator', 'dose_info_generator')):
+           'plan_generator', 'dose_info_generator', 'fluence_optimizer')):
 
         # Raise an error to indicate a missing attribute
-        raise AttributeError(
-            "Please configure the treatment plan before taking a snapshot!")
+        raise AttributeError("Please configure and optimize the treatment "
+                             "plan before taking a snapshot!")
 
     def save_ml_model(data):
         """Create and save the machine learning model data files."""

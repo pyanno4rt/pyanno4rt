@@ -1448,6 +1448,7 @@
     <file>logo_white_square.png</file>
   </qresource>
   <qresource prefix="special_icons">
+    <file>icons_special/compare-svgrepo-com.svg</file>
     <file>icons_special/configuration-vertical-control-svgrepo-com.svg</file>
     <file>icons_special/dashboard-svgrepo-com.svg</file>
     <file>icons_special/filter-svgrepo-com.svg</file>
@@ -1461,7 +1462,7 @@
     <file>icons_special/find-path-svgrepo-com.svg</file>
     <file>icons_special/target-green-svgrepo-com.svg</file>
     <file>icons_special/frame-green-svgrepo-com.svg</file>
-    <file>icons_special/frame-red--svgrepo-com.svg</file>
+    <file>icons_special/frame-red-svgrepo-com.svg</file>
     <file>icons_special/target-red-svgrepo-com.svg</file>
     <file>icons_special/flag-for-flag-germany-svgrepo-com.svg</file>
     <file>icons_special/united-kingdom-uk-svgrepo-com.svg</file>

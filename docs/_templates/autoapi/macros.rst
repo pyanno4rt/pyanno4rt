@@ -29,7 +29,7 @@ only way to have a type-less signature if `autodoc_typehints` is `signature` or
 {%- endmacro %}
 
 
-{# Generates a single object optionally with a signature and a labe. #}
+{# Generates a single object optionally with a signature and a label. #}
 {% macro _item(obj, sig=False, label='') %}
    * - {{ _render_item_name(obj, sig) }}
      - {% if label %}:summarylabel:`{{ label }}` {% endif %}{% if obj.summary %}{{ obj.summary }}{% else %}\-{% endif +%}

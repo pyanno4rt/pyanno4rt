@@ -201,7 +201,7 @@ class MainWindow(QMainWindow):
             # Check if the (N)TCP values button should be disabled
             if (not (any(objective.display for objective in ml_objectives)
                      or any(objective.display for objective in rb_objectives
-                            if objective.name in ('Lyman-Kutcher-Burman-NTCP',
+                            if objective.name in ('Lyman-Kutcher-Burman NTCP',
                                                   'LQ Poisson TCP')))
                     and subclass.name == 'ntcp_plotter'):
                 button.setEnabled(False)

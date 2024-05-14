@@ -10,6 +10,7 @@ from functools import partial
 
 from pyanno4rt.input_check.check_functions import (
     check_length, check_subtype, check_type, check_value, check_value_in_set)
+from pyanno4rt.learning_model.frequentist.addons import loss_map, optimizer_map
 
 # %% Map definition
 
@@ -154,11 +155,11 @@ tune_space_map = {
         ),
     'optimizer': (
         partial(check_type, types=list),
-        partial(check_value_in_set, options=('Adam', 'Ftrl', 'SGD'))
+        partial(check_value_in_set, options=tuple(optimizer_map))
         ),
     'loss': (
         partial(check_type, types=list),
-        partial(check_value_in_set, options=('BCE', 'FocalBCE', 'KLD'))
+        partial(check_value_in_set, options=tuple(loss_map))
         ),
     'n_estimators': (
         partial(check_type, types=list),

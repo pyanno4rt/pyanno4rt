@@ -7,10 +7,11 @@
 from matplotlib import colormaps
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
-from numpy import (nan, ndarray, rot90, transpose, unravel_index, zeros)
+from numpy import (nan, rot90, transpose, unravel_index, zeros)
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
-from pyqtgraph import (GraphicsLayoutWidget, ImageItem, IsocurveItem, mkColor,
-                       mkPen)
+from pyqtgraph import (
+    colormap, ColorBarItem, GraphicsLayoutWidget, ImageItem, IsocurveItem,
+    mkColor, mkPen)
 
 # %% Class definition
 
@@ -31,11 +32,11 @@ class SliceWidget(QWidget):
         slice_layout.setContentsMargins(10, 10, 10, 0)
 
         # Create an image window, set its size, and add it to the slice layout
-        image_window = GraphicsLayoutWidget()
-        slice_layout.addWidget(image_window)
+        self.image_window = GraphicsLayoutWidget()
+        slice_layout.addWidget(self.image_window)
 
         # Add the view box to the image window
-        self.viewbox = image_window.addViewBox()
+        self.viewbox = self.image_window.addViewBox()
 
         # 
         self.ct_image = ImageItem()
@@ -44,10 +45,16 @@ class SliceWidget(QWidget):
         # 
         self.dose_image = ImageItem()
         self.dose_image.setOpacity(0.7)
-        colormap_dose = colormaps['jet']
-        colormap_dose._init()
-        self.dose_image.setLookupTable((colormap_dose._lut*255).view(ndarray))
+        self.dose_image.setLookupTable(
+            colormap.get('jet', 'matplotlib').getLookupTable(0.0, 1.0))
         self.viewbox.addItem(self.dose_image)
+
+        # 
+        self.bar = ColorBarItem(
+            interactive=False, width=25, label='',
+            rounding=0.1, colorMap=colormap.get('jet', 'matplotlib'),
+            orientation='vertical')
+        self.bar.setImageItem(self.dose_image)
 
         # 
         self.slice = None
@@ -79,6 +86,8 @@ class SliceWidget(QWidget):
 
         self.dose_cube_with_nan = self.dose_cube.copy()
         self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
+
+        self.image_window.addItem(self.bar)
 
         quantiles = [0.1*factor1 for factor1 in range(1, 10)]
         quantiles.extend([0.95+0.05*factor2 for factor2 in range(0, 6)])
@@ -177,6 +186,7 @@ class SliceWidget(QWidget):
 
             self.dose_cube = None
             self.dose_contours = None
+            self.image_window.removeItem(self.bar)
 
         if (self.segment_masks is not None
                 or self.segment_contours is not None):
@@ -192,6 +202,8 @@ class SliceWidget(QWidget):
             self.segment_contours = None
 
         self.parent.slice_selection_pos.clear()
+        self.parent.opacity_sbox.setEnabled(False)
+        self.parent.slice_selection_sbar.setEnabled(False)
 
     def update_images(self):
         """Update the images when scrolling."""
@@ -214,6 +226,11 @@ class SliceWidget(QWidget):
                 # Update the dose contour lines
                 contour.setData(self.dose_cube[:, :, self.slice])
 
+            self.bar.setLevels(
+                (0, round(self.dose_cube[:, :, self.slice].max())+0.5),
+                low=self.dose_cube[:, :, self.slice].min(),
+                high=self.dose_cube[:, :, self.slice].max())
+
         if (self.segment_masks is not None
                 and self.segment_contours is not None):
 
@@ -229,3 +246,6 @@ class SliceWidget(QWidget):
 
             self.parent.slice_selection_pos.setText(
                 ''.join(('z = ', str(self.positions[self.slice]), ' mm')))
+
+        self.parent.opacity_sbox.setEnabled(True)
+        self.parent.slice_selection_sbar.setEnabled(True)

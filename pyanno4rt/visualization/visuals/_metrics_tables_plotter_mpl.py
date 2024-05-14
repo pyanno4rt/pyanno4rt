@@ -12,6 +12,8 @@ from pandas import DataFrame
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.tools import (
+    get_machine_learning_constraints, get_machine_learning_objectives)
 
 # %% Set options
 
@@ -96,10 +98,16 @@ class MetricsTablesPlotterMPL():
                          for dataframe in dataframes)
 
         # Get the evaluation data
-        data = tuple((key, value.evaluations['indicators'],
+        data = tuple((key, value['kpi'],
                       hub.model_instances[key][
                           'display_options']['kpis'])
-                     for key, value in hub.model_evaluations.items())
+                     for key, value in hub.model_evaluations.items()
+                     if any(component.model_parameters['model_label'] == key
+                            for component in (
+                                    get_machine_learning_constraints(
+                                        hub.segmentation)
+                                    + get_machine_learning_objectives(
+                                        hub.segmentation))))
 
         # Unzip the data into separate elements
         model_names, indicators, display_metrics = tuple(zip(*data))

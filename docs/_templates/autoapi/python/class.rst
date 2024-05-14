@@ -34,24 +34,15 @@
    {{ klass.render()|indent(3) }}
    {% endfor %}
    {% if "inherited-members" in autoapi_options %}
-   {% set visible_attributes = obj.attributes|selectattr("display")|list %}
-   {% else %}
-   {% set visible_attributes = obj.attributes|rejectattr("inherited")|selectattr("display")|list %}
-   {% endif %}
-   {% if "inherited-members" in autoapi_options %}
    {% set visible_methods = obj.methods|selectattr("display")|list %}
    {% else %}
    {% set visible_methods = obj.methods|rejectattr("inherited")|selectattr("display")|list %}
    {% endif %}
 
-   {% if visible_methods or visible_attributes %}
+   {% if visible_methods %}
    .. rubric:: Overview
 
    {% set summary_methods = visible_methods|rejectattr("properties", "contains", "property")|list %}
-   {% set summary_attributes = visible_attributes + visible_methods|selectattr("properties", "contains", "property")|list %}
-   {% if summary_attributes %}
-   {{ macros.auto_summary(summary_attributes, title="Attributes")|indent(3) }}
-   {% endif %}
 
    {% if summary_methods %}
    {{ macros.auto_summary(summary_methods, title="Methods")|indent(3) }}
@@ -59,9 +50,6 @@
 
    .. rubric:: Members
 
-   {% for attribute in visible_attributes %}
-   {{ attribute.render()|indent(3) }}
-   {% endfor %}
    {% for method in visible_methods %}
    {{ method.render()|indent(3) }}
    {% endfor %}

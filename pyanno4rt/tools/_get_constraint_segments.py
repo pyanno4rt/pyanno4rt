@@ -26,6 +26,6 @@ def get_constraint_segments(segmentation):
 
     return tuple(flatten(
         [segment]*len(segmentation[segment]['constraint'])
-        if isinstance(segmentation[segment]['constraint'], tuple)
+        if isinstance(segmentation[segment]['constraint'], list)
         else [segment] for segment in segmentation
         if segmentation[segment]['constraint']))

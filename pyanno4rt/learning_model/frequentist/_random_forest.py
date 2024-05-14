@@ -1,35 +1,34 @@
-"""Random forest outcome prediction model."""
+"""Random forest model."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
 # %% External package import
 
-from json import dump as jdump
-from json import load as jload
+from json import dump as jdump, load as jload
 from os.path import exists
 from pickle import dump, load
 
 from functools import partial
 from hyperopt import fmin, hp, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
-from numpy import empty
+from numpy import array, empty, where
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model.preprocessing import DataPreprocessor
-from pyanno4rt.learning_model.losses import brier_loss, log_loss
-from pyanno4rt.learning_model.inspection import ModelInspector
 from pyanno4rt.learning_model.evaluation import ModelEvaluator
+from pyanno4rt.learning_model.inspection import ModelInspector
+from pyanno4rt.learning_model.losses import loss_map
+from pyanno4rt.learning_model.preprocessing import DataPreprocessor
+from pyanno4rt.tools import compare_dictionaries
 
 # %% Class definition
 
 
 class RandomForestModel():
     """
-    Random forest outcome prediction model class.
+    Random forest model class.
 
     This class enables building an individual preprocessing pipeline, fit the \
     random forest model from the input data, inspect the model, make \
@@ -76,7 +75,6 @@ class RandomForestModel():
             looking for the best split at each node;
         - 'bootstrap' : indicator for the use of bootstrap samples to build \
             the trees;
-        - 'warm_start' : indicator for reusing previous fitting results;
         - 'class_weight' : weights associated with the classes;
         - 'ccp_alpha' : complexity parameter for minimal cost-complexity \
             pruning.
@@ -175,10 +173,8 @@ class RandomForestModel():
             tune_space,
             tune_evaluations,
             tune_score,
-            tune_splits,
             inspect_model,
             evaluate_model,
-            oof_splits,
             display_options):
 
         # Initialize the datahub
@@ -195,53 +191,50 @@ class RandomForestModel():
         self.hyperparameter_path = None
 
         # Create the configuration dictionary with the modeling information
-        self.configuration = {'data': [dataset['feature_values'].shape[0],
-                                       dataset['feature_names'],
-                                       dataset['label_values'].shape[0],
-                                       dataset['label_names']],
-                              'label_viewpoint': dataset['label_viewpoint'],
-                              'label_bounds': dataset['label_bounds'],
-                              'preprocessing_steps': preprocessing_steps,
-                              'tune_space': {
-                                  'n_estimators': tune_space.get(
-                                      'n_estimators', list(range(1, 51))),
-                                  'criterion': tune_space.get(
-                                      'criterion', ['gini', 'entropy']),
-                                  'max_depth': tune_space.get(
-                                      'max_depth', list(range(1, 21))),
-                                  'min_samples_split': tune_space.get(
-                                      'min_samples_split', [0.0, 1.0]),
-                                  'min_samples_leaf': tune_space.get(
-                                      'min_samples_leaf', [0.0, 0.5]),
-                                  'min_weight_fraction_leaf': tune_space.get(
-                                      'min_weight_fraction_leaf', [0.0, 0.5]),
-                                  'max_features': tune_space.get(
-                                      'max_features', list(range(
-                                          1, dataset['feature_values'].shape[1]
-                                          + 1))),
-                                  'bootstrap': tune_space.get(
-                                      'bootstrap', [False, True]),
-                                  'warm_start': tune_space.get(
-                                      'warm_start', [False, True]),
-                                  'class_weight': tune_space.get(
-                                      'class_weight', [None, 'balanced']),
-                                  'ccp_alpha': tune_space.get(
-                                      'ccp_alpha', [0.0, 1.0])},
-                              'tune_evaluations': tune_evaluations,
-                              'tune_score': tune_score,
-                              'tune_splits': tune_splits}
+        self.configuration = {
+            'feature_names': dataset['feature_names'],
+            'feature_values': dataset['feature_values'],
+            'label_name': dataset['label_name'],
+            'label_values': dataset['label_values'],
+            'time_variable_name': dataset['time_variable_name'],
+            'time_variable_values': dataset['time_variable_values'],
+            'tune_folds': dataset['tune_folds'],
+            'oof_folds': dataset['oof_folds'],
+            'label_bounds': dataset['label_bounds'],
+            'label_viewpoint': dataset.get('label_viewpoint'),
+            'preprocessing_steps': preprocessing_steps,
+            'tune_space': {
+                'n_estimators': tune_space.get(
+                    'n_estimators', list(range(1, 51))),
+                'criterion': tune_space.get('criterion', ['gini', 'entropy']),
+                'max_depth': tune_space.get('max_depth', list(range(1, 21))),
+                'min_samples_split': tune_space.get(
+                    'min_samples_split', [0.0, 1.0]),
+                'min_samples_leaf': tune_space.get(
+                    'min_samples_leaf', [0.0, 0.5]),
+                'min_weight_fraction_leaf': tune_space.get(
+                    'min_weight_fraction_leaf', [0.0, 0.5]),
+                'max_features': tune_space.get('max_features', list(range(
+                        1, dataset['feature_values'].shape[1]+1))),
+                'bootstrap': tune_space.get('bootstrap', [False, True]),
+                'class_weight': tune_space.get(
+                    'class_weight', [None, 'balanced']),
+                'ccp_alpha': tune_space.get('ccp_alpha', [0.0, 1.0])},
+            'tune_evaluations': tune_evaluations,
+            'tune_score': tune_score}
 
         # Initialize the data preprocessor
         self.preprocessor = DataPreprocessor(preprocessing_steps)
 
         # Fit the data preprocessor and transform the input feature values
-        self.preprocessed_features = self.preprocessor.fit_transform(
-            dataset['feature_values'])
+        self.preprocessed_features, self.preprocessed_labels = (
+            self.preprocessor.fit_transform(
+                dataset['feature_values'], dataset['label_values']))
 
         # Initialize the boolean flag to indicate model updates
         self.updated_model = False
 
-        # Get the random forest model and its hyperparameters
+        # Get the logistic regression model and its hyperparameters
         self.prediction_model, self.hyperparameters = (
             self.get_model(dataset['feature_values'], dataset['label_values']))
 
@@ -257,15 +250,23 @@ class RandomForestModel():
         # Check if the model should be inspected
         if inspect_model:
 
+            # Initialize the model inspector
+            self.inspector = ModelInspector(model_label)
+
             # Inspect the model
-            self.inspect(dataset['label_values'])
+            self.inspect(
+                dataset['feature_values'], dataset['label_values'],
+                dataset['oof_folds'])
 
         # Check if the model should be evaluated
         if evaluate_model:
 
+            # Initialize the model evaluator
+            self.evaluator = ModelEvaluator(model_label)
+
             # Evaluate the model
-            self.evaluate(dataset['feature_values'], dataset['label_values'],
-                          oof_splits)
+            self.evaluate(
+                dataset['feature_values'], dataset['label_values'])
 
         # Update the display options in the datahub
         hub.model_instances[self.model_label]['display_options'] = (
@@ -288,7 +289,7 @@ class RandomForestModel():
             Array of transformed feature values.
         """
 
-        return self.preprocessor.transform(features)
+        return self.preprocessor.transform(features)[0]
 
     def get_model(
             self,
@@ -316,7 +317,8 @@ class RandomForestModel():
             if (all(exists(path) for path in (
                     self.model_path, self.configuration_path,
                     self.hyperparameter_path)) and
-                    self.configuration == self.read_configuration_from_file()):
+                    compare_dictionaries(self.configuration,
+                                         self.read_configuration_from_file())):
 
                 # Set the update flag to False
                 self.updated_model = False
@@ -332,17 +334,18 @@ class RandomForestModel():
 
             # Check if the model is already registered and if the configuration
             # dictionary equals the external configuration file content
-            if (self.model_label in hub.model_instances and
-                self.configuration == hub.model_instances[
-                    self.model_label]['configuration']):
+            if (self.model_label in hub.model_instances
+                and compare_dictionaries(
+                    self.configuration, hub.model_instances[
+                        self.model_label]['configuration'])):
 
                 # Set the update flag to False
                 self.updated_model = False
 
-                return (hub.model_instances[
-                            self.model_label]['prediction_model'],
-                        hub.model_instances[
-                            self.model_label]['hyperparameters'])
+                return (
+                    hub.model_instances[self.model_label]['prediction_model'],
+                    hub.model_instances[self.model_label]['hyperparameters']
+                    )
 
         # Otherwise, train the outcome prediction model on the data
         prediction_model, hyperparameters = self.train(features, labels)
@@ -352,7 +355,7 @@ class RandomForestModel():
 
         return prediction_model, hyperparameters
 
-    def tune_hyperparameters_with_bayes(
+    def tune_hyperparameters(
             self,
             features,
             labels):
@@ -382,22 +385,24 @@ class RandomForestModel():
                 """Compute the score for a single train-validation split."""
 
                 # Get the training and validation splits
-                train_validate_split = [features[indices[0]],
-                                        features[indices[1]],
-                                        labels[indices[0]],
-                                        labels[indices[1]]]
+                train_validate_split = [
+                    features[indices[0]], features[indices[1]],
+                    labels[indices[0]], labels[indices[1]]
+                    ]
 
-                # Fit the preprocessor and transform the training features
-                train_validate_split[0] = preprocessor.fit_transform(
-                    train_validate_split[0])
+                # Fit the preprocessor & transform the training features/labels
+                train_validate_split[0], train_validate_split[2] = (
+                    preprocessor.fit_transform(
+                       train_validate_split[0], train_validate_split[2]))
 
-                # Transform the validation features
-                train_validate_split[1] = preprocessor.transform(
-                    train_validate_split[1])
+                # Transform the validation features/labels
+                train_validate_split[1], train_validate_split[3] = (
+                    preprocessor.transform(
+                        train_validate_split[1], train_validate_split[3]))
 
                 # Fit the model with the training split
-                prediction_model.fit(train_validate_split[0],
-                                     train_validate_split[2])
+                prediction_model.fit(
+                    train_validate_split[0], train_validate_split[2])
 
                 # Get the training score
                 training_score = -scorers[self.configuration['tune_score']](
@@ -419,10 +424,10 @@ class RandomForestModel():
                 if trial['result']['status'] == STATUS_OK:
 
                     # Reduce the assignments to the given values
-                    reduced_values = {key: value[0]
-                                      for key, value
-                                      in trial['misc']['vals'].items()
-                                      if value}
+                    reduced_values = {
+                        key: value[0]
+                        for key, value in trial['misc']['vals'].items()
+                        if value}
 
                     # Check if the proposed set equals the trial set
                     if proposal == space_eval(space, reduced_values):
@@ -443,29 +448,24 @@ class RandomForestModel():
             prediction_model = RandomForestClassifier(**hyperparameters)
 
             # Compute the objective function value (score) across all folds
-            fold_scores = map(
-                compute_fold_score, (
-                    (training_indices, validation_indices)
-                    for (training_indices, validation_indices)
-                    in cross_validator.split(features, labels)))
+            fold_scores = map(compute_fold_score, (
+                (training_indices, validation_indices)
+                for training_indices, validation_indices in (
+                    (where(self.configuration['tune_folds'] != number),
+                     where(self.configuration['tune_folds'] == number))
+                    for number in set(self.configuration['tune_folds']))
+                ))
 
             return {'loss': max(fold_scores),
                     'params': hyperparameters,
                     'status': STATUS_OK}
 
-        # Initialize the stratified k-fold cross-validator
-        cross_validator = StratifiedKFold(
-            n_splits=self.configuration['tune_splits'], random_state=4,
-            shuffle=True)
-
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps,
-                                        verbose=False)
+        preprocessor = DataPreprocessor(
+            self.preprocessing_steps, verbose=False)
 
         # Map the score labels to the score functions
-        scorers = {'Logloss': log_loss,
-                   'Brier score': brier_loss,
-                   'AUC': roc_auc_score}
+        scorers = {'AUC': roc_auc_score, **loss_map}
 
         # Define the search space for the hyperparameters
         space = {
@@ -495,8 +495,6 @@ class RandomForestModel():
                     'tune_space']['max_features']),
             'bootstrap': hp.choice(
                 'bootstrap', self.configuration['tune_space']['bootstrap']),
-            'warm_start': hp.choice(
-                'warm_start', self.configuration['tune_space']['warm_start']),
             'class_weight': hp.choice(
                 'class_weight', self.configuration[
                     'tune_space']['class_weight']),
@@ -510,14 +508,10 @@ class RandomForestModel():
         bayes_trials = Trials()
 
         # Run the optimization algorithm to get the tuned hyperparameters
-        tuned_hyperparameters = fmin(fn=partial(objective, trials=bayes_trials,
-                                                space=space),
-                                     space=space,
-                                     algo=tpe.suggest,
-                                     max_evals=self.configuration[
-                                         'tune_evaluations'],
-                                     trials=bayes_trials,
-                                     return_argmin=False)
+        tuned_hyperparameters = fmin(
+            fn=partial(objective, trials=bayes_trials, space=space),
+            space=space, algo=tpe.suggest, max_evals=self.configuration[
+                'tune_evaluations'], trials=bayes_trials, return_argmin=False)
 
         return tuned_hyperparameters
 
@@ -538,9 +532,8 @@ class RandomForestModel():
         # Log a message about the model fitting
         Datahub().logger.display_info("Fitting the model to the data ...")
 
-        # Get the tuned hyperparameters from the Bayesian optimization
-        tuned_hyperparameters = self.tune_hyperparameters_with_bayes(features,
-                                                                     labels)
+        # Get the tuned hyperparameters
+        tuned_hyperparameters = self.tune_hyperparameters(features, labels)
 
         # Create a dictionary with the model hyperparameters
         hyperparameters = {**tuned_hyperparameters,
@@ -555,7 +548,8 @@ class RandomForestModel():
         prediction_model = RandomForestClassifier(**hyperparameters)
 
         # Fit the model with the preprocessed data
-        prediction_model.fit(self.preprocessed_features, labels)
+        prediction_model.fit(
+            self.preprocessed_features, self.preprocessed_labels)
 
         return prediction_model, hyperparameters
 
@@ -588,8 +582,7 @@ class RandomForestModel():
     def predict_oof(
             self,
             features,
-            labels,
-            oof_splits):
+            labels):
         """
         Predict the out-of-folds (OOF) labels using a stratified k-fold \
         cross-validation.
@@ -606,32 +599,32 @@ class RandomForestModel():
         """
 
         # Log a message about the out-of-folds prediction
-        Datahub().logger.display_info(f"Performing {oof_splits}-fold "
-                                      "cross-validation to yield "
-                                      "out-of-folds predictions ...")
+        Datahub().logger.display_info(
+            f"Performing {len(set(self.configuration['oof_folds']))}-fold "
+            "cross-validation to yield out-of-folds predictions ...")
 
         def compute_fold_labels(indices):
             """Compute the out-of-folds labels for a single fold."""
 
             # Get the training and validation splits
-            train_validate_split = [features[indices[0]],
-                                    features[indices[1]],
-                                    labels[indices[0]]]
+            train_validate_split = [
+                features[indices[0]], features[indices[1]], labels[indices[0]]]
 
-            # Fit the preprocessor and transform the training features
-            train_validate_split[0] = preprocessor.fit_transform(
-                train_validate_split[0])
+            # Fit the preprocessor & transform the training features/labels
+            train_validate_split[0], train_validate_split[2] = (
+                preprocessor.fit_transform(
+                    train_validate_split[0], train_validate_split[2]))
 
             # Transform the validation features
             train_validate_split[1] = preprocessor.transform(
-                train_validate_split[1])
+                train_validate_split[1])[0]
 
             # Initialize the model from the hyperparameter dictionary
             prediction_model = RandomForestClassifier(**self.hyperparameters)
 
             # Fit the model with the training split
-            prediction_model.fit(train_validate_split[0],
-                                 train_validate_split[2])
+            prediction_model.fit(
+                train_validate_split[0], train_validate_split[2])
 
             return (indices[1], prediction_model.predict_proba(
                 train_validate_split[1])[:, 1])
@@ -639,20 +632,18 @@ class RandomForestModel():
         # Initialize the out-of-folds label prediction array
         oof_prediction = empty((len(labels),))
 
-        # Initialize the stratified k-fold cross-validator
-        cross_validator = StratifiedKFold(
-            n_splits=oof_splits, random_state=4, shuffle=True)
-
         # Initialize the data preprocessor
-        preprocessor = DataPreprocessor(self.preprocessing_steps,
-                                        verbose=False)
+        preprocessor = DataPreprocessor(
+            self.preprocessing_steps, verbose=False)
 
         # Compute the returns (indices and labels) across all folds
-        fold_returns = map(
-            compute_fold_labels, (
+        fold_returns = map(compute_fold_labels, (
                 (training_indices, validation_indices)
-                for (training_indices, validation_indices)
-                in cross_validator.split(features, labels)))
+                for training_indices, validation_indices in (
+                    (where(self.configuration['tune_folds'] != number),
+                     where(self.configuration['tune_folds'] == number))
+                    for number in set(self.configuration['tune_folds']))
+                ))
 
         # Loop over the fold returns
         for fold_indices, fold_labels in fold_returns:
@@ -664,56 +655,34 @@ class RandomForestModel():
 
     def inspect(
             self,
-            labels):
+            features,
+            labels,
+            oof_folds):
         """."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Check if the model should be first-time/repeatedly inspected
-        if (self.model_label not in (*hub.model_inspections,)
+        if (self.model_label not in Datahub().model_inspections
                 or self.updated_model):
 
-            # Initialize the model inspector
-            inspector = ModelInspector(
-                model_name=self.model_label,
-                model_class='Random Forest')
-
-            # Run the model inspections
-            inspector.compute(model=self.prediction_model,
-                              features=self.preprocessed_features,
-                              labels=labels,
-                              number_of_repeats=30)
-
-            # Add the model inspector to the datahub
-            hub.model_inspections[self.model_label] = inspector
+            # Compute the model inspections
+            self.inspector.compute(
+                self.prediction_model, self.hyperparameters, features, labels,
+                self.preprocessing_steps, 30, oof_folds)
 
     def evaluate(
             self,
             features,
-            labels,
-            oof_splits):
+            labels):
         """."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Check if the model should be first-time/repeatedly evaluated
-        if (self.model_label not in (*hub.model_evaluations,)
+        if (self.model_label not in Datahub().model_evaluations
                 or self.updated_model):
 
-            # Initialize the model evaluator
-            evaluator = ModelEvaluator(
-                model_name=self.model_label,
-                true_labels=labels)
-
-            # Run the model evaluations on training and OOF predictions
-            evaluator.compute(predicted_labels=(
-                self.predict(self.preprocessed_features),
-                self.predict_oof(features, labels, oof_splits)))
-
-            # Add the model evaluator to the datahub
-            hub.model_evaluations[self.model_label] = evaluator
+            # Run the model training and out-of-folds evaluations
+            self.evaluator.compute(
+                labels, (self.predict(self.preprocessed_features),
+                         self.predict_oof(features, labels)))
 
     def set_file_paths(
             self,
@@ -747,8 +716,8 @@ class RandomForestModel():
         """
 
         # Log a message about the model file reading
-        Datahub().logger.display_info(f"Reading '{self.model_label}' model "
-                                      "from file ...")
+        Datahub().logger.display_info(
+            f"Reading '{self.model_label}' model from file ...")
 
         return load(open(self.model_path, 'rb'))
 
@@ -782,10 +751,21 @@ class RandomForestModel():
         """
 
         # Log a message about the configuration file reading
-        Datahub().logger.display_info(f"Reading '{self.model_label}' "
-                                      "configuration from file ...")
+        Datahub().logger.display_info(
+            f"Reading '{self.model_label}' configuration from file ...")
 
-        return jload(open(self.configuration_path, 'r', encoding='utf-8'))
+        # Get the configuration
+        configuration = jload(
+            open(self.configuration_path, 'r', encoding='utf-8'))
+
+        # Loop over the converted keys
+        for key in ('feature_values', 'label_values', 'time_variable_values',
+                    'tune_folds', 'oof_folds'):
+
+            # Convert the list into an array
+            configuration[key] = array(configuration[key])
+
+        return configuration
 
     def write_configuration_to_file(
             self,
@@ -799,6 +779,13 @@ class RandomForestModel():
             Dictionary with information for the modeling, i.e., the dataset, \
             the preprocessing steps, and the hyperparameter search space.
         """
+
+        # Loop over the array keys
+        for key in ('feature_values', 'label_values', 'time_variable_values',
+                    'tune_folds', 'oof_folds'):
+
+            # Convert the array into a list
+            configuration[key] = configuration[key].tolist()
 
         # Dump the configuration dictionary to the configuration file path
         with open(self.configuration_path, 'w', encoding='utf-8') as file:
@@ -817,8 +804,8 @@ class RandomForestModel():
         """
 
         # Log a message about the parameter file reading
-        Datahub().logger.display_info(f"Reading '{self.model_label}' "
-                                      "hyperparameters from file ...")
+        Datahub().logger.display_info(
+            f"Reading '{self.model_label}' hyperparameters from file ...")
 
         return jload(open(self.hyperparameter_path, 'r', encoding='utf-8'))
 

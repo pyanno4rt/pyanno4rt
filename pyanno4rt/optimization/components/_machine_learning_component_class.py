@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.tools import compare_dictionaries
 
 # %% Class definition
 
@@ -34,7 +35,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
         - model_label : str
             Label for the machine learning model.
 
-        - model_folder_path : str
+        - model_folder_path : None or str, default=None
             Path to a folder for loading an external machine learning model.
 
         - data_path : str
@@ -54,11 +55,11 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             inside the bounds) and negative class (value lies outside the \
             bounds).
 
-        - time_variable_name : str, default=None
+        - time_variable_name : None or str, default=None
             Name of the time-after-radiotherapy variable (unit should be days).
 
         - label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', \
-                             'profile'}, default='long-term'
+                             'profile'}, default='longitudinal'
             Time of observation for the presence of tumor control and/or \
             normal tissue complication events. The options can be described \
             as follows:
@@ -74,14 +75,14 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             Indicator for the use of fuzzy string matching to generate the \
             feature map (if False, exact string matching is applied).
 
-        - preprocessing_steps : list, default=['Equalizer']
+        - preprocessing_steps : list, default=['Identity']
             Sequence of labels associated with preprocessing algorithms to \
             preprocess the input features.
 
             The following preprocessing steps are currently available:
 
-            - 'Equalizer' \
-                :class:`~pyanno4rt.learning_model.preprocessing.transformers._equalizer.Equalizer`
+            - 'Identity' \
+                :class:`~pyanno4rt.learning_model.preprocessing.transformers._identity.Identity`
             - 'StandardScaler' \
                 :class:`~pyanno4rt.learning_model.preprocessing.transformers._standard_scaler.StandardScaler`
             - 'Whitening' \
@@ -137,13 +138,16 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
     weight : int or float
         Weight of the component function.
 
+    rank : int, default=1
+        Rank of the component in the lexicographic order.
+
     bounds : None or list
         Constraint bounds for the component.
 
     link : None or list
         Other segments used for joint evaluation.
 
-    identifier : str
+    identifier : None or str
         Additional string for naming the component.
 
     display : bool
@@ -169,13 +173,16 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
     weight : float
         See 'Parameters'.
 
+    rank : int
+        See 'Parameters'.
+
     bounds : list
         See 'Parameters'.
 
     link : list
         See 'Parameters'.
 
-    identifier : str
+    identifier : None or str
         See 'Parameters'.
 
     display : bool
@@ -183,6 +190,14 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
 
     model_parameters : dict
         See 'Parameters'.
+
+    data_model_handler : None
+        Initial variable for the object used to handle the dataset, the \
+        feature map generation and the feature (re-)calculation.
+
+    model : None
+        Initial variable for the object used to preprocess, tune, train, \
+        inspect and evaluate the machine learning model.
 
     adjusted_parameters : bool
         Indicator for the adjustment of the parameters due to fractionation.
@@ -202,6 +217,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             model_parameters,
             embedding,
             weight,
+            rank,
             bounds,
             link,
             identifier,
@@ -226,6 +242,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
         self.parameter_value = []
         self.embedding = embedding
         self.weight = float(weight)
+        self.rank = rank
         self.bounds = [0, 1] if bounds is None else bounds
         self.link = [] if link is None else link
         self.identifier = identifier
@@ -245,7 +262,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
                 'label_viewpoint', 'longitudinal'),
             'fuzzy_matching': model_parameters.get('fuzzy_matching', True),
             'preprocessing_steps': model_parameters.get(
-                'preprocessing_steps', ['Equalizer']),
+                'preprocessing_steps', ['Identity']),
             'architecture': model_parameters.get(
                 'architecture', 'input-convex'),
             'max_hidden_layers': model_parameters.get('max_hidden_layers', 2),
@@ -258,12 +275,11 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             'oof_splits': model_parameters.get('oof_splits', 5),
             'write_features': model_parameters.get('write_features', True),
             'display_options': model_parameters.get(
-                'display_options', {'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
-                                    'kpis': ['Logloss', 'Brier score',
-                                             'Subset accuracy', 'Cohen Kappa',
-                                             'Hamming loss', 'Jaccard score',
-                                             'Precision', 'Recall', 'F1 score',
-                                             'MCC', 'AUC']})
+                'display_options', {
+                    'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
+                    'kpis': ['Logloss', 'Brier score', 'Subset accuracy',
+                             'Cohen Kappa', 'Hamming loss', 'Jaccard score',
+                             'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']})
             }
 
         # Check the model parameters
@@ -285,6 +301,15 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
         # Set the component flags
         self.RETURNS_OUTCOME = True
         self.DEPENDS_ON_DATA = True
+
+    def __eq__(self, other):
+        """Compare an instance with another object."""
+
+        return (all(self.__dict__[key] == other.__dict__[key]
+                    for key in ('name', 'link', 'identifier'))
+                and compare_dictionaries(
+                    self.__dict__.get('model_parameters', {}),
+                    other.__dict__.get('model_parameters', {})))
 
     def get_parameter_value(self):
         """

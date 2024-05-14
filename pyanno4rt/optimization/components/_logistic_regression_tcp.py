@@ -40,13 +40,16 @@ class LogisticRegressionTCP(MachineLearningComponentClass):
     weight : int or float, default=1.0
         Weight of the component function.
 
+    rank : int, default=1
+        Rank of the component in the lexicographic order.
+
     bounds : None or list, default=None
         Constraint bounds for the component.
 
     link : None or list, default=None
         Other segments used for joint evaluation.
 
-    identifier : str, default=None
+    identifier : None or str, default=None
         Additional string for naming the component.
 
     display : bool, default=True
@@ -67,7 +70,7 @@ class LogisticRegressionTCP(MachineLearningComponentClass):
     parameter_value : list
         Value of the logistic regression model coefficients.
 
-    intercept_value : list
+    intercept_value : None or list
         Value of the logistic regression model intercept.
 
     bounds : list
@@ -79,6 +82,7 @@ class LogisticRegressionTCP(MachineLearningComponentClass):
             model_parameters,
             embedding='active',
             weight=1.0,
+            rank=1,
             bounds=None,
             link=None,
             identifier=None,
@@ -91,6 +95,7 @@ class LogisticRegressionTCP(MachineLearningComponentClass):
                          model_parameters=model_parameters,
                          embedding=embedding,
                          weight=weight,
+                         rank=rank,
                          bounds=bounds,
                          link=link,
                          identifier=identifier,
@@ -144,6 +149,8 @@ class LogisticRegressionTCP(MachineLearningComponentClass):
             label_bounds=self.model_parameters['label_bounds'],
             time_variable_name=self.model_parameters['time_variable_name'],
             label_viewpoint=self.model_parameters['label_viewpoint'],
+            tune_splits=self.model_parameters['tune_splits'],
+            oof_splits=self.model_parameters['oof_splits'],
             fuzzy_matching=self.model_parameters['fuzzy_matching'],
             write_features=self.model_parameters['write_features'])
 
@@ -159,10 +166,8 @@ class LogisticRegressionTCP(MachineLearningComponentClass):
             tune_space=self.model_parameters['tune_space'],
             tune_evaluations=self.model_parameters['tune_evaluations'],
             tune_score=self.model_parameters['tune_score'],
-            tune_splits=self.model_parameters['tune_splits'],
             inspect_model=self.model_parameters['inspect_model'],
             evaluate_model=self.model_parameters['evaluate_model'],
-            oof_splits=self.model_parameters['oof_splits'],
             display_options=self.model_parameters['display_options'])
 
         # Get the logistic regression model parameters
@@ -171,7 +176,7 @@ class LogisticRegressionTCP(MachineLearningComponentClass):
 
         # Transform the component bounds
         self.bounds = sorted(
-            (-1)*inverse_sigmoid(bound) for bound in self.bounds)
+            -self.weight*inverse_sigmoid(bound) for bound in self.bounds)
 
     def compute_value(
             self,

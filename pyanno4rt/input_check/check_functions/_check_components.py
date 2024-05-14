@@ -21,16 +21,8 @@ def check_components(label, data, check_functions):
         Tuple with the individual check functions for the dictionary items.
     """
 
-    # Loop over the dictionary keys
-    for dict_key in data:
-
-        # Get the value for the key
-        dict_value = data[dict_key]
-
-        # Get the dictionary paths to check
-        dict_paths = tuple(f'{label}{string}' for string in (
-            f"['{dict_key}']{extension}"
-            for extension in ('', "['type']", "['instance']")))
+    def check_single_component(dict_paths, dict_value):
+        """Check a single component."""
 
         # Check if 'type' and 'instance' are unavailable keys
         check_functions[0](dict_paths[0], dict_value)
@@ -51,11 +43,11 @@ def check_components(label, data, check_functions):
             check_functions[6](dict_paths[2], instance)
 
             # Loop over the elements
-            for i, element in enumerate(instance):
+            for index, element in enumerate(instance):
 
                 # Get the dictionary paths to check
                 paths = tuple(f'{dict_paths[0]}{string}' for string in (
-                    f"['instance'][{i}]{extension}"
+                    f"['instance'][{index}]{extension}"
                     for extension in ('', "['class']", "['parameters']")))
 
                 # Check if 'class' and 'parameters' are unavailable keys
@@ -82,3 +74,33 @@ def check_components(label, data, check_functions):
 
             # Check if the 'parameters' key is not a dictionary
             check_functions[5](paths[2], instance['parameters'])
+
+    # Loop over the dictionary keys
+    for dict_key in data:
+
+        # Get the value for the key
+        dict_value = data[dict_key]
+
+        # Check if the value is a list
+        if isinstance(dict_value, list):
+
+            # Loop over the value list
+            for index, element in enumerate(dict_value):
+
+                # Get the dictionary paths to check
+                dict_paths = tuple(f'{label}{string}' for string in (
+                    f"['{dict_key}'][{index}]{extension}"
+                    for extension in ('', "['type']", "['instance']")))
+
+                # Check the component
+                check_single_component(dict_paths, element)
+
+        else:
+
+            # Get the dictionary paths to check
+            dict_paths = tuple(f'{label}{string}' for string in (
+                f"['{dict_key}']{extension}"
+                for extension in ('', "['type']", "['instance']")))
+
+            # Check the component
+            check_single_component(dict_paths, dict_value)

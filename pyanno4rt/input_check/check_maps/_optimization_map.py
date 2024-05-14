@@ -11,6 +11,8 @@ from functools import partial
 from pyanno4rt.input_check.check_functions import (
     check_components, check_key_in_dict, check_subtype, check_type,
     check_value, check_value_in_set)
+from pyanno4rt.optimization.components import component_map
+from pyanno4rt.optimization.methods import method_map
 
 # %% Map definition
 
@@ -23,39 +25,32 @@ optimization_map = {
             partial(check_value_in_set, options=('objective', 'constraint')),
             partial(check_type, types=(dict, list)),
             partial(check_key_in_dict, keys=('class', 'parameters')),
-            partial(check_value_in_set, options=(
-                'Decision Tree NTCP', 'Decision Tree TCP', 'Dose Uniformity',
-                'Equivalent Uniform Dose', 'K-Nearest Neighbors NTCP',
-                'K-Nearest Neighbors TCP', 'Logistic Regression NTCP',
-                'Logistic Regression TCP', 'LQ Poisson TCP',
-                'Lyman-Kutcher-Burman NTCP', 'Maximum DVH', 'Mean Dose',
-                'Minimum DVH', 'Naive Bayes NTCP', 'Naive Bayes TCP',
-                'Neural Network NTCP', 'Neural Network TCP',
-                'Random Forest NTCP', 'Random Forest TCP', 'Squared Deviation',
-                'Squared Overdosing', 'Squared Underdosing',
-                'Support Vector Machine NTCP', 'Support Vector Machine TCP')),
+            partial(check_value_in_set, options=tuple(component_map)),
             partial(check_type, types=dict),
             partial(check_subtype, types=dict)
             ))
         ),
     'method': (
         partial(check_type, types=str),
-        partial(check_value_in_set, options=(
-            'lexicographic', 'pareto', 'weighted-sum'))
+        partial(check_value_in_set, options=tuple(method_map))
         ),
     'solver': (
         partial(check_type, types=str),
         partial(check_value_in_set, options={
+            'lexicographic': ('', 'scipy'),
             'pareto': ('pymoo',),
             'weighted-sum': ('proxmin', 'pypop7', 'scipy')})
         ),
     'algorithm': (
         partial(check_type, types=str),
         partial(check_value_in_set, options={
-            'proxmin': ('admm', 'pgm', 'sdmm'),
-            'pymoo': ('NSGA3',),
-            'pypop7': ('LMCMA', 'LMMAES'),
-            'scipy': ('L-BFGS-B', 'TNC', 'trust-constr')})
+            'lexicographic/proxmin': (),
+            'weighted-sum/proxmin': ('admm', 'pgm', 'sdmm'),
+            'pareto/pymoo': ('NSGA3',),
+            'lexicographic/pypop7': (),
+            'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),
+            'lexicographic/scipy': ('trust-constr',),
+            'weighted-sum/scipy': ('L-BFGS-B', 'TNC', 'trust-constr')})
         ),
     'initial_strategy': (
         partial(check_type, types=str),

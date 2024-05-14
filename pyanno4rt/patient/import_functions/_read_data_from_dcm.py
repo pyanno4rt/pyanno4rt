@@ -35,7 +35,7 @@ def read_data_from_dcm(path):
     # Get the (axially ordered) CT data files
     computed_tomography_data = tuple(sorted(
         [file for file in files if hasattr(file, 'PixelData')],
-        key=lambda file: file.ImagePositionPatient._list[2]))
+        key=lambda file: file.ImagePositionPatient[2]))
 
     # Get the segmentation data file
     segmentation_data = next(

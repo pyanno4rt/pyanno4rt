@@ -167,7 +167,7 @@ class DosimetricsEvaluator():
                     names = ('Squared Deviation', 'Squared Underdosing')
 
                     # Check if the objective is a tuple with relevant elements
-                    if (isinstance(target_objective, tuple)
+                    if (isinstance(target_objective, list)
                             and any(objective.name in names
                                     for objective in target_objective)):
 
@@ -178,7 +178,7 @@ class DosimetricsEvaluator():
                             if objective.name in names)
 
                     # Else, check if the objective is not a tuple but relevant
-                    elif (not isinstance(target_objective, tuple)
+                    elif (not isinstance(target_objective, list)
                           and target_objective.name in names):
 
                         # Set the target dose to the parameter value

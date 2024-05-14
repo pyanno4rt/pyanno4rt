@@ -1,12 +1,13 @@
 """
-Reducers module.
+Data reducers module.
 
 ==================================================================
 
-The module aims to provide methods and classes for data reduction in the \
-context of data preprocessing.
+The module aims to provide methods and classes for data reduction.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-# feature selection, dimensionality reduction
+from ._reducer_map import reducer_map
+
+__all__ = ['reducer_map']

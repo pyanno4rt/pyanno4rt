@@ -8,8 +8,8 @@ from pyanno4rt.datahub import Datahub
 
 # %% Internal package import
 
-from pyanno4rt.learning_model.inspection.inspections import (
-    PermutationImportance)
+from pyanno4rt.learning_model.inspection.algorithms import (
+    permutation_importances)
 
 # %% Class definition
 
@@ -18,59 +18,49 @@ class ModelInspector():
     """
     Model inspection class.
 
-    This class provides a collection of inspection methods to be computed in \
-    a single method call.
+    This class provides the computation method for a number of inspection \
+    algorithms on a machine learning outcome model.
 
     Parameters
     ----------
-    model_name : string
-        Name of the learning model.
-
-    hyperparameters : dict
-        Hyperparameters dictionary.
+    model_label : str
+        Label for the machine learning outcome model.
 
     Attributes
     ----------
-    model_name : string
+    model_label : str
         See 'Parameters'.
-
-    hyperparameters : dict, default = None
-        See 'Parameters'.
-
-    inspections : dict
-        Dictionary with the inspection values.
     """
 
     def __init__(
             self,
-            model_name,
-            model_class,
-            hyperparameters=None):
+            model_label):
 
         # Log a message about the initialization of the model inspector
         Datahub().logger.display_info("Initializing model inspector ...")
 
-        # Get the instance attributes from the arguments
-        self.model_name = model_name
-        self.model_class = model_class
-        self.hyperparameters = hyperparameters
-
-        # Initialize the dictionary with the inspection results
-        self.inspections = {}
+        # Get the model label from the arguments
+        self.model_label = model_label
 
     def compute(
             self,
-            model,
+            model_instance,
+            hyperparameters,
             features,
             labels,
-            number_of_repeats):
+            preprocessing_steps,
+            number_of_repeats,
+            oof_folds):
         """
         Compute the inspection results.
 
         Parameters
         ----------
-        model : object
-            Instance of the outcome prediction model.
+        model_instance : object
+            The object representing the machine learning outcome model.
+
+        hyperparameters : dict
+            Dictionary with the machine learning outcome model hyperparameters.
 
         features : ndarray
             Values of the input features.
@@ -78,19 +68,19 @@ class ModelInspector():
         labels : ndarray
             Values of the input labels.
 
-        number_of_repeats : int
-            Number of feature permutations to evaluate.
-        """
-        # Add the training permutation importances
-        self.inspections['permutation_importance_training'] = (
-            PermutationImportance(
-                self.model_name, self.model_class,
-                self.hyperparameters).compute(model, features, labels,
-                                              number_of_repeats))
+        preprocessing_steps : list
+            Sequence of labels associated with preprocessing algorithms for \
+            the machine learning outcome model.
 
-        # Add the validation permutation importances
-        self.inspections['permutation_importance_validation'] = (
-            PermutationImportance(
-                self.model_name, self.model_class,
-                self.hyperparameters).compute_oof(model, features, labels,
-                                                  number_of_repeats))
+        number_of_repeats : int
+            Number of feature permutations.
+
+        oof_folds : ndarray
+            Out-of-fold split numbers.
+        """
+
+        # Enter the permutation importances into the datahub
+        Datahub().model_inspections[self.model_label] = {
+            'permutation_importance': permutation_importances(
+                model_instance, hyperparameters, features, labels,
+                preprocessing_steps, number_of_repeats, oof_folds)}

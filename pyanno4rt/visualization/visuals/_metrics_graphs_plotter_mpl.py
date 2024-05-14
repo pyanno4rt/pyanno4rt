@@ -12,6 +12,8 @@ from seaborn import lineplot, scatterplot
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.tools import (
+    get_machine_learning_constraints, get_machine_learning_objectives)
 
 # %% Set options
 
@@ -77,19 +79,22 @@ class MetricsGraphsPlotterMPL():
 
         # Get the evaluation metrics data
         data = tuple((key,
-                      value.evaluations['auc_roc'][0],
-                      value.evaluations['auc_roc'][1],
-                      value.evaluations['auc_pr'],
-                      value.evaluations['f1'][0],
-                      value.evaluations['f1'][1])
-                     for key, value in hub.model_evaluations.items())
+                      value['auc_pr'],
+                      value['auc_roc'],
+                      value['f1'])
+                     for key, value in hub.model_evaluations.items()
+                     if any(component.model_parameters['model_label'] == key
+                            for component in (
+                                    get_machine_learning_constraints(
+                                        hub.segmentation)
+                                    + get_machine_learning_objectives(
+                                        hub.segmentation))))
 
         # Unzip the data into the separate elements
-        (evaluated_models, roc_scores, roc_value, pr_scores, f1_scores,
-         f1_best) = tuple(zip(*data))
+        (evaluated_models, auc_prs, auc_rocs, f1s) = tuple(zip(*data))
 
         # Specify the evaluation modes
-        modes = ("Training", "Out-of-folds")
+        modes = ('Training', 'Out-of-folds')
 
         # Get the number of graphs per model
         number_of_graphs = tuple(
@@ -113,40 +118,40 @@ class MetricsGraphsPlotterMPL():
                 # Initialize the column number
                 column_number = 0
 
-                # Check if the ROC scores should be displayed
+                # Check if the AUC-ROC scores should be displayed
                 if 'AUC-ROC' in hub.model_instances[evaluated_models[i]][
                         'display_options']['graphs']:
 
-                    # Plot the ROC-AUC points
+                    # Plot the AUC-ROC points
                     scatterplot(
                         x="False Positive Rate", y="True Positive Rate",
-                        data=roc_scores[i][modes[j]], s=50, legend=False,
-                        ax=axis[row_number, column_number])
+                        data=auc_rocs[i][modes[j]]['curve'], s=50,
+                        legend=False, ax=axis[row_number, column_number])
 
-                    # Add the interpolation line to the ROC-AUC plot
+                    # Add the interpolation line to the AUC-ROC plot
                     axis[row_number, column_number].plot(
                         "False Positive Rate", "True Positive Rate",
-                        data=roc_scores[i][modes[j]], lw=1, color='k')
+                        data=auc_rocs[i][modes[j]]['curve'], lw=1, color='k')
 
-                    # Add the diagonal line to the ROC-AUC plot
+                    # Add the diagonal line to the AUC-ROC plot
                     axis[row_number, column_number].plot(
                         linspace(0, 1, 100), linspace(0, 1, 100), color='k',
                         ls='--', lw=1)
 
                     # Fill the region under the interpolation line
                     axis[row_number, column_number].fill_between(
-                        y1=roc_scores[i][modes[j]]['True Positive Rate'],
-                        x=roc_scores[i][modes[j]]['False Positive Rate'],
+                        y1=auc_rocs[i][modes[j]]['curve']['True Positive Rate'],
+                        x=auc_rocs[i][modes[j]]['curve']['False Positive Rate'],
                         alpha=.3, color='red')
 
                     # Set the plot title
                     axis[row_number, column_number].set_title(
                         "Receiver Operating Characteristic", fontsize=11)
 
-                    # Add the AUC value to the plot
+                    # Add the AUC-ROC value to the plot
                     axis[row_number, column_number].annotate(
                         "".join((r"AUC$=$", str(round(
-                            roc_value[i][modes[j]], 4)))),
+                            auc_rocs[i][modes[j]]['value'], 4)))),
                         xy=(0.82, 0.03), fontsize=8)
 
                     # Add the plot grid
@@ -155,13 +160,13 @@ class MetricsGraphsPlotterMPL():
                     # Increment the column number
                     column_number += 1
 
-                # Check if the PR scores should be displayed
+                # Check if the AUC-PR scores should be displayed
                 if 'AUC-PR' in hub.model_instances[evaluated_models[i]][
                         'display_options']['graphs']:
 
                     # Plot the AUC-PR line
                     lineplot(x="Recall", y="Precision",
-                             data=pr_scores[i][modes[j]],
+                             data=auc_prs[i][modes[j]],
                              ax=axis[row_number, column_number])
 
                     # Set the limits for the y-axis
@@ -182,7 +187,7 @@ class MetricsGraphsPlotterMPL():
                         'display_options']['graphs']:
 
                     # Plot the F1 line
-                    f1_scores[i][modes[j]].plot(
+                    f1s[i][modes[j]]['values'].plot(
                         ax=axis[row_number, column_number],
                         ylim=(0, 1))
 
@@ -196,7 +201,7 @@ class MetricsGraphsPlotterMPL():
 
                     # Add a vertical line to indicate the best F1 position
                     axis[row_number, column_number].axvline(
-                        f1_best[i][modes[j]], lw=1, ls='--', color='k')
+                        f1s[i][modes[j]]['best'], lw=1, ls='--', color='k')
 
                     # Add the plot grid
                     axis[row_number, column_number].grid()

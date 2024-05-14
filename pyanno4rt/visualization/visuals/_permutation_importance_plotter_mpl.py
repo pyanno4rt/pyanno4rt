@@ -14,6 +14,8 @@ from seaborn import color_palette
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.tools import (
+    get_machine_learning_constraints, get_machine_learning_objectives)
 
 # %% Set options
 
@@ -81,13 +83,19 @@ class PermutationImportancePlotterMPL():
 
         # Get the inspection data
         data = tuple((key,
-                      DataFrame(data=value.inspections[
-                          'permutation_importance_training'],
+                      DataFrame(
+                          data=value['permutation_importance']['Training'],
                           columns=hub.datasets[key]['feature_names']),
-                      DataFrame(data=value.inspections[
-                          'permutation_importance_validation'],
+                      DataFrame(
+                          data=value['permutation_importance']['Out-of-folds'],
                           columns=hub.datasets[key]['feature_names']))
-                     for key, value in hub.model_inspections.items())
+                     for key, value in hub.model_inspections.items()
+                     if any(component.model_parameters['model_label'] == key
+                            for component in (
+                                    get_machine_learning_constraints(
+                                        hub.segmentation)
+                                    + get_machine_learning_objectives(
+                                        hub.segmentation))))
 
         # Unzip the data into the separate elements
         data_zipped = list(zip(*data))

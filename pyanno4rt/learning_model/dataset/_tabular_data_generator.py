@@ -6,8 +6,9 @@
 
 from functools import partial
 from itertools import compress, tee
-from numpy import array, logical_and, seterr, vstack, where
+from numpy import array, logical_and, seterr, vstack, where, zeros
 from pandas import read_csv
+from sklearn.model_selection import StratifiedKFold
 
 # %% Internal package import
 
@@ -53,6 +54,14 @@ class TabularDataGenerator():
         Time of observation for the presence of tumor control and/or \
         normal tissue complication events.
 
+    tune_splits : int
+        Number of splits for the stratified cross-validation within each \
+        model hyperparameter optimization step.
+
+    oof_splits : int
+        Number of splits for the stratified cross-validation within the \
+        out-of-folds model evaluation step.
+
     Attributes
     ----------
     model_label : str
@@ -72,6 +81,12 @@ class TabularDataGenerator():
 
     label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', 'profile'}
         See 'Parameters'.
+
+    tune_splits : int
+        See 'Parameters'.
+
+    oof_splits : int
+        See 'Parameters'.
     """
 
     def __init__(
@@ -81,7 +96,9 @@ class TabularDataGenerator():
             label_name,
             label_bounds,
             time_variable_name,
-            label_viewpoint):
+            label_viewpoint,
+            tune_splits,
+            oof_splits):
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info(
@@ -95,6 +112,8 @@ class TabularDataGenerator():
         self.label_bounds = label_bounds
         self.time_variable_name = time_variable_name
         self.label_viewpoint = label_viewpoint
+        self.tune_splits = tune_splits
+        self.oof_splits = oof_splits
 
     def generate(
             self,
@@ -128,6 +147,10 @@ class TabularDataGenerator():
 
         # Binarize the data information
         data_information = self.binarize(data_information, self.label_bounds)
+
+        # Add the fold numbers
+        data_information = self.add_fold_numbers(
+            data_information, self.tune_splits, self.oof_splits)
 
         # Enter the data information dictionary into the datahub
         Datahub().datasets |= {self.model_label: data_information}
@@ -333,5 +356,66 @@ class TabularDataGenerator():
 
         # Add the label bounds to the data information
         data_information |= {'label_bounds': label_bounds}
+
+        return data_information
+
+    def add_fold_numbers(
+            self,
+            data_information,
+            tune_splits,
+            oof_splits):
+        """
+        Add the stratified cross-validation fold numbers.
+
+        Parameters
+        ----------
+        data_information : dict
+            Dictionary with the preprocessed data information.
+
+        tune_splits : int
+            Number of splits for the stratified cross-validation within each \
+            model hyperparameter optimization step.
+
+        oof_splits : int
+            Number of splits for the stratified cross-validation within the \
+            out-of-folds model evaluation step.
+
+        Returns
+        -------
+        dict
+            Dictionary with the stratified cross-validation fold numbers.
+        """
+
+        # Log a message about the fold number addition
+        Datahub().logger.display_info(
+            "Adding fold numbers for stratified cross validation ...")
+
+        def get_folds(number_of_splits):
+            """Get the fold numbers for a number of splits."""
+
+            # Clamp the number of splits
+            number_of_splits = min(
+                number_of_splits, sum(data_information['label_values']))
+
+            # Initialize the stratified k-fold cross-validator
+            cross_validator = StratifiedKFold(
+                n_splits=number_of_splits, random_state=4, shuffle=True)
+
+            # Initialize the fold numbers
+            folds = zeros(data_information['label_values'].shape)
+
+            # Loop over the cross-validation splits
+            for number, (_, validation_index) in enumerate(
+                    cross_validator.split(data_information['feature_values'],
+                                          data_information['label_values'])):
+
+                # Enter the fold number for the current validation set
+                folds[validation_index] = int(number)
+
+            return folds
+
+        # Add the fold numbers to the data information
+        data_information |= {'tune_folds': get_folds(tune_splits),
+                             'oof_folds': get_folds(oof_splits)}
 
         return data_information

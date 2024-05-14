@@ -7,7 +7,7 @@
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import SupportVectorMachineModel
-from pyanno4rt.learning_model.frequentist.additional_files import (
+from pyanno4rt.learning_model.frequentist.addons import (
     linear_decision_function, rbf_decision_function, poly_decision_function,
     sigmoid_decision_function, linear_decision_gradient, rbf_decision_gradient,
     poly_decision_gradient, sigmoid_decision_gradient)
@@ -40,13 +40,16 @@ class SupportVectorMachineTCP(MachineLearningComponentClass):
     weight : int or float, default=1.0
         Weight of the component function.
 
+    rank : int, default=1
+        Rank of the component in the lexicographic order.
+
     bounds : None or list, default=None
         Constraint bounds for the component.
 
     link : None or list, default=None
         Other segments used for joint evaluation.
 
-    identifier : str, default=None
+    identifier : None or str, default=None
         Additional string for naming the component.
 
     display : bool, default=True
@@ -82,6 +85,7 @@ class SupportVectorMachineTCP(MachineLearningComponentClass):
             model_parameters,
             embedding='active',
             weight=1.0,
+            rank=1,
             bounds=None,
             link=None,
             identifier=None,
@@ -94,6 +98,7 @@ class SupportVectorMachineTCP(MachineLearningComponentClass):
                          model_parameters=model_parameters,
                          embedding=embedding,
                          weight=weight,
+                         rank=rank,
                          bounds=bounds,
                          link=link,
                          identifier=identifier,
@@ -121,6 +126,8 @@ class SupportVectorMachineTCP(MachineLearningComponentClass):
             label_bounds=self.model_parameters['label_bounds'],
             time_variable_name=self.model_parameters['time_variable_name'],
             label_viewpoint=self.model_parameters['label_viewpoint'],
+            tune_splits=self.model_parameters['tune_splits'],
+            oof_splits=self.model_parameters['oof_splits'],
             fuzzy_matching=self.model_parameters['fuzzy_matching'],
             write_features=self.model_parameters['write_features'])
 
@@ -136,10 +143,8 @@ class SupportVectorMachineTCP(MachineLearningComponentClass):
             tune_space=self.model_parameters['tune_space'],
             tune_evaluations=self.model_parameters['tune_evaluations'],
             tune_score=self.model_parameters['tune_score'],
-            tune_splits=self.model_parameters['tune_splits'],
             inspect_model=self.model_parameters['inspect_model'],
             evaluate_model=self.model_parameters['evaluate_model'],
-            oof_splits=self.model_parameters['oof_splits'],
             display_options=self.model_parameters['display_options'])
 
         # Check if the linear kernel has been fitted
@@ -168,7 +173,7 @@ class SupportVectorMachineTCP(MachineLearningComponentClass):
 
         # Transform the component bounds
         self.bounds = sorted(
-            (-1)*inverse_sigmoid(
+            -self.weight*inverse_sigmoid(
                 bound, -self.model.prediction_model.probA_[0],
                 self.model.prediction_model.probB_[0])
             for bound in self.bounds)

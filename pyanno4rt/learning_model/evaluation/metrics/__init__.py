@@ -3,18 +3,17 @@ Evaluation metrics module.
 
 ==================================================================
 
-The module aims to provide methods and classes to evaluate the applied \
-learning models.
+The module aims to provide functions to compute different evaluation metrics.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
-from ._f1_score import F1Score
-from ._model_kpi import ModelKPI
-from ._pr_score import PRScore
-from ._roc_score import ROCScore
+from ._auc_pr import auc_pr
+from ._auc_roc import auc_roc
+from ._f1 import f1
+from ._kpi import kpi
 
-__all__ = ['F1Score',
-           'ModelKPI',
-           'PRScore',
-           'ROCScore']
+__all__ = ['auc_pr',
+           'auc_roc',
+           'f1',
+           'kpi']

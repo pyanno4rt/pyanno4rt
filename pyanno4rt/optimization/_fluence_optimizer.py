@@ -21,7 +21,7 @@ from pyanno4rt.optimization.methods import method_map
 from pyanno4rt.optimization.components import component_map
 from pyanno4rt.optimization.solvers import solver_map
 from pyanno4rt.tools import (
-   apply, get_constraint_segments, get_machine_learning_constraints,
+   apply, flatten, get_constraint_segments, get_machine_learning_constraints,
    get_machine_learning_objectives, get_radiobiology_constraints,
    get_radiobiology_objectives, get_objective_segments, sigmoid)
 
@@ -55,14 +55,14 @@ class FluenceOptimizer():
     initial_strategy : {'data-medoid', 'target-coverage', 'warm-start'}
         Initialization strategy for the fluence vector.
 
-    initial_fluence_vector : list or None
+    initial_fluence_vector : None or list
         User-defined initial fluence vector for the optimization problem, \
         only used if initial_strategy='warm-start'.
 
-    lower_variable_bounds : int, float, list or None
+    lower_variable_bounds : None, int, float, or list
         Lower bound(s) on the decision variables.
 
-    upper_variable_bounds : int, float, list or None
+    upper_variable_bounds : None, int, float, or list
         Upper bound(s) on the decision variables.
 
     max_iter : int
@@ -94,15 +94,15 @@ class FluenceOptimizer():
         # Start the constructor runtime recording
         start_time = time()
 
-        # Remove overlaps between segments according to their priority
-        FluenceOptimizer.remove_overlap((*components,))
-
-        # Resize the segments to the dose grid
-        FluenceOptimizer.resize_segments_to_dose()
-
         # Set the objective and constraint functions
         objectives, constraints = FluenceOptimizer.set_optimization_components(
             components)
+
+        # Remove overlaps between segments according to their priority
+        FluenceOptimizer.remove_overlap(objectives | constraints)
+
+        # Resize the segments to the dose grid
+        FluenceOptimizer.resize_segments_to_dose()
 
         # Adjust the dose-volume-related parameters for fractionation
         FluenceOptimizer.adjust_parameters_for_fractionation(
@@ -127,7 +127,7 @@ class FluenceOptimizer():
 
         # Get the box constraint bounds
         constraint_bounds = FluenceOptimizer.get_constraint_bounds(
-            constraints)
+            method, problem.constraints)
 
         # Initialize the solver object by the selected solver
         solver_object = solver_map[solver](
@@ -153,7 +153,130 @@ class FluenceOptimizer():
             'initial_time': time()-start_time}
 
     @staticmethod
-    def remove_overlap(voi):
+    def set_optimization_components(components):
+        """
+        Set the components of the optimization problem.
+
+        Parameters
+        ----------
+        components : dict
+            Optimization components for each segment of interest, i.e., \
+            objectives and constraints, in the raw user format.
+
+        Returns
+        -------
+        dict
+            Dictionary with the internally configured objectives.
+
+        dict
+            Dictionary with the internally configured constraints.
+        """
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Get the logger and the segmentation data
+        logger, segmentation = hub.logger, hub.segmentation
+
+        # Loop over the segments
+        for segment in segmentation:
+
+            # Reset the segment objective and constraint key
+            segmentation[segment]['objective'] = None
+            segmentation[segment]['constraint'] = None
+
+        # Log a message about the components setting
+        logger.display_info("Setting the optimization components ...")
+
+        # Initialize the objective and constraint dictionaries
+        objectives, constraints = {}, {}
+
+        # Set the base dictionaries for the component types
+        bases = {'objective': objectives, 'constraint': constraints}
+
+        def set_component(component, segment, category, base_dict):
+            """Set the component by its segment and type assignment."""
+
+            # Get the instance from the component map
+            instance = component_map[component['class']](
+                **component['parameters'])
+
+            # Log a message about setting the instance
+            logger.display_info(
+                f"Setting {category} '{instance.name}' for "
+                f"{[segment]+instance.link} ...")
+
+            # Get the instance key for the base dictionary
+            instance_key = '-'.join(filter(
+                None, (f"{[segment]+instance.link}", instance.name,
+                       instance.identifier)))
+
+            # Check if the instance is already included in the base dictionary
+            if instance_key not in base_dict:
+
+                # Add the instance to the base dictionary
+                base_dict[instance_key] = {
+                    'segments': [segment]+instance.link,
+                    'instance': instance}
+
+                # Check if no instance has been set yet
+                if not segmentation[segment][category]:
+
+                    # Add the instance to the segment
+                    segmentation[segment][category] = instance
+
+                else:
+
+                    # Check if the component is a list
+                    if isinstance(segmentation[segment][category], list):
+
+                        # Append the instance
+                        segmentation[segment][category].append(instance)
+
+                    else:
+
+                        # Make a list and add the instance
+                        segmentation[segment][category] = [
+                            segmentation[segment][category], instance]
+
+        # Loop over the segments in the components dictionary
+        for segment in components:
+
+            # Check if the segment holds a list of components
+            if isinstance(components[segment], list):
+
+                # Loop over the component list
+                for element in components[segment]:
+
+                    # Get the category and component
+                    category, component = element.values()
+
+                    # Get the base dictionary
+                    base_dict = bases[category]
+
+                    # Set the component
+                    set_component(component, segment, category, base_dict)
+
+            else:
+
+                # Get the category and component
+                category, component = components[segment].values()
+
+                # Get the base dictionary
+                base_dict = bases[category]
+
+                # Set the component
+                set_component(component, segment, category, base_dict)
+
+        # Add the outcome models for all machine learning components
+        apply(lambda component: component.add_model(),
+              get_machine_learning_constraints(segmentation)
+              + get_machine_learning_objectives(segmentation))
+
+        return objectives, constraints
+
+    @staticmethod
+    def remove_overlap(components):
         """
         Remove overlaps between segments.
 
@@ -177,7 +300,10 @@ class FluenceOptimizer():
 
             # Get the superior indices from all VOIs
             superior_indices = [
-                segmentation[segment]['raw_indices'] for segment in voi
+                segmentation[segment]['raw_indices']
+                for segment in set(flatten(
+                        [component['segments']
+                         for component in components.values()]))
                 if (segmentation[segment]['parameters']['priority']
                     < segmentation[reference]['parameters']['priority'])]
 
@@ -226,112 +352,6 @@ class FluenceOptimizer():
 
         # Resize all segments
         apply(resize_segment, (*segmentation,))
-
-    @staticmethod
-    def set_optimization_components(components):
-        """
-        Set the components of the optimization problem.
-
-        Parameters
-        ----------
-        components : dict
-            Optimization components for each segment of interest, i.e., \
-            objectives and constraints, in the raw user format.
-
-        Returns
-        -------
-        dict
-            Dictionary with the internally configured objectives.
-
-        dict
-            Dictionary with the internally configured constraints.
-        """
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the logger and the segmentation data
-        logger, segmentation = hub.logger, hub.segmentation
-
-        # Log a message about the components setting
-        logger.display_info("Setting the optimization components ...")
-
-        # Initialize the objective and constraint dictionaries
-        objectives, constraints = {}, {}
-
-        # Set the base dictionaries for the component types
-        bases = {'objective': objectives, 'constraint': constraints}
-
-        def set_component(component, segment, category, base_dict):
-            """Set the component by its segment and type assignment."""
-
-            # Check if the component is a dictionary
-            if isinstance(component, dict):
-
-                # Get the instance from the component map
-                instance = component_map[component['class']](
-                    **component['parameters'])
-
-                # Log a message about setting the instance
-                logger.display_info(
-                    f"Setting {category} '{instance.name}' for "
-                    f"{[segment]+instance.link} ...")
-
-                # Get the instance key for the base dictionary
-                instance_key = '-'.join(filter(
-                    None, (f"{[segment]+instance.link}", instance.name,
-                           instance.identifier)))
-
-                # Add the instance to the base dictionary
-                base_dict[instance_key] = {
-                    'segments': [segment]+instance.link,
-                    'instance': instance}
-
-            else:
-
-                # Get the instance tuple from the component map
-                instance = tuple(component_map[element['class']](
-                    **element['parameters']) for element in component)
-
-                # Loop over the elements of the instance
-                for element in instance:
-
-                    # Log a message about setting the element
-                    logger.display_info(
-                        f"Setting {category} '{element.name}' for "
-                        f"{[segment]+element.link} ...")
-
-                    # Get the element key for the base dictionary
-                    element_key = '-'.join(filter(
-                        None, (f"{[segment]+element.link}", element.name,
-                               element.identifier)))
-
-                    # Add the element to the base dictionary
-                    base_dict[element_key] = {
-                        'segments': [segment]+element.link,
-                        'instance': element}
-
-            # Enter the instance into the datahub
-            segmentation[segment][category] = instance
-
-        # Loop over the segments in the components dictionary
-        for segment in components:
-
-            # Get the category and component
-            category, component = components[segment].values()
-
-            # Get the base dictionary
-            base_dict = bases[category]
-
-            # Set the component
-            set_component(component, segment, category, base_dict)
-
-        # Add the outcome models for all machine learning components
-        apply(lambda component: component.add_model(),
-              get_machine_learning_constraints(segmentation)
-              + get_machine_learning_objectives(segmentation))
-
-        return objectives, constraints
 
     @staticmethod
     def adjust_parameters_for_fractionation(components):
@@ -425,22 +445,22 @@ class FluenceOptimizer():
         return get_bounds(lower, -inf), get_bounds(upper, inf)
 
     @staticmethod
-    def get_constraint_bounds(constraints):
+    def get_constraint_bounds(method, constraints):
         """
         Get the lower and upper constraint bounds in a compatible form.
 
         Parameters
         ----------
+        method : {'lexicographic', 'pareto', 'weighted-sum'}
+            Single- or multi-criteria optimization method.
+
         constraints : dict
-            Dictionary with the internally configured constraints.
+            Dictionary with the internally configured problem constraints.
 
         Returns
         -------
-        list
-            Transformed lower bounds on the constraints.
-
-        list
-            Transformed upper bounds on the constraints.
+        tuple
+            Transformed lower and upper bounds on the constraints.
         """
 
         def transform(bounds, limit):
@@ -455,12 +475,24 @@ class FluenceOptimizer():
             # Return the default empty bounds
             return [], []
 
-        # Get the lower and upper bound values from the constraints
-        bounds = tuple([*items] for items in zip(
-            *[constraint['instance'].bounds
-              for constraint in constraints.values()]))
+        # Check if the method is 'lexicographic'
+        if method == 'lexicographic':
 
-        return transform(bounds[0], -inf), transform(bounds[1], inf)
+            # Return the rank-ordered, transformed bounds
+            return tuple(
+                {rank: transform(
+                    [constraint['instance'].bounds[index]
+                     for constraint in rank_constraints.values()], limit)
+                    for rank, rank_constraints in constraints.items()}
+                for index, limit in enumerate((-inf, inf)))
+
+        else:
+
+            # Return the unranked, transformed bounds
+            return tuple(
+                transform([constraint['instance'].bounds[index]
+                           for constraint in constraints.values()], limit)
+                for index, limit in enumerate((-inf, inf)))
 
     def solve(self):
         """Solve the optimization problem."""

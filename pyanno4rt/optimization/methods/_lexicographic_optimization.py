@@ -4,61 +4,54 @@
 
 # %% External package import
 
-from numpy import array
+from numpy import array, vstack
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import get_machine_learning_objectives
+from pyanno4rt.tools import (
+    get_machine_learning_constraints, get_machine_learning_objectives)
 
 # %% Class definition
 
 
 class LexicographicOptimization():
     """
-    Lexicographic problem class.
+    Lexicographic optimization problem class.
 
-    This class provides methods to implement the lexicographic method for \
-    solving the scalarized fluence optimization problem. It features the \
-    tracking dictionary and computation functions for the objective, the \
-    gradient, and the constraints.
+    This class provides methods to perform lexicographic optimization. It \
+    features a component tracker and implements the respective objective, \
+    gradient, constraint and constraint jacobian functions.
 
     Parameters
     ----------
-    backprojection : object of class `DoseProjection` or \
-        `ConstantRBEProjection`
-        Instance of the class `DoseProjection` or `ConstantRBEProjection`, \
-        which inherits from `BackProjection` and provides methods to either \
-        compute the dose from the fluence, or the fluence gradient from the \
-        dose gradient.
+    backprojection : object of class
+    :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
+    :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
+        The object representing the type of backprojection.
 
-    objectives : tuple
-        Tuple with pairs of segmented structures and their associated \
-        objectives.
+    objectives : dict
+        Dictionary with the internally configured objectives.
 
-    constraints : tuple
-        Tuple with pairs of segmented structures and their associated \
-        constraints.
+    constraints : dict
+        Dictionary with the internally configured constraints.
 
     Attributes
     ----------
-    backprojection : object of class `DoseProjection` or \
-        `ConstantRBEProjection`
+    backprojection : object of class
+    :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
+    :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
         See 'Parameters'.
 
-    objectives : tuple
-        See 'Parameters'.
+    objectives : dict
+        Dictionary with the rank-ordered objectives.
 
-    constraints : tuple
-        See 'Parameters'.
+    constraints : dict
+        Dictionary with the rank-ordered constraints.
 
     tracker : dict
-        Dictionary with the objective function values for each iteration, \
-        divided by the associated segments.
+        Dictionary with the iteration-wise component values.
     """
-
-    # Specify the class label
-    name = 'lexicographic'
 
     def __init__(
             self,
@@ -67,219 +60,277 @@ class LexicographicOptimization():
             constraints):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing lexicographic "
-                                      "optimization problem ...")
+        Datahub().logger.display_info(
+            "Initializing lexicographic optimization method ...")
 
-        # Get the instance attributes from the arguments
+        # Get the backprojection from the arguments
         self.backprojection = backprojection
-        self.objectives = objectives
-        self.constraints = constraints
+
+        # Get the rank-ordered objectives
+        self.objectives = {
+            rank: {label: objective for label, objective in objectives.items()
+                   if objective['instance'].rank == rank}
+            for rank in sorted(set(
+                    objective['instance'].rank
+                    for objective in objectives.values()))}
+
+        # Initialize the rank-ordered constraints by the static constraints
+        self.constraints = {
+            rank: {label: constraint
+                   for label, constraint in constraints.items()
+                   if constraint['instance'].rank == rank}
+            for rank in self.objectives}
+
+        # Loop over the lexicographic layers
+        for rank in self.constraints:
+
+            # Update the constraints with the dynamic constraints
+            self.constraints[rank] |= {
+                label: constraint for subdict in (
+                    self.objectives[label] for label in tuple(
+                        self.constraints)[:list(self.constraints).index(rank)])
+                for label, constraint in subdict.items()}
 
         # Initialize the tracker dictionary
-        self.tracker = dict(
-            {"Total": []},
-            **{segment_objective: []
-               for segment_objective in (
-                '-'.join((str(objective[0]), objective[1].name))
-                if objective[1].identifier is None
-                else '-'.join((str(objective[0]), objective[1].name,
-                               objective[1].identifier))
-                for objective in self.objectives)})
+        self.tracker = {label: []
+                        for label in tuple(objectives) + tuple(constraints)}
 
     def objective(
             self,
-            fluence):
+            fluence,
+            layer,
+            track=True):
         """
-        Compute the lexicographic objective function value.
+        Compute the objective function value.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence.
+            Fluence vector.
+
+        layer : int
+            Current layer of the lexicographic order.
+
+        track : bool, default=True
+            Indicator for tracking the single objective function values.
 
         Returns
         -------
-        total_objective_value : float
-            Value of the weighted-sum objective function.
+        float
+            Objective function value.
         """
-        # Initialize the datahub
-        hub = Datahub()
 
-        # Get the machine learning objectives
-        ml_objectives = get_machine_learning_objectives(hub.segmentation)
+        # Get the segmentation data from the datahub
+        segmentation = Datahub().segmentation
 
-        # Check if machine learning objectives are present
-        if len(ml_objectives) > 0:
+        # Loop over the machine learning objectives
+        for objective in get_machine_learning_objectives(segmentation):
 
-            # Loop over the machine learning objective
-            for objective in ml_objectives:
-
-                # Get the data model handler of the objective
-                data_model_handler = objective.data_model_handler
-
-                # Increment the feature calculator iteration
-                data_model_handler.feature_calculator.__iteration__[1] += 1
+            # Increment the feature calculator iteration
+            (objective.data_model_handler.
+             feature_calculator.__iteration__[1]) += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_objective(objective):
+        def compute_single_objective(label, objective):
             """Compute the value of a single objective function."""
-            # Get the associated segments and the objective class
-            segments = objective[0]
-            objective_class = objective[1]
 
-            # Check if the objective class is valid
-            if all(base in str(type(objective_class).__bases__[0])
-                   for base in ('pyanno4rt', 'ObjectiveClass')):
+            # Get the associated segments and the instance
+            segments = objective['segments']
+            instance = objective['instance']
 
-                # Call the computation function of the objective class
-                objective_value = objective_class.compute_objective_value(
-                    tuple(dose[hub.segmentation[segment]['resized_indices']]
-                          for segment in segments), segments)
+            # Compute the objective function value
+            objective_value = instance.compute_value(
+                tuple(dose[segmentation[segment]['resized_indices']]
+                      for segment in segments), segments) * instance.weight
+
+            # Check if the objective value should be tracked
+            if track:
 
                 # Enter the value into the tracking dictionary
-                self.tracker[
-                    '-'.join((str(segments), objective_class.name))
-                    if objective_class.identifier is None
-                    else '-'.join((str(segments), objective_class.name,
-                                   objective_class.identifier))
-                    ] += (objective_value * objective_class.weight,)
+                self.tracker[label] += (objective_value,)
 
-                # Check if the objective class is active
-                if objective_class.embedding == 'active':
+            # Check if the instance is set to active
+            if instance.embedding == 'active':
 
-                    # Return the value of the objective function
-                    return objective_value * objective_class.weight
+                # Return the value of the objective function
+                return objective_value
 
-                # Otherwise, return zero
-                return 0.0
+            # Otherwise, return zero
+            return 0.0
 
-            # Raise an error if the objective class is not valid
-            raise TypeError("All objective functions must have 'pyanno4rt' "
-                            "and 'ObjectiveClass' in the class name, got "
-                            "{} instead!"
-                            .format(type(objective)))
-
-        # Compute the total objective value
-        total_objective_value = sum(compute_single_objective(objective)
-                                    for objective in self.objectives)
-
-        # Enter the total value into the tracking dictionary
-        self.tracker["Total"] += (total_objective_value,)
-
-        return total_objective_value
+        return sum(compute_single_objective(label, objective)
+                   for label, objective in self.objectives[layer].items())
 
     def gradient(
             self,
-            fluence):
+            fluence,
+            layer):
         """
-        Compute the lexicographic gradient vector.
+        Compute the gradient function value.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence.
+            Fluence vector.
+
+        layer : int
+            Current layer of the lexicographic order.
 
         Returns
         -------
-        fluence_gradient : ndarray
-            Values of the weighted-sum fluence derivatives.
+        ndarray
+            Gradient function value.
         """
+
+        # Get the segmentation data from the datahub
+        segmentation = Datahub().segmentation
+
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
         def compute_single_gradient(objective):
             """Compute the value of a single gradient function."""
-            # Get the associated segments and the objective class
-            segments = objective[0]
-            objective_class = objective[1]
 
-            # Check if the objective class is valid
-            if all(base in str(type(objective_class).__bases__[0])
-                   for base in ('pyanno4rt', 'ObjectiveClass')):
+            # Get the associated segments and the instance
+            segments = objective['segments']
+            instance = objective['instance']
 
-                # Check if the objective class is active
-                if objective_class.embedding == 'active':
+            # Check if the instance is set to active
+            if instance.embedding == 'active':
 
-                    # Return the value of the gradient function
-                    return (objective_class.compute_gradient_value(
-                        tuple(
-                            dose[Datahub().segmentation[
-                                segment]['resized_indices']]
-                            for segment in segments), segments)
-                            * objective_class.weight)
+                # Return the value of the gradient function
+                return instance.compute_gradient(
+                    tuple(dose[segmentation[segment]['resized_indices']]
+                          for segment in segments), segments) * instance.weight
 
-                # Otherwise, return zero
-                return 0.0
+            # Otherwise, return zero
+            return 0.0
 
-            # Raise an error if the objective class is not valid
-            raise TypeError("All objective functions must have 'pyanno4rt' "
-                            "and 'ObjectiveClass' in the class name, got "
-                            "{} instead!"
-                            .format(type(objective)))
-
-        # Compute the total gradient vector
+        # Compute the total gradient function value
         total_gradient = sum(compute_single_gradient(objective)
-                             for objective in self.objectives)
+                             for objective in self.objectives[layer].values())
 
-        # Compute the fluence gradient from the dose gradient
-        fluence_gradient = self.backprojection.compute_fluence_gradient(
-            total_gradient)
-
-        return fluence_gradient
+        return self.backprojection.compute_fluence_gradient(total_gradient)
 
     def constraint(
             self,
-            fluence):
+            fluence,
+            layer,
+            track=True):
         """
-        Compute the lexicographic constraint vector.
+        Compute the constraint function value(s).
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence.
+            Fluence vector.
+
+        layer : int
+            Current layer of the lexicographic order.
+
+        track : bool, default=True
+            Indicator for tracking the constraint function value(s).
 
         Returns
         -------
-        constraints : ndarray
-            Values of the constraints.
+        float
+            Constraint function value(s).
         """
+
+        # Get the segmentation data from the datahub
+        segmentation = Datahub().segmentation
+
+        # Loop over the machine learning constraints
+        for constraint in get_machine_learning_constraints(segmentation):
+
+            # Increment the feature calculator iteration
+            (constraint.data_model_handler.
+             feature_calculator.__iteration__[1]) += 1
+
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_constraint(constraint):
+        def compute_single_constraint(label, constraint):
             """Compute the value of a single constraint function."""
-            # Get the associated segments and the constraint class
-            segments = constraint[0]
-            constraint_class = constraint[1]
 
-            # Check if the constraint class is valid
-            if all(base in str(type(constraint_class).__bases__[0])
-                   for base in ('pyanno4rt', 'ConstraintClass')):
+            # Get the associated segments and the instance
+            segments = constraint['segments']
+            instance = constraint['instance']
 
-                # Check if the constraint class is active
-                if constraint_class.embedding == 'active':
+            # Compute the constraint function value
+            constraint_value = instance.compute_value(
+                tuple(dose[segmentation[segment]['resized_indices']]
+                      for segment in segments), segments) * instance.weight
 
-                    # Return the value of the constraint function
-                    return constraint_class.compute_constraint(
-                        tuple(
-                            dose[Datahub().segmentation[
-                                segment]['resized_indices']]
-                            for segment in segments),
-                        segments)
+            # Check if the objective value should be tracked
+            if track:
 
-                # Otherwise, return zero
-                return 0.0
+                # Enter the value into the tracking dictionary
+                self.tracker[label] += (constraint_value,)
 
-            # Raise an error if the constraint class is not valid
-            raise TypeError("All constraint functions must have 'pyanno4rt' "
-                            "and 'ConstraintClass' in the class name, got "
-                            "{} instead!"
-                            .format(type(constraint)))
+            # Check if the instance is set to active
+            if instance.embedding == 'active':
 
-        # Compute the values of all constraint functions
-        constraints = array(compute_single_constraint(constraint)
-                            for constraint in self.constraints)
+                # Return the value of the constraint function
+                return constraint_value
 
-        return constraints
+            # Otherwise, return the lower constraint bound
+            return instance.bounds[0]
+
+        return array([
+            compute_single_constraint(label, constraint)
+            for label, constraint in self.constraints[layer].items()])
+
+    def jacobian(
+            self,
+            fluence,
+            layer):
+        """
+        Compute the constraint jacobian function value.
+
+        Parameters
+        ----------
+        fluence : ndarray
+            Fluence vector.
+
+        layer : int
+            Current layer of the lexicographic order.
+
+        Returns
+        -------
+        ndarray
+            Constraint jacobian function value.
+        """
+
+        # Get the segmentation data from the datahub
+        segmentation = Datahub().segmentation
+
+        # Compute the dose from the fluence
+        dose = self.backprojection.compute_dose(fluence)
+
+        def compute_single_jacobian(constraint):
+            """Compute the value of a single constraint jacobian function."""
+
+            # Get the associated segments and the instance
+            segments = constraint['segments']
+            instance = constraint['instance']
+
+            # Check if the instance is set to active
+            if instance.embedding == 'active':
+
+                # Return the value of the constraint jacobian function
+                return instance.compute_gradient(
+                    tuple(dose[segmentation[segment]['resized_indices']]
+                          for segment in segments), segments) * instance.weight
+
+            # Otherwise, return zero array
+            return array([0.0]*Datahub().dose_information['number_of_voxels'])
+
+        # Compute all constraint jacobian function values
+        jacobians = (compute_single_jacobian(constraint)
+                     for constraint in self.constraints[layer].values())
+
+        return vstack([self.backprojection.compute_fluence_gradient(
+            jacobian) for jacobian in jacobians])

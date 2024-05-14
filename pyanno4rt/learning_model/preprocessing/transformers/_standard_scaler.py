@@ -5,27 +5,24 @@
 # %% External package import
 
 from numpy import array, mean, ones, std, zeros
-from sklearn.base import BaseEstimator, TransformerMixin
 
 # %% Class definition
 
 
-class StandardScaler(BaseEstimator, TransformerMixin):
+class StandardScaler():
     """
     Standard scaling transformer class.
 
-    This class provides methods to fit the standard scaler, transform input \
-    features, and return the scaler gradient.
+    This class provides methods to fit, transform and gradientize the input \
+    features by their z-score.
 
     Parameters
     ----------
-    center : bool
-        Indicator for the computation of the mean values and centering of the \
-        data.
+    center : bool, default=True
+        Indicator for the centering of the data by the mean values.
 
-    scale : bool
-        Indicator for the computation of the standard deviations and the \
-        scaling of the data.
+    scale : bool, default=True
+        Indicator for the scaling of the data by the standard deviations.
 
     Attributes
     ----------
@@ -36,16 +33,11 @@ class StandardScaler(BaseEstimator, TransformerMixin):
         See 'Parameters'.
 
     means : ndarray
-        Mean values of the feature columns. Only computed if ``center``is \
-        set to True, otherwise it is set to zeros.
+        Mean values of the features (if center is false, set to zeros).
 
     deviations : ndarray
-        Standard deviations of the feature columns. Only computed if \
-        ``scale``is set to True, otherwise it is set to ones
+        Standard deviations of the features (if scale is false, set to ones).
     """
-
-    # Set the algorithm label
-    label = 'StandardScaler'
 
     def __init__(
             self,
@@ -63,38 +55,39 @@ class StandardScaler(BaseEstimator, TransformerMixin):
     def fit(
             self,
             features,
-            labels=None):
+            labels):
         """
-        Fit the transformator with the input data.
+        Fit the standard scaling transformer.
 
         Parameters
         ----------
         features : ndarray
-        Values of the input features.
+            Values of the input features.
 
-        labels : ndarray, default = None
+        labels : None or ndarray
             Values of the input labels.
         """
-        # Check if centering should be performed
+
+        # Check if the features should be centered
         if self.center:
 
-            # Compute the means of the feature columns
+            # Compute the means of the features
             self.means = mean(features, axis=0)
 
         else:
 
-            # Set all means to zero (no centering)
+            # Set the means to zero (no centering)
             self.means = zeros((features.shape[1],))
 
-        # Check if scaling should be performed
+        # Check if the features should be scaled
         if self.scale:
 
-            # Compute the standard deviations of the feature columns
+            # Compute the standard deviations of the features
             self.deviations = std(features, axis=0)
 
         else:
 
-            # Set all standard deviations to one (no scaling)
+            # Set the standard deviations to one (no scaling)
             self.deviations = ones((features.shape[1],))
 
         return self
@@ -102,33 +95,37 @@ class StandardScaler(BaseEstimator, TransformerMixin):
     def transform(
             self,
             features,
-            labels=None):
+            labels):
         """
-        Transform the input data.
+        Transform the input features/labels.
 
         Parameters
         ----------
         features : ndarray
-        Values of the input features.
+            Values of the input features.
 
-        labels : ndarray, default = None
+        labels : None or ndarray
             Values of the input labels.
 
         Returns
         -------
         ndarray
-            Values of the transformed features.
+            Transformed values of the input features.
+
+        None or ndarray
+            Transformed values of the input labels.
         """
+
         return array(
-            [(features[:, i]-self.means[i])/self.deviations[i]
-             for i in range(features.shape[1])]).T
+            [(features[:, index]-self.means[index])/self.deviations[index]
+             for index in range(features.shape[1])]).T, labels
 
     def compute_gradient(
             self,
             features):
         """
-        Compute the gradient of the standard scaling transformation with \
-        respect to the ``features``.
+        Compute the standard scaling transformer gradient w.r.t the input \
+        features.
 
         Parameters
         ----------
@@ -138,7 +135,8 @@ class StandardScaler(BaseEstimator, TransformerMixin):
         Returns
         -------
         ndarray
-            Values of the input feature gradients.
+            Value of the standard scaling transformer gradient.
         """
+
         return array(
-            [1/self.deviations[i] for i in range(features.shape[1])])
+            [1/self.deviations[index] for index in range(features.shape[1])])

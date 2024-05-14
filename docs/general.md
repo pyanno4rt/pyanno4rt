@@ -3,6 +3,7 @@
 [![CI/CD](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml)
 ![Read the Docs](https://img.shields.io/readthedocs/pyanno4rt)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyanno4rt)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/pyanno4rt)
 [![Coverage Status](https://coveralls.io/repos/github/pyanno4rt/pyanno4rt/badge.svg)](https://coveralls.io/github/pyanno4rt/pyanno4rt)
 [![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
 [![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 

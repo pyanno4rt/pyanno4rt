@@ -6,25 +6,24 @@
 
 from numpy import diag, mean
 from numpy.linalg import eig
-from sklearn.base import BaseEstimator, TransformerMixin
 
 # %% Class definition
 
 
-class Whitening(BaseEstimator, TransformerMixin):
+class Whitening():
     """
     Whitening transformer class.
 
-    This class provides methods to fit the whitening matrix, transform input \
-    features, and return the whitening gradient.
+    This class provides methods to fit, transform and gradientize the input \
+    features by their whitening matrix.
 
     Parameters
     ----------
-    method : {'pca', 'zca'}, default = 'zca'
-        Method for the computation of the whitening matrix. With 'zca', the \
-        zero-phase component analysis (or Mahalanobis transformation) is \
-        applied, with 'pca', the principal component analysis lays the \
-        groundwork.
+    method : {'pca', 'zca'}, default='zca'
+        Method for the computation of the whitening matrix.
+
+        - 'zca' : zero-phase component analysis (Mahalanobis transformation)
+        - 'pca' : principal component analysis
 
     Attributes
     ----------
@@ -32,20 +31,17 @@ class Whitening(BaseEstimator, TransformerMixin):
         See 'Parameters'.
 
     means : ndarray
-        Mean values of the feature columns.
+        Mean values of the features.
 
     matrix : ndarray
-        Whitening matrix for the transformation of feature vectors.
+        Whitening matrix.
     """
-
-    # Set the algorithm label
-    label = 'Whitening'
 
     def __init__(
             self,
             method='zca'):
 
-        # Get the instance attributes from the arguments
+        # Get the whitening method from the arguments
         self.method = method
 
         # Initialize the means and the whitening matrix
@@ -55,86 +51,87 @@ class Whitening(BaseEstimator, TransformerMixin):
     def fit(
             self,
             features,
-            labels=None):
+            labels):
         """
-        Fit the transformator with the input data.
+        Fit the whitening transformer.
 
         Parameters
         ----------
         features : ndarray
-        Values of the input features.
+            Values of the input features.
 
-        labels : ndarray, default = None
+        labels : None or ndarray
             Values of the input labels.
         """
 
         def compute_zca_matrix(inverse_diagonal, eigenvectors):
             """Compute the whitening matrix from ZCA."""
-            # Compute the whitening matrix
-            self.matrix = inverse_diagonal @ eigenvectors.T
+
+            return inverse_diagonal @ eigenvectors.T
 
         def compute_pca_matrix(inverse_diagonal, eigenvectors):
             """Compute the whitening matrix from PCA."""
-            # Compute the whitening matrix
-            self.matrix = eigenvectors @ inverse_diagonal @ eigenvectors.T
 
-        # Compute the means of the feature columns
+            return eigenvectors @ inverse_diagonal @ eigenvectors.T
+
+        # Compute the means of the features
         self.means = mean(features, axis=0)
 
-        # Center the feature values by the column means
-        centered_features = features - self.means
+        # Center the feature values by the means
+        centered_features = features-self.means
 
         # Compute the covariance matrix
-        covariance_matrix = (
-            (centered_features.T @ centered_features)
-            / centered_features.shape[0])
+        covariance_matrix = ((centered_features.T @ centered_features)
+                             / centered_features.shape[0])
 
         # Compute the eigenvalues and eigenvectors of the covariance matrix
         eigenvalues, eigenvectors = eig(covariance_matrix)
 
-        # Extract the diagonal of the eigenvalues
+        # Get the diagonal of the eigenvalues
         diagonal = diag(eigenvalues)
 
         # Compute the inverse-rooted diagonal
         inverse_diagonal = diag(diag(diagonal)**(-0.5))
 
-        # Map the methods with their computation functions
-        methods = {'zca': compute_zca_matrix,
-                   'pca': compute_pca_matrix}
+        # Create a mapping between methods and computation functions
+        methods = {'zca': compute_zca_matrix, 'pca': compute_pca_matrix}
 
         # Compute the whitening matrix
-        methods[self.method](inverse_diagonal, eigenvectors)
+        self.matrix = methods[self.method](inverse_diagonal, eigenvectors)
 
         return self
 
     def transform(
             self,
             features,
-            labels=None):
+            labels):
         """
-        Transform the input data.
+        Transform the input features/labels.
 
         Parameters
         ----------
         features : ndarray
-        Values of the input features.
+            Values of the input features.
 
-        labels : ndarray, default = None
+        labels : None or ndarray
             Values of the input labels.
 
         Returns
         -------
         ndarray
-            Values of the transformed features.
+            Transformed values of the input features.
+
+        None or ndarray
+            Transformed values of the input labels.
         """
-        return (features-self.means) @ self.matrix.T
+
+        return (features-self.means) @ self.matrix.T, labels
 
     def compute_gradient(
             self,
             features):
         """
-        Compute the gradient of the whitening transformation with respect to \
-        the ``features``.
+        Compute the whitening transformer gradient w.r.t the input features.
 
         Parameters
         ----------
@@ -144,6 +141,7 @@ class Whitening(BaseEstimator, TransformerMixin):
         Returns
         -------
         ndarray
-            Values of the input feature gradients.
+            Value of the whitening transformer gradient.
         """
+
         return self.matrix.mean(axis=1)

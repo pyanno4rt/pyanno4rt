@@ -4,7 +4,6 @@
 
 # %% External package import
 
-from concurrent.futures import ThreadPoolExecutor
 from numpy import (
     array, array_equal, empty, fromiter, unravel_index, vstack, zeros)
 from scipy.ndimage import zoom
@@ -130,7 +129,7 @@ class FeatureCalculator():
         if self.write_features:
 
             # Initialize the feature history from the argument
-            self.feature_history = empty(shape=(len(self.feature_map),))
+            self.feature_history = empty(shape=(1, len(self.feature_map)))
 
         # Check if the instance should be returned
         if return_self:
@@ -367,14 +366,13 @@ class FeatureCalculator():
             return feature_value
 
         # Run the computation function for all features in the feature map
-        features = ThreadPoolExecutor().map(compute_feature_value,
-                                            (*self.feature_map,))
+        features = map(compute_feature_value, (*self.feature_map,))
 
         # Convert the features into a shaped array
         feature_vector = array((*features,)).reshape(1, -1)
 
         # Check if the feature history should be written
-        if self.write_features:
+        if self.write_features and self.__iteration__[1] >= 2:
 
             # Add the feature vector to the history
             self.feature_history = vstack((self.feature_history,
@@ -464,7 +462,6 @@ class FeatureCalculator():
             return feature_gradient
 
         # Run the computation function for all features in the feature map
-        gradients = ThreadPoolExecutor().map(
-            compute_feature_gradient, (*self.feature_map,))
+        gradients = map(compute_feature_gradient, (*self.feature_map,))
 
         return svstack(tuple(gradients))

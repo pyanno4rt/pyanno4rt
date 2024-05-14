@@ -40,14 +40,17 @@ def copycat(base_class, path):
         def edit(component):
             """Edit a single component."""
 
-            # Check if the component has model parameters and if the model
+            # Get the component instance
+            instance = component['instance']
+
+            # Check if the instance has model parameters and if the model
             # label is equal to the folder name
-            if ('model_parameters' in component['parameters']
-                    and component['parameters']['model_parameters'][
+            if ('model_parameters' in instance['parameters']
+                    and instance['parameters']['model_parameters'][
                         'model_label'] == basename(inputs[0])):
 
-                # Overwrite the model folder path of the component
-                component['parameters']['model_parameters'][
+                # Overwrite the model folder path
+                instance['parameters']['model_parameters'][
                     'model_folder_path'] = inputs[0]
 
                 # Loop over the model path files
@@ -57,12 +60,12 @@ def copycat(base_class, path):
                     if 'model_data' in filename:
 
                         # Overwrite the model data path
-                        component['parameters']['model_parameters'][
+                        instance['parameters']['model_parameters'][
                             'data_path'] = f'{inputs[0]}/{filename}'
 
-        # Get the component instance(s)
+        # Get the component
         component = treatment_plan.optimization[
-            'components'][inputs[1]]['instance']
+            'components'][inputs[1]]
 
         # Check if the component is a list
         if isinstance(component, list):

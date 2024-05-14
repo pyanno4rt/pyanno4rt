@@ -11,6 +11,7 @@ This module aims to provide helpful functions that improve code readability.
 from ._add_square_brackets import add_square_brackets
 from ._apply import apply
 from ._arange_with_endpoint import arange_with_endpoint
+from ._compare_dictionaries import compare_dictionaries
 from ._copycat import copycat
 from ._custom_round import custom_round
 from ._deduplicate import deduplicate
@@ -38,6 +39,7 @@ from ._replace_nan import replace_nan
 __all__ = ['add_square_brackets',
            'apply',
            'arange_with_endpoint',
+           'compare_dictionaries',
            'copycat',
            'custom_round',
            'deduplicate',

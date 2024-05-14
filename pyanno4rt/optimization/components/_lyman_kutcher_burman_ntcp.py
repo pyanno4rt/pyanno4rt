@@ -25,13 +25,13 @@ class LymanKutcherBurmanNTCP(RadiobiologyComponentClass):
 
     Parameters
     ----------
-    tolerance_dose_50 : int or float, default=None
+    tolerance_dose_50 : int or float
         Tolerance value for the dose at 50% tumor control.
 
-    slope_parameter : int or float, default=None
+    slope_parameter : int or float
         Slope parameter.
 
-    volume_parameter : int or float, default=None
+    volume_parameter : int or float
         Dose-volume effect parameter.
 
     embedding : {'active', 'passive'}, default='active'
@@ -42,13 +42,16 @@ class LymanKutcherBurmanNTCP(RadiobiologyComponentClass):
     weight : int or float, default=1.0
         Weight of the component function.
 
+    rank : int, default=1
+        Rank of the component in the lexicographic order.
+
     bounds : None or list, default=None
         Constraint bounds for the component.
 
     link : None or list, default=None
         Other segments used for joint evaluation.
 
-    identifier : str, default=None
+    identifier : None or str, default=None
         Additional string for naming the component.
 
     display : bool, default=True
@@ -67,6 +70,7 @@ class LymanKutcherBurmanNTCP(RadiobiologyComponentClass):
             volume_parameter=None,
             embedding='active',
             weight=1.0,
+            rank=1,
             bounds=None,
             link=None,
             identifier=None,
@@ -84,6 +88,7 @@ class LymanKutcherBurmanNTCP(RadiobiologyComponentClass):
                              volume_parameter),
                          embedding=embedding,
                          weight=weight,
+                         rank=rank,
                          bounds=bounds,
                          link=link,
                          identifier=identifier,
@@ -95,7 +100,7 @@ class LymanKutcherBurmanNTCP(RadiobiologyComponentClass):
             float(volume_parameter)]
 
         # Transform the component bounds
-        self.bounds = sorted(bound for bound in self.bounds)
+        self.bounds = sorted(self.weight*bound for bound in self.bounds)
 
     def compute_value(
             self,
@@ -170,7 +175,7 @@ def compute(dose, parameter_value):
     full_dose = concatenate(dose)
 
     # Compute the EUD
-    eud = (sum(full_dose**(1/parameter_value[2]))/len(full_dose)
+    eud = ((full_dose**(1/parameter_value[2])).sum()/len(full_dose)
            )**parameter_value[2]
 
     return 0.5*(1+erf((eud-parameter_value[0])
@@ -209,12 +214,12 @@ def differentiate(dose, parameter_value, number_of_voxels, segment_indices):
     full_indices = concatenate(segment_indices)
 
     # Compute the EUD
-    eud = (1/len(full_dose)*sum(full_dose**(1/parameter_value[2]))
+    eud = (1/len(full_dose)*(full_dose**(1/parameter_value[2])).sum()
            )**parameter_value[2]
 
     # Compute the dose gradient of the EUD
     eud_gradient = (
-        sum(full_dose**(1/parameter_value[2]))**(parameter_value[2]-1)
+        (full_dose**(1/parameter_value[2])).sum()**(parameter_value[2]-1)
         * full_dose**(1/parameter_value[2]-1)
         / (len(full_dose)**parameter_value[2]))
 
