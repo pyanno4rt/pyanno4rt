@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyanno4rt"
-version = "0.20.0"
+version = "0.22.0"
 description = "A package for Python-based advanced numerical nonlinear optimization in radiotherapy."
 license = "LICENSE"
 authors = [ "Tim Ortkamp <tim.ortkamp@kit.edu>" ]
@@ -28,18 +28,19 @@ include = "pyanno4rt"
 
 [tool.poetry.dependencies]
 python = ">=3.10, <3.11"
+numpy = "1.26.4"
 proxmin = ">=0.6.12"
 absl-py = ">=2.1.0"
 pydicom = ">=2.4.4"
-scikit-image = ">=0.23.2"
+scikit-image = ">=0.24.0"
 h5py = ">=3.11.0"
 pandas = ">=2.2.2"
 fuzzywuzzy = ">=0.18.0"
-jax = ">=0.4.28"
-jaxlib = ">=0.4.28"
-numba = ">=0.59.1"
+jax = ">=0.4.30"
+jaxlib = ">=0.4.30"
+numba = ">=0.60.0"
 python-levenshtein = ">=0.25.1"
-scikit-learn = ">=1.4.2"
+scikit-learn = ">=1.5.1"
 tensorflow = "2.11.1"
 tensorflow-io-gcs-filesystem = "0.31.0"
 hyperopt = ">=0.2.7"
@@ -47,9 +48,10 @@ pymoo = ">=0.6.1.1"
 pyqt5-qt5 = "5.15.2"
 pyqt5 = "5.15.10"
 pyqtgraph = ">=0.13.7"
-ipython = ">=8.24.0"
+ipython = ">=8.26.0"
+matplotlib = "3.8.3"
 seaborn = ">=0.13.2"
-pypop7 = ">=0.0.79"
+pypop7 = ">=0.0.80"
 
 [tool.poetry.group.dev.dependencies]
 pyqtwebengine-qt5 = "5.15.2"
@@ -58,17 +60,20 @@ spyder-kernels = "2.4.4"
 jupyter = ">=1.0.0"
 sphinx = ">=7.3.7"
 sphinx-rtd-theme = ">=2.0.0"
-sphinx-autoapi = ">=3.0.0"
-myst-nb = ">=1.1.0"
-pytest = ">=8.2.0"
+sphinx-autoapi = "3.0.0"
+myst-nb = ">=1.1.1"
+pytest = ">=8.2.2"
 pytest-cov = ">=5.0.0"
-coveralls = ">=4.0.0"
+coveralls = ">=4.0.1"
 sphinx-copybutton = ">=0.5.2"
 sphinx-last-updated-by-git = ">=0.3.7"
 sphinx-favicon = ">=1.0.1"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/pyanno4rt/pyanno4rt/issues"
+
+[tool.coverage.run]
+omit = ['*/__init__.py', '*/_component_map.py', '*/_configuration_map.py', '*/_evaluation_map.py', '*/_model_display_map.py', '*/_model_map.py', '*/_optimization_map.py', '*/_top_level_map.py', '*/_tune_space_map.py', '*/_neural_network_maps.py', '*/_loss_map.py', '*/_cleaner_map.py', '*/_reducer_map.py', '*/_sampler_map.py', '*/_transformer_map.py', '*/_component_map.py', '*/_method_map.py', '*/_projection_map.py', '*/_solver_map.py', '*/resources_rc.py', '*/compare_window.py', '*/info_window.py', '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py', '*/settings_window.py', '*/text_window.py', '*/tree_window.py', '*/decision_tree_ntcp_window.py', '*/decision_tree_tcp_window.py', '*/dose_uniformity_window.py', '*/equivalent_uniform_dose_window.py', '*/k_nearest_neighbors_ntcp_window.py', '*/k_nearest_neighbors_tcp_window.py', '*/lkb_ntcp_window.py', '*/logistic_regression_ntcp_window.py', '*/logistic_regression_tcp_window.py', '*/lq_poisson_tcp_window.py', '*/maximum_dvh_window.py', '*/mean_dose_window.py', '*/minimum_dvh_window.py', '*/naive_bayes_ntcp_window.py', '*/naive_bayes_tcp_window.py', '*/neural_network_ntcp_window.py', '*/neural_network_tcp_window.py', '*/random_forest_ntcp_window.py', '*/random_forest_tcp_window.py', '*/squared_deviation_window.py', '*/squared_overdosing_window.py', '*/squared_underdosing_window.py', '*/support_vector_machine_ntcp_window.py', '*/support_vector_machine_tcp_window.py', '*/_custom_styles.py', '*/_component_window_map.py']
 
 [build-system]
 requires = [ "poetry-core" ]

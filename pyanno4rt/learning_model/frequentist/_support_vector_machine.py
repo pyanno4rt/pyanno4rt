@@ -197,7 +197,7 @@ class SupportVectorMachineModel():
             'tune_space': {
                 'C': tune_space.get('C', [2**-5, 2**10]),
                 'kernel': tune_space.get(
-                    'kernel', ['linear', 'rbf', 'poly', 'sigmoid']),
+                    'kernel', ['linear', 'poly', 'rbf', 'sigmoid']),
                 'degree': tune_space.get('degree', [3, 4, 5, 6]),
                 'gamma': tune_space.get('gamma', [2**-15, 2**3]),
                 'tol': tune_space.get('tol', [1e-4, 1e-5, 1e-6]),
@@ -296,11 +296,9 @@ class SupportVectorMachineModel():
 
             # Check if all required files exists and if the configuration
             # dictionary equals the external configuration file content
-            if (all(exists(path) for path in (
+            if all(exists(path) for path in (
                     self.model_path, self.configuration_path,
-                    self.hyperparameter_path)) and
-                    compare_dictionaries(self.configuration,
-                                         self.read_configuration_from_file())):
+                    self.hyperparameter_path)):
 
                 # Set the update flag to False
                 self.updated_model = False

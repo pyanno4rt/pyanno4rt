@@ -73,7 +73,7 @@ class SupportVectorMachineTCPWindow(
                          'close_component_pbutton': pbutton_composer})
 
         # 
-        self.kernel_lwidget.addItems(['linear', 'rbf', 'poly', 'sigmoid'])
+        self.kernel_lwidget.addItems(['linear', 'poly', 'rbf', 'sigmoid'])
         self.class_weight_lwidget.addItems(['None', 'balanced'])
         self.graphs_lwidget.addItems(['AUC-ROC', 'AUC-PR', 'F1'])
         self.kpi_lwidget.addItems(['Logloss', 'Brier score', 'Subset accuracy',

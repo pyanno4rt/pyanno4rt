@@ -21,7 +21,7 @@ def custom_round(number):
     """
 
     # Convert the number into string and trim after the first decimal place
-    number = str(number)[:str(number).index('.') + 2]
+    number = str(float(number))[:str(float(number)).index('.') + 2]
 
     # Check if the last digit is equal or greater than '5'
     if number[-1] >= '5':

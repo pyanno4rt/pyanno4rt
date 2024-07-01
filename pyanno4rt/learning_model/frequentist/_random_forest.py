@@ -314,11 +314,9 @@ class RandomForestModel():
 
             # Check if all required files exists and if the configuration
             # dictionary equals the external configuration file content
-            if (all(exists(path) for path in (
+            if all(exists(path) for path in (
                     self.model_path, self.configuration_path,
-                    self.hyperparameter_path)) and
-                    compare_dictionaries(self.configuration,
-                                         self.read_configuration_from_file())):
+                    self.hyperparameter_path)):
 
                 # Set the update flag to False
                 self.updated_model = False

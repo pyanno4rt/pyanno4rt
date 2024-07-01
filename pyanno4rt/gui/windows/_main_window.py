@@ -255,10 +255,10 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.set_initial_plan(treatment_plan)
 
         # Set the initial window size
-        self.resize(1920, 1080)
+        # self.resize(1440, 900)
 
         # Show the GUI
-        self.show()
+        self.showMaximized()
 
     def connect_signals(self):
         """Connect the event signals to the GUI elements."""
@@ -1037,51 +1037,51 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Set the waiting cursor
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
-        #try:
+        try:
 
-        # Get the treatment plan instance
-        instance = self.plans[self.plan_ledit.text()]
+            # Get the treatment plan instance
+            instance = self.plans[self.plan_ledit.text()]
 
-        # Optimize the treatment plan
-        instance.optimize()
+            # Optimize the treatment plan
+            instance.optimize()
 
-        # Check if the plan has already been optimized
-        if self.plan_ledit.text() not in self.optimized_plans:
+            # Check if the plan has already been optimized
+            if self.plan_ledit.text() not in self.optimized_plans:
 
-            # Append the treatment plan to the optimized plans list
-            self.optimized_plans.append(self.plan_ledit.text())
+                # Append the treatment plan to the optimized plans list
+                self.optimized_plans.append(self.plan_ledit.text())
 
-            # Update the comparison plans
-            self.update_comparison_plans()
+                # Update the comparison plans
+                self.update_comparison_plans()
 
-        # Get the optimized dose array
-        optimized_dose = instance.datahub.optimization['optimized_dose']
+            # Get the optimized dose array
+            optimized_dose = instance.datahub.optimization['optimized_dose']
 
-        # Check if any dose contours have been computed
-        if self.slice_widget.dose_contours:
+            # Check if any dose contours have been computed
+            if self.slice_widget.dose_contours:
 
-            # Loop over the dose contours
-            for contour in self.slice_widget.dose_contours:
+                # Loop over the dose contours
+                for contour in self.slice_widget.dose_contours:
 
-                # Update the dose contour lines
-                contour.setData(zeros(self.slice_widget.dose_cube[
-                    :, :, self.slice_widget.slice].shape))
+                    # Update the dose contour lines
+                    contour.setData(zeros(self.slice_widget.dose_cube[
+                        :, :, self.slice_widget.slice].shape))
 
-        self.slice_widget.dose_cube = None
-        self.slice_widget.dose_contours = None
+            self.slice_widget.dose_cube = None
+            self.slice_widget.dose_contours = None
 
-        # Add the dose image to the slice widget
-        self.slice_widget.add_dose(optimized_dose)
+            # Add the dose image to the slice widget
+            self.slice_widget.add_dose(optimized_dose)
 
-        # except Exception as error:
+        except Exception as error:
 
-        #     # Set back to the arrow cursor
-        #     QApplication.restoreOverrideCursor()
+            # Set back to the arrow cursor
+            QApplication.restoreOverrideCursor()
 
-        #     # Show a warning message box
-        #     QMessageBox.warning(self, "pyanno4rt", str(error))
+            # Show a warning message box
+            QMessageBox.warning(self, "pyanno4rt", str(error))
 
-        #     return False
+            return False
 
         # Update the images of the slice widget
         self.slice_widget.update_images()
@@ -1143,6 +1143,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Add the style and input data to the DVH widget
             self.dvh_widget.add_style_and_data(instance.datahub.dose_histogram)
+
+            self.set_enabled(('visualize_pbutton',))
 
         except Exception as error:
 
@@ -1252,7 +1254,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.transform_evaluation_to_dict())
 
             # Disable specific fields
-            self.set_disabled(('visualize_pbutton'))
+            self.set_disabled(('visualize_pbutton',))
 
             # Set the line edit cursor positions to zero
             self.set_zero_line_cursor((

@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_compare_window(object):
     def setupUi(self, compare_window):
         compare_window.setObjectName("compare_window")
-        compare_window.setWindowModality(QtCore.Qt.ApplicationModal)
+        compare_window.setWindowModality(QtCore.Qt.WindowModal)
         compare_window.resize(790, 460)
         compare_window.setMinimumSize(QtCore.QSize(790, 460))
         compare_window.setMaximumSize(QtCore.QSize(790, 460))

@@ -35,7 +35,7 @@ class DoseDx(DosiomicFeature):
                                     jnp.ceil,
                                     quantile)
 
-        return jnp.sort(dose)[jnp.int32(rounded_quantile)-1]
+        return jnp.sort(dose)[jnp.int32(rounded_quantile)]
 
     @staticmethod
     def compute(level, dose, *args):

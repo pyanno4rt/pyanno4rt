@@ -438,19 +438,21 @@ class NeuralNetworkTCPWindow(
             'preprocessing_steps': (
                 ['Identity'] if self.prep_steps_ledit.text() == ''
                 else self.prep_steps_ledit.text().strip('][').split(', ')),
+            'architecture': self.architecture_cbox.currentText(),
+            'max_hidden_layers': self.max_hidden_layers_sbox.value(),
             'tune_space': {
                 'input_neuron_number': (
                     [2**x for x in range(1, 12)]
                     if self.input_neurons_ledit.text() == ''
                     else loads(self.input_neurons_ledit.text())),
-                'hidden_neuron_number': (
-                    [2**x for x in range(1, 12)]
-                    if self.hidden_neurons_ledit.text() == ''
-                    else loads(self.hidden_neurons_ledit.text())),
                 'input_activation': [
                     self.input_activation_lwidget.item(index).text()
                     for index in range(self.input_activation_lwidget.count())
                     if self.input_activation_lwidget.item(index).checkState()],
+                'hidden_neuron_number': (
+                    [2**x for x in range(1, 12)]
+                    if self.hidden_neurons_ledit.text() == ''
+                    else loads(self.hidden_neurons_ledit.text())),
                 'hidden_activation': [
                     self.hidden_activation_lwidget.item(index).text()
                     for index in range(self.hidden_activation_lwidget.count())

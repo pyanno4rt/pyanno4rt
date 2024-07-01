@@ -164,9 +164,9 @@ class LQPoissonTCPWindow(QMainWindow, Ui_lq_poisson_tcp_window):
                             else float(self.weight_ledit.text())),
                         'rank': self.rank_sbox.value(),
                         'bounds': [
-                            0 if self.lower_bound_ledit.text() == ''
+                            0.0 if self.lower_bound_ledit.text() == ''
                             else float(self.lower_bound_ledit),
-                            1 if self.upper_bound_ledit.text() == ''
+                            1.0 if self.upper_bound_ledit.text() == ''
                             else float(self.upper_bound_ledit)],
                         'link': (
                             None if self.link_ledit.text() == ''
