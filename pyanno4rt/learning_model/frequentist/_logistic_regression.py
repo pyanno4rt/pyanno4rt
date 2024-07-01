@@ -58,7 +58,7 @@ class LogisticRegressionModel():
         make up the preprocessing pipeline for the logistic regression model. \
         Current available algorithm labels are:
 
-        - transformers : 'Equalizer', 'StandardScaler', 'Whitening'.
+        - transformers : 'Identity', 'StandardScaler', 'Whitening'.
 
     tune_space : dict
         Search space for the Bayesian hyperparameter optimization, including
