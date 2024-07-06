@@ -80,13 +80,6 @@ class Ui_equivalent_uniform_dose_window(object):
         self.base_line.setStyleSheet("border-color: rgb(46, 52, 54);")
         self.base_line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.base_line.setObjectName("base_line")
-        self.segment_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.segment_ledit.setGeometry(QtCore.QRect(0, 100, 426, 31))
-        self.segment_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
-"background-color: rgb(238, 238, 236);\n"
-"border: 1px solid;\n"
-"border-color: rgb(186, 189, 182);")
-        self.segment_ledit.setObjectName("segment_ledit")
         self.type_label = QtWidgets.QLabel(self.scroll_contents)
         self.type_label.setGeometry(QtCore.QRect(445, 60, 111, 31))
         font = QtGui.QFont()
@@ -286,12 +279,21 @@ class Ui_equivalent_uniform_dose_window(object):
         self.vol_eff_label.setFont(font)
         self.vol_eff_label.setStyleSheet("border: 0px solid;")
         self.vol_eff_label.setObjectName("vol_eff_label")
+        self.segment_cbox = QtWidgets.QComboBox(self.scroll_contents)
+        self.segment_cbox.setGeometry(QtCore.QRect(0, 100, 426, 31))
+        self.segment_cbox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.segment_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
+"background-color: rgb(238, 238, 236);\n"
+"border: 1px solid;\n"
+"border-color: rgb(186, 189, 182);")
+        self.segment_cbox.setObjectName("segment_cbox")
         self.scroll_area.setWidget(self.scroll_contents)
         equivalent_uniform_dose_window.setCentralWidget(self.body_widget)
 
         self.retranslateUi(equivalent_uniform_dose_window)
         self.embedding_cbox.setCurrentIndex(0)
         self.type_cbox.setCurrentIndex(0)
+        self.segment_cbox.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(equivalent_uniform_dose_window)
 
     def retranslateUi(self, equivalent_uniform_dose_window):

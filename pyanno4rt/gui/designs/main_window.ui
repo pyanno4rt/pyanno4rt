@@ -105,6 +105,9 @@ border-color: rgb(186, 189, 182);</string>
              <property name="cursor">
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
+             <property name="toolTipDuration">
+              <number>0</number>
+             </property>
              <property name="styleSheet">
               <string notr="true">background-color: rgb(211, 215, 207);
 border-color: rgb(186, 189, 182);
@@ -1179,7 +1182,7 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="iconSize">
            <size>
@@ -4605,8 +4608,8 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>369</width>
-                 <height>796</height>
+                 <width>374</width>
+                 <height>836</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_evaluation_meta_layout">
@@ -4697,9 +4700,6 @@ background-color: rgb(211, 215, 207);</string>
                         <bold>true</bold>
                        </font>
                       </property>
-                      <property name="toolTip">
-                       <string>Dose-volume histogram type</string>
-                      </property>
                       <property name="text">
                        <string>DVH type</string>
                       </property>
@@ -4746,9 +4746,6 @@ background-color: rgb(211, 215, 207);</string>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
-                      </property>
-                      <property name="toolTip">
-                       <string>Number of (evenly-spaced) points for which to evaluate the DVH</string>
                       </property>
                       <property name="text">
                        <string>Number of points</string>
@@ -4951,9 +4948,6 @@ border-color: rgb(186, 189, 182);</string>
                       <bold>true</bold>
                      </font>
                     </property>
-                    <property name="toolTip">
-                     <string>Reference volumes for which to calculate the inverse DVH values</string>
-                    </property>
                     <property name="text">
                      <string>Reference volume [%]</string>
                     </property>
@@ -5036,9 +5030,6 @@ border-color: rgb(186, 189, 182);</string>
                       <bold>true</bold>
                      </font>
                     </property>
-                    <property name="toolTip">
-                     <string>Reference (fractional) dose values for which to calculate the DVH values</string>
-                    </property>
                     <property name="text">
                      <string>Reference dose [Gy/fx]</string>
                     </property>
@@ -5102,73 +5093,73 @@ border-color: rgb(186, 189, 182);</string>
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QLabel" name="display_segments_label">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>25</height>
-                     </size>
+                   <layout class="QHBoxLayout" name="display_segments_metrics_label_layout">
+                    <property name="spacing">
+                     <number>10</number>
                     </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>25</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <weight>75</weight>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="toolTip">
-                     <string>Names of the segmented structures to be displayed</string>
-                    </property>
-                    <property name="text">
-                     <string>Display segments</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="display_segments_vspacer">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::Fixed</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>10</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item>
-                   <widget class="QLineEdit" name="display_segments_ledit">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                    </property>
-                    <property name="placeholderText">
-                     <string>[]</string>
-                    </property>
-                   </widget>
+                    <item>
+                     <widget class="QLabel" name="display_segments_label">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>220</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Display segments</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="display_metrics_label">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>120</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Display metrics</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
                   </item>
                   <item>
                    <spacer name="display_segments_metrics_vspacer">
@@ -5181,149 +5172,158 @@ border-color: rgb(186, 189, 182);</string>
                     <property name="sizeHint" stdset="0">
                      <size>
                       <width>20</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item>
-                   <widget class="QLabel" name="display_metrics_label">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>25</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>25</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <weight>75</weight>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="toolTip">
-                     <string>Names of plan evaluation metrics to be displayed</string>
-                    </property>
-                    <property name="text">
-                     <string>Display metrics</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="display_metrics_vspacer">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::Fixed</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
                       <height>10</height>
                      </size>
                     </property>
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QListWidget" name="display_metrics_lwidget">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>45</height>
-                     </size>
+                   <layout class="QHBoxLayout" name="horizontalLayout">
+                    <property name="spacing">
+                     <number>10</number>
                     </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>45</height>
-                     </size>
-                    </property>
-                    <property name="cursor" stdset="0">
-                     <cursorShape>PointingHandCursor</cursorShape>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">color: rgb(0, 0, 0);
+                    <item>
+                     <widget class="QListWidget" name="display_segments_lwidget">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>220</width>
+                        <height>200</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>200</height>
+                       </size>
+                      </property>
+                      <property name="cursor" stdset="0">
+                       <cursorShape>PointingHandCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                    </property>
-                    <property name="flow">
-                     <enum>QListView::LeftToRight</enum>
-                    </property>
-                    <property name="spacing">
-                     <number>5</number>
-                    </property>
-                    <item>
-                     <property name="text">
-                      <string>mean</string>
-                     </property>
-                     <property name="checkState">
-                      <enum>Checked</enum>
-                     </property>
+                      </property>
+                      <property name="flow">
+                       <enum>QListView::TopToBottom</enum>
+                      </property>
+                      <property name="spacing">
+                       <number>4</number>
+                      </property>
+                     </widget>
                     </item>
                     <item>
-                     <property name="text">
-                      <string>std</string>
-                     </property>
-                     <property name="checkState">
-                      <enum>Checked</enum>
-                     </property>
+                     <widget class="QListWidget" name="display_metrics_lwidget">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>120</width>
+                        <height>200</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>200</height>
+                       </size>
+                      </property>
+                      <property name="cursor" stdset="0">
+                       <cursorShape>PointingHandCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                      </property>
+                      <property name="flow">
+                       <enum>QListView::TopToBottom</enum>
+                      </property>
+                      <property name="spacing">
+                       <number>4</number>
+                      </property>
+                      <property name="viewMode">
+                       <enum>QListView::ListMode</enum>
+                      </property>
+                      <item>
+                       <property name="text">
+                        <string>mean</string>
+                       </property>
+                       <property name="checkState">
+                        <enum>Checked</enum>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>std</string>
+                       </property>
+                       <property name="checkState">
+                        <enum>Checked</enum>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>max</string>
+                       </property>
+                       <property name="checkState">
+                        <enum>Checked</enum>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>min</string>
+                       </property>
+                       <property name="checkState">
+                        <enum>Checked</enum>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Dx</string>
+                       </property>
+                       <property name="checkState">
+                        <enum>Checked</enum>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Vx</string>
+                       </property>
+                       <property name="checkState">
+                        <enum>Checked</enum>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>CI</string>
+                       </property>
+                       <property name="checkState">
+                        <enum>Checked</enum>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>HI</string>
+                       </property>
+                       <property name="checkState">
+                        <enum>Checked</enum>
+                       </property>
+                      </item>
+                     </widget>
                     </item>
-                    <item>
-                     <property name="text">
-                      <string>max</string>
-                     </property>
-                     <property name="checkState">
-                      <enum>Checked</enum>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>min</string>
-                     </property>
-                     <property name="checkState">
-                      <enum>Checked</enum>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Dx</string>
-                     </property>
-                     <property name="checkState">
-                      <enum>Checked</enum>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Vx</string>
-                     </property>
-                     <property name="checkState">
-                      <enum>Checked</enum>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>CI</string>
-                     </property>
-                     <property name="checkState">
-                      <enum>Checked</enum>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>HI</string>
-                     </property>
-                     <property name="checkState">
-                      <enum>Checked</enum>
-                     </property>
-                    </item>
-                   </widget>
+                   </layout>
                   </item>
                   <item>
                    <spacer name="display_metrics_bottom_spacer">
@@ -5582,7 +5582,7 @@ color: rgb(211, 215, 207);</string>
              <item>
               <widget class="QTabWidget" name="tab_workflow">
                <property name="currentIndex">
-                <number>1</number>
+                <number>0</number>
                </property>
                <property name="iconSize">
                 <size>
@@ -5598,7 +5598,7 @@ color: rgb(211, 215, 207);</string>
                </property>
                <widget class="QWidget" name="tab_actions">
                 <property name="styleSheet">
-                 <string notr="true">border: 1px solid;
+                 <string notr="true">border-top: 1px solid;border-left: 1px solid;border-right: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                 </property>
                 <attribute name="icon">
@@ -5770,7 +5770,7 @@ border-color: rgb(186, 189, 182);</string>
                         </property>
                         <property name="icon">
                          <iconset resource="../assets/resources.qrc">
-                          <normaloff>:/black_icons/icons_black/box.svg</normaloff>:/black_icons/icons_black/box.svg</iconset>
+                          <normaloff>:/black_icons/icons_black/compass.svg</normaloff>:/black_icons/icons_black/compass.svg</iconset>
                         </property>
                         <property name="iconSize">
                          <size>
@@ -6451,7 +6451,7 @@ border-color: rgb(0, 0, 0);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="maximumSize">
@@ -6519,7 +6519,7 @@ border-color: rgb(186, 189, 182);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="styleSheet">
@@ -6549,7 +6549,7 @@ border-color: rgb(0, 0, 0);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="maximumSize">
@@ -6614,7 +6614,7 @@ border-color: rgb(186, 189, 182);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="styleSheet">
@@ -7031,8 +7031,6 @@ border-color: rgb(186, 189, 182);</string>
                       </item>
                      </layout>
                      <zorder>chevron_top_base</zorder>
-                     <zorder>chevron_base_comp</zorder>
-                     <zorder>chevron_comp_ref</zorder>
                      <zorder>chevron_ref_tools</zorder>
                      <zorder>comp_toolbox_spacer_top</zorder>
                      <zorder>comp_toolbox_line</zorder>
@@ -7040,11 +7038,13 @@ border-color: rgb(186, 189, 182);</string>
                      <zorder>comp_toolbox_widget</zorder>
                      <zorder>comp_top_vspacer</zorder>
                      <zorder>comp_bottom_vspacer</zorder>
-                     <zorder>compare_pbutton</zorder>
-                     <zorder>baseline_label</zorder>
+                     <zorder>chevron_base_comp</zorder>
+                     <zorder>chevron_comp_ref</zorder>
                      <zorder>reference_label</zorder>
-                     <zorder>baseline_cbox</zorder>
+                     <zorder>compare_pbutton</zorder>
                      <zorder>reference_cbox</zorder>
+                     <zorder>baseline_label</zorder>
+                     <zorder>baseline_cbox</zorder>
                     </widget>
                    </item>
                   </layout>
@@ -7195,6 +7195,9 @@ border-color: rgb(186, 189, 182);</string>
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
           </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
           <property name="insertPolicy">
            <enum>QComboBox::InsertAlphabetically</enum>
           </property>
@@ -7231,6 +7234,32 @@ border-color: rgb(186, 189, 182);</string>
      </layout>
     </item>
    </layout>
+  </widget>
+  <widget class="QStatusBar" name="status_bar">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>25</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>25</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255); border:1px solid; border-top-color: rgb(211, 215, 207)</string>
+   </property>
+   <property name="sizeGripEnabled">
+    <bool>false</bool>
+   </property>
   </widget>
  </widget>
  <resources>

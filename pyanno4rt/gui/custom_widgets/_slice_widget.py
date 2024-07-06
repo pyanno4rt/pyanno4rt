@@ -226,10 +226,7 @@ class SliceWidget(QWidget):
                 # Update the dose contour lines
                 contour.setData(self.dose_cube[:, :, self.slice])
 
-            self.bar.setLevels(
-                (0, round(self.dose_cube[:, :, self.slice].max())+0.5),
-                low=self.dose_cube[:, :, self.slice].min(),
-                high=self.dose_cube[:, :, self.slice].max())
+            self.bar.setLevels((0, round(self.dose_cube.max(), 1)+0.1))
 
         if (self.segment_masks is not None
                 and self.segment_contours is not None):

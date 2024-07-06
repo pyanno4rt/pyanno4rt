@@ -5,14 +5,16 @@
 # %% External package import
 
 from functools import partial
-from os.path import abspath, dirname
+from logging import Handler
+from os.path import abspath, dirname, splitext
 from json import loads
 from numpy import zeros
-from PyQt5.QtCore import QDir, QEvent, Qt
-from PyQt5.QtGui import QCursor, QIcon, QPixmap
+from PyQt5.QtCore import pyqtSignal, QDir, QEvent, QObject, Qt, QThread
+from PyQt5.QtGui import QCursor, QIcon, QMovie, QPixmap
 from PyQt5.QtWidgets import (
-    QApplication, QComboBox, QFileDialog, QHeaderView, QListWidget,
-    QListWidgetItem, QMainWindow, QMenu, QMessageBox, QSpinBox)
+    QComboBox, QFileDialog, QFrame, QHeaderView, QLabel, QListWidget,
+    QListWidgetItem, QMainWindow, QMenu, QMessageBox, QPushButton, QSpinBox)
+from webbrowser import open as webopen
 
 # %% Internal package import
 
@@ -27,6 +29,8 @@ from pyanno4rt.gui.windows import (
     TreeWindow)
 from pyanno4rt.gui.windows.components import component_window_map
 from pyanno4rt.optimization.components import component_map
+from pyanno4rt.patient.import_functions import (
+    read_data_from_dcm, read_data_from_mat, read_data_from_p)
 from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, load_list_from_file, snapshot)
 
@@ -95,17 +99,83 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.log_window = LogWindow(self)
 
         # Initialize the custom widgets
-        self.dvh_widget = DVHWidget(self)
         self.slice_widget = SliceWidget(self)
+        self.dvh_widget = DVHWidget(self)
 
         # Insert the custom widgets into the viewer
-        self.tab_dvh_layout.insertWidget(0, self.dvh_widget)
         self.tab_slices_layout.insertWidget(0, self.slice_widget)
+        self.tab_dvh_layout.insertWidget(0, self.dvh_widget)
 
         # Get the base dictionaries
         self.base_configuration = self.transform_configuration_to_dict()
         self.base_optimization = self.transform_optimization_to_dict()
         self.base_evaluation = self.transform_evaluation_to_dict()
+
+        # Add dropdown menu to component adding button
+        menu = QMenu()
+        for key in component_map:
+            menu.addAction(key, partial(self.open_component_window, key))
+        self.components_plus_tbutton.setPopupMode(2)
+        self.components_plus_tbutton.setMenu(menu)
+
+        # Configure the status bar
+        self.status_bar.reformat()
+
+        self.loader_label = QLabel(self)
+        self.movie = QMovie('./pyanno4rt/gui/assets/load.gif')
+        self.loader_label.setMovie(self.movie)
+        self.movie.start()
+        self.loader_label.hide()
+
+        self.stop_thread_pbutton = QPushButton()
+        self.stop_thread_pbutton.setIcon(
+            QIcon('./pyanno4rt/gui/assets/icons_special/stop.svg'))
+        self.stop_thread_pbutton.setToolTip("Stop the current process")
+        self.stop_thread_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
+
+        self.logo_label = QLabel()
+        pixmap = QPixmap('./logo/logo_black_icon.png')
+        pixmap = pixmap.scaled(int(pixmap.width()/4), int(pixmap.height()/4))
+        self.logo_label.setPixmap(pixmap)
+        self.logo_label.setStyleSheet("QLabel {border: 0px;}")
+
+        self.version_label = QLabel("v0.22.0")
+
+        self.github_pbutton = QPushButton()
+        self.github_pbutton.setIcon(
+            QIcon('./pyanno4rt/gui/assets/icons_white/github.svg'))
+        self.github_pbutton.setToolTip("Open Github")
+        self.github_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
+
+        self.rtd_pbutton = QPushButton()
+        self.rtd_pbutton.setIcon(
+            QIcon('./pyanno4rt/gui/assets/icons_white/file-text.svg'))
+        self.rtd_pbutton.setToolTip("Open Read the Docs")
+        self.rtd_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
+
+        self.pypi_pbutton = QPushButton()
+        self.pypi_pbutton.setIcon(
+            QIcon('./pyanno4rt/gui/assets/icons_white/box.svg'))
+        self.pypi_pbutton.setToolTip("Open PyPI")
+        self.pypi_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
+
+        self.status_bar.addPermanentWidget(self.loader_label)
+        self.status_bar.addPermanentWidget(self.stop_thread_pbutton)
+        self.statusBar().addPermanentWidget(VLine())
+        self.status_bar.addPermanentWidget(self.logo_label)
+        self.status_bar.addPermanentWidget(self.version_label)
+        self.statusBar().addPermanentWidget(VLine())
+        self.status_bar.addPermanentWidget(self.github_pbutton)
+        self.status_bar.addPermanentWidget(self.rtd_pbutton)
+        self.status_bar.addPermanentWidget(self.pypi_pbutton)
+        self.statusBar().addPermanentWidget(VLine())
+
+        # 
+        self.status_bar.showMessage(
+            "Ready to load/select/create a treatment plan ...")
+
+        # 
+        self.thread = QThread()
 
         # Loop over the tab widgets
         for widget in ('composer_widget', 'tab_workflow', 'viewer_widget'):
@@ -138,7 +208,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             'reference_cbox', 'components_minus_tbutton',
             'components_edit_tbutton', 'init_fluence_ledit',
             'init_fluence_tbutton', 'ref_plan_cbox', 'opacity_sbox',
-            'slice_selection_sbar'))
+            'slice_selection_sbar', 'stop_thread_pbutton'))
 
         # Disable the tab widgets initially
         self.composer_widget.widget(0).setEnabled(False)
@@ -149,7 +219,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_zero_line_cursor((
             'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
             'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
-            'ref_vol_ledit', 'ref_dose_ledit', 'display_segments_ledit'))
+            'ref_vol_ledit', 'ref_dose_ledit'))
 
         # Set the stylesheets
         self.set_styles({'composer_widget': tab,
@@ -179,7 +249,6 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'n_points_sbox': sbox,
                          'ref_vol_ledit': ledit,
                          'ref_dose_ledit': ledit,
-                         'display_segments_ledit': ledit,
                          'opacity_sbox': sbox,
                          'load_pbutton': pbutton_menu,
                          'save_pbutton': pbutton_menu,
@@ -238,12 +307,35 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'new_img_path_tbutton': tbutton_composer,
                          'new_dose_path_tbutton': tbutton_composer})
 
-        # Add dropdown menu to component adding button
-        menu = QMenu()
-        for key in component_map:
-            menu.addAction(key, partial(self.open_component_window, key))
-        self.components_plus_tbutton.setPopupMode(2)
-        self.components_plus_tbutton.setMenu(menu)
+        # 
+        self.display_segments_lwidget.setSpacing(4)
+        self.display_metrics_lwidget.setSpacing(4)
+
+        # 
+        self.loader_label.setStyleSheet(
+            "QLabel {border: 0px;}")
+        self.stop_thread_pbutton.setStyleSheet(
+            '''
+            QPushButton {border: 0px;}
+            QPushButton:hover {background-color: rgb(25, 25, 25);}
+            ''')
+        self.version_label.setStyleSheet(
+            "QLabel {border: 0px; font-size: 9pt;}")
+        self.github_pbutton.setStyleSheet(
+            '''
+            QPushButton {border: 0px;}
+            QPushButton:hover {background-color: rgb(25, 25, 25);}
+            ''')
+        self.rtd_pbutton.setStyleSheet(
+            '''
+            QPushButton {border: 0px;}
+            QPushButton:hover {background-color: rgb(25, 25, 25);}
+            ''')
+        self.pypi_pbutton.setStyleSheet(
+            '''
+            QPushButton {border: 0px;}
+            QPushButton:hover {background-color: rgb(25, 25, 25);}
+            ''')
 
         # Connect the event signals
         self.connect_signals()
@@ -255,10 +347,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.set_initial_plan(treatment_plan)
 
         # Set the initial window size
-        # self.resize(1440, 900)
-
-        # Show the GUI
-        self.showMaximized()
+        self.resize(1024, 768)
+        self.show()
 
     def connect_signals(self):
         """Connect the event signals to the GUI elements."""
@@ -289,9 +379,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'lower_var_tbutton': self.add_lower_var_bounds,
                 'upper_var_tbutton': self.add_upper_var_bounds,
                 'initialize_pbutton': self.initialize,
-                'configure_pbutton': self.configure,
-                'optimize_pbutton': self.optimize,
-                'evaluate_pbutton': self.evaluate,
+                'configure_pbutton': self.start_configure,
+                'optimize_pbutton': self.start_optimize,
+                'evaluate_pbutton': self.start_evaluate,
                 'visualize_pbutton': self.visualize,
                 'actions_show_parameter_tbutton': self.open_parameter_window,
                 'actions_show_plan_tbutton': self.open_plan_window,
@@ -302,7 +392,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'comp_show_plan_tbutton': self.open_plan_window,
                 'comp_show_model_data_tbutton': self.open_model_data_window,
                 'comp_show_fmap_tbutton': self.open_feature_map_window,
-                'comp_show_log_tbutton': self.open_log_window
+                'comp_show_log_tbutton': self.open_log_window,
+                'stop_thread_pbutton': self.stop_thread,
+                'github_pbutton': self.open_github_link,
+                'rtd_pbutton': self.open_rtd_link,
+                'pypi_pbutton': self.open_pypi_link
                 }.items():
 
             # Connect the 'clicked' signal
@@ -331,7 +425,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             getattr(self, key).currentTextChanged.connect(value)
 
         # Loop over the fieldnames with 'textChanged' events
-        for key, value in {
+        for key, values in {
                 'plan_ledit': self.update_init_button,
                 'img_path_ledit': self.update_init_button,
                 'dose_path_ledit': self.update_init_button,
@@ -393,10 +487,14 @@ class MainWindow(QMainWindow, Ui_main_window):
     def mousePressEvent(self, event):
 
         super(QListWidget, self.components_lwidget).mousePressEvent(event)
+        super(QListWidget, self.display_segments_lwidget).mousePressEvent(event)
         super(QListWidget, self.display_metrics_lwidget).mousePressEvent(event)
 
         if not self.components_lwidget.indexAt(event.pos()).isValid():
             self.components_lwidget.clearSelection()
+
+        if not self.display_segments_lwidget.indexAt(event.pos()).isValid():
+            self.display_segments_lwidget.clearSelection()
 
         if not self.display_metrics_lwidget.indexAt(event.pos()).isValid():
             self.display_metrics_lwidget.clearSelection()
@@ -729,6 +827,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Get the treatment plan instance
             instance = self.plans[selection]
 
+            # 
+            self.display_segments_lwidget.clear()
+
             # Set the configuration, optimization and evaluation tab fields
             self.set_configuration()
             self.set_optimization()
@@ -767,10 +868,10 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.set_zero_line_cursor((
                 'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
                 'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
-                'ref_vol_ledit', 'ref_dose_ledit', 'display_segments_ledit'))
+                'ref_vol_ledit', 'ref_dose_ledit'))
 
             # Check if the selected plan has been initialized
-            if instance.datahub and instance.datahub.logger:
+            if instance.datahub and instance.logger:
 
                 # Update the log output
                 self.log_window.update_log_output()
@@ -780,10 +881,12 @@ class MainWindow(QMainWindow, Ui_main_window):
                     'actions_show_plan_tbutton', 'actions_show_log_tbutton',
                     'comp_show_plan_tbutton', 'comp_show_log_tbutton'))
 
+                self.status_bar.showMessage("Ready for configuration ...")
+
             # Check if the selected plan has been configured
-            if (instance.datahub and all(isinstance(getattr(
-                    instance.datahub, unit), dict)
-                    for unit in ('computed_tomography', 'segmentation'))):
+            if (all(getattr(instance, unit) is not None
+                for unit in ('patient_loader', 'plan_generator',
+                             'dose_info_generator'))):
 
                 # Get the CT dictionary
                 computed_tomography = instance.datahub.computed_tomography
@@ -814,8 +917,10 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Enable the 'optimize' button
                 self.optimize_pbutton.setEnabled(True)
 
+                self.status_bar.showMessage("Ready for optimization ...")
+
                 # Check if the selected plan has been optimized
-                if isinstance(instance.datahub.optimization, dict):
+                if getattr(instance, 'fluence_optimizer') is not None:
 
                     # Get the optimized dose array
                     optimized_dose = instance.datahub.optimization[
@@ -836,11 +941,15 @@ class MainWindow(QMainWindow, Ui_main_window):
                     # Enable the 'evaluate' and 'visualize' buttons
                     self.set_enabled(('evaluate_pbutton', 'visualize_pbutton'))
 
+                    self.status_bar.showMessage(
+                        "Ready for evaluation & visualization ...")
+
                 # Update the images of the slice widget
                 self.slice_widget.update_images()
 
                 # Check if the selected plan has been evaluated
-                if isinstance(instance.datahub.dose_histogram, dict):
+                if all(getattr(instance, unit) for unit in (
+                        'dose_histogram', 'dosimetrics')) is not None:
 
                     # Add the style and input data to the DVH widget
                     self.dvh_widget.add_style_and_data(
@@ -848,6 +957,9 @@ class MainWindow(QMainWindow, Ui_main_window):
 
                     # Update the plot of the DVH widget
                     self.dvh_widget.update_dvh()
+
+                    self.status_bar.showMessage(
+                        f'"{self.plan_ledit.text()}" plan is ready ...')
 
             # Check if the selected plan includes data models
             if instance.datahub and any(unit is not None for unit in (
@@ -902,6 +1014,10 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Reset the DVH widget
             self.dvh_widget.reset_dvh()
 
+            # 
+            self.status_bar.showMessage(
+                "Ready to load/select/create a treatment plan ...")
+
     def initialize(self):
         """
         Initialize the treatment plan.
@@ -912,36 +1028,54 @@ class MainWindow(QMainWindow, Ui_main_window):
             Indicator for the success of the initialization.
         """
 
-        # Set the waiting cursor
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        self.stop_thread_pbutton.setEnabled(True)
+        self.loader_label.show()
 
-        try:
-
-            # Initialize the treatment plan
-            treatment_plan = TreatmentPlan(
-                self.transform_configuration_to_dict(),
-                self.transform_optimization_to_dict(),
-                self.transform_evaluation_to_dict())
-
-        except Exception as error:
-
-            # Set back to the arrow cursor
-            QApplication.restoreOverrideCursor()
-
-            # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", str(error))
-
-            return False
+        # Initialize the treatment plan
+        treatment_plan = TreatmentPlan(
+            self.transform_configuration_to_dict(),
+            self.transform_optimization_to_dict(),
+            self.transform_evaluation_to_dict())
 
         # Activate the treatment plan
         self.activate(treatment_plan)
 
-        # Set back to the arrow cursor
-        QApplication.restoreOverrideCursor()
+        self.status_bar.showMessage("Ready for configuration ...")
+        self.loader_label.hide()
+        self.stop_thread_pbutton.setEnabled(False)
 
-        return True
+    def start_configure(self):
+        """."""
+
+        self.stop_thread_pbutton.setEnabled(True)
+        self.loader_label.show()
+
+        # Thread
+        confHandler = ConsoleWindowLogHandler()
+        confHandler.sigLog.connect(self.status_bar.showMessage)
+        self.plans[self.plan_ledit.text()].logger.logger.addHandler(
+            confHandler)
+        self.worker = Worker(self.configure)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.update_after_configure)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.start()
 
     def configure(self):
+        """
+        Configure the treatment plan.
+
+        Returns
+        -------
+        bool
+            Indicator for the success of the optimization.
+        """
+
+        self.plans[self.plan_ledit.text()].configure()
+
+    def update_after_configure(self):
         """
         Configure the treatment plan.
 
@@ -951,55 +1085,37 @@ class MainWindow(QMainWindow, Ui_main_window):
             Indicator for the success of the configuration.
         """
 
-        # Set the waiting cursor
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        # Get the treatment plan instance
+        instance = self.plans[self.plan_ledit.text()]
 
-        try:
+        # Get the CT dictionary
+        computed_tomography = instance.datahub.computed_tomography
 
-            # Get the treatment plan instance
-            instance = self.plans[self.plan_ledit.text()]
+        # Get the axial dimension of the CT cube
+        axial_length = computed_tomography['cube_dimensions'][2]
 
-            # Configure the treatment plan
-            instance.configure()
+        # Get the segmentation dictionary
+        segmentation = instance.datahub.segmentation
 
-            # Get the CT dictionary
-            computed_tomography = instance.datahub.computed_tomography
+        # Reset the slice widget
+        self.slice_widget.reset_images()
 
-            # Get the axial dimension of the CT cube
-            axial_length = computed_tomography['cube_dimensions'][2]
+        # Add the CT cube to the slice widget
+        self.slice_widget.add_ct(computed_tomography['cube'])
 
-            # Get the segmentation dictionary
-            segmentation = instance.datahub.segmentation
+        # Add the segments to the slice widget
+        self.slice_widget.add_segments(computed_tomography, segmentation)
 
-            # Reset the slice widget
-            self.slice_widget.reset_images()
+        # Set the range of the slice selection scrollbar
+        self.slice_selection_sbar.setRange(0, axial_length-1)
 
-            # Add the CT cube to the slice widget
-            self.slice_widget.add_ct(computed_tomography['cube'])
+        # Set the initial scrollbar value
+        self.slice_selection_sbar.setValue(int((axial_length-1)/2))
 
-            # Add the segments to the slice widget
-            self.slice_widget.add_segments(computed_tomography, segmentation)
-
-            # Set the range of the slice selection scrollbar
-            self.slice_selection_sbar.setRange(0, axial_length-1)
-
-            # Set the initial scrollbar value
-            self.slice_selection_sbar.setValue(int((axial_length-1)/2))
-
-            # Set the initial position label
-            self.slice_selection_pos.setText(''.join((
-                str(computed_tomography['z'][int((axial_length-1)/2)]),
-                ' mm')))
-
-        except Exception as error:
-
-            # Set back to the arrow cursor
-            QApplication.restoreOverrideCursor()
-
-            # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", str(error))
-
-            return False
+        # Set the initial position label
+        self.slice_selection_pos.setText(''.join((
+            str(computed_tomography['z'][int((axial_length-1)/2)]),
+            ' mm')))
 
         # Update the images of the slice widget
         self.slice_widget.update_images()
@@ -1017,12 +1133,30 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_zero_line_cursor((
             'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
             'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
-            'ref_vol_ledit', 'ref_dose_ledit', 'display_segments_ledit'))
+            'ref_vol_ledit', 'ref_dose_ledit'))
 
-        # Set back to the arrow cursor
-        QApplication.restoreOverrideCursor()
+        self.status_bar.showMessage("Ready for optimization ...")
+        self.loader_label.hide()
+        self.stop_thread_pbutton.setEnabled(False)
 
-        return True
+    def start_optimize(self):
+        """."""
+
+        self.stop_thread_pbutton.setEnabled(True)
+        self.loader_label.show()
+
+        # Thread
+        optHandler = ConsoleWindowLogHandler()
+        optHandler.sigLog.connect(self.status_bar.showMessage)
+        self.plans[self.plan_ledit.text()].logger.logger.addHandler(
+            optHandler)
+        self.worker = Worker(self.optimize)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.update_after_optimize)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.start()
 
     def optimize(self):
         """
@@ -1034,54 +1168,43 @@ class MainWindow(QMainWindow, Ui_main_window):
             Indicator for the success of the optimization.
         """
 
-        # Set the waiting cursor
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        self.plans[self.plan_ledit.text()].optimize()
 
-        try:
+    def update_after_optimize(self):
+        """
+        Update the GUI after treatment plan optimization.
+        """
 
-            # Get the treatment plan instance
-            instance = self.plans[self.plan_ledit.text()]
+        # Get the treatment plan instance
+        instance = self.plans[self.plan_ledit.text()]
 
-            # Optimize the treatment plan
-            instance.optimize()
+        # Check if the plan has already been optimized
+        if self.plan_ledit.text() not in self.optimized_plans:
 
-            # Check if the plan has already been optimized
-            if self.plan_ledit.text() not in self.optimized_plans:
+            # Append the treatment plan to the optimized plans list
+            self.optimized_plans.append(self.plan_ledit.text())
 
-                # Append the treatment plan to the optimized plans list
-                self.optimized_plans.append(self.plan_ledit.text())
+            # Update the comparison plans
+            self.update_comparison_plans()
 
-                # Update the comparison plans
-                self.update_comparison_plans()
+        # Get the optimized dose array
+        optimized_dose = instance.datahub.optimization['optimized_dose']
 
-            # Get the optimized dose array
-            optimized_dose = instance.datahub.optimization['optimized_dose']
+        # Check if any dose contours have been computed
+        if self.slice_widget.dose_contours:
 
-            # Check if any dose contours have been computed
-            if self.slice_widget.dose_contours:
+            # Loop over the dose contours
+            for contour in self.slice_widget.dose_contours:
 
-                # Loop over the dose contours
-                for contour in self.slice_widget.dose_contours:
+                # Update the dose contour lines
+                contour.setData(zeros(self.slice_widget.dose_cube[
+                    :, :, self.slice_widget.slice].shape))
 
-                    # Update the dose contour lines
-                    contour.setData(zeros(self.slice_widget.dose_cube[
-                        :, :, self.slice_widget.slice].shape))
+        self.slice_widget.dose_cube = None
+        self.slice_widget.dose_contours = None
 
-            self.slice_widget.dose_cube = None
-            self.slice_widget.dose_contours = None
-
-            # Add the dose image to the slice widget
-            self.slice_widget.add_dose(optimized_dose)
-
-        except Exception as error:
-
-            # Set back to the arrow cursor
-            QApplication.restoreOverrideCursor()
-
-            # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", str(error))
-
-            return False
+        # Add the dose image to the slice widget
+        self.slice_widget.add_dose(optimized_dose)
 
         # Update the images of the slice widget
         self.slice_widget.update_images()
@@ -1110,12 +1233,30 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_zero_line_cursor((
             'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
             'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
-            'ref_vol_ledit', 'ref_dose_ledit', 'display_segments_ledit'))
+            'ref_vol_ledit', 'ref_dose_ledit'))
 
-        # Set back to the arrow cursor
-        QApplication.restoreOverrideCursor()
+        self.status_bar.showMessage("Ready for evaluation ...")
+        self.loader_label.hide()
+        self.stop_thread_pbutton.setEnabled(False)
 
-        return True
+    def start_evaluate(self):
+        """."""
+
+        self.stop_thread_pbutton.setEnabled(True)
+        self.loader_label.show()
+
+        # Thread
+        evalHandler = ConsoleWindowLogHandler()
+        evalHandler.sigLog.connect(self.status_bar.showMessage)
+        self.plans[self.plan_ledit.text()].logger.logger.addHandler(
+            evalHandler)
+        self.worker = Worker(self.evaluate)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.update_after_evaluate)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.start()
 
     def evaluate(self):
         """
@@ -1127,34 +1268,22 @@ class MainWindow(QMainWindow, Ui_main_window):
             Indicator for the success of the evaluation.
         """
 
-        # Set the waiting cursor
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        # Evaluate the treatment plan
+        self.plans[self.plan_ledit.text()].evaluate()
 
-        try:
+    def update_after_evaluate(self):
+        """
+        Update the GUI after treatment plan evaluation.
+        """
 
-            # Get the treatment plan instance
-            instance = self.plans[self.plan_ledit.text()]
+        # Reset the DVH widget
+        self.dvh_widget.reset_dvh()
 
-            # Evaluate the treatment plan
-            instance.evaluate()
+        # Add the style and input data to the DVH widget
+        self.dvh_widget.add_style_and_data(
+            self.plans[self.plan_ledit.text()].datahub.dose_histogram)
 
-            # Reset the DVH widget
-            self.dvh_widget.reset_dvh()
-
-            # Add the style and input data to the DVH widget
-            self.dvh_widget.add_style_and_data(instance.datahub.dose_histogram)
-
-            self.set_enabled(('visualize_pbutton',))
-
-        except Exception as error:
-
-            # Set back to the arrow cursor
-            QApplication.restoreOverrideCursor()
-
-            # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", str(error))
-
-            return False
+        self.set_enabled(('visualize_pbutton',))
 
         # Update the plot of the DVH widget
         self.dvh_widget.update_dvh()
@@ -1166,12 +1295,13 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_zero_line_cursor((
             'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
             'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
-            'ref_vol_ledit', 'ref_dose_ledit', 'display_segments_ledit'))
+            'ref_vol_ledit', 'ref_dose_ledit'))
 
-        # Set back to the arrow cursor
-        QApplication.restoreOverrideCursor()
-
-        return True
+        # 
+        self.status_bar.showMessage(
+            f'"{self.plan_ledit.text()}" plan is ready ...')
+        self.loader_label.hide()
+        self.stop_thread_pbutton.setEnabled(False)
 
     def visualize(self):
         """
@@ -1183,28 +1313,18 @@ class MainWindow(QMainWindow, Ui_main_window):
             Indicator for the success of the visualization.
         """
 
-        try:
-
-            # Visualize the treatment plan
-            self.plans[self.plan_ledit.text()].visualize(parent=self)
-
-        except Exception as error:
-
-            # Show a warning message box
-            QMessageBox.warning(self, "pyanno4rt", str(error))
-
-            return False
-
-        return True
+        # Visualize the treatment plan
+        self.plans[self.plan_ledit.text()].visualize(parent=self)
 
     def update_configuration(self):
         """Update the configuration parameters."""
 
         try:
 
+            instance = self.plans[self.plan_ledit.text()]
+
             # Overwrite the configuration dictionary of the current instance
-            self.plans[self.plan_ledit.text()].update(
-                self.transform_configuration_to_dict())
+            instance.update(self.transform_configuration_to_dict())
 
             # Disable specific fields
             self.set_disabled((
@@ -1213,6 +1333,38 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Set the line edit cursor positions to zero
             self.set_zero_line_cursor((
                 'plan_ledit', 'img_path_ledit', 'dose_path_ledit'))
+
+            # 
+            self.load_segments_from_data()
+
+            # 
+            self.display_segments_lwidget.clear()
+            self.display_segments_lwidget.addItems(self.segments)
+
+            # Loop over the display segments
+            for index in range(self.display_segments_lwidget.count()):
+
+                # Check if the display segment is included in the dictionary
+                if (self.display_segments_lwidget.item(index).text()
+                        in instance.evaluation['display_segments']
+                        or instance.evaluation['display_segments'] == []):
+
+                    # Set the display segment to checked
+                    self.display_segments_lwidget.item(index).setCheckState(2)
+
+                else:
+
+                    # Set the display segment to unchecked
+                    self.display_segments_lwidget.item(index).setCheckState(0)
+
+            # Reset the slice widget
+            self.slice_widget.reset_images()
+
+            # Reset the DVH widget
+            self.dvh_widget.reset_dvh()
+
+            # 
+            self.status_bar.showMessage("Ready for configuration ...")
 
         except Exception as error:
 
@@ -1237,6 +1389,12 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.set_zero_line_cursor((
                 'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit'))
 
+            # Reset the DVH widget
+            self.dvh_widget.reset_dvh()
+
+            # 
+            self.status_bar.showMessage("Ready for optimization ...")
+
         except Exception as error:
 
             # Show a warning message box
@@ -1257,8 +1415,13 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.set_disabled(('visualize_pbutton',))
 
             # Set the line edit cursor positions to zero
-            self.set_zero_line_cursor((
-                'ref_vol_ledit', 'ref_dose_ledit', 'display_segments_ledit'))
+            self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))
+
+            # 
+            self.status_bar.showMessage("Ready for evaluation ...")
+
+            # Reset the DVH widget
+            self.dvh_widget.reset_dvh()
 
         except Exception as error:
 
@@ -1287,6 +1450,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Set the imaging path
         self.img_path_ledit.setText(abspath(configuration['imaging_path']))
+        self.load_segments_from_data()
 
         # Check if the target imaging resolution is specified
         if configuration['target_imaging_resolution']:
@@ -1508,10 +1672,24 @@ class MainWindow(QMainWindow, Ui_main_window):
             '' if evaluation['reference_dose'] == []
             else str(evaluation['reference_dose']))
 
-        # Set the display segments
-        self.display_segments_ledit.setText(
-            '' if evaluation['display_segments'] == []
-            else str(evaluation['display_segments']).replace("\'", ''))
+        # 
+        self.display_segments_lwidget.addItems(self.segments)
+
+        # Loop over the display segments
+        for index in range(self.display_segments_lwidget.count()):
+
+            # Check if the display segment is included in the dictionary
+            if (self.display_segments_lwidget.item(index).text()
+                    in evaluation['display_segments']
+                    or evaluation['display_segments'] == []):
+
+                # Set the display segment to checked
+                self.display_segments_lwidget.item(index).setCheckState(2)
+
+            else:
+
+                # Set the display segment to unchecked
+                self.display_segments_lwidget.item(index).setCheckState(0)
 
         # Loop over the display metrics
         for index in range(self.display_metrics_lwidget.count()):
@@ -1530,8 +1708,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.display_metrics_lwidget.item(index).setCheckState(0)
 
         # Set the line edit cursor positions to zero
-        self.set_zero_line_cursor((
-            'ref_vol_ledit', 'ref_dose_ledit', 'display_segments_ledit'))
+        self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))
 
     def clear_configuration(self):
         """Clear the configuration parameters."""
@@ -1624,9 +1801,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.ref_dose_ledit.setText(
             str(self.base_evaluation['reference_dose']))
 
-        # Reset the display segments
-        self.display_segments_ledit.setText(
-            str(self.base_evaluation['display_segments']))
+        # Loop over the display segments
+        self.display_segments_lwidget.clear()
 
         # Loop over the display metrics
         for index in range(self.display_metrics_lwidget.count()):
@@ -1751,9 +1927,6 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Convert the reference dose from the field
         reference_dose = add_square_brackets(self.ref_dose_ledit.text())
 
-        # Get the display segments text
-        display_segments = self.display_segments_ledit.text()
-
         # Create the evaluation dictionary from the input fields
         evaluation = {
             'dvh_type': self.dvh_type_cbox.currentText(),
@@ -1763,8 +1936,10 @@ class MainWindow(QMainWindow, Ui_main_window):
             else loads(reference_volume),
             'reference_dose': [] if reference_dose in ('', '[]')
             else loads(reference_dose),
-            'display_segments': [] if display_segments in ('', '[]')
-            else display_segments.strip('][').split(', '),
+            'display_segments': [
+                self.display_segments_lwidget.item(index).text()
+                for index in range(self.display_segments_lwidget.count())
+                if self.display_segments_lwidget.item(index).checkState()],
             'display_metrics': [
                 self.display_metrics_lwidget.item(index).text()
                 for index in range(self.display_metrics_lwidget.count())
@@ -1772,6 +1947,56 @@ class MainWindow(QMainWindow, Ui_main_window):
             }
 
         return evaluation
+
+    def load_segments_from_data(self):
+        """."""
+
+        # Check if the path leads to a DICOM folder
+        if splitext(self.img_path_ledit.text())[1] == '':
+
+            # Get the segmentation data
+            _, segmentation_data = read_data_from_dcm(
+                self.img_path_ledit.text())
+
+            # Initialize the segments list
+            self.segments = []
+
+            # Loop over the ROI contours
+            for roi_contour in segmentation_data.ROIContourSequence:
+
+                # Find the corresponding segment from the index number
+                roi_structure = next(
+                    sequence
+                    for sequence in segmentation_data.StructureSetROISequence
+                    if roi_contour.ReferencedROINumber == sequence.ROINumber)
+
+                # Append the segment to the list
+                self.segments.append(roi_structure.ROIName)
+
+        # Check if the path leads to a MATLAB file
+        elif splitext(self.img_path_ledit.text())[1] == '.mat':
+
+            # Get the segmentation data
+            _, segmentation_data = read_data_from_mat(
+                self.img_path_ledit.text())
+
+            # Get the segments
+            self.segments = [
+                segment_values[1] for segment_values in segmentation_data]
+
+        # Check if the path leads to a Python file
+        elif splitext(self.img_path_ledit.text())[1] == '.p':
+
+            # Get the segmentation data
+            _, segmentation_data = read_data_from_p(
+                self.img_path_ledit.text())
+
+            # Get the segments
+            self.segments = list(segmentation_data.keys())
+
+        else:
+
+            self.segments = []
 
     def open_plan_creation_window(self):
         """Open the plan creation window."""
@@ -1931,9 +2156,9 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         else:
 
-            message = ("Baseline and reference treatment plan have different "
-                       "CT cube dimensions. Please select treatment plans "
-                       "with equal dimensions for comparison!")
+            message = ("Baseline and reference plan have different CT cube "
+                       "dimensions. Only plans with equal dimensions can be "
+                       "compared!")
 
             QMessageBox.information(self, 'pyanno4rt', message)
 
@@ -2460,8 +2685,59 @@ class MainWindow(QMainWindow, Ui_main_window):
             # 
             self.compare_pbutton.setEnabled(False)
 
+    def stop_thread(self):
+        self.stop_thread_pbutton.setEnabled(False)
+        self.worker.stop()
+        self.thread.quit()
+        self.thread.wait()
+
+    def open_github_link(args):
+        return webopen('https://github.com/pyanno4rt/pyanno4rt')
+
+    def open_rtd_link(args):
+        return webopen('https://pyanno4rt.readthedocs.io/en/latest/')
+
+    def open_pypi_link(args):
+        return webopen('https://pypi.org/project/pyanno4rt/')
+
     def exit_window(self):
         """Exit the session and close the window."""
 
         # Close the window
         self.close()
+
+
+class VLine(QFrame):
+
+    def __init__(self):
+
+        super(VLine, self).__init__()
+        self.setStyleSheet("QFrame {border: 0px solid;}")
+        self.setFrameShape(self.VLine | self.Sunken)
+
+
+class ConsoleWindowLogHandler(Handler, QObject):
+    sigLog = pyqtSignal(str)
+    finished = pyqtSignal()
+
+    def __init__(self):
+        Handler.__init__(self)
+        QObject.__init__(self)
+
+    def emit(self, logRecord):
+        message = str(logRecord.getMessage())
+        self.sigLog.emit(message)
+
+
+class Worker(QThread):
+    def __init__(self, func):
+        super(Worker, self).__init__()
+        self.func = func
+
+    def run(self):
+        self.func()
+        self.finished.emit()
+
+    def stop(self):
+        self.quit()
+        super().quit()

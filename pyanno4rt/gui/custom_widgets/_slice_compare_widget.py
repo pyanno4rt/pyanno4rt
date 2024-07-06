@@ -232,9 +232,7 @@ class SliceCompareWidget(QWidget):
                 # Update the dose contour lines
                 contour.setData(self.dose_cube[:, :, self.slice])
 
-            self.bar.setLevels(
-                (0, round(self.maxima[self.slice])+0.5),
-                low=self.minima[self.slice], high=self.maxima[self.slice])
+            self.bar.setLevels((0, round(max(self.maxima), 1)+0.1))
 
         if (self.segment_masks is not None
                 and self.segment_contours is not None):

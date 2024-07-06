@@ -59,8 +59,7 @@ class DecisionTreeTCPWindow(
                            'save_component_pbutton'))
 
         # 
-        self.set_styles({'segment_ledit': ledit,
-                         'link_ledit': ledit,
+        self.set_styles({'link_ledit': ledit,
                          'identifier_ledit': ledit,
                          'model_label_ledit': ledit,
                          'model_path_tbutton': tbutton_composer,
@@ -70,6 +69,10 @@ class DecisionTreeTCPWindow(
                          'features_load_tbutton': tbutton_composer,
                          'save_component_pbutton': pbutton_composer,
                          'close_component_pbutton': pbutton_composer})
+
+        # 
+        self.segment_cbox.addItems(self.parent.segments)
+        self.segment_cbox.setCurrentIndex(-1)
 
         # 
         self.criterion_lwidget.addItems(['gini', 'entropy'])
@@ -102,7 +105,7 @@ class DecisionTreeTCPWindow(
         self.kpi_lwidget.setSpacing(4)
 
         # 
-        self.segment_ledit.textChanged.connect(self.update_save_button)
+        self.segment_cbox.currentTextChanged.connect(self.update_save_button)
 
         # 
         self.model_path_ledit.textChanged.connect(self.update_save_button)
@@ -166,7 +169,7 @@ class DecisionTreeTCPWindow(
         display = component[key]['instance']['parameters'].get('display', True)
 
         # Base
-        self.segment_ledit.setText(key)
+        self.segment_cbox.setCurrentText(key)
         self.type_cbox.setCurrentText(ctype)
         self.embedding_cbox.setCurrentText(embedding)
 
@@ -377,7 +380,7 @@ class DecisionTreeTCPWindow(
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
-            'segment_ledit', 'link_ledit', 'weight_ledit', 'lower_bound_ledit',
+            'link_ledit', 'weight_ledit', 'lower_bound_ledit',
             'upper_bound_ledit', 'model_label_ledit', 'data_path_ledit',
             'label_name_ledit', 'label_lower_bound_ledit',
             'label_upper_bound_ledit', 'time_variable_ledit',
@@ -504,7 +507,7 @@ class DecisionTreeTCPWindow(
 
         # 
         component = {
-            self.segment_ledit.text(): {
+            self.segment_cbox.currentText(): {
                 'type': self.type_cbox.currentText(),
                 'instance': {
                     'class': 'Decision Tree TCP',
@@ -530,7 +533,7 @@ class DecisionTreeTCPWindow(
                         'display': self.disp_component_check.isChecked()}}}}
 
         # 
-        value = component[self.segment_ledit.text()]
+        value = component[self.segment_cbox.currentText()]
 
         # Check if the component is an objective
         if value['type'] == 'objective':
@@ -564,8 +567,8 @@ class DecisionTreeTCPWindow(
 
         # Join the segment and class name
         component_string = ' - '.join((substring for substring in (
-            self.segment_ledit.text(), value['instance']['class'], identifier,
-            embedding, weight) if substring))
+            self.segment_cbox.currentText(), value['instance']['class'],
+            identifier, embedding, weight) if substring))
 
         # 
         if self.parent.components_lwidget.currentItem():
@@ -712,7 +715,7 @@ class DecisionTreeTCPWindow(
 
         # 
         if any(text == '' for text in (
-                self.segment_ledit.text(), self.model_label_ledit.text(),
+                self.segment_cbox.currentText(), self.model_label_ledit.text(),
                 self.data_path_ledit.text(), self.label_name_ledit.text())):
 
             # 

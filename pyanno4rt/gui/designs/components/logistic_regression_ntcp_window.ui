@@ -58,7 +58,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>-1112</y>
+       <y>0</y>
        <width>690</width>
        <height>1861</height>
       </rect>
@@ -203,22 +203,6 @@ border-color: rgb(186, 189, 182);</string>
       </property>
       <property name="styleSheet">
        <string notr="true">border-color: rgb(46, 52, 54);</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="segment_ledit">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>100</y>
-        <width>426</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
       </property>
      </widget>
      <widget class="QLabel" name="type_label">
@@ -2099,6 +2083,28 @@ border-color: rgb(186, 189, 182);</string>
         <width>18</width>
         <height>18</height>
        </size>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="segment_cbox">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>100</y>
+        <width>426</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+      </property>
+      <property name="currentIndex">
+       <number>-1</number>
       </property>
      </widget>
     </widget>

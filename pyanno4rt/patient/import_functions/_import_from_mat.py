@@ -4,7 +4,7 @@
 
 # %% Internal package import
 
-from pyanno4rt.patient.import_functions._generate_ct_from_mat import (
+from pyanno4rt.patient.import_functions import (
     generate_ct_from_mat)
 from pyanno4rt.patient.import_functions._generate_segmentation_from_mat import (
     generate_segmentation_from_mat)

@@ -436,8 +436,10 @@ class TreatmentPlan():
               (self.configuration, self.optimization, self.evaluation))
 
         # Initialize the instance attributes
-        self.logger = None
-        self.datahub = None
+        self.logger = Logger(
+            self.configuration['label'], self.configuration['min_log_level'])
+        self.datahub = Datahub(
+            self.configuration['label'], self.input_checker, self.logger)
         self.patient_loader = None
         self.plan_generator = None
         self.dose_info_generator = None
@@ -448,14 +450,6 @@ class TreatmentPlan():
 
     def configure(self):
         """Initialize the configuration classes and process the input data."""
-
-        # Initialize the logger
-        self.logger = Logger(
-            self.configuration['label'], self.configuration['min_log_level'])
-
-        # Initialize the datahub
-        self.datahub = Datahub(
-            self.configuration['label'], self.input_checker, self.logger)
 
         # Initialize the patient loader
         self.patient_loader = PatientLoader(
@@ -606,13 +600,13 @@ class TreatmentPlan():
 
                 # Log a message about the attribute error
                 self.logger.display_error(
-                    "Please optimize (and optionally evaluate) the treatment "
-                    "plan before launching the visualization interface!")
+                    "Please optimize and evaluate the treatment plan "
+                    "before launching the visualization interface!")
 
             # Raise an error to indicate a missing attribute
             raise AttributeError(
-                "Please optimize (and optionally evaluate) the treatment plan \
-                before launching the visualization interface!")
+                "Please optimize and evaluate the treatment plan "
+                "before launching the visualization interface!")
 
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration['label']

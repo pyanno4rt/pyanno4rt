@@ -80,13 +80,6 @@ class Ui_k_nearest_neighbors_tcp_window(object):
         self.base_line.setStyleSheet("border-color: rgb(46, 52, 54);")
         self.base_line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.base_line.setObjectName("base_line")
-        self.segment_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.segment_ledit.setGeometry(QtCore.QRect(0, 100, 426, 31))
-        self.segment_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
-"background-color: rgb(238, 238, 236);\n"
-"border: 1px solid;\n"
-"border-color: rgb(186, 189, 182);")
-        self.segment_ledit.setObjectName("segment_ledit")
         self.type_label = QtWidgets.QLabel(self.scroll_contents)
         self.type_label.setGeometry(QtCore.QRect(445, 60, 111, 31))
         font = QtGui.QFont()
@@ -760,6 +753,14 @@ class Ui_k_nearest_neighbors_tcp_window(object):
 "border-color: rgb(186, 189, 182);")
         self.leaf_size_lower_bound_ledit.setAlignment(QtCore.Qt.AlignCenter)
         self.leaf_size_lower_bound_ledit.setObjectName("leaf_size_lower_bound_ledit")
+        self.segment_cbox = QtWidgets.QComboBox(self.scroll_contents)
+        self.segment_cbox.setGeometry(QtCore.QRect(0, 100, 426, 31))
+        self.segment_cbox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.segment_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
+"background-color: rgb(238, 238, 236);\n"
+"border: 1px solid;\n"
+"border-color: rgb(186, 189, 182);")
+        self.segment_cbox.setObjectName("segment_cbox")
         self.scroll_area.setWidget(self.scroll_contents)
         k_nearest_neighbors_tcp_window.setCentralWidget(self.body_widget)
 
@@ -769,6 +770,7 @@ class Ui_k_nearest_neighbors_tcp_window(object):
         self.filter_mode_cbox.setCurrentIndex(0)
         self.label_viewpoint_cbox.setCurrentIndex(3)
         self.tune_score_cbox.setCurrentIndex(2)
+        self.segment_cbox.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(k_nearest_neighbors_tcp_window)
 
     def retranslateUi(self, k_nearest_neighbors_tcp_window):

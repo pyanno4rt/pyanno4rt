@@ -6,14 +6,16 @@
 
 from matplotlib.cm import get_cmap, jet, ScalarMappable
 from matplotlib.colors import Normalize
-from numpy import (nan, nanmax, nanmean, nanmin, nanstd, ndarray, rot90,
-                   transpose, unravel_index, zeros)
-
+from numpy import (
+    isnan, nan, nanmax, nanmean, nanmin, nanstd, ndarray, rot90, transpose,
+    unravel_index, zeros)
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import (QHBoxLayout, QLabel, QMainWindow, QPushButton,
-                             QScrollBar, QSizePolicy, QVBoxLayout, QWidget)
-from pyqtgraph import (GraphicsLayoutWidget, ImageItem, IsocurveItem, mkPen,
-                       mkColor, setConfigOptions)
+from PyQt5.QtWidgets import (
+    QHBoxLayout, QLabel, QMainWindow, QPushButton, QScrollBar, QSizePolicy,
+    QVBoxLayout, QWidget)
+from pyqtgraph import (
+    GraphicsLayoutWidget, ImageItem, IsocurveItem, mkPen, mkColor,
+    setConfigOptions)
 from pyqtgraph.Qt import QtGui
 
 # %% Internal package import
@@ -247,24 +249,33 @@ class ScrollBar(QWidget):
 
         # Set the label text with the slice information
         self.label.setText(
-            " ".join(("slice",
-                      str(self.slice_number+1),
+            " ".join(("slice", str(self.slice_number+1),
                       "-",
-                      "mean dose:",
-                      str(round(nanmean(
-                          self.dose_cube[:, :, self.slice_number]), 2)),
+                      "mean dose:", str(round(nanmean(
+                          self.dose_cube[:, :, self.slice_number]), 2)
+                          if not isnan(self.dose_cube[
+                                  :, :, self.slice_number]).all()
+                          else "0.0"),
                       "-",
-                      "dose std:",
-                      str(round(nanstd(
-                          self.dose_cube[:, :, self.slice_number]), 2)),
+                      "dose std:", str(round(nanstd(
+                          self.dose_cube[:, :, self.slice_number]), 2)
+                          if not isnan(self.dose_cube[
+                                  :, :, self.slice_number]).all()
+                          else "0.0"),
                       "-",
                       "max dose:",
                       str(round(nanmax(
-                          self.dose_cube[:, :, self.slice_number]), 2)),
+                          self.dose_cube[:, :, self.slice_number]), 2)
+                          if not isnan(self.dose_cube[
+                                  :, :, self.slice_number]).all()
+                          else "0.0"),
                       "-",
                       "min dose:",
                       str(round(nanmin(
-                          self.dose_cube[:, :, self.slice_number]), 2)))))
+                          self.dose_cube[:, :, self.slice_number]), 2))
+                      if not isnan(self.dose_cube[
+                              :, :, self.slice_number]).all()
+                      else "0.0")))
 
 
 class SliceWidget(QWidget):

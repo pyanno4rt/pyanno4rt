@@ -37,7 +37,7 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         self.setupUi(self)
 
         # 
-        self.default = ('English', 'Dark', (1440, 900), (False, False, False))
+        self.default = ('English', 'Dark', (1024, 768), (False, False, False))
         self.current = self.default
 
         # Temporarily disable combo boxes

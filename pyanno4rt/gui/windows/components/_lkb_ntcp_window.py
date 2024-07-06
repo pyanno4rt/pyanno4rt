@@ -45,21 +45,23 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
             getattr(self, box).installEventFilter(self)
 
         # Set the line edit cursor positions to zero
-        self.set_zero_line_cursor((
-            'segment_ledit', 'link_ledit', 'identifier_ledit'))
+        self.set_zero_line_cursor(('link_ledit', 'identifier_ledit'))
 
         # 
         self.save_component_pbutton.setEnabled(False)
 
         # 
-        self.set_styles({'segment_ledit': ledit,
-                         'link_ledit': ledit,
+        self.set_styles({'link_ledit': ledit,
                          'identifier_ledit': ledit,
                          'save_component_pbutton': pbutton_composer,
                          'close_component_pbutton': pbutton_composer})
 
         # 
-        self.segment_ledit.textChanged.connect(self.update_save_button)
+        self.segment_cbox.addItems(self.parent.segments)
+        self.segment_cbox.setCurrentIndex(-1)
+
+        # 
+        self.segment_cbox.currentTextChanged.connect(self.update_save_button)
         self.td50_ledit.textChanged.connect(self.update_save_button)
         self.slope_ledit.textChanged.connect(self.update_save_button)
         self.vol_eff_ledit.textChanged.connect(self.update_save_button)
@@ -102,7 +104,7 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
         display = component[key]['instance']['parameters'].get('display', True)
 
         # 
-        self.segment_ledit.setText(key)
+        self.segment_cbox.setCurrentText(key)
 
         # 
         self.type_cbox.setCurrentText(ctype)
@@ -144,15 +146,14 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
         self.disp_component_check.setCheckState(2 if display else 0)
 
         # Set the line edit cursor positions to zero
-        self.set_zero_line_cursor((
-            'segment_ledit', 'link_ledit', 'identifier_ledit'))
+        self.set_zero_line_cursor(('link_ledit', 'identifier_ledit'))
 
     def save(self):
         """."""
 
         # 
         component = {
-            self.segment_ledit.text(): {
+            self.segment_cbox.currentText(): {
                 'type': self.type_cbox.currentText(),
                 'instance': {
                     'class': 'Lyman-Kutcher-Burman NTCP',
@@ -180,7 +181,7 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
                         'display': self.disp_component_check.isChecked()}}}}
 
         # 
-        value = component[self.segment_ledit.text()]
+        value = component[self.segment_cbox.currentText()]
 
         # Check if the component is an objective
         if value['type'] == 'objective':
@@ -214,8 +215,8 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
 
         # Join the segment and class name
         component_string = ' - '.join((substring for substring in (
-            self.segment_ledit.text(), value['instance']['class'], identifier,
-            embedding, weight) if substring))
+            self.segment_cbox.currentText(), value['instance']['class'],
+            identifier, embedding, weight) if substring))
 
         # 
         if self.parent.components_lwidget.currentItem():
@@ -281,7 +282,7 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
 
         # 
         if any(text == '' for text in (
-                self.segment_ledit.text(), self.td50_ledit.text(),
+                self.segment_cbox.currentText(), self.td50_ledit.text(),
                 self.slope_ledit.text(), self.vol_eff_ledit.text())):
 
             # 
