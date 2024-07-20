@@ -9,8 +9,8 @@ from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import SupportVectorMachineModel
 from pyanno4rt.learning_model.frequentist.addons import (
     linear_decision_function, poly_decision_function, rbf_decision_function,
-    sigmoid_decision_function, linear_decision_gradient, poly_decision_gradient,
-    rbf_decision_gradient, sigmoid_decision_gradient)
+    sigmoid_decision_function, linear_decision_gradient,
+    poly_decision_gradient, rbf_decision_gradient, sigmoid_decision_gradient)
 from pyanno4rt.optimization.components import MachineLearningComponentClass
 from pyanno4rt.tools import inverse_sigmoid
 

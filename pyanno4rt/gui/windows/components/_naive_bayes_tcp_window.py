@@ -297,8 +297,8 @@ class NaiveBayesTCPWindow(
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
             'link_ledit', 'weight_ledit', 'lower_bound_ledit',
-            'upper_bound_ledit', 'model_label_ledit', 'data_path_ledit',
-            'label_name_ledit', 'label_lower_bound_ledit',
+            'upper_bound_ledit', 'model_label_ledit', 'model_path_ledit',
+            'data_path_ledit', 'label_name_ledit', 'label_lower_bound_ledit',
             'label_upper_bound_ledit', 'time_variable_ledit',
             'prep_steps_ledit', 'identifier_ledit'))
         self.set_zero_line_cursor((

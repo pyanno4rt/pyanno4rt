@@ -199,7 +199,9 @@ class DVHWidget(QWidget):
             mouse_point = self.plot_graph.plotItem.vb.mapSceneToView(
                 coordinates)
 
-            if 0 <= mouse_point.x() and 0 <= mouse_point.y() <= 100:
+            if ((0 <= mouse_point.x() <=
+                self.plot_graph.plotItem.vb.getState()['limits']['xLimits'][1])
+                    and 0 <= mouse_point.y() <= 100):
 
                 # Update the graph title
                 self.plot_graph.setTitle(

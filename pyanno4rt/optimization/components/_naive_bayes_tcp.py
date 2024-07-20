@@ -163,7 +163,8 @@ class NaiveBayesTCP(MachineLearningComponentClass):
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        return -self.model.predict(preprocessed_features)
+        return -self.model.predict(
+            preprocessed_features, self.model.prediction_model)
 
     def compute_gradient(
             self,

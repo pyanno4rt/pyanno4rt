@@ -76,7 +76,7 @@ class LogisticRegressionTCPWindow(
         self.segment_cbox.setCurrentIndex(-1)
 
         # 
-        self.penalty_lwidget.addItems(['l1', 'l2'])
+        self.penalty_lwidget.addItems(['l1', 'l2', 'elasticnet'])
         self.class_weight_lwidget.addItems(['None', 'balanced'])
         self.graphs_lwidget.addItems(['AUC-ROC', 'AUC-PR', 'F1'])
         self.kpi_lwidget.addItems(['Logloss', 'Brier score', 'Subset accuracy',
@@ -324,8 +324,8 @@ class LogisticRegressionTCPWindow(
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
             'link_ledit', 'weight_ledit', 'lower_bound_ledit',
-            'upper_bound_ledit', 'model_label_ledit', 'data_path_ledit',
-            'label_name_ledit', 'label_lower_bound_ledit',
+            'upper_bound_ledit', 'model_label_ledit', 'model_path_ledit',
+            'data_path_ledit', 'label_name_ledit', 'label_lower_bound_ledit',
             'label_upper_bound_ledit', 'time_variable_ledit',
             'prep_steps_ledit', 'identifier_ledit'))
         self.set_zero_line_cursor((

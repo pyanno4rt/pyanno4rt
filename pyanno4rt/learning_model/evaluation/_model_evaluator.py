@@ -19,12 +19,12 @@ class ModelEvaluator():
     Model evaluation class.
 
     This class provides the computation method for a number of evaluation \
-    metrics on a machine learning outcome model.
+    metrics on a machine learning model.
 
     Parameters
     ----------
     model_label : str
-        Label for the machine learning outcome model.
+        Label for the machine learning model.
 
     Attributes
     ----------
@@ -56,7 +56,7 @@ class ModelEvaluator():
 
         predicted_labels : tuple
             Tuple of arrays with the training and out-of-folds labels \
-            predicted by the machine learning outcome model.
+            predicted by the machine learning model.
         """
 
         # Precompute the F1 scores

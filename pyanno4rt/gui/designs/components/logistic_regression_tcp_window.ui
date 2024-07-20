@@ -58,7 +58,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>0</y>
+       <y>-1066</y>
        <width>690</width>
        <height>1861</height>
       </rect>
@@ -1510,7 +1510,7 @@ border-color: rgb(186, 189, 182);</string>
        <rect>
         <x>50</x>
         <y>1250</y>
-        <width>161</width>
+        <width>141</width>
         <height>31</height>
        </rect>
       </property>
@@ -1530,9 +1530,9 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLineEdit" name="C_upper_bound_ledit">
       <property name="geometry">
        <rect>
-        <x>230</x>
+        <x>210</x>
         <y>1250</y>
-        <width>161</width>
+        <width>141</width>
         <height>31</height>
        </rect>
       </property>
@@ -1552,7 +1552,7 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLabel" name="C_conjunction">
       <property name="geometry">
        <rect>
-        <x>213</x>
+        <x>193</x>
         <y>1255</y>
         <width>16</width>
         <height>17</height>
@@ -1596,7 +1596,7 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLabel" name="penalty_label">
       <property name="geometry">
        <rect>
-        <x>450</x>
+        <x>410</x>
         <y>1250</y>
         <width>56</width>
         <height>31</height>
@@ -1636,7 +1636,7 @@ border-color: rgb(186, 189, 182);</string>
        <rect>
         <x>50</x>
         <y>1300</y>
-        <width>341</width>
+        <width>301</width>
         <height>31</height>
        </rect>
       </property>
@@ -1849,9 +1849,9 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QListWidget" name="class_weight_lwidget">
       <property name="geometry">
        <rect>
-        <x>510</x>
+        <x>470</x>
         <y>1300</y>
-        <width>171</width>
+        <width>211</width>
         <height>31</height>
        </rect>
       </property>
@@ -1874,7 +1874,7 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLabel" name="class_weight_label">
       <property name="geometry">
        <rect>
-        <x>416</x>
+        <x>376</x>
         <y>1300</y>
         <width>91</width>
         <height>31</height>
@@ -1893,9 +1893,9 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QListWidget" name="penalty_lwidget">
       <property name="geometry">
        <rect>
-        <x>510</x>
+        <x>470</x>
         <y>1250</y>
-        <width>171</width>
+        <width>211</width>
         <height>31</height>
        </rect>
       </property>

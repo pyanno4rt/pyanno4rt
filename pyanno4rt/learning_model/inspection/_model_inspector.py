@@ -19,12 +19,12 @@ class ModelInspector():
     Model inspection class.
 
     This class provides the computation method for a number of inspection \
-    algorithms on a machine learning outcome model.
+    algorithms on a machine learning model.
 
     Parameters
     ----------
     model_label : str
-        Label for the machine learning outcome model.
+        Label for the model.
 
     Attributes
     ----------
@@ -57,10 +57,10 @@ class ModelInspector():
         Parameters
         ----------
         model_instance : object
-            The object representing the machine learning outcome model.
+            The object representing the machine learning model.
 
         hyperparameters : dict
-            Dictionary with the machine learning outcome model hyperparameters.
+            Dictionary with the model hyperparameters.
 
         features : ndarray
             Values of the input features.
@@ -70,7 +70,7 @@ class ModelInspector():
 
         preprocessing_steps : list
             Sequence of labels associated with preprocessing algorithms for \
-            the machine learning outcome model.
+            the machine learning model.
 
         number_of_repeats : int
             Number of feature permutations.
@@ -82,5 +82,5 @@ class ModelInspector():
         # Enter the permutation importances into the datahub
         Datahub().model_inspections[self.model_label] = {
             'permutation_importance': permutation_importances(
-                model_instance, hyperparameters, features, labels,
-                preprocessing_steps, number_of_repeats, oof_folds)}
+                self.model_label, model_instance, hyperparameters, features,
+                labels, preprocessing_steps, number_of_repeats, oof_folds)}

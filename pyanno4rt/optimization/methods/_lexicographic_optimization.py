@@ -98,8 +98,8 @@ class LexicographicOptimization():
     def objective(
             self,
             fluence,
-            layer,
-            track=True):
+            track=True,
+            layer=1):
         """
         Compute the objective function value.
 
@@ -166,7 +166,7 @@ class LexicographicOptimization():
     def gradient(
             self,
             fluence,
-            layer):
+            layer=1):
         """
         Compute the gradient function value.
 
@@ -217,8 +217,8 @@ class LexicographicOptimization():
     def constraint(
             self,
             fluence,
-            layer,
-            track=True):
+            track=True,
+            layer=1):
         """
         Compute the constraint function value(s).
 
@@ -286,7 +286,7 @@ class LexicographicOptimization():
     def jacobian(
             self,
             fluence,
-            layer):
+            layer=1):
         """
         Compute the constraint jacobian function value.
 

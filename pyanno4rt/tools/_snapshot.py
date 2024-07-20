@@ -124,7 +124,7 @@ def snapshot(instance, path, include_patient_data=False,
         # Print the stream value to the file
         print(stream_value, file=file)
 
-    # Get the machine learning model data
+    # Get the machine learning model datazz
     ml_model_data = ((objective.model.model_label, objective.model,
                       objective.model_parameters['data_path'])
                      for objective in get_machine_learning_objectives(

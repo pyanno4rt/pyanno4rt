@@ -10,19 +10,19 @@
     <x>0</x>
     <y>0</y>
     <width>730</width>
-    <height>640</height>
+    <height>590</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>730</width>
-    <height>640</height>
+    <height>590</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>730</width>
-    <height>640</height>
+    <height>590</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -109,11 +109,9 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;pyanno4rt&lt;/span&gt; is an open-source Python package for conventional and outcome prediction model-based inverse photon and proton treament plan optimization, including radiobiological and machine learning models for tumor control probability and normal tissue complication probability.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This package has been started in May 2022 by Tim Ortkamp as part of the doctoral project &amp;quot;Inverse Radiotherapy Treatment Planning using Machine Learning Outcome Prediction Models&amp;quot;, which is backed by the &lt;span style=&quot; font-style:italic;&quot;&gt;Karlsruhe Institute of Technology&lt;/span&gt; (KIT), the &lt;span style=&quot; font-style:italic;&quot;&gt;German Cancer Research Center&lt;/span&gt; (DKFZ), and the &lt;span style=&quot; font-style:italic;&quot;&gt;Helmholtz Information and Data Science School for Health&lt;/span&gt; (HIDSS4Health).&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This package has been started in May 2022 by Tim Ortkamp as part of the doctoral project &amp;quot;Inverse Radiotherapy Treatment Planning using Machine Learning Outcome Prediction Models&amp;quot;, which is backed by the Karlsruhe Institute of Technology (KIT), the German Cancer Research Center (DKFZ), and the Helmholtz Information and Data Science School for Health (HIDSS4Health).&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;More information about the package can be found on our &lt;a href=&quot;https://pyanno4rt.readthedocs.io/en/latest/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Read the Docs&lt;/span&gt;&lt;/a&gt; or &lt;a href=&quot;http://github.com/pyanno4rt/pyanno4rt&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Github&lt;/span&gt;&lt;/a&gt; page, where the open-source code is hosted as well. &lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;pyanno4rt&lt;/span&gt; is under continuous development. Questions or suggestions for improvement can be sent via e-mail to &lt;a href=&quot;mailto:tim.ortkamp@kit.edu?subject=pyanno4rt&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;tim.ortkamp@kit.edu &lt;/span&gt;&lt;/a&gt;or via &lt;a href=&quot;https://github.com/pyanno4rt/pyanno4rt/discussions&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Github Discussions&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;pyanno4rt&lt;/span&gt; is under continuous development. Questions or suggestions for improvement can be sent via e-mail to &lt;a href=&quot;mailto:tim.ortkamp@kit.edu?subject=pyanno4rt&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ce5c00;&quot;&gt;tim.ortkamp@kit.edu&lt;/span&gt;&lt;/a&gt;&lt;a href=&quot;mailto:tim.ortkamp@kit.edu?subject=pyanno4rt&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt; &lt;/span&gt;&lt;/a&gt;or via &lt;a href=&quot;https://github.com/pyanno4rt/pyanno4rt/discussions&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ce5c00;&quot;&gt;Github Discussions&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The package is distributed under the terms of the GNU GPLv3 license.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
@@ -128,7 +126,7 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>400</y>
+      <y>360</y>
       <width>691</width>
       <height>2</height>
      </rect>
@@ -153,7 +151,7 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>370</y>
+      <y>330</y>
       <width>181</width>
       <height>31</height>
      </rect>
@@ -176,7 +174,7 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>410</y>
+      <y>370</y>
       <width>691</width>
       <height>181</height>
      </rect>
@@ -192,10 +190,10 @@ p, li { white-space: pre-wrap; }
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The research behind and the development of &lt;span style=&quot; font-weight:600;&quot;&gt;pyanno4rt&lt;/span&gt; has been supported by a number of people who I would like to mention here: &lt;/p&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:6px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; font-weight:600;&quot;&gt;Prof. Dr. Martin Frank&lt;/span&gt; (KIT), &lt;span style=&quot; font-weight:600;&quot;&gt;Prof. Dr. Oliver Jäkel&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;Dr. Niklas Wahl&lt;/span&gt; (both DKFZ), who supervised my research project.&lt;/li&gt;
-&lt;li style=&quot; margin-top:0px; margin-bottom:6px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; font-weight:600;&quot;&gt;My colleagues at KIT, DKFZ and HIDSS4Health&lt;/span&gt;, who helped me with valuable discussions, feedbacks and their engagement in software testing.&lt;/li&gt;
-&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; font-weight:600;&quot;&gt;Moritz Müller&lt;/span&gt;, who collaborated with me as student assistant.&lt;/li&gt;&lt;/ul&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The research behind and the development of &lt;span style=&quot; font-weight:600;&quot;&gt;pyanno4rt&lt;/span&gt; has been supported by a number of people: &lt;/p&gt;
+&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:6px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; color:#0e10a6;&quot;&gt;Prof. Dr. Martin Frank (KIT)&lt;/span&gt;, &lt;span style=&quot; color:#0e10a6;&quot;&gt;Prof. Dr. Oliver Jäkel&lt;/span&gt; and &lt;span style=&quot; color:#0e10a6;&quot;&gt;Dr. Niklas Wahl&lt;/span&gt; (both &lt;span style=&quot; color:#0e10a6;&quot;&gt;DKFZ&lt;/span&gt;), who supervised the research project.&lt;/li&gt;
+&lt;li style=&quot; margin-top:0px; margin-bottom:6px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; color:#0e10a6;&quot;&gt;Many colleagues at KIT, DKFZ and HIDSS4Health&lt;/span&gt;, who helped with valuable discussions, feedbacks and their engagement in software testing.&lt;/li&gt;
+&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; color:#0e10a6;&quot;&gt;Moritz Müller&lt;/span&gt;, who collaborated as student assistant.&lt;/li&gt;&lt;/ul&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; Many thanks for all your contributions!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
@@ -203,7 +201,7 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>640</x>
-      <y>600</y>
+      <y>550</y>
       <width>71</width>
       <height>31</height>
      </rect>

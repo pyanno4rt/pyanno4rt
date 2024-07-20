@@ -4,8 +4,8 @@
 
 # %% External package import
 
-from os.path import abspath, dirname, isfile
-from PyQt5.QtCore import QDir, QEvent
+from os.path import abspath, dirname
+from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import QComboBox, QFileDialog, QMainWindow, QSpinBox
 
 # %% Internal package import
@@ -59,7 +59,11 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             self.update_create_button)
         self.new_dose_path_ledit.textChanged.connect(
             self.update_create_button)
-        self.new_dose_res_ledit.textChanged.connect(
+        self.new_dose_res_ledit_x.textChanged.connect(
+            self.update_create_button)
+        self.new_dose_res_ledit_y.textChanged.connect(
+            self.update_create_button)
+        self.new_dose_res_ledit_z.textChanged.connect(
             self.update_create_button)
 
         # 
@@ -125,7 +129,9 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
                     self.new_plan_ledit.text(),
                     self.new_img_path_ledit.text(),
                     self.new_dose_path_ledit.text(),
-                    self.new_dose_res_ledit.text()))):
+                    self.new_dose_res_ledit_x.text(),
+                    self.new_dose_res_ledit_y.text(),
+                    self.new_dose_res_ledit_z.text()))):
 
             # 
             self.create_plan_pbutton.setEnabled(False)
@@ -152,9 +158,14 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             self.new_modality_cbox.setEnabled(False)
             self.new_img_path_ledit.setEnabled(False)
             self.new_img_path_tbutton.setEnabled(False)
+            self.new_img_res_ledit_x.setEnabled(False)
+            self.new_img_res_ledit_y.setEnabled(False)
+            self.new_img_res_ledit_z.setEnabled(False)
             self.new_dose_path_ledit.setEnabled(False)
             self.new_dose_path_tbutton.setEnabled(False)
-            self.new_dose_res_ledit.setEnabled(False)
+            self.new_dose_res_ledit_x.setEnabled(False)
+            self.new_dose_res_ledit_y.setEnabled(False)
+            self.new_dose_res_ledit_z.setEnabled(False)
 
         else:
 
@@ -162,16 +173,21 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             self.new_modality_cbox.setEnabled(True)
             self.new_img_path_ledit.setEnabled(True)
             self.new_img_path_tbutton.setEnabled(True)
+            self.new_img_res_ledit_x.setEnabled(True)
+            self.new_img_res_ledit_y.setEnabled(True)
+            self.new_img_res_ledit_z.setEnabled(True)
             self.new_dose_path_ledit.setEnabled(True)
             self.new_dose_path_tbutton.setEnabled(True)
-            self.new_dose_res_ledit.setEnabled(True)
+            self.new_dose_res_ledit_x.setEnabled(True)
+            self.new_dose_res_ledit_y.setEnabled(True)
+            self.new_dose_res_ledit_z.setEnabled(True)
 
     def add_imaging_path(self):
         """Add the CT and segmentation data from a folder."""
 
         # Get the file path
         path, _ = QFileDialog.getOpenFileName(
-            self, 'Select a patient data file', QDir.rootPath(),
+            self, 'Select a patient data file', '',
             'CT/Segmentation data (*.dcm *.mat *.p)')
 
         # Check if the file path exists
@@ -194,7 +210,7 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
 
         # Get the file path
         path, _ = QFileDialog.getOpenFileName(
-            self, 'Select a dose-influence matrix file', QDir.rootPath(),
+            self, 'Select a dose-influence matrix file', '',
             'Dose-influence matrix (*.mat *.npy)')
 
         # Check if the file path exists
@@ -246,13 +262,36 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             self.parent.img_path_ledit.setText(abspath(
                 self.new_img_path_ledit.text()))
 
+            # Set the target imaging resolution
+            if any(resolution == '' for resolution in (
+                    self.new_img_res_ledit_x.text(),
+                    self.new_img_res_ledit_y.text(),
+                    self.new_img_res_ledit_z.text())):
+
+                self.parent.img_res_ledit_x.setText('')
+                self.parent.img_res_ledit_y.setText('')
+                self.parent.img_res_ledit_z.setText('')
+
+            else:
+
+                self.parent.img_res_ledit_x.setText(
+                    self.new_img_res_ledit_x.text())
+                self.parent.img_res_ledit_y.setText(
+                    self.new_img_res_ledit_y.text())
+                self.parent.img_res_ledit_z.setText(
+                    self.new_img_res_ledit_z.text())
+
             # Set the dose matrix path
             self.parent.dose_path_ledit.setText(abspath(
                 self.new_dose_path_ledit.text()))
 
             # Set the dose resolution
-            self.parent.dose_res_ledit.setText(
-                str(self.new_dose_res_ledit.text()))
+            self.parent.dose_res_ledit_x.setText(
+                self.new_dose_res_ledit_x.text())
+            self.parent.dose_res_ledit_y.setText(
+                self.new_dose_res_ledit_y.text())
+            self.parent.dose_res_ledit_z.setText(
+                self.new_dose_res_ledit_z.text())
 
             # 
             self.parent.initialize()

@@ -28,7 +28,7 @@ def kpi(true_labels, predicted_labels, thresholds=(0.5, 0.5)):
 
     predicted_labels : tuple
         Tuple of arrays with the training and out-of-folds labels predicted \
-        by the machine learning outcome model.
+        by the machine learning model.
 
     thresholds : tuple, default=(0.5, 0.5)
         Probability thresholds for the binarization of the probability \

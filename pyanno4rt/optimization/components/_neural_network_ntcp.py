@@ -179,7 +179,8 @@ class NeuralNetworkNTCP(MachineLearningComponentClass):
         preprocessed_features = cast(
             self.model.preprocess(raw_features), float64)
 
-        return self.model.predict(preprocessed_features, squash_output=False)
+        return self.model.predict(
+            preprocessed_features, self.model.optimization_model)
 
     def compute_gradient(
             self,

@@ -25,7 +25,7 @@ def auc_roc(true_labels, predicted_labels):
 
     predicted_labels : tuple
         Tuple of arrays with the training and out-of-folds labels predicted \
-        by the machine learning outcome model.
+        by the machine learning model.
 
     Returns
     -------

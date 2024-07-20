@@ -30,7 +30,7 @@ class Ui_logistic_regression_tcp_window(object):
         self.scroll_area.setWidgetResizable(False)
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, 0, 690, 1861))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, -1066, 690, 1861))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 100, 111, 31))
@@ -541,7 +541,7 @@ class Ui_logistic_regression_tcp_window(object):
         self.tune_splits_label.setStyleSheet("border: 0px solid;")
         self.tune_splits_label.setObjectName("tune_splits_label")
         self.C_lower_bound_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.C_lower_bound_ledit.setGeometry(QtCore.QRect(50, 1250, 161, 31))
+        self.C_lower_bound_ledit.setGeometry(QtCore.QRect(50, 1250, 141, 31))
         self.C_lower_bound_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -549,7 +549,7 @@ class Ui_logistic_regression_tcp_window(object):
         self.C_lower_bound_ledit.setAlignment(QtCore.Qt.AlignCenter)
         self.C_lower_bound_ledit.setObjectName("C_lower_bound_ledit")
         self.C_upper_bound_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.C_upper_bound_ledit.setGeometry(QtCore.QRect(230, 1250, 161, 31))
+        self.C_upper_bound_ledit.setGeometry(QtCore.QRect(210, 1250, 141, 31))
         self.C_upper_bound_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -557,7 +557,7 @@ class Ui_logistic_regression_tcp_window(object):
         self.C_upper_bound_ledit.setAlignment(QtCore.Qt.AlignCenter)
         self.C_upper_bound_ledit.setObjectName("C_upper_bound_ledit")
         self.C_conjunction = QtWidgets.QLabel(self.scroll_contents)
-        self.C_conjunction.setGeometry(QtCore.QRect(213, 1255, 16, 17))
+        self.C_conjunction.setGeometry(QtCore.QRect(193, 1255, 16, 17))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -571,7 +571,7 @@ class Ui_logistic_regression_tcp_window(object):
         self.C_label.setAlignment(QtCore.Qt.AlignCenter)
         self.C_label.setObjectName("C_label")
         self.penalty_label = QtWidgets.QLabel(self.scroll_contents)
-        self.penalty_label.setGeometry(QtCore.QRect(450, 1250, 56, 31))
+        self.penalty_label.setGeometry(QtCore.QRect(410, 1250, 56, 31))
         self.penalty_label.setStyleSheet("border: 0px solid;")
         self.penalty_label.setAlignment(QtCore.Qt.AlignCenter)
         self.penalty_label.setObjectName("penalty_label")
@@ -581,7 +581,7 @@ class Ui_logistic_regression_tcp_window(object):
         self.tol_label.setAlignment(QtCore.Qt.AlignCenter)
         self.tol_label.setObjectName("tol_label")
         self.tol_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.tol_ledit.setGeometry(QtCore.QRect(50, 1300, 341, 31))
+        self.tol_ledit.setGeometry(QtCore.QRect(50, 1300, 301, 31))
         self.tol_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -657,7 +657,7 @@ class Ui_logistic_regression_tcp_window(object):
         self.kpi_lwidget.setItemAlignment(QtCore.Qt.AlignCenter)
         self.kpi_lwidget.setObjectName("kpi_lwidget")
         self.class_weight_lwidget = QtWidgets.QListWidget(self.scroll_contents)
-        self.class_weight_lwidget.setGeometry(QtCore.QRect(510, 1300, 171, 31))
+        self.class_weight_lwidget.setGeometry(QtCore.QRect(470, 1300, 211, 31))
         self.class_weight_lwidget.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.class_weight_lwidget.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
@@ -666,12 +666,12 @@ class Ui_logistic_regression_tcp_window(object):
         self.class_weight_lwidget.setFlow(QtWidgets.QListView.LeftToRight)
         self.class_weight_lwidget.setObjectName("class_weight_lwidget")
         self.class_weight_label = QtWidgets.QLabel(self.scroll_contents)
-        self.class_weight_label.setGeometry(QtCore.QRect(416, 1300, 91, 31))
+        self.class_weight_label.setGeometry(QtCore.QRect(376, 1300, 91, 31))
         self.class_weight_label.setStyleSheet("border: 0px solid;")
         self.class_weight_label.setAlignment(QtCore.Qt.AlignCenter)
         self.class_weight_label.setObjectName("class_weight_label")
         self.penalty_lwidget = QtWidgets.QListWidget(self.scroll_contents)
-        self.penalty_lwidget.setGeometry(QtCore.QRect(510, 1250, 171, 31))
+        self.penalty_lwidget.setGeometry(QtCore.QRect(470, 1250, 211, 31))
         self.penalty_lwidget.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.penalty_lwidget.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"

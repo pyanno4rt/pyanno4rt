@@ -12,6 +12,8 @@ validation.
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
+from ._machine_learning_model import MachineLearningModel
+
 from ._decision_tree import DecisionTreeModel
 from ._k_nearest_neighbors import KNeighborsModel
 from ._logistic_regression import LogisticRegressionModel
@@ -25,6 +27,7 @@ from . import addons
 __all__ = ['DecisionTreeModel',
            'KNeighborsModel',
            'LogisticRegressionModel',
+           'MachineLearningModel',
            'NaiveBayesModel',
            'NeuralNetworkModel',
            'RandomForestModel',

@@ -9,7 +9,7 @@ from logging import Handler
 from os.path import abspath, dirname, splitext
 from json import loads
 from numpy import zeros
-from PyQt5.QtCore import pyqtSignal, QDir, QEvent, QObject, Qt, QThread
+from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QThread
 from PyQt5.QtGui import QCursor, QIcon, QMovie, QPixmap
 from PyQt5.QtWidgets import (
     QComboBox, QFileDialog, QFrame, QHeaderView, QLabel, QListWidget,
@@ -139,7 +139,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.logo_label.setPixmap(pixmap)
         self.logo_label.setStyleSheet("QLabel {border: 0px;}")
 
-        self.version_label = QLabel("v0.22.0")
+        self.version_label = QLabel("v0.23.0")
 
         self.github_pbutton = QPushButton()
         self.github_pbutton.setIcon(
@@ -197,18 +197,17 @@ class MainWindow(QMainWindow, Ui_main_window):
             'save_pbutton', 'drop_pbutton', 'update_configuration_pbutton',
             'update_optimization_pbutton', 'update_evaluation_pbutton',
             'reset_configuration_pbutton', 'reset_optimization_pbutton',
-            'reset_evaluation_pbutton', 'initialize_pbutton',
-            'configure_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
-            'visualize_pbutton', 'actions_show_parameter_tbutton',
-            'actions_show_plan_tbutton', 'actions_show_fmap_tbutton',
-            'actions_show_model_data_tbutton', 'actions_show_log_tbutton',
-            'comp_show_parameter_tbutton', 'comp_show_plan_tbutton',
-            'comp_show_fmap_tbutton', 'comp_show_model_data_tbutton',
-            'comp_show_log_tbutton', 'compare_pbutton', 'baseline_cbox',
-            'reference_cbox', 'components_minus_tbutton',
-            'components_edit_tbutton', 'init_fluence_ledit',
-            'init_fluence_tbutton', 'ref_plan_cbox', 'opacity_sbox',
-            'slice_selection_sbar', 'stop_thread_pbutton'))
+            'reset_evaluation_pbutton', 'configure_pbutton',
+            'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton',
+            'actions_show_parameter_tbutton', 'actions_show_plan_tbutton',
+            'actions_show_fmap_tbutton', 'actions_show_model_data_tbutton',
+            'actions_show_log_tbutton', 'comp_show_parameter_tbutton',
+            'comp_show_plan_tbutton', 'comp_show_fmap_tbutton',
+            'comp_show_model_data_tbutton', 'comp_show_log_tbutton',
+            'compare_pbutton', 'baseline_cbox', 'reference_cbox',
+            'components_minus_tbutton', 'components_edit_tbutton',
+            'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox',
+            'opacity_sbox', 'slice_selection_sbar', 'stop_thread_pbutton'))
 
         # Disable the tab widgets initially
         self.composer_widget.widget(0).setEnabled(False)
@@ -230,9 +229,13 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'modality_cbox': cbox,
                          'nfx_sbox': sbox,
                          'img_path_ledit': ledit,
-                         'img_res_ledit': ledit,
+                         'img_res_ledit_x': ledit,
+                         'img_res_ledit_y': ledit,
+                         'img_res_ledit_z': ledit,
                          'dose_path_ledit': ledit,
-                         'dose_res_ledit': ledit,
+                         'dose_res_ledit_x': ledit,
+                         'dose_res_ledit_y': ledit,
+                         'dose_res_ledit_z': ledit,
                          'method_cbox': cbox,
                          'solver_cbox': cbox,
                          'algorithm_cbox': cbox,
@@ -274,7 +277,6 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'clear_configuration_pbutton': pbutton_composer,
                          'clear_optimization_pbutton': pbutton_composer,
                          'clear_evaluation_pbutton': pbutton_composer,
-                         'initialize_pbutton': pbutton_workflow,
                          'configure_pbutton': pbutton_workflow,
                          'optimize_pbutton': pbutton_workflow,
                          'evaluate_pbutton': pbutton_workflow,
@@ -378,7 +380,6 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'init_fluence_tbutton': self.add_initial_fluence_vector,
                 'lower_var_tbutton': self.add_lower_var_bounds,
                 'upper_var_tbutton': self.add_upper_var_bounds,
-                'initialize_pbutton': self.initialize,
                 'configure_pbutton': self.start_configure,
                 'optimize_pbutton': self.start_optimize,
                 'evaluate_pbutton': self.start_evaluate,
@@ -426,10 +427,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Loop over the fieldnames with 'textChanged' events
         for key, values in {
-                'plan_ledit': self.update_init_button,
-                'img_path_ledit': self.update_init_button,
-                'dose_path_ledit': self.update_init_button,
-                'dose_res_ledit': self.update_init_button,
                 'init_fluence_ledit': self.update_by_initial_fluence
                 }.items():
 
@@ -852,12 +849,11 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Disable specific fields
             self.set_disabled((
-                'initialize_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
-                'visualize_pbutton', 'actions_show_plan_tbutton',
-                'actions_show_log_tbutton', 'actions_show_model_data_tbutton',
-                'actions_show_fmap_tbutton', 'comp_show_plan_tbutton',
-                'comp_show_log_tbutton', 'comp_show_model_data_tbutton',
-                'comp_show_fmap_tbutton'))
+                'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton',
+                'actions_show_plan_tbutton', 'actions_show_log_tbutton',
+                'actions_show_model_data_tbutton', 'actions_show_fmap_tbutton',
+                'comp_show_plan_tbutton', 'comp_show_log_tbutton',
+                'comp_show_model_data_tbutton', 'comp_show_fmap_tbutton'))
 
             # Disable the tab widgets
             self.composer_widget.widget(0).setEnabled(True)
@@ -993,15 +989,14 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'save_pbutton', 'drop_pbutton', 'update_configuration_pbutton',
                 'update_optimization_pbutton', 'update_evaluation_pbutton',
                 'reset_configuration_pbutton', 'reset_optimization_pbutton',
-                'reset_evaluation_pbutton', 'initialize_pbutton',
-                'configure_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
-                'visualize_pbutton', 'actions_show_parameter_tbutton',
-                'actions_show_plan_tbutton', 'actions_show_fmap_tbutton',
-                'actions_show_model_data_tbutton', 'actions_show_log_tbutton',
-                'comp_show_parameter_tbutton', 'comp_show_plan_tbutton',
-                'comp_show_fmap_tbutton', 'comp_show_model_data_tbutton',
-                'comp_show_log_tbutton', 'init_fluence_ledit',
-                'init_fluence_tbutton', 'ref_plan_cbox'))
+                'reset_evaluation_pbutton', 'configure_pbutton',
+                'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton',
+                'actions_show_parameter_tbutton', 'actions_show_plan_tbutton',
+                'actions_show_fmap_tbutton', 'actions_show_model_data_tbutton',
+                'actions_show_log_tbutton', 'comp_show_parameter_tbutton',
+                'comp_show_plan_tbutton', 'comp_show_fmap_tbutton',
+                'comp_show_model_data_tbutton', 'comp_show_log_tbutton',
+                'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox'))
 
             # Disable the tab widgets
             self.composer_widget.widget(0).setEnabled(False)
@@ -1378,9 +1373,10 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         try:
 
+            instance = self.plans[self.plan_ledit.text()]
+
             # Overwrite the optimization dictionary of the current instance
-            self.plans[self.plan_ledit.text()].update(
-                self.transform_optimization_to_dict())
+            instance.update(self.transform_optimization_to_dict())
 
             # Disable specific fields
             self.set_disabled(('evaluate_pbutton', 'visualize_pbutton'))
@@ -1393,7 +1389,11 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.dvh_widget.reset_dvh()
 
             # 
-            self.status_bar.showMessage("Ready for optimization ...")
+            if (all(getattr(instance, unit) is not None
+                for unit in ('patient_loader', 'plan_generator',
+                             'dose_info_generator'))):
+
+                self.status_bar.showMessage("Ready for optimization ...")
 
         except Exception as error:
 
@@ -1407,9 +1407,10 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         try:
 
+            instance = self.plans[self.plan_ledit.text()]
+
             # Overwrite the evaluation dictionary of the current instance
-            self.plans[self.plan_ledit.text()].update(
-                self.transform_evaluation_to_dict())
+            instance.update(self.transform_evaluation_to_dict())
 
             # Disable specific fields
             self.set_disabled(('visualize_pbutton',))
@@ -1417,11 +1418,14 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Set the line edit cursor positions to zero
             self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))
 
-            # 
-            self.status_bar.showMessage("Ready for evaluation ...")
-
             # Reset the DVH widget
             self.dvh_widget.reset_dvh()
+
+            # 
+            if getattr(instance, 'fluence_optimizer') is not None:
+
+                self.status_bar.showMessage(
+                    "Ready for evaluation & visualization ...")
 
         except Exception as error:
 
@@ -1456,20 +1460,30 @@ class MainWindow(QMainWindow, Ui_main_window):
         if configuration['target_imaging_resolution']:
 
             # Set the target imaging resolution
-            self.img_res_ledit.setText(
-                str(configuration['target_imaging_resolution']))
+            self.img_res_ledit_x.setText(
+                str(configuration['target_imaging_resolution'][0]))
+
+            self.img_res_ledit_y.setText(
+                str(configuration['target_imaging_resolution'][1]))
+
+            self.img_res_ledit_z.setText(
+                str(configuration['target_imaging_resolution'][2]))
 
         else:
 
             # Clear the target imaging resolution
-            self.img_res_ledit.clear()
+            self.img_res_ledit_x.clear()
+            self.img_res_ledit_y.clear()
+            self.img_res_ledit_z.clear()
 
         # Set the dose matrix path
         self.dose_path_ledit.setText(abspath(
             configuration['dose_matrix_path']))
 
         # Set the dose resolution
-        self.dose_res_ledit.setText(str(configuration['dose_resolution']))
+        self.dose_res_ledit_x.setText(str(configuration['dose_resolution'][0]))
+        self.dose_res_ledit_y.setText(str(configuration['dose_resolution'][1]))
+        self.dose_res_ledit_z.setText(str(configuration['dose_resolution'][2]))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1673,6 +1687,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             else str(evaluation['reference_dose']))
 
         # 
+        self.display_segments_lwidget.clear()
         self.display_segments_lwidget.addItems(self.segments)
 
         # Loop over the display segments
@@ -1738,14 +1753,24 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.img_path_ledit.setText(self.base_configuration['imaging_path'])
 
         # Clear the target imaging resolution
-        self.img_res_ledit.clear()
+        self.img_res_ledit_x.clear()
+        self.img_res_ledit_y.clear()
+        self.img_res_ledit_z.clear()
 
         # Reset the dose matrix path
         self.dose_path_ledit.setText(
             self.base_configuration['dose_matrix_path'])
 
         # Reset the dose resolution
-        self.dose_res_ledit.setText(self.base_configuration['dose_resolution'])
+        self.dose_res_ledit_x.setText(
+            None if not self.base_configuration['dose_resolution']
+            else self.base_configuration['dose_resolution'][0])
+        self.dose_res_ledit_y.setText(
+            None if not self.base_configuration['dose_resolution']
+            else self.base_configuration['dose_resolution'][1])
+        self.dose_res_ledit_z.setText(
+            None if not self.base_configuration['dose_resolution']
+            else self.base_configuration['dose_resolution'][2])
 
     def clear_optimization(self):
         """Clear the optimization parameters."""
@@ -1782,7 +1807,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.max_iter_sbox.setValue(self.base_optimization['max_iter'])
 
         # Reset the tolerance
-        self.tolerance_ledit.setText(str(self.base_optimization['tolerance']))
+        self.tolerance_ledit.setText(
+            '' if self.base_optimization['tolerance'] == 0.001
+            else str(self.base_optimization['tolerance']))
 
     def clear_evaluation(self):
         """Clear the evaluation parameters."""
@@ -1795,14 +1822,20 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Reset the reference volume
         self.ref_vol_ledit.setText(
-            str(self.base_evaluation['reference_volume']))
+            '' if self.base_evaluation['reference_volume'] == [
+                2, 5, 50, 95, 98]
+            else str(self.base_evaluation['reference_volume']))
 
         # Reset the reference dose values
         self.ref_dose_ledit.setText(
-            str(self.base_evaluation['reference_dose']))
+            '' if self.base_evaluation['reference_dose'] == []
+            else str(self.base_evaluation['reference_dose']))
 
         # Loop over the display segments
-        self.display_segments_lwidget.clear()
+        for index in range(self.display_segments_lwidget.count()):
+
+            # Reset the display segments to checked
+            self.display_segments_lwidget.item(index).setCheckState(2)
 
         # Loop over the display metrics
         for index in range(self.display_metrics_lwidget.count()):
@@ -1820,13 +1853,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             Dictionary with the configuration parameters.
         """
 
-        # Convert the target imaging resolution from the field
-        target_imaging_resolution = add_square_brackets(
-            self.img_res_ledit.text())
-
-        # Convert the dose resolution from the field
-        dose_resolution = add_square_brackets(self.dose_res_ledit.text())
-
         # Create the configuration dictionary
         configuration = {
             'label': None if not self.plan_ledit.text()
@@ -1836,12 +1862,22 @@ class MainWindow(QMainWindow, Ui_main_window):
             'number_of_fractions': self.nfx_sbox.value(),
             'imaging_path': None if not self.img_path_ledit.text()
             else abspath(self.img_path_ledit.text()),
-            'target_imaging_resolution': None if not target_imaging_resolution
-            else loads(target_imaging_resolution),
+            'target_imaging_resolution': None if any(
+                resolution == '' for resolution in (
+                    self.img_res_ledit_x.text(), self.img_res_ledit_y.text(),
+                    self.img_res_ledit_z.text()))
+            else [float(resolution) for resolution in (
+                self.img_res_ledit_x.text(), self.img_res_ledit_y.text(),
+                self.img_res_ledit_z.text())],
             'dose_matrix_path': None if not self.dose_path_ledit.text()
             else abspath(self.dose_path_ledit.text()),
-            'dose_resolution': None if not dose_resolution
-            else loads(dose_resolution)
+            'dose_resolution': None if any(
+                resolution == '' for resolution in (
+                    self.dose_res_ledit_x.text(), self.dose_res_ledit_y.text(),
+                    self.dose_res_ledit_z.text()))
+            else [float(resolution) for resolution in (
+                self.dose_res_ledit_x.text(), self.dose_res_ledit_y.text(),
+                self.dose_res_ledit_z.text())],
             }
 
         return configuration
@@ -2024,7 +2060,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.plan_creation_window.new_plan_ref_cbox.clear()
         self.plan_creation_window.new_img_path_ledit.clear()
         self.plan_creation_window.new_dose_path_ledit.clear()
-        self.plan_creation_window.new_dose_res_ledit.clear()
+        self.plan_creation_window.new_dose_res_ledit_x.clear()
+        self.plan_creation_window.new_dose_res_ledit_y.clear()
+        self.plan_creation_window.new_dose_res_ledit_z.clear()
 
         # 
         self.plan_creation_window.new_plan_ref_cbox.addItem('None')
@@ -2354,7 +2392,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the file path
         path, _ = QFileDialog.getOpenFileName(
-            self, 'Select a patient data file', QDir.rootPath(),
+            self, 'Select a patient data file', '',
             'CT/Segmentation data (*.dcm *.mat *.p)')
 
         # Check if the file path exists
@@ -2377,7 +2415,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the file path
         path, _ = QFileDialog.getOpenFileName(
-            self, 'Select a dose-influence matrix file', QDir.rootPath(),
+            self, 'Select a dose-influence matrix file', '',
             'Dose-influence matrix (*.mat *.npy)')
 
         # Check if the file path exists
@@ -2434,7 +2472,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the file path
         path, _ = QFileDialog.getOpenFileName(
-            self, 'Select an initial fluence vector file', QDir.rootPath(),
+            self, 'Select an initial fluence vector file', '',
             'Fluence vector (*.json *.p *.txt)')
 
         # Check if the file path exists
@@ -2454,7 +2492,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the file path
         path, _ = QFileDialog.getOpenFileName(
-            self, 'Select a lower variable bounds file', QDir.rootPath(),
+            self, 'Select a lower variable bounds file', '',
             'Fluence vector (*.json *.p *.txt)')
 
         # Check if the file path exists
@@ -2474,7 +2512,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the file path
         path, _ = QFileDialog.getOpenFileName(
-            self, 'Select an upper variable bounds file', QDir.rootPath(),
+            self, 'Select an upper variable bounds file', '',
             'Fluence vector (*.json *.p *.txt)')
 
         # Check if the file path exists
@@ -2488,29 +2526,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Set the upper variable bounds field cursor position to zero
             self.upper_var_ledit.setCursorPosition(0)
-
-    def update_init_button(self):
-        """."""
-
-        # 
-        if self.plan_ledit.text() in self.plans:
-
-            # 
-            self.initialize_pbutton.setEnabled(False)
-
-        else:
-
-            if any(text == '' for text in (
-                self.plan_ledit.text(), self.img_path_ledit.text(),
-                    self.dose_path_ledit.text(), self.dose_res_ledit.text())):
-
-                # 
-                self.initialize_pbutton.setEnabled(False)
-
-            else:
-
-                # 
-                self.initialize_pbutton.setEnabled(True)
 
     def update_by_initial_strategy(self):
         """Update the GUI by the initial strategy."""

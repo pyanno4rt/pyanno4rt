@@ -321,7 +321,7 @@ class TreatmentPlan():
 
     logger : None or object of class \
         :class:`~pyanno4rt.logging._logger.Logger`
-        The internal object used to print and store logging messages.
+        The object used to print and store logging messages.
 
     datahub : None or object of class \
         :class:`~pyanno4rt.datahub._datahub.Datahub`

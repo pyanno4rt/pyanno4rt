@@ -20,18 +20,22 @@ from pyanno4rt.learning_model.preprocessing import DataPreprocessor
 # %% Function definition
 
 
-def permutation_importances(model_instance, hyperparameters, features, labels,
-                            preprocessing_steps, number_of_repeats, oof_folds):
+def permutation_importances(model_label, model_instance, hyperparameters,
+                            features, labels, preprocessing_steps,
+                            number_of_repeats, oof_folds):
     """
     Compute the permutation importances.
 
     Parameters
     ----------
+    model_label : str
+        Label for the model.
+
     model_instance : object
-        The object representing the machine learning outcome model.
+        The object representing the machine learning model.
 
     hyperparameters : dict
-        Dictionary with the machine learning outcome model hyperparameters.
+        Dictionary with the model hyperparameters.
 
     features : ndarray
         Values of the input features.
@@ -41,7 +45,7 @@ def permutation_importances(model_instance, hyperparameters, features, labels,
 
     preprocessing_steps : list
         Sequence of labels associated with the preprocessing algorithms for \
-        the machine learning outcome model.
+        the machine learning model.
 
     number_of_repeats : int
         Number of feature permutations.
@@ -58,19 +62,13 @@ def permutation_importances(model_instance, hyperparameters, features, labels,
     def compute_fold_importances(indices):
         """Compute the out-of-folds importances for a single fold."""
 
-        # Get the training and validation splits
-        train_validate_split = [features[indices[0]], features[indices[1]],
-                                labels[indices[0]], labels[indices[1]]]
+        # Get the training and validation split
+        split = [features[indices[0]], labels[indices[0]],
+                 features[indices[1]], labels[indices[1]]]
 
-        # Fit the preprocessor and transform the training features
-        train_validate_split[0], train_validate_split[2] = (
-            preprocessor.fit_transform(
-                train_validate_split[0], train_validate_split[2]))
-
-        # Transform the validation features
-        train_validate_split[1], train_validate_split[3] = (
-            preprocessor.transform(
-                train_validate_split[1], train_validate_split[3]))
+        # Fit and transform the training and validation data
+        split = [*preprocessor.fit_transform(split[0], split[1]),
+                 *preprocessor.transform(split[2], split[3])]
 
         # Check if the model is a scikit-learn classifier
         if type(model_instance).__name__ in (
@@ -82,7 +80,7 @@ def permutation_importances(model_instance, hyperparameters, features, labels,
             model_clone = clone(model_instance)
 
             # Fit the model with the training split
-            model_clone.fit(train_validate_split[0], train_validate_split[2])
+            model_clone.fit(split[0], split[1])
 
         # Else, check if the model is a tensorflow model
         elif type(model_instance).__name__ == 'Functional':
@@ -98,8 +96,8 @@ def permutation_importances(model_instance, hyperparameters, features, labels,
 
             # Fit the model with the training split
             model_clone.fit(
-                train_validate_split[0],
-                train_validate_split[2],
+                split[0],
+                split[1],
                 batch_size=hyperparameters['batch_size'],
                 epochs=hyperparameters['epochs'],
                 verbose=0,
@@ -116,15 +114,15 @@ def permutation_importances(model_instance, hyperparameters, features, labels,
                         verbose=0)
                     ],
                 class_weight={
-                    label: (2*len(train_validate_split[2])
-                            / sum(train_validate_split[2] == label))
+                    label: (2*len(split[1])
+                            / sum(split[1] == label))
                     for label in (0, 1)}
                 )
 
         # Compute the permutation importance for the validation split
         importance = permutation_importance(
-            model_clone, train_validate_split[1], train_validate_split[3],
-            scoring=score, n_repeats=number_of_repeats, random_state=42)
+            model_clone, split[2], split[3], scoring=score,
+            n_repeats=number_of_repeats, random_state=42)
 
         return importance['importances'].T
 
@@ -167,7 +165,8 @@ def permutation_importances(model_instance, hyperparameters, features, labels,
         return roc_auc_score(true_labels, predicted_labels)
 
     # Log a message about the permutation importance computation
-    Datahub().logger.display_info("Computing permutation importances ...")
+    Datahub().logger.display_info(
+        f'Computing permutation importances for "{model_label}" ...')
 
     # Initialize the data preprocessor
     preprocessor = DataPreprocessor(preprocessing_steps, verbose=False)
