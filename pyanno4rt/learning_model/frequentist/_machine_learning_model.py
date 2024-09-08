@@ -1,4 +1,4 @@
-"""Machine learning model template."""
+"""Machine learning model superclass."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -6,6 +6,7 @@
 
 from json import dump as jdump, load as jload
 from os.path import exists
+from pickle import dump, load
 
 from abc import ABCMeta, abstractmethod
 from functools import partial
@@ -27,7 +28,7 @@ from pyanno4rt.tools import compare_dictionaries
 
 class MachineLearningModel(metaclass=ABCMeta):
     """
-    Machine learning model template class.
+    Machine learning model superclass.
 
     Parameters
     ----------
@@ -84,6 +85,9 @@ class MachineLearningModel(metaclass=ABCMeta):
     preprocessing_steps : list
         See 'Parameters'.
 
+    preprocessor_path : None or str
+        Path for storing and retrieving the data preprocessor.
+
     model_path : None or str
         Path for storing and retrieving the model.
 
@@ -102,19 +106,19 @@ class MachineLearningModel(metaclass=ABCMeta):
     step : int
         Counter variable for the tuning evaluations.
 
+    updated_model : bool
+        Indicator for the update status of the model.
+
     preprocessor : object of class \
         :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
         The object used to build the preprocessing pipeline, transform the \
         data, and return the input gradients of the preprocessing algorithms.
 
-    preprocessed_features : ndarray
+    preprocessed_features : None or ndarray
         Values of the preprocessed input features.
 
-    preprocessed_labels : ndarray
+    preprocessed_labels : None or ndarray
         Values of the preprocessed input labels.
-
-    updated_model : bool
-        Indicator for the update status of the model.
 
     prediction_model : object
         The object used to represent the prediction model.
@@ -155,20 +159,20 @@ class MachineLearningModel(metaclass=ABCMeta):
             model_label, model_folder_path, preprocessing_steps)
 
         # Initialize the file paths
-        self.model_path, self.configuration_path, self.hyperparameter_path = (
-            None, None, None)
+        (self.preprocessor_path, self.model_path, self.configuration_path,
+         self.hyperparameter_path) = (None, None, None, None)
 
         # Build the configuration dictionary with the modeling information
         self.configuration = {
             'feature_names': dataset['feature_names'],
-            'feature_values': dataset['feature_values'],
-            'label_name': dataset['label_name'],
-            'label_values': dataset['label_values'],
-            'time_variable_name': dataset['time_variable_name'],
-            'time_variable_values': dataset['time_variable_values'],
-            'tune_folds': dataset['tune_folds'],
-            'oof_folds': dataset['oof_folds'],
-            'label_bounds': dataset['label_bounds'],
+            'feature_values': dataset.get('feature_values'),
+            'label_name': dataset.get('label_name'),
+            'label_values': dataset.get('label_values'),
+            'time_variable_name': dataset.get('time_variable_name'),
+            'time_variable_values': dataset.get('time_variable_values'),
+            'tune_folds': dataset.get('tune_folds'),
+            'oof_folds': dataset.get('oof_folds'),
+            'label_bounds': dataset.get('label_bounds'),
             'label_viewpoint': dataset.get('label_viewpoint'),
             'preprocessing_steps': preprocessing_steps,
             'architecture': architecture,
@@ -177,54 +181,63 @@ class MachineLearningModel(metaclass=ABCMeta):
             'tune_evaluations': tune_evaluations,
             'tune_score': tune_score}
 
+        # Add the label bias to the configuration dictionary
+        if dataset.get('label_values') is not None:
+            self.configuration['bias'] = (
+                sum(dataset['label_values'] == 1)
+                / sum(dataset['label_values'] == 0))
+
         # Get the hyperopt search space
         self.hp_space = hp_space
 
         # Initialize the step counter for the hyperparameter search
         self.step = None
 
-        # Initialize the data preprocessor
-        self.preprocessor = DataPreprocessor(preprocessing_steps)
-
         # Initialize the boolean flag to indicate model updates
         self.updated_model = False
 
-        # Fit the data preprocessor and transform the input feature values
-        self.preprocessed_features, self.preprocessed_labels = (
-            self.preprocessor.fit_transform(
-                dataset['feature_values'], dataset['label_values']))
+        # Initialize the preprocessed features and labels
+        self.preprocessed_features, self.preprocessed_labels = (None, None)
 
-        # Get the logistic regression model and its hyperparameters
-        self.prediction_model, self.hyperparameters = self.get_model(
-            dataset['feature_values'], dataset['label_values'])
+        # Get the machine learning model and its hyperparameters
+        self.preprocessor, self.prediction_model, self.hyperparameters = (
+            self.get_model(self.configuration['feature_values'],
+                           self.configuration['label_values']))
 
         # Check if the model has been updated or not yet registered
         if self.updated_model or self.model_label not in hub.model_instances:
 
             # Add the model instance to the datahub
             hub.model_instances[self.model_label] = {
+                'preprocessor': self.preprocessor,
                 'prediction_model': self.prediction_model,
                 'configuration': self.configuration,
                 'hyperparameters': self.hyperparameters}
 
-        # Check if the model should be inspected
-        if inspect_model:
+        # Check if a non-empty dataset has been passed
+        if all(self.configuration[key] is not None for key in (
+                'feature_values', 'label_values', 'oof_folds')):
 
-            # Initialize the model inspector
-            self.inspector = ModelInspector(model_label)
+            # Check if the model should be inspected
+            if inspect_model:
 
-            # Inspect the model
-            self.inspect(dataset['feature_values'], dataset['label_values'],
-                         dataset['oof_folds'])
+                # Initialize the model inspector
+                self.inspector = ModelInspector(model_label)
 
-        # Check if the model should be evaluated
-        if evaluate_model:
+                # Inspect the model
+                self.inspect(self.configuration['feature_values'],
+                             self.configuration['label_values'],
+                             self.configuration['oof_folds'])
 
-            # Initialize the model evaluator
-            self.evaluator = ModelEvaluator(model_label)
+            # Check if the model should be evaluated
+            if evaluate_model:
 
-            # Evaluate the model
-            self.evaluate(dataset['feature_values'], dataset['label_values'])
+                # Initialize the model evaluator
+                self.evaluator = ModelEvaluator(model_label)
+
+                # Evaluate the model
+                self.evaluate(self.configuration['feature_values'],
+                              self.configuration['label_values'])
 
         # Update the display options in the datahub
         hub.model_instances[self.model_label]['display_options'] = (
@@ -267,6 +280,12 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         Returns
         -------
+        object of class \
+            :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
+            The object used to build the preprocessing pipeline, transform \
+            the data, and return the input gradients of the preprocessing \
+            algorithms.
+
         object
             The object used to represent the prediction model.
 
@@ -285,14 +304,26 @@ class MachineLearningModel(metaclass=ABCMeta):
 
             # Check if all file paths exist
             if all(exists(path) for path in (
-                self.model_path, self.configuration_path,
-                    self.hyperparameter_path)):
+                self.preprocessor_path, self.model_path,
+                    self.configuration_path, self.hyperparameter_path)):
 
                 # Set the update flag to False
                 self.updated_model = False
 
-                return (self.read_model_from_file(),
-                        self.read_hyperparameters_from_file())
+                # Get the preprocessor, prediction model and hyperparameters
+                preprocessor, prediction_model, hyperparameters = (
+                    self.read_preprocessor_from_file(),
+                    self.read_model_from_file(),
+                    self.read_hyperparameters_from_file())
+
+                # Check if the features and labels are not None
+                if features is not None and labels is not None:
+
+                    # Preprocess the features and labels
+                    self.preprocessed_features, self.preprocessed_labels = (
+                        preprocessor.fit_transform(features, labels))
+
+                return preprocessor, prediction_model, hyperparameters
 
         # Else, check if the model files can be loaded from the datahub
         elif (self.model_label in hub.model_instances and compare_dictionaries(
@@ -302,16 +333,35 @@ class MachineLearningModel(metaclass=ABCMeta):
             # Set the update flag to False
             self.updated_model = False
 
-            return (hub.model_instances[self.model_label]['prediction_model'],
-                    hub.model_instances[self.model_label]['hyperparameters'])
+            # Read the model files
+            preprocessor, prediction_model, hyperparameters = (
+                hub.model_instances[self.model_label]['preprocessor'],
+                hub.model_instances[self.model_label]['prediction_model'],
+                hub.model_instances[self.model_label]['hyperparameters'])
 
-        # Else, (re-)train the prediction model
+            # Check if the features and labels are not None
+            if features is not None and labels is not None:
+
+                # Preprocess the features and labels
+                self.preprocessed_features, self.preprocessed_labels = (
+                    preprocessor.fit_transform(features, labels))
+
+            return preprocessor, prediction_model, hyperparameters
+
+        # Initialize the data preprocessor
+        preprocessor = DataPreprocessor(self.preprocessing_steps)
+
+        # Fit and transform the input features and labels
+        self.preprocessed_features, self.preprocessed_labels = (
+            preprocessor.fit_transform(features, labels))
+
+        # (Re-)train the prediction model
         prediction_model, hyperparameters = self.train(features, labels)
 
         # Set the update flag to True
         self.updated_model = True
 
-        return prediction_model, hyperparameters
+        return preprocessor, prediction_model, hyperparameters
 
     @abstractmethod
     def get_hyperparameter_set(
@@ -616,10 +666,9 @@ class MachineLearningModel(metaclass=ABCMeta):
 
             # Compute the model evaluation results
             self.evaluator.compute(
-                labels, (
-                    self.predict(
-                        self.preprocessed_features, self.prediction_model),
-                    self.predict_oof(features, labels)))
+                labels, (self.predict(self.preprocessed_features,
+                                      self.prediction_model),
+                         self.predict_oof(features, labels)))
 
     def set_file_paths(
             self,
@@ -634,9 +683,51 @@ class MachineLearningModel(metaclass=ABCMeta):
         """
 
         # Set the file paths
-        self.model_path, self.configuration_path, self.hyperparameter_path = (
-            f'{base_path}/{filename}' for filename in (
-                'model.sav', 'configuration.json', 'hyperparameters.json'))
+        (self.preprocessor_path, self.model_path, self.configuration_path,
+         self.hyperparameter_path) = (
+             f'{base_path}/{filename}' for filename in (
+                 'preprocessor.sav', 'model.sav', 'configuration.json',
+                 'hyperparameters.json'))
+
+    def read_preprocessor_from_file(self):
+        """
+        Read the data preprocessor from the preprocessor file path.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
+            The object used to build the preprocessing pipeline, transform \
+            the data, and return the input gradients of the preprocessing \
+            algorithms.
+        """
+
+        # Log a message about the preprocessor file reading
+        Datahub().logger.display_info(
+            f'Reading "{self.model_label}" preprocessor from file ...')
+
+        return load(open(self.preprocessor_path, 'rb'))
+
+    def write_preprocessor_to_file(
+            self,
+            preprocessor):
+        """
+        Write the data preprocessor to the preprocessor file path.
+
+        Parameters
+        ----------
+        preprocessor : object of class \
+            :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
+            The object used to build the preprocessing pipeline, transform \
+            the data, and return the input gradients of the preprocessing \
+            algorithms.
+        """
+
+        # Open a file stream
+        with open(self.preprocessor_path, 'wb') as file:
+
+            # Dump the preprocessor to the preprocessor file path
+            dump(preprocessor, file)
 
     @abstractmethod
     def read_model_from_file(self):
@@ -679,7 +770,8 @@ class MachineLearningModel(metaclass=ABCMeta):
 
     def write_configuration_to_file(
             self,
-            configuration):
+            configuration,
+            include_model_data=False):
         """
         Write the configuration dictionary to the configuration file path.
 
@@ -687,14 +779,29 @@ class MachineLearningModel(metaclass=ABCMeta):
         ----------
         configuration : dict
             Dictionary with information on the model configuration.
+
+        include_model_data : bool, default=False
+            Indicator for the storage of the outcome model-related dataset(s).
         """
 
-        # Loop over specific keys
-        for key in ('feature_values', 'label_values', 'time_variable_values',
-                    'tune_folds', 'oof_folds'):
+        # Check if the model data should be included
+        if include_model_data:
 
-            # Convert the array into a list
-            configuration[key] = configuration[key].tolist()
+            # Loop over specific keys
+            for key in ('feature_values', 'label_values',
+                        'time_variable_values', 'tune_folds', 'oof_folds'):
+
+                # Convert the array into a list
+                configuration[key] = configuration[key].tolist()
+
+        else:
+
+            # Loop over specific keys
+            for key in ('feature_values', 'label_values',
+                        'time_variable_values', 'tune_folds', 'oof_folds'):
+
+                # Set the values to None
+                configuration[key] = None
 
         # Open a file stream
         with open(self.configuration_path, 'w', encoding='utf-8') as file:
@@ -702,7 +809,9 @@ class MachineLearningModel(metaclass=ABCMeta):
             # Dump the dictionary to the file path
             jdump(configuration, file, sort_keys=False, indent=4)
 
-    def read_hyperparameters_from_file(self):
+    def read_hyperparameters_from_file(
+            self,
+            verbose=True):
         """
         Read the machine learning model hyperparameters from the \
         hyperparameter file path.
@@ -713,9 +822,12 @@ class MachineLearningModel(metaclass=ABCMeta):
             Dictionary with the values of the hyperparameters.
         """
 
-        # Log a message about the parameter file reading
-        Datahub().logger.display_info(
-            f'Reading "{self.model_label}" hyperparameters from file ...')
+        # Check if a message should be printed
+        if verbose:
+
+            # Log a message about the parameter file reading
+            Datahub().logger.display_info(
+                f'Reading "{self.model_label}" hyperparameters from file ...')
 
         return jload(open(self.hyperparameter_path, 'r', encoding='utf-8'))
 

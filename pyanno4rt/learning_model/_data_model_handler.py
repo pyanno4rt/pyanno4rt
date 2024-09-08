@@ -7,7 +7,8 @@ from math import inf
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model.dataset import TabularDataGenerator
+from pyanno4rt.learning_model.dataset import (
+    EmptyDataGenerator, TabularDataGenerator)
 from pyanno4rt.learning_model.features import (
     FeatureMapGenerator, FeatureCalculator)
 
@@ -23,7 +24,13 @@ class DataModelHandler():
 
     Parameters
     ----------
-    data_path : str
+    model_label : str
+        Label for the machine learning model.
+
+    model_folder_path : None or str
+        Path to a folder for loading an external model.
+
+    data_path : None or str
         Path to the data set used for fitting the machine learning model.
 
     feature_filter : dict
@@ -31,9 +38,15 @@ class DataModelHandler():
         {'retain', 'remove'} as an indicator for retaining/removing the \
         features prior to model fitting.
 
+    label_name : None or str
+        Name of the label variable.
+
     label_bounds : list
         Bounds for the label values to binarize into positive (value lies \
         inside the bounds) and negative class (value lies outside the bounds).
+
+    time_variable_name : None or str
+        Name of the time-after-radiotherapy variable (unit should be days).
 
     label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', \
                        'profile'}
@@ -61,6 +74,9 @@ class DataModelHandler():
     model_label : str
         See 'Parameters'.
 
+    model_folder_path : None or str
+        See 'Parameters'.
+
     data_path : str
         See 'Parameters'.
 
@@ -83,6 +99,7 @@ class DataModelHandler():
     def __init__(
             self,
             model_label,
+            model_folder_path,
             data_path,
             feature_filter,
             label_name,
@@ -108,12 +125,19 @@ class DataModelHandler():
                 setattr(hub, attribute, {})
 
         # Get the instance attributes from the arguments
-        self.model_label = model_label
-        self.data_path = data_path
-        self.write_features = write_features
+        self.model_label, self.data_path, self.write_features = (
+            model_label, data_path, write_features)
 
-        # Check if the data path leads to a tabular data file
-        if data_path.endswith('.csv'):
+        # Check if no data path has been passed
+        if not data_path:
+
+            # Initialize the empty dataset generator
+            self.dataset = EmptyDataGenerator(
+                model_label=model_label,
+                model_folder_path=model_folder_path)
+
+        # Check if the data path leads to a tabular file
+        elif data_path.endswith('.csv'):
 
             # Transform the label bounds by replacing None with limit values
             label_bounds = [
@@ -144,8 +168,9 @@ class DataModelHandler():
         # Generate the data information dictionary
         data_information = self.dataset.generate(self.data_path)
 
-        # Generate the feature map
-        feature_map = self.feature_map_generator.generate(data_information)
+        # Generate the feature map from the dataset
+        feature_map = self.feature_map_generator.generate(
+            data_information['feature_names'])
 
         # Add the feature map to the feature calculator
         self.feature_calculator.add_feature_map(feature_map)

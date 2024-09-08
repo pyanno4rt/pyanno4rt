@@ -1042,6 +1042,7 @@ class MainWindow(QMainWindow, Ui_main_window):
     def start_configure(self):
         """."""
 
+        # 
         self.stop_thread_pbutton.setEnabled(True)
         self.loader_label.show()
 

@@ -112,7 +112,8 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         # 
         includes = (self.incl_img_data_check.isChecked(),
                     self.incl_dij_check.isChecked(),
-                    self.incl_model_data_check.isChecked())
+                    self.incl_model_data_check.isChecked(),
+                    self.incl_opt_fluence_check.isChecked())
 
         return (language, light_mode, resolution, includes)
 
@@ -133,6 +134,7 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         self.incl_img_data_check.setCheckState(2*settings[3][0])
         self.incl_dij_check.setCheckState(2*settings[3][1])
         self.incl_model_data_check.setCheckState(2*settings[3][2])
+        self.incl_opt_fluence_check.setCheckState(2*settings[3][3])
 
     def reset(self):
         """."""

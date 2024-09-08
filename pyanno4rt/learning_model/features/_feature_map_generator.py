@@ -73,7 +73,7 @@ class FeatureMapGenerator():
 
     def generate(
             self,
-            data_information):
+            feature_names):
         """
         Generate the feature map by fuzzy or exact string matching.
 
@@ -205,8 +205,7 @@ class FeatureMapGenerator():
             (None, split[0], None) if len(split) == 1
             else (split[0], split[1], None) if len(split) == 2
             else (split[0], split[1], split[2])
-            for split in map(methodcaller('split', '_'),
-                             data_information['feature_names']))
+            for split in map(methodcaller('split', '_'), feature_names))
 
         # Decompose the splits into segments, definitions and parameters
         feature_segments, feature_definitions, feature_parameters = zip(
@@ -230,23 +229,21 @@ class FeatureMapGenerator():
 
         # Get the matches (values) for the feature map
         matches = ((get_segment_functions[feature_segments[i] in mapping_cache]
-                    (data_information['feature_names'][i],
-                     feature_segments[i])
+                    (feature_names[i], feature_segments[i])
                     if feature_segments[i] is not None else [None])
                    + get_definition_functions[
                        '_'.join(filter(None, (feature_definitions[i],
                                               feature_parameters[i])))
                        in mapping_cache](
-                           data_information['feature_names'][i],
+                           feature_names[i],
                            feature_definitions[i],
                            feature_parameters[i])
-                   for i in range(len(data_information['feature_names'])))
+                   for i in range(len(feature_names)))
 
         # Construct the output feature map
         feature_map = {feature_name: {label: value for label, value in zip(
             labels, match) if value is not None}
-            for feature_name, match in zip(data_information['feature_names'],
-                                           matches)}
+            for feature_name, match in zip(feature_names, matches)}
 
         # Enter the feature map into the datahub
         hub.feature_maps[self.model_label] = feature_map

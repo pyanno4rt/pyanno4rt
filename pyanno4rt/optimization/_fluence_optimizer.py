@@ -143,14 +143,25 @@ class FluenceOptimizer():
             max_iter=max_iter,
             tolerance=tolerance)
 
-        # Enter the optimization dictionary into the datahub
-        hub.optimization = {
+        # Get the optimization data
+        optimization_dictionary = {
             'problem': problem,
             'initializer': initializer,
             'initial_fluence': initial_fluence,
             'initial_strategy': initial_strategy,
             'solver_object': solver_object,
             'initial_time': time()-start_time}
+
+        # Check if the optimization dictionary already exists
+        if hub.optimization:
+
+            # Extend the optimization dictionary in the datahub
+            hub.optimization |= optimization_dictionary
+
+        else:
+
+            # Overwrite the optimization dictionary in the datahub
+            hub.optimization = optimization_dictionary
 
     @staticmethod
     def set_optimization_components(components):
@@ -510,10 +521,18 @@ class FluenceOptimizer():
         # Start the solver runtime recording
         start_time = time()
 
-        # Solve the optimization problem
-        (hub.optimization['optimized_fluence'],
-         hub.optimization['solver_info']) = hub.optimization[
-             'solver_object'].run(hub.optimization['initial_fluence'])
+        # Check if the fluence can not be loaded from a copycat
+        if 'from_copycat' not in hub.optimization:
+
+            # Solve the optimization problem
+            (hub.optimization['optimized_fluence'],
+             hub.optimization['solver_info']) = hub.optimization[
+                 'solver_object'].run(hub.optimization['initial_fluence'])
+
+        else:
+
+            # Delete the copycat indicator
+            del hub.optimization['from_copycat']
 
         # Get the runtime for problem solving
         solver_runtime = round(time()-start_time, 2)
@@ -585,9 +604,10 @@ class FluenceOptimizer():
                 sign = (-1)**('NTCP' not in name)
 
                 # Get the (N)TCP prediction value
-                value = round(100*(sign*value)**(1-is_sigmoidal)
-                              * sigmoid(sign*value, multiplier, summand)
-                              ** is_sigmoidal, 2)
+                value = round(
+                    100*(sign*value)**(1-is_sigmoidal)
+                    * ((sign == -1)+sign*sigmoid(value, multiplier, summand))
+                    ** is_sigmoidal, 2)
 
                 # Log a message about the (N)TCP prediction
                 logger.display_info(

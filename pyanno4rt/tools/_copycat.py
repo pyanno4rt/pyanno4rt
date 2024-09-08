@@ -6,6 +6,7 @@
 
 from itertools import product
 from json import load
+from numpy import load as npload
 from os import listdir, walk
 from os.path import basename
 
@@ -63,6 +64,12 @@ def copycat(base_class, path):
                         instance['parameters']['model_parameters'][
                             'data_path'] = f'{inputs[0]}/{filename}'
 
+                    else:
+
+                        # Set the model data path to None
+                        instance['parameters']['model_parameters'][
+                            'data_path'] = None
+
         # Get the component
         component = treatment_plan.optimization[
             'components'][inputs[1]]
@@ -113,5 +120,13 @@ def copycat(base_class, path):
     # Add the model folder and data paths
     apply(add_model_paths,
           product(model_paths, (*treatment_plan.optimization['components'],)))
+
+    # Check if the optimized fluence file exists
+    if 'optimized_fluence.npy' in listdir(path):
+
+        # Load the optimized fluence array
+        treatment_plan.datahub.optimization = {
+            'optimized_fluence': npload(f'{path}/{filename}'),
+            'from_copycat': True}
 
     return treatment_plan

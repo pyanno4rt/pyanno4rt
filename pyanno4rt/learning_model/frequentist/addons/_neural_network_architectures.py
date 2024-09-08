@@ -7,8 +7,7 @@
 from numpy import log
 from tensorflow.keras import Input, Model
 from tensorflow.keras.initializers import Constant
-from tensorflow.keras.layers import (
-    BatchNormalization, Dense, Dropout)
+from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
 from tensorflow.keras.constraints import non_neg
 
 # %% Build functions
@@ -17,12 +16,11 @@ from tensorflow.keras.constraints import non_neg
 def build_iocnn(
         input_shape,
         output_shape,
-        labels,
+        bias,
         hyperparameters,
         squash_output):
     """
-    Build the input-output convex neural network architecture with the \
-    functional API.
+    Build the input-output convex neural network architecture.
 
     Parameters
     ----------
@@ -33,36 +31,33 @@ def build_iocnn(
         Shape of the output labels.
 
     hyperparameters : dict
-        Dictionary with the hyperparameter names and values for the \
-        neural network outcome prediction model.
+        Dictionary with the values of the hyperparameters.
 
     squash_output : bool
-        Indicator for the use of a sigmoid activation function in the \
-        output layer.
+        Indicator for the squashing of the network output.
 
     Returns
     -------
     object of class 'Functional'
-        Instance of the class `Functional`, which provides a functional \
-        input-output convex neural network architecture.
+        The object used to represent the prediction model.
     """
+
     # Initialize the network input
     inputs = Input((input_shape,), name='input')
 
-    # Define the input layer by dropout and dense layers
+    # Define the input layer
     hidden = BatchNormalization()(inputs)
     hidden = Dropout(hyperparameters['input_dropout_rate'])(hidden)
     hidden = Dense(
         units=hyperparameters['input_neuron_number'],
         activation=hyperparameters['input_activation'])(hidden)
 
-    # Iterate over the number of hidden layers
+    # Loop over the number of hidden layers
     for layer in range(hyperparameters['hidden_layer_number']):
 
-        # Define the hidden layers by dropout and dense layers
+        # Define the hidden layer
         hidden = BatchNormalization()(hidden)
-        hidden = Dropout(
-            hyperparameters['hidden_dropout_rate'][layer])(hidden)
+        hidden = Dropout(hyperparameters['hidden_dropout_rate'][layer])(hidden)
         hidden = Dense(
             units=hyperparameters['hidden_neuron_number'][layer],
             activation=hyperparameters['hidden_activation'][layer],
@@ -70,18 +65,19 @@ def build_iocnn(
 
     # Check if the network output should be squashed
     if squash_output:
+
+        # Apply the custom output activation
         activation = hyperparameters['output_activation']
+
     else:
+
+        # Apply no output activation
         activation = None
 
-    # Define the output layer by a dense layer
+    # Define the output layer
     outputs = Dense(
-        units=output_shape,
-        activation=activation,
-        kernel_constraint=non_neg(),
-        bias_initializer=Constant(
-            log(sum(labels == 1)
-                / sum(labels == 0))))(hidden)
+        units=output_shape, activation=activation, kernel_constraint=non_neg(),
+        bias_initializer=Constant(log(bias)))(hidden)
 
     return Model(inputs, outputs)
 
@@ -89,11 +85,11 @@ def build_iocnn(
 def build_standard_nn(
         input_shape,
         output_shape,
-        labels,
+        bias,
         hyperparameters,
         squash_output):
     """
-    Build the standard neural network architecture with the functional API.
+    Build the standard neural network architecture.
 
     Parameters
     ----------
@@ -104,53 +100,51 @@ def build_standard_nn(
         Shape of the output labels.
 
     hyperparameters : dict
-        Dictionary with the hyperparameter names and values for the \
-        neural network outcome prediction model.
+        Dictionary with the values of the hyperparameters.
 
     squash_output : bool
-        Indicator for the use of a sigmoid activation function in the \
-        output layer.
+        Indicator for the squashing of the network output.
 
     Returns
     -------
     object of class 'Functional'
-        Instance of the class `Functional`, which provides a functional \
-        standard neural network architecture.
+        The object used to represent the prediction model.
     """
+
     # Initialize the network input
     inputs = Input((input_shape,), name='input')
 
-    # Define the input layer by normalization, dropout and dense layers
+    # Define the input layer
     hidden = BatchNormalization()(inputs)
     hidden = Dropout(hyperparameters['input_dropout_rate'])(hidden)
     hidden = Dense(
         units=hyperparameters['input_neuron_number'],
         activation=hyperparameters['input_activation'])(hidden)
 
-    # Iterate over the number of hidden layers
+    # Loop over the number of hidden layers
     for layer in range(hyperparameters['hidden_layer_number']):
 
-        # Define the hidden layers by dropout and dense layers
+        # Define the hidden layer
         hidden = BatchNormalization()(hidden)
-        hidden = Dropout(
-            hyperparameters['hidden_dropout_rate'][layer])(hidden)
+        hidden = Dropout(hyperparameters['hidden_dropout_rate'][layer])(hidden)
         hidden = Dense(
             units=hyperparameters['hidden_neuron_number'][layer],
-            activation=hyperparameters['hidden_activation'][layer])(
-                hidden)
+            activation=hyperparameters['hidden_activation'][layer])(hidden)
 
     # Check if the network output should be squashed
     if squash_output:
+
+        # Apply the custom output activation
         activation = hyperparameters['output_activation']
+
     else:
+
+        # Apply no output activation
         activation = None
 
-    # Define the output layer by a dense layer
+    # Define the output layer
     outputs = Dense(
-        units=output_shape,
-        activation=activation,
-        bias_initializer=Constant(
-            log(sum(labels == 1)
-                / sum(labels == 0))))(hidden)
+        units=output_shape, activation=activation,
+        bias_initializer=Constant(log(bias)))(hidden)
 
     return Model(inputs, outputs)

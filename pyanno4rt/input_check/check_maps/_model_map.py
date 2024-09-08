@@ -30,7 +30,7 @@ model_map = {
         partial(check_path)
         ),
     'data_path': (
-        partial(check_type, types=str),
+        partial(check_type, types={True: (type(None), str), False: str}),
         partial(check_regular_extension, extensions=('.csv',)),
         ),
     'feature_filter': (
@@ -43,7 +43,7 @@ model_map = {
             ))
         ),
     'label_name': (
-        partial(check_type, types=str),
+        partial(check_type, types={True: (type(None), str), False: str}),
         ),
     'label_bounds': (
         partial(check_type, types=list),

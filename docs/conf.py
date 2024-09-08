@@ -27,17 +27,17 @@ author = 'Tim Ortkamp'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-	'myst_nb',
-	'sphinx_copybutton',
-	'sphinx.ext.autodoc',
-	'autoapi.extension',
-	'sphinx.ext.napoleon',
-	'sphinx.ext.linkcode',
-	'sphinx_favicon',
-	'sphinx_last_updated_by_git'
+    'autoapi.extension',
+    'myst_nb',
+    'sphinx_copybutton',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.linkcode',
+    'sphinx_favicon',
+    'sphinx_last_updated_by_git'
 ]
 
-# Add any paths that contain templates here, relative to this directory.
+# Add any paths that contain templates here, relative to this directory
 templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
@@ -91,18 +91,38 @@ autoapi_options = [
     'imported-members',
 ]
 
-autoapi_ignore = ['*/resources_rc.py', '*/compare_window.py', '*/info_window.py', '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py', '*/settings_window.py', '*/text_window.py', '*/tree_window.py', '*/decision_tree_ntcp_window.py', '*/decision_tree_tcp_window.py', '*/dose_uniformity_window.py', '*/equivalent_uniform_dose_window.py', '*/k_nearest_neighbors_ntcp_window.py', '*/k_nearest_neighbors_tcp_window.py', '*/lkb_ntcp_window.py', '*/logistic_regression_ntcp_window.py', '*/logistic_regression_tcp_window.py', '*/lq_poisson_tcp_window.py', '*/maximum_dvh_window.py', '*/mean_dose_window.py', '*/minimum_dvh_window.py', '*/naive_bayes_ntcp_window.py', '*/naive_bayes_tcp_window.py', '*/neural_network_ntcp_window.py', '*/neural_network_tcp_window.py', '*/random_forest_ntcp_window.py', '*/random_forest_tcp_window.py', '*/squared_deviation_window.py', '*/squared_overdosing_window.py', '*/squared_underdosing_window.py', '*/support_vector_machine_ntcp_window.py', '*/support_vector_machine_tcp_window.py']
+autoapi_ignore = [
+    '*/resources_rc.py', '*/compare_window.py', '*/info_window.py',
+    '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py',
+    '*/settings_window.py', '*/text_window.py', '*/tree_window.py',
+    '*/decision_tree_ntcp_window.py', '*/decision_tree_tcp_window.py',
+    '*/dose_uniformity_window.py', '*/equivalent_uniform_dose_window.py',
+    '*/k_nearest_neighbors_ntcp_window.py',
+    '*/k_nearest_neighbors_tcp_window.py', '*/lkb_ntcp_window.py',
+    '*/logistic_regression_ntcp_window.py',
+    '*/logistic_regression_tcp_window.py', '*/lq_poisson_tcp_window.py',
+    '*/maximum_dvh_window.py', '*/mean_dose_window.py',
+    '*/minimum_dvh_window.py', '*/naive_bayes_ntcp_window.py',
+    '*/naive_bayes_tcp_window.py', '*/neural_network_ntcp_window.py',
+    '*/neural_network_tcp_window.py', '*/random_forest_ntcp_window.py',
+    '*/random_forest_tcp_window.py', '*/squared_deviation_window.py',
+    '*/squared_overdosing_window.py', '*/squared_underdosing_window.py',
+    '*/support_vector_machine_ntcp_window.py',
+    '*/support_vector_machine_tcp_window.py']
 
-# -- Custom auto_summary() macro ---------------------------------------------------
+# -- Custom auto_summary() macro ----------------------------------------------
+
 
 def contains(seq, item):
     """Jinja2 custom test to check existence in a container.
 
     Example of use:
-    {% set class_methods = methods|selectattr("properties", "contains", "classmethod") %}
+    {% set class_methods = methods|selectattr("properties", "contains", \
+                                              "classmethod") %}
 
     Related doc: https://jinja.palletsprojects.com/en/3.1.x/api/#custom-tests
     """
+
     return item in seq
 
 
@@ -110,7 +130,9 @@ def prepare_jinja_env(jinja_env) -> None:
     """Add `contains` custom test to Jinja environment."""
     jinja_env.tests["contains"] = contains
 
+
 autoapi_prepare_jinja_env = prepare_jinja_env
+
 
 # Options for the linkcode extension
 # ----------------------------------
@@ -142,12 +164,13 @@ def linkcode_resolve(domain, info):
 
     source = find_source()
     if source:
-    	filename = source[0].replace('.', '/') + '.py'
-    	return f"https://github.com/pyanno4rt/pyanno4rt/blob/master/{filename}#L{source[1]}-L{source[2]}"
-    
+        filename = source[0].replace('.', '/') + '.py'
+        return f"https://github.com/pyanno4rt/pyanno4rt/blob/master/{filename}#L{source[1]}-L{source[2]}"
+
     return None
 
-# Custom role for labels used in auto_summary() tables.
+
+# Custom role for labels used in auto_summary() tables
 rst_prolog = """
 .. role:: summarylabel
 """

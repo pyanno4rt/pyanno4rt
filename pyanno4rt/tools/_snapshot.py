@@ -5,6 +5,7 @@
 # %% External package import
 
 from json import dump
+from numpy import save
 from os import mkdir
 from os.path import exists, splitext
 from shutil import copy
@@ -17,7 +18,8 @@ from pyanno4rt.tools import apply, get_machine_learning_objectives
 
 
 def snapshot(instance, path, include_patient_data=False,
-             include_dose_matrix=False, include_model_data=False):
+             include_dose_matrix=False, include_model_data=False,
+             include_optimum=False):
     """
     Take a snapshot of a treatment plan.
 
@@ -41,6 +43,9 @@ def snapshot(instance, path, include_patient_data=False,
 
     include_model_data : bool, default=False
         Indicator for the storage of the outcome model-related dataset(s).
+
+    include_optimum : bool, default=False
+        Indicator for the storage of the optimized fluence.
 
     Raises
     ------
@@ -75,17 +80,21 @@ def snapshot(instance, path, include_patient_data=False,
         # Set the file path to the current location
         model.set_file_paths(model_path)
 
+        # Write the preprocessor to a file
+        model.write_preprocessor_to_file(model.preprocessor)
+
         # Write the prediction model to a file
         model.write_model_to_file(model.prediction_model)
 
         # Write the configuration to a file
-        model.write_configuration_to_file(model.configuration)
+        model.write_configuration_to_file(
+            model.configuration, include_model_data)
 
         # Write the hyperparameters to a file
         model.write_hyperparameters_to_file(model.hyperparameters)
 
-        # Check if the model data should be saved
-        if include_model_data:
+        # Check if the model data should be saved and exists
+        if include_model_data and data[2]:
 
             # Get the file extension
             _, extension = splitext(data[2])
@@ -126,7 +135,7 @@ def snapshot(instance, path, include_patient_data=False,
 
     # Get the machine learning model datazz
     ml_model_data = ((objective.model.model_label, objective.model,
-                      objective.model_parameters['data_path'])
+                      objective.model_parameters.get('data_path'))
                      for objective in get_machine_learning_objectives(
                              instance.datahub.segmentation))
 
@@ -152,3 +161,10 @@ def snapshot(instance, path, include_patient_data=False,
         # Copy the input file into a new file
         copy(instance.configuration['dose_path'],
              f'{snap_path}/dose_influence_matrix{extension}')
+
+    # Check if the optimized fluence should be saved
+    if include_optimum:
+
+        # Save the optimized fluence to a new file
+        save(f'{snap_path}/optimized_fluence.npy',
+             instance.datahub.optimization['optimized_fluence'])

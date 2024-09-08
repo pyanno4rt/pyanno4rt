@@ -1,10 +1,10 @@
 """
-Additional model files module.
+Supplements module.
 
 ==================================================================
 
-The module aims to provide functions as a supplement for the frequentist \
-learning models.
+The module aims to provide supplement functions for the frequentist learning \
+models.
 """
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>

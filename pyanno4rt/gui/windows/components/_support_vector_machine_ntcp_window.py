@@ -630,8 +630,15 @@ class SupportVectorMachineNTCPWindow(
 
         # 
         if any(text == '' for text in (
-                self.segment_cbox.currentText(), self.model_label_ledit.text(),
-                self.data_path_ledit.text(), self.label_name_ledit.text())):
+                self.segment_cbox.currentText(), self.model_label_ledit.text()
+                )):
+
+            # 
+            self.save_component_pbutton.setEnabled(False)
+
+        elif self.model_path_ledit.text() == '' and (
+                self.data_path_ledit.text() == ''
+                or self.label_name_ledit.text() == ''):
 
             # 
             self.save_component_pbutton.setEnabled(False)

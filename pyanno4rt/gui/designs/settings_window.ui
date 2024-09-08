@@ -508,6 +508,26 @@ border-color: rgb(186, 189, 182);</string>
      <string>Save</string>
     </property>
    </widget>
+   <widget class="QCheckBox" name="incl_opt_fluence_check">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>170</y>
+      <width>231</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 0px;
+color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>Include optimized fluence</string>
+    </property>
+   </widget>
    <zorder>light_mode_cbox</zorder>
    <zorder>general_settings_label</zorder>
    <zorder>resolution_label</zorder>
@@ -523,6 +543,7 @@ border-color: rgb(186, 189, 182);</string>
    <zorder>save_tpi_line</zorder>
    <zorder>save_settings_pbutton</zorder>
    <zorder>general_settings_line</zorder>
+   <zorder>incl_opt_fluence_check</zorder>
   </widget>
  </widget>
  <resources>

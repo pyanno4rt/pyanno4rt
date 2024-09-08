@@ -130,6 +130,7 @@ class Ui_settings_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.resolution_cbox.setFrame(False)
         self.resolution_cbox.setObjectName("resolution_cbox")
         icon7 = QtGui.QIcon()
         icon7.addPixmap(QtGui.QPixmap(":/green_icons/icons_green/eye.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -174,6 +175,12 @@ class Ui_settings_window(object):
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.save_settings_pbutton.setObjectName("save_settings_pbutton")
+        self.incl_opt_fluence_check = QtWidgets.QCheckBox(self.settings_widget)
+        self.incl_opt_fluence_check.setGeometry(QtCore.QRect(410, 170, 231, 23))
+        self.incl_opt_fluence_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.incl_opt_fluence_check.setStyleSheet("border: 0px;\n"
+"color: rgb(0, 0, 0);")
+        self.incl_opt_fluence_check.setObjectName("incl_opt_fluence_check")
         self.light_mode_cbox.raise_()
         self.general_settings_label.raise_()
         self.resolution_label.raise_()
@@ -189,6 +196,7 @@ class Ui_settings_window(object):
         self.save_tpi_line.raise_()
         self.save_settings_pbutton.raise_()
         self.general_settings_line.raise_()
+        self.incl_opt_fluence_check.raise_()
         settings_window.setCentralWidget(self.settings_widget)
 
         self.retranslateUi(settings_window)
@@ -223,3 +231,4 @@ class Ui_settings_window(object):
         self.incl_model_data_check.setText(_translate("settings_window", "Include model training data"))
         self.save_tpi_label.setText(_translate("settings_window", "Save TPI"))
         self.save_settings_pbutton.setText(_translate("settings_window", "Save"))
+        self.incl_opt_fluence_check.setText(_translate("settings_window", "Include optimized fluence"))

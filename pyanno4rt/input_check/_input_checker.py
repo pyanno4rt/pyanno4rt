@@ -93,8 +93,19 @@ class InputChecker():
                     'type_condition': input_dictionary.get(
                         'initial_strategy')},
                 'time_variable_name': {
-                    'type_condition': input_dictionary.get('label_viewpoint')}
-                }
+                    'type_condition': input_dictionary.get('label_viewpoint')},
+                'data_path': {
+                    'type_condition': type(
+                        input_dictionary.get('model_folder_path')) == str},
+                'label_name': {
+                    'type_condition': type(
+                        input_dictionary.get('model_folder_path')) == str}}
+
+        # Check if the type condition on the data path is fulfilled
+        if args['data_path']['type_condition']:
+
+            # Reduce the check map for the data path
+            self.check_map['data_path'] = (self.check_map['data_path'][0],)
 
         # Loop over the dictionary keys
         for key, value in input_dictionary.items():

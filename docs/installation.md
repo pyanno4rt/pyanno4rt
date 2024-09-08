@@ -47,21 +47,21 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> h5py (>=3.11.0) </li>
 	<li> pandas (>=2.2.2) </li>
 	<li> fuzzywuzzy (>=0.18.0) </li>
-	<li> jax (>=0.4.30) </li>
-	<li> jaxlib (>=0.4.30) </li>
+	<li> jax (>=0.4.31) </li>
+	<li> jaxlib (>=0.4.31) </li>
 	<li> numba (>=0.60.0) </li>
 	<li> python-levenshtein (>=0.25.1) </li>
 	<li> scikit-learn (>=1.5.1) </li>
 	<li> tensorflow (==2.11.1) </li>
 	<li> tensorflow-io-gcs-filesystem (==0.31.0) </li>
 	<li> hyperopt (>=0.2.7) </li>
-	<li> pymoo (>=0.6.1.1) </li>
+	<li> pymoo (>=0.6.1.3) </li>
 	<li> pyqt5-qt5 (==5.15.2) </li>
 	<li> pyqt5 (==5.15.10) </li>
 	<li> pyqtgraph (>=0.13.7) </li>
 	<li> ipython (>=8.26.0) </li>
 	<li> matplotlib (==3.8.3) </li>
 	<li> seaborn (>=0.13.2) </li>
-	<li> pypop7 (>=0.0.80) </li>
+	<li> pypop7 (>=0.0.82) </li>
 </ul>
 We are using Python version 3.10.14 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>

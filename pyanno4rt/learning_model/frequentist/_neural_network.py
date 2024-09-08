@@ -129,8 +129,7 @@ class NeuralNetworkModel(MachineLearningModel):
             max_hidden_layers)
 
         # Get the optimization surrogate of the neural network model
-        self.optimization_model = self.get_optimization_model(
-            dataset['feature_values'].shape[1], dataset['label_values'].ndim)
+        self.optimization_model = self.get_optimization_model()
 
     def get_hyperparameter_set(
             self,
@@ -215,20 +214,9 @@ class NeuralNetworkModel(MachineLearningModel):
 
         return prediction_model
 
-    def get_optimization_model(
-            self,
-            input_shape,
-            output_shape):
+    def get_optimization_model(self):
         """
         Get the neural network optimization model.
-
-        Parameters
-        ----------
-        input_shape : int
-            Shape of the input features.
-
-        output_shape : int
-            Shape of the output labels.
 
         Returns
         -------
@@ -238,7 +226,9 @@ class NeuralNetworkModel(MachineLearningModel):
 
         # Build the network architecture
         optimization_model = self.build_network(
-            input_shape, output_shape, self.hyperparameters, False)
+            self.prediction_model.inputs[0].shape[1],
+            self.prediction_model.outputs[0].shape[1],
+            self.hyperparameters, False)
 
         # Compile the model
         optimization_model.compile(
@@ -285,12 +275,12 @@ class NeuralNetworkModel(MachineLearningModel):
 
             # Build and return the input-output convex neural network (IOCNN)
             return build_iocnn(
-                input_shape, output_shape, self.preprocessed_labels,
+                input_shape, output_shape, self.configuration['bias'],
                 hyperparameters, squash_output)
 
         # Build and return the standard neural network (Standard-NN)
         return build_standard_nn(
-            input_shape, output_shape, self.preprocessed_labels,
+            input_shape, output_shape, self.configuration['bias'],
             hyperparameters, squash_output)
 
     def compile_and_fit(
@@ -380,6 +370,25 @@ class NeuralNetworkModel(MachineLearningModel):
         # Otherwise, return an array with label predictions
         return predictor(features)[:, 0].numpy()
 
+    def set_file_paths(
+            self,
+            base_path):
+        """
+        Set the paths for model, configuration and hyperparameter files.
+
+        Parameters
+        ----------
+        base_path : str
+            Base path from which to access the model files.
+        """
+
+        # Set the file paths
+        (self.preprocessor_path, self.model_path, self.configuration_path,
+         self.hyperparameter_path) = (
+             f'{base_path}/{filename}' for filename in (
+                 'preprocessor.sav', 'model.h5', 'configuration.json',
+                 'hyperparameters.json'))
+
     def read_model_from_file(self):
         """
         Read the neural network model from the model file path.
@@ -401,13 +410,32 @@ class NeuralNetworkModel(MachineLearningModel):
             weights = tuple(file[''.join(('weight', str(i)))][:]
                             for i, _ in enumerate(file))
 
+        # Read the configuration from the file
+        configuration = self.read_configuration_from_file()
+
+        # Get the number of input features
+        input_shape = len(configuration['feature_names'])
+
+        # Check if the label name is a single string
+        if isinstance(configuration['label_name'], str):
+
+            # Set the number of output labels to 1
+            output_shape = 1
+
+        else:
+
+            # Get the number of output labels
+            output_shape = len(configuration['label_name'])
+
+        # Add the label bias to the configuration dictionary
+        self.configuration['bias'] = configuration['bias']
+
         # Read the hyperparameters from the file
-        hyperparameters = self.read_hyperparameters_from_file()
+        hyperparameters = self.read_hyperparameters_from_file(verbose=False)
 
         # Build the network architecture
         prediction_model = self.build_network(
-            self.preprocessed_features.shape[1], self.preprocessed_labels.ndim,
-            hyperparameters, True)
+            input_shape, output_shape, hyperparameters, True)
 
         # Compile the model
         prediction_model.compile(

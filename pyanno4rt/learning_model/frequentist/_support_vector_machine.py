@@ -59,7 +59,7 @@ class SupportVectorMachineModel(MachineLearningModel):
             'kernel': tune_space.get(
                 'kernel', ['linear', 'poly', 'rbf', 'sigmoid']),
             'degree': tune_space.get('degree', [3, 4, 5, 6]),
-            'gamma': tune_space.get('gamma', [2**-15, 2**3]),
+            'gamma': tune_space.get('gamma', [0.01, 100]),
             'tol': tune_space.get('tol', [1e-4, 1e-5, 1e-6]),
             'class_weight': tune_space.get('class_weight', [None, 'balanced'])}
 
