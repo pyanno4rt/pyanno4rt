@@ -126,7 +126,7 @@ def copycat(base_class, path):
 
         # Load the optimized fluence array
         treatment_plan.datahub.optimization = {
-            'optimized_fluence': npload(f'{path}/{filename}'),
+            'optimized_fluence': npload(f'{path}/optimized_fluence.npy'),
             'from_copycat': True}
 
     return treatment_plan

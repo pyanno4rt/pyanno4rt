@@ -1,0 +1,120 @@
+{
+    "feature_names": [
+        "parotidLeft_doseMean",
+        "parotidLeft_doseDeviation",
+        "parotidLeft_doseSkewness",
+        "parotidLeft_doseKurtosis",
+        "parotidLeft_doseGradient_x",
+        "parotidLeft_doseGradient_y",
+        "parotidLeft_doseGradient_z",
+        "parotidLeft_segmentVolume",
+        "parotidLeft_segmentEccentricity",
+        "parotidLeft_segmentSphericity",
+        "parotidRight_doseMean",
+        "parotidRight_doseDeviation",
+        "parotidRight_doseSkewness",
+        "parotidRight_doseKurtosis",
+        "parotidRight_doseGradient_x",
+        "parotidRight_doseGradient_y",
+        "parotidRight_doseGradient_z",
+        "parotidRight_segmentVolume",
+        "parotidRight_segmentEccentricity",
+        "parotidRight_segmentSphericity"
+    ],
+    "feature_values": null,
+    "label_name": "grade",
+    "label_values": null,
+    "time_variable_name": "patientDaysafterrt",
+    "time_variable_values": null,
+    "tune_folds": null,
+    "oof_folds": null,
+    "label_bounds": [
+        1.5,
+        Infinity
+    ],
+    "label_viewpoint": "long-term",
+    "preprocessing_steps": [
+        "StandardScaler"
+    ],
+    "architecture": "input-convex",
+    "max_hidden_layers": 1,
+    "tune_space": {
+        "input_neuron_number": [
+            2,
+            4,
+            8,
+            16,
+            32,
+            64,
+            128,
+            256
+        ],
+        "input_activation": [
+            "elu",
+            "gelu",
+            "leaky_relu",
+            "linear",
+            "relu",
+            "softmax",
+            "softplus",
+            "swish"
+        ],
+        "hidden_neuron_number": [
+            2,
+            4,
+            8,
+            16,
+            32,
+            64,
+            128,
+            256
+        ],
+        "hidden_activation": [
+            "elu",
+            "gelu",
+            "leaky_relu",
+            "linear",
+            "relu",
+            "softmax",
+            "softplus",
+            "swish"
+        ],
+        "input_dropout_rate": [
+            0.0,
+            0.1,
+            0.25,
+            0.5,
+            0.75
+        ],
+        "hidden_dropout_rate": [
+            0.0,
+            0.1,
+            0.25,
+            0.5,
+            0.75
+        ],
+        "batch_size": [
+            4,
+            8,
+            16,
+            32
+        ],
+        "learning_rate": [
+            1e-05,
+            0.01
+        ],
+        "optimizer": [
+            "Adam",
+            "Ftrl",
+            "SGD"
+        ],
+        "loss": [
+            "BCE",
+            "FocalBCE",
+            "KLD"
+        ]
+    },
+    "tune_evaluations": 50,
+    "tune_score": "AUC",
+    "bias": 0.0625
+}

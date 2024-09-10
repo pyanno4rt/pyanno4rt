@@ -166,7 +166,7 @@ class MachineLearningModel(metaclass=ABCMeta):
         self.configuration = {
             'feature_names': dataset['feature_names'],
             'feature_values': dataset.get('feature_values'),
-            'label_name': dataset.get('label_name'),
+            'label_name': dataset['label_name'],
             'label_values': dataset.get('label_values'),
             'time_variable_name': dataset.get('time_variable_name'),
             'time_variable_values': dataset.get('time_variable_values'),

@@ -555,7 +555,8 @@ class FluenceOptimizer():
             hub.optimization['optimized_dose'] = None
 
         # Check if the optimization problem has a tracker dictionary
-        if hasattr(problem, 'tracker'):
+        if hasattr(problem, 'tracker') and all(value != [] for value
+           in problem.tracker.values()):
 
             # Loop over the radiobiological outcome model-based components
             for name, value in (

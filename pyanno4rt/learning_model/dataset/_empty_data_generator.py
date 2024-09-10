@@ -72,8 +72,11 @@ class EmptyDataGenerator():
             (self.model_folder_path, '/configuration.json'))
 
         # Generate the data information dictionary
-        data_information = {'feature_names': jload(
-            open(configuration_path, 'r', encoding='utf-8'))['feature_names']}
+        data_information = {
+            'feature_names': jload(open(
+                configuration_path, 'r', encoding='utf-8'))['feature_names'],
+            'label_name': jload(open(
+                configuration_path, 'r', encoding='utf-8'))['label_name']}
 
         # Enter the data information dictionary into the datahub
         Datahub().datasets |= {self.model_label: data_information}

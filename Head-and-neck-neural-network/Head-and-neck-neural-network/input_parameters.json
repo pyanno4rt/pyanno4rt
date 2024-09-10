@@ -1,0 +1,392 @@
+{
+    "configuration": {
+        "label": "Head-and-neck-neural-network",
+        "min_log_level": "info",
+        "modality": "photon",
+        "number_of_fractions": 30,
+        "imaging_path": "./external/HNC_patientData.mat",
+        "target_imaging_resolution": null,
+        "dose_matrix_path": "./external/HNC_photonDij.mat",
+        "dose_resolution": [
+            5,
+            5,
+            5
+        ]
+    },
+    "optimization": {
+        "components": {
+            "PAROTID_LT": [
+                {
+                    "type": "objective",
+                    "instance": {
+                        "class": "Squared Overdosing",
+                        "parameters": {
+                            "maximum_dose": 25,
+                            "embedding": "active",
+                            "weight": 100
+                        }
+                    }
+                },
+                {
+                    "type": "objective",
+                    "instance": {
+                        "class": "Neural Network NTCP",
+                        "parameters": {
+                            "model_parameters": {
+                                "model_label": "neuralNetworkNTCP",
+                                "model_folder_path": null,
+                                "data_path": "./external/HNC_parotids.csv",
+                                "feature_filter": {
+                                    "features": [
+                                        "parotidLeft_segmentVolume",
+                                        "parotidRight_segmentVolume",
+                                        "parotidLeft_segmentSphericity",
+                                        "parotidRight_segmentSphericity",
+                                        "parotidLeft_segmentEccentricity",
+                                        "parotidRight_segmentEccentricity",
+                                        "parotidLeft_doseMean",
+                                        "parotidRight_doseMean",
+                                        "parotidLeft_doseDeviation",
+                                        "parotidRight_doseDeviation",
+                                        "parotidLeft_doseSkewness",
+                                        "parotidRight_doseSkewness",
+                                        "parotidLeft_doseKurtosis",
+                                        "parotidRight_doseKurtosis",
+                                        "parotidLeft_doseGradient_x",
+                                        "parotidRight_doseGradient_x",
+                                        "parotidLeft_doseGradient_y",
+                                        "parotidRight_doseGradient_y",
+                                        "parotidLeft_doseGradient_z",
+                                        "parotidRight_doseGradient_z"
+                                    ],
+                                    "filter_mode": "retain"
+                                },
+                                "label_name": "grade",
+                                "label_bounds": [
+                                    1.5,
+                                    null
+                                ],
+                                "time_variable_name": "patientDaysafterrt",
+                                "label_viewpoint": "long-term",
+                                "fuzzy_matching": true,
+                                "preprocessing_steps": [
+                                    "StandardScaler"
+                                ],
+                                "architecture": "input-convex",
+                                "max_hidden_layers": 1,
+                                "tune_space": {
+                                    "input_neuron_number": [
+                                        2,
+                                        4,
+                                        8,
+                                        16,
+                                        32,
+                                        64,
+                                        128,
+                                        256
+                                    ],
+                                    "input_activation": [
+                                        "elu",
+                                        "gelu",
+                                        "leaky_relu",
+                                        "linear",
+                                        "relu",
+                                        "softmax",
+                                        "softplus",
+                                        "swish"
+                                    ],
+                                    "hidden_neuron_number": [
+                                        2,
+                                        4,
+                                        8,
+                                        16,
+                                        32,
+                                        64,
+                                        128,
+                                        256
+                                    ],
+                                    "hidden_activation": [
+                                        "elu",
+                                        "gelu",
+                                        "leaky_relu",
+                                        "linear",
+                                        "relu",
+                                        "softmax",
+                                        "softplus",
+                                        "swish"
+                                    ],
+                                    "input_dropout_rate": [
+                                        0.0,
+                                        0.1,
+                                        0.25,
+                                        0.5,
+                                        0.75
+                                    ],
+                                    "hidden_dropout_rate": [
+                                        0.0,
+                                        0.1,
+                                        0.25,
+                                        0.5,
+                                        0.75
+                                    ],
+                                    "batch_size": [
+                                        4,
+                                        8,
+                                        16,
+                                        32
+                                    ],
+                                    "learning_rate": [
+                                        1e-05,
+                                        0.01
+                                    ],
+                                    "optimizer": [
+                                        "Adam",
+                                        "Ftrl",
+                                        "SGD"
+                                    ],
+                                    "loss": [
+                                        "BCE",
+                                        "FocalBCE",
+                                        "KLD"
+                                    ]
+                                },
+                                "tune_evaluations": 50,
+                                "tune_score": "AUC",
+                                "tune_splits": 5,
+                                "inspect_model": true,
+                                "evaluate_model": true,
+                                "oof_splits": 5,
+                                "write_features": true,
+                                "display_options": {
+                                    "graphs": [
+                                        "AUC-ROC",
+                                        "AUC-PR",
+                                        "F1"
+                                    ],
+                                    "kpis": [
+                                        "Logloss",
+                                        "Brier score",
+                                        "Subset accuracy",
+                                        "Cohen Kappa",
+                                        "Hamming loss",
+                                        "Jaccard score",
+                                        "Precision",
+                                        "Recall",
+                                        "F1 score",
+                                        "MCC",
+                                        "AUC"
+                                    ]
+                                }
+                            },
+                            "embedding": "active",
+                            "weight": 10,
+                            "link": [
+                                "PAROTID_RT"
+                            ]
+                        }
+                    }
+                }
+            ],
+            "PAROTID_RT": {
+                "type": "objective",
+                "instance": {
+                    "class": "Squared Overdosing",
+                    "parameters": {
+                        "maximum_dose": 25,
+                        "embedding": "active",
+                        "weight": 100
+                    }
+                }
+            },
+            "PTV63": [
+                {
+                    "type": "objective",
+                    "instance": {
+                        "class": "Squared Deviation",
+                        "parameters": {
+                            "target_dose": 63,
+                            "embedding": "active",
+                            "weight": 1000
+                        }
+                    }
+                },
+                {
+                    "type": "objective",
+                    "instance": {
+                        "class": "Neural Network TCP",
+                        "parameters": {
+                            "model_parameters": {
+                                "model_label": "neuralNetworkTCP",
+                                "model_folder_path": null,
+                                "data_path": "./external/HNC_ptv.csv",
+                                "feature_filter": {
+                                    "features": [],
+                                    "filter_mode": "remove"
+                                },
+                                "label_name": "status_pfs",
+                                "label_bounds": [
+                                    1,
+                                    1
+                                ],
+                                "time_variable_name": null,
+                                "label_viewpoint": "longitudinal",
+                                "fuzzy_matching": true,
+                                "preprocessing_steps": [
+                                    "StandardScaler"
+                                ],
+                                "architecture": "standard",
+                                "max_hidden_layers": 1,
+                                "tune_space": {
+                                    "input_neuron_number": [
+                                        2,
+                                        4,
+                                        8,
+                                        16,
+                                        32,
+                                        64,
+                                        128,
+                                        256
+                                    ],
+                                    "input_activation": [
+                                        "elu",
+                                        "gelu",
+                                        "leaky_relu",
+                                        "linear",
+                                        "relu",
+                                        "softmax",
+                                        "softplus",
+                                        "swish"
+                                    ],
+                                    "hidden_neuron_number": [
+                                        2,
+                                        4,
+                                        8,
+                                        16,
+                                        32,
+                                        64,
+                                        128,
+                                        256
+                                    ],
+                                    "hidden_activation": [
+                                        "elu",
+                                        "gelu",
+                                        "linear",
+                                        "relu",
+                                        "softmax",
+                                        "softplus",
+                                        "swish"
+                                    ],
+                                    "input_dropout_rate": [
+                                        0.0,
+                                        0.1,
+                                        0.25,
+                                        0.5,
+                                        0.75
+                                    ],
+                                    "hidden_dropout_rate": [
+                                        0.0,
+                                        0.1,
+                                        0.25,
+                                        0.5,
+                                        0.75
+                                    ],
+                                    "batch_size": [
+                                        4,
+                                        8,
+                                        16
+                                    ],
+                                    "learning_rate": [
+                                        1e-05,
+                                        0.01
+                                    ],
+                                    "optimizer": [
+                                        "Adam",
+                                        "Ftrl",
+                                        "SGD"
+                                    ],
+                                    "loss": [
+                                        "BCE",
+                                        "FocalBCE",
+                                        "KLD"
+                                    ]
+                                },
+                                "tune_evaluations": 50,
+                                "tune_score": "Logloss",
+                                "tune_splits": 5,
+                                "inspect_model": true,
+                                "evaluate_model": true,
+                                "oof_splits": 5,
+                                "write_features": true,
+                                "display_options": {
+                                    "graphs": [
+                                        "AUC-ROC",
+                                        "AUC-PR",
+                                        "F1"
+                                    ],
+                                    "kpis": [
+                                        "Logloss",
+                                        "Brier score",
+                                        "Subset accuracy",
+                                        "Cohen Kappa",
+                                        "Hamming loss",
+                                        "Jaccard score",
+                                        "Precision",
+                                        "Recall",
+                                        "F1 score",
+                                        "MCC",
+                                        "AUC"
+                                    ]
+                                }
+                            },
+                            "embedding": "active",
+                            "weight": 10
+                        }
+                    }
+                }
+            ],
+            "PTV70": {
+                "type": "objective",
+                "instance": {
+                    "class": "Squared Deviation",
+                    "parameters": {
+                        "target_dose": 70,
+                        "weight": 1000
+                    }
+                }
+            },
+            "SKIN": {
+                "type": "objective",
+                "instance": {
+                    "class": "Squared Overdosing",
+                    "parameters": {
+                        "maximum_dose": 30,
+                        "weight": 800
+                    }
+                }
+            }
+        },
+        "method": "weighted-sum",
+        "solver": "pypop7",
+        "algorithm": "LMMAES",
+        "initial_strategy": "target-coverage",
+        "initial_fluence_vector": null,
+        "lower_variable_bounds": 0,
+        "upper_variable_bounds": null,
+        "max_iter": 5000,
+        "tolerance": 0.0
+    },
+    "evaluation": {
+        "dvh_type": "cumulative",
+        "number_of_points": 1000,
+        "reference_volume": [
+            2,
+            5,
+            50,
+            95,
+            98
+        ],
+        "reference_dose": [],
+        "display_segments": [],
+        "display_metrics": []
+    }
+}
