@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from json import loads
+from json import load, loads
 from os.path import abspath, isfile
 from pandas import read_csv
 from PyQt5.QtCore import QDir, QEvent
@@ -196,14 +196,25 @@ class SupportVectorMachineNTCPWindow(
         feature_filter = model_params.get(
             'feature_filter', {'features': [], 'filter_mode': 'remove'})
 
-        self.features_lwidget.addItems(feature_filter.get('features', []))
+        if self.model_path_ledit.text() != '':
+
+            self.features_lwidget.addItems(load(open(
+                ''.join((self.model_path_ledit.text(), '/configuration.json')),
+                'r', encoding='utf-8'))['feature_names'])
+            self.label_name_ledit.setText(load(open(
+                ''.join((self.model_path_ledit.text(), '/configuration.json')),
+                'r', encoding='utf-8'))['label_name'])
+
+        else:
+
+            self.features_lwidget.addItems(feature_filter.get('features', []))
+            self.label_name_ledit.setText(model_params['label_name'])
+
         for index in range(self.features_lwidget.count()):
             self.features_lwidget.item(index).setCheckState(2)
 
         self.filter_mode_cbox.setCurrentText(
             feature_filter.get('filter_mode', 'remove'))
-
-        self.label_name_ledit.setText(model_params['label_name'])
         self.label_lower_bound_ledit.setText(
             '' if not model_params.get('label_bounds')
             or model_params['label_bounds'][0] == 1.0
