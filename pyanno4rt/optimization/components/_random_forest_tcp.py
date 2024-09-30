@@ -105,6 +105,7 @@ class RandomForestTCP(MachineLearningComponentClass):
         # Initialize the data model handler
         self.data_model_handler = DataModelHandler(
             model_label=self.model_parameters['model_label'],
+            model_folder_path=self.model_parameters['model_folder_path'],
             data_path=self.model_parameters['data_path'],
             feature_filter=self.model_parameters['feature_filter'],
             label_name=self.model_parameters['label_name'],

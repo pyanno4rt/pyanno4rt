@@ -5,7 +5,6 @@
 # %% External package import
 
 from pickle import dump, load
-
 from hyperopt import hp
 from sklearn.tree import DecisionTreeClassifier
 
@@ -13,6 +12,8 @@ from sklearn.tree import DecisionTreeClassifier
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.frequentist import MachineLearningModel
+from pyanno4rt.learning_model.frequentist.extensions import (
+    OptimizableDecisionTree)
 
 # %% Class definition
 
@@ -104,6 +105,9 @@ class DecisionTreeModel(MachineLearningModel):
             tune_space, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
 
+        # Get the optimization surrogate of the decision tree model
+        self.optimization_model = self.get_optimization_model()
+
     def get_hyperparameter_set(
             self,
             proposal):
@@ -164,6 +168,24 @@ class DecisionTreeModel(MachineLearningModel):
         prediction_model.fit(features, labels)
 
         return prediction_model
+
+    def get_optimization_model(self):
+        """
+        Get the decision tree optimization model.
+
+        Returns
+        -------
+        object of class :class:``
+            The object used to represent the optimization model.
+        """
+
+        # Initialize the optimizable decision tree
+        optimization_model = OptimizableDecisionTree()
+
+        # Read the path information from the pre-fitted decision tree
+        optimization_model.traverse(self.prediction_model)
+
+        return optimization_model
 
     def predict(
             self,

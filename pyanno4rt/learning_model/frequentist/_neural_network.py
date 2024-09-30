@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.frequentist import MachineLearningModel
-from pyanno4rt.learning_model.frequentist.addons import (
+from pyanno4rt.learning_model.frequentist.extensions import (
     build_iocnn, build_standard_nn, loss_map, optimizer_map)
 
 # %% Class definition

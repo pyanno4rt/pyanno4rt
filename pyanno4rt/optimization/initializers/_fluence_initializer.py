@@ -104,6 +104,16 @@ class FluenceInitializer():
         sets = hub.datasets
         maps = hub.feature_maps
 
+        # Check if no datasets have been provided
+        if not sets:
+
+            # Log a message about falling back to target coverage strategy
+            hub.logger.display_info("No datasets have been provided - "
+                                    "falling back to target coverage "
+                                    "initialization strategy ...")
+
+            return self.initialize_from_target()
+
         def get_standardized_features(key):
             """Get the standardized dose features."""
 

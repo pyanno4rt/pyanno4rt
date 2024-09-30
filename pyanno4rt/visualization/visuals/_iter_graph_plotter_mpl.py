@@ -99,7 +99,8 @@ class IterGraphPlotterMPL():
 
         # Determine the step length on the x-axis
         x_step = min(
-            (1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000),
+            (1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000,
+             50000, 100000),
             key=lambda x: abs(ceil(
                 max(len(track) for track in tracker.values())/x)-20))
 

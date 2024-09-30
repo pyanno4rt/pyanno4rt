@@ -105,6 +105,7 @@ class DecisionTreeNTCP(MachineLearningComponentClass):
         # Initialize the data model handler
         self.data_model_handler = DataModelHandler(
             model_label=self.model_parameters['model_label'],
+            model_folder_path=self.model_parameters['model_folder_path'],
             data_path=self.model_parameters['data_path'],
             feature_filter=self.model_parameters['feature_filter'],
             label_name=self.model_parameters['label_name'],
@@ -164,7 +165,7 @@ class DecisionTreeNTCP(MachineLearningComponentClass):
         preprocessed_features = self.model.preprocess(raw_features)
 
         return self.model.predict(
-            preprocessed_features, self.model.prediction_model)
+            preprocessed_features, self.model.optimization_model)
 
     def compute_gradient(
             self,
@@ -194,7 +195,8 @@ class DecisionTreeNTCP(MachineLearningComponentClass):
         preprocessed_features = self.model.preprocess(raw_features)
 
         # Get the model gradient
-        model_gradient = 0
+        model_gradient = self.model.optimization_model.gradientize(
+            preprocessed_features)/self.weight
 
         # Get the preprocessing pipeline gradient
         preprocessing_gradient = (

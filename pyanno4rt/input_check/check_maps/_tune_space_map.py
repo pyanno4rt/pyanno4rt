@@ -10,7 +10,8 @@ from functools import partial
 
 from pyanno4rt.input_check.check_functions import (
     check_length, check_subtype, check_type, check_value, check_value_in_set)
-from pyanno4rt.learning_model.frequentist.addons import loss_map, optimizer_map
+from pyanno4rt.learning_model.frequentist.extensions import (
+    loss_map, optimizer_map)
 
 # %% Map definition
 

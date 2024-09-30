@@ -14,7 +14,8 @@ from tensorflow.keras.models import clone_model
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model.frequentist.addons import loss_map, optimizer_map
+from pyanno4rt.learning_model.frequentist.extensions import (
+    loss_map, optimizer_map)
 from pyanno4rt.learning_model.preprocessing import DataPreprocessor
 
 # %% Function definition
