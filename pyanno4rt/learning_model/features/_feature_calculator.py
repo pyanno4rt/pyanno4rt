@@ -23,6 +23,9 @@ class FeatureCalculator():
 
     Parameters
     ----------
+    static_features : dict
+        Dictionary with the names and values of the fixed features.
+
     write_features : bool
         Indicator for tracking the feature values.
 
@@ -44,10 +47,8 @@ class FeatureCalculator():
         feature values. It allows to retrieve the feature values after first \
         computation and thus prevents unnecessary recalculation.
 
-    demographics : dict
-        Dictionary for mapping the demographic feature names to the \
-        demographic feature values. It allows to retrieve the feature values \
-        after first computation and thus prevents unnecessary recalculation.
+    static_features : dict
+        See 'Parameters'.
 
     feature_inputs : dict
         Dictionary for collecting the candidate feature input values. This \
@@ -68,6 +69,7 @@ class FeatureCalculator():
 
     def __init__(
             self,
+            static_features,
             write_features,
             verbose=True):
 
@@ -81,9 +83,9 @@ class FeatureCalculator():
         # Get the feature writing indicator from the argument
         self.write_features = write_features
 
-        # Initialize the radiomics/demographics dictionaries to store values
+        # Initialize the radiomics/static feature dictionaries to store values
         self.radiomics = {}
-        self.demographics = {}
+        self.static_features = static_features
 
         # Initialize the feature map and history
         self.feature_map = None
@@ -335,29 +337,29 @@ class FeatureCalculator():
 
                 return self.radiomics[feature]
 
-            def get_demographic_value(feature, _):
-                """Get the value of a demographic feature."""
-                # Map the demographic feature values to the feature names
-                values = {'patientAge': None,
-                          'patientSex': None,
-                          'patientDaysafterrt': 150}
+            def get_static_value(feature, _):
+                """Get the value of a static feature."""
 
-                # Check if the feature has already been computed
-                if feature in self.demographics:
+                # Check if the feature is included as static
+                if feature in self.static_features:
 
-                    # Return the feature value from the demographics dictionary
-                    return self.demographics[feature]
+                    # Return the value from the static feature dictionary
+                    return self.static_features[feature]
 
-                # Compute the feature value
-                self.demographics[feature] = self.feature_map[
-                    feature]['computation'](values[feature])
+                else:
 
-                return self.demographics[feature]
+                    # Log a message about a missing static feature
+                    hub.logger.display_error(
+                        f"The feature '{feature}' is missing in the static "
+                        "feature dictionary ...")
+
+                    # Raise an attribute error
+                    raise AttributeError
 
             # Map the feature types to the get functions
             get_functions = {'Dosiomics': get_dosiomic_value,
                              'Radiomics': get_radiomic_value,
-                             'Demographics': get_demographic_value}
+                             'Statics': get_static_value}
 
             # Run the specific get function to retrieve the feature value
             feature_value = get_functions[self.feature_map[feature]['class']](
@@ -452,7 +454,7 @@ class FeatureCalculator():
             # Map the feature types to the get functions
             get_functions = {'Dosiomics': get_dosiomic_gradient,
                              'Radiomics': get_default_gradient,
-                             'Demographics': get_default_gradient}
+                             'Statics': get_default_gradient}
 
             # Run the specific get function to retrieve the feature gradient
             feature_gradient = (

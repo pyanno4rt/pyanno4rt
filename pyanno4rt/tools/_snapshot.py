@@ -7,7 +7,7 @@
 from json import dump
 from numpy import save
 from os import mkdir
-from os.path import exists, splitext
+from os.path import abspath, exists, splitext
 from shutil import copy
 
 # %% Internal package import
@@ -62,6 +62,49 @@ def snapshot(instance, path, include_patient_data=False,
         raise AttributeError("Please configure and optimize the treatment "
                              "plan before taking a snapshot!")
 
+    def dict_path_to_absolute(search_key, dictionary):
+        """Search a key and convert the value into an absolute path."""
+
+        # Loop over the dictionary items
+        for key, value in dictionary.items():
+
+            # Check if the current key is the searched one
+            if key == search_key:
+
+                # Check if the value is not None
+                if value:
+
+                    # Convert the value into an absolute path
+                    dictionary[key] = abspath(value)
+
+                # Yield the modified dictionary
+                yield dictionary
+
+            # Check if the value itself is a dictionary
+            if isinstance(value, dict):
+
+                # Loop recursively over the function output
+                for output in dict_path_to_absolute(search_key, value):
+
+                    # Yield the output
+                    yield output
+
+            # Else, check if the value is a list
+            elif isinstance(value, list):
+
+                # Loop over the list elements
+                for element in value:
+
+                    # Check if the list element is a dictionary
+                    if isinstance(element, dict):
+
+                        # Loop recursively over the function output
+                        for output in dict_path_to_absolute(
+                                search_key, element):
+
+                            # Yield the output
+                            yield output
+
     def save_ml_model(data):
         """Create and save the machine learning model data files."""
 
@@ -103,7 +146,7 @@ def snapshot(instance, path, include_patient_data=False,
             copy(data[2], f'{model_path}/model_data{extension}')
 
     # Build the snapshot folder path
-    snap_path = f"{path}/{instance.configuration['label']}"
+    snap_path = abspath(f"{path}/{instance.configuration['label']}")
 
     # Check if the folder path does not already exists
     if not exists(snap_path):
@@ -115,6 +158,24 @@ def snapshot(instance, path, include_patient_data=False,
     input_dictionaries = {'configuration': instance.configuration,
                           'optimization': instance.optimization,
                           'evaluation': instance.evaluation}
+
+    # Get the machine learning model data
+    ml_model_data = tuple((objective.model.model_label, objective.model,
+                           objective.model_parameters.get('data_path'))
+                          for objective in get_machine_learning_objectives(
+                              instance.datahub.segmentation))
+
+    # Check if machine learning model data exists
+    if len(ml_model_data) > 0:
+
+        # Convert the data file paths into absolute paths
+        input_dictionaries['optimization'] = next(dict_path_to_absolute(
+            'data_path', input_dictionaries['optimization']))
+
+    # Convert the configuration file paths into absolute paths
+    for key in ('imaging_path', 'dose_matrix_path'):
+        input_dictionaries['configuration'] = next(dict_path_to_absolute(
+            key, input_dictionaries['configuration']))
 
     # Open a file stream
     with open(f'{snap_path}/input_parameters.json', 'w',
@@ -132,12 +193,6 @@ def snapshot(instance, path, include_patient_data=False,
 
         # Print the stream value to the file
         print(stream_value, file=file)
-
-    # Get the machine learning model datazz
-    ml_model_data = ((objective.model.model_label, objective.model,
-                      objective.model_parameters.get('data_path'))
-                     for objective in get_machine_learning_objectives(
-                             instance.datahub.segmentation))
 
     # Save the data for the machine learning model(s)
     apply(save_ml_model, ml_model_data)

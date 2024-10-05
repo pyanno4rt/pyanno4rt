@@ -88,6 +88,7 @@ class FeatureMapGenerator():
             dataset with the segmented structures and their \
             computation/differentiation functions.
         """
+
         # Initialize the datahub
         hub = Datahub()
 
@@ -103,6 +104,7 @@ class FeatureMapGenerator():
 
         def get_segment(feature_name, feature_segment):
             """Get the segment by fuzzy or exact string matching."""
+
             # Calculate the fuzzy partial ratios (similarity scores)
             scores = tuple(fuzz.partial_ratio(feature_segment.lower(),
                                               segment.replace('_', '').lower())
@@ -138,6 +140,7 @@ class FeatureMapGenerator():
         def get_definition(feature_name, feature_definition,
                            feature_parameters):
             """Get the feature definition by fuzzy or exact string matching."""
+
             # Calculate the fuzzy partial ratios (similarity scores)
             scores = [fuzz.ratio(feature_definition.lower(), clf.lower())
                       for clf in catalogue]
@@ -187,9 +190,9 @@ class FeatureMapGenerator():
                 return definition_match
 
             # Log a message about an error and return None if no match is found
-            hub.logger.dispError("\t\t\t No valid function match detected "
-                                 "for {} in {} ..."
-                                 .format(feature_definition, feature_name))
+            hub.logger.display_error("\t\t\t No valid function match detected "
+                                     "for {} in {} ..."
+                                     .format(feature_definition, feature_name))
 
             return None
 
@@ -228,17 +231,18 @@ class FeatureMapGenerator():
         labels = ('segment', 'class', 'computation', 'differentiation')
 
         # Get the matches (values) for the feature map
-        matches = ((get_segment_functions[feature_segments[i] in mapping_cache]
-                    (feature_names[i], feature_segments[i])
-                    if feature_segments[i] is not None else [None])
-                   + get_definition_functions[
-                       '_'.join(filter(None, (feature_definitions[i],
-                                              feature_parameters[i])))
-                       in mapping_cache](
-                           feature_names[i],
-                           feature_definitions[i],
-                           feature_parameters[i])
-                   for i in range(len(feature_names)))
+        matches = (
+            (get_segment_functions[feature_segments[i] in mapping_cache]
+             (feature_names[i], feature_segments[i])
+             if feature_segments[i] is not None else [None])
+            + get_definition_functions[
+                '_'.join(filter(None, (feature_definitions[i],
+                                       feature_parameters[i])))
+                in mapping_cache](feature_names[i], feature_definitions[i],
+                                  feature_parameters[i])
+            if feature_segments[i] is not None else [
+                    'Patient', 'Statics', None, None]
+            for i in range(len(feature_names)))
 
         # Construct the output feature map
         feature_map = {feature_name: {label: value for label, value in zip(

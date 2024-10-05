@@ -293,8 +293,9 @@ class FluenceOptimizer():
 
         Parameters
         ----------
-        voi : tuple
-            Tuple with the labels for the volumes of interest.
+        components : dict
+            Optimization components for each segment of interest, i.e., \
+            objectives and constraints, in the raw user format.
         """
 
         # Initialize the datahub

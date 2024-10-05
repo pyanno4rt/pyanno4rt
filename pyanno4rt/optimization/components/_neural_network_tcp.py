@@ -115,6 +115,7 @@ class NeuralNetworkTCP(MachineLearningComponentClass):
             model_folder_path=self.model_parameters['model_folder_path'],
             data_path=self.model_parameters['data_path'],
             feature_filter=self.model_parameters['feature_filter'],
+            static_features=self.model_parameters['static_features'],
             label_name=self.model_parameters['label_name'],
             label_bounds=self.model_parameters['label_bounds'],
             time_variable_name=self.model_parameters['time_variable_name'],

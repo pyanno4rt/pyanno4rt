@@ -57,8 +57,8 @@
 			<li> Optimization methods
 				<ul> 
 					<li> Lexicographic method </li> 
-					<li> Weighted-sum method </li> 
-					<li> Pareto analysis
+					<li> Pareto analysis /li> 
+					<li> Weighted-sum method
 				</ul>
 			</li>
 			<li> 24-type dose-volume and outcome prediction model-based optimization component catalogue
@@ -105,7 +105,7 @@
 			<li> Responsive PyQt5 design with easy-to-use and clear surface
 				<ul> 
 					<li> Treatment plan editor </li>
-					<li> Workflow controls </li>
+					<li> Workflow controls & plan comparison </li>
 					<li> CT/Dose preview </li>
 				</ul>
 			</li>

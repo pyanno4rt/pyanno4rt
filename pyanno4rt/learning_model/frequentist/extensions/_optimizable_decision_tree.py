@@ -2,8 +2,10 @@
 
 # %% External package import
 
+from itertools import chain, groupby
 from numpy import argwhere, array, prod, zeros
-from operator import gt, le
+from numpy.linalg import norm
+from operator import gt, itemgetter, le
 
 # %% Class definition
 
@@ -15,28 +17,19 @@ class OptimizableDecisionTree():
     This class implements an optimizable surrogate model for scikit-learn's \
     decision tree classifier. It exploits the pre-fitted structure of a \
     decision tree to express the probability prediction function as a sum of \
-    path-wise products of indicator functions, and provides both an exact and \
-    approximate formulation. For the approximation, it utilizes scaled \
-    versions of the sigmoid function to yield an input-differentiable version \
-    of the decision tree which qualifies for gradient-based optimizers.
+    path-wise products of indicator functions, and approximates a decision \
+    tree gradient as the minimum input feature shift required to improve the \
+    prediction value.
 
     Attributes
     ----------
-    paths : list
-        List of dictionaries with information on the decision tree paths.
-
-    value_function : object of class :class:`jaxlib.xla_extension.PjitFunction`
-        The (pre-compiled) object used to approximate the probability \
-        prediction function along a single decision tree path.
-
-    gradient_function : object of class :class:`function`
-        The (pre-compiled) object used to approximate the input gradient \
-        function along a single decision tree path.
+    paths : dict
+        Dictionary with information on the decision tree paths.
     """
 
     def __init__(self):
 
-        # Initialize the path list
+        # Initialize the path dictionary as a list
         self.paths = []
 
     def traverse(
@@ -51,7 +44,7 @@ class OptimizableDecisionTree():
             The object used to represent the pre-fitted decision tree.
         """
 
-        # Get the required properties from the tree object
+        # Get the structure of the tree object
         (node_count, children_left, children_right, feature, threshold,
          value) = (getattr(tree.tree_, name) for name in (
              'node_count', 'children_left', 'children_right', 'feature',
@@ -133,8 +126,11 @@ class OptimizableDecisionTree():
                         signs[j] = lists[2] + [le]
                         signs.append(lists[2] + [gt])
 
-        # 
-        self.paths = sorted(self.paths, key=lambda d: d['value'], reverse=True)
+        # Convert the path list into a sorted/grouped path dictionary
+        self.paths = {
+            key: tuple(data) for (key, data) in
+            groupby(sorted(self.paths, key=itemgetter('value'), reverse=True),
+                    itemgetter('value'))}
 
     def predict_proba(
             self,
@@ -153,65 +149,105 @@ class OptimizableDecisionTree():
             Value(s) of the predicted label(s).
         """
 
-        # 
+        # Initialize the list of predictions
         predictions = []
 
         # Check if the feature array has only a single row
         if features.shape[0] == 1:
 
-            # 
+            # Calculate the prediction value
             prediction = sum(prod([path['signs'][i](
                 features[0, path['nodes'][i]], path['thresholds'][i])
                 for i in range(len(path['nodes']))])*path['value']
-                for path in self.paths)
+                for path in chain.from_iterable(self.paths.values()))
 
-            # Return a single exact label prediction value
+            # Append the prediction value to the list
             predictions.append([1-prediction, prediction])
 
         else:
 
+            # Loop over the samples in the feature array
             for sample in features:
 
-                # 
+                # Calculate the prediction value
                 prediction = sum(prod([path['signs'][i](
                     sample[path['nodes'][i]], path['thresholds'][i])
                     for i in range(len(path['nodes']))])*path['value']
-                    for path in self.paths)
+                    for path in chain.from_iterable(self.paths.values()))
 
+                # Append the prediction value to the list
                 predictions.append([1-prediction, prediction])
 
-        # Otherwise, return an array with exact label predictions
+        # Return the label predictions
         return array(predictions)
 
     def gradientize(
             self,
             features):
-        """."""
+        """
+        Gradientize the features with the minimum improvement shift.
 
-        # Get the index of the current path
-        index = next((index for (index, d) in enumerate(self.paths)
-                      if d['value'] == self.predict_proba(features)[0][1]),
-                     None)
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
 
-        # 
-        if index < len(self.paths)-1:
+        Returns
+        -------
+        ndarray
+            Values of the minimum improvement shift.
+        """
 
+        def calculate_shift(features, path):
+            """Calculate the required feature shift towards a path."""
+
+            # Initialize the shift vector
             shift = zeros(features.shape[1])
+
+            # Initialize the perturbation variable
             eps = 1e-12
 
-            nodes = self.paths[index+1]['nodes']
-            thresholds = self.paths[index+1]['thresholds']
-            signs = self.paths[index+1]['signs']
+            # Get the path structure
+            nodes, thresholds, signs = (
+                path[key] for key in ('nodes', 'thresholds', 'signs'))
 
-            for i, sample in enumerate(features):
-                for j, node in enumerate(nodes):
-                    if not signs[j](sample[node], thresholds[j]):
-                        if signs[j] == le:
-                            shift[node] = sample[node] - thresholds[j]
-                        else:
-                            shift[node] = sample[node] - thresholds[j] - eps
+            # Loop over the path nodes
+            for j, node in enumerate(nodes):
 
-            return shift
+                # Check if the path condition is not fulfilled
+                if not signs[j](features[0, node], thresholds[j]):
 
-        # 
+                    # Check if the condition sign is "<="
+                    if signs[j] == le:
+
+                        # Calculate the shift
+                        shift[node] = features[0, node] - thresholds[j]
+
+                    else:
+
+                        # Otherwise, calculate the shift with perturbation
+                        shift[node] = features[0, node] - thresholds[j] - eps
+
+            # Return the shift array and its l2-norm
+            return shift, norm(shift)
+
+        # Get the current prediction value
+        current_value = self.predict_proba(features)[0][1]
+
+        # Check if the prediction value is not yet minimal
+        if len(self.paths) > 0 and current_value != tuple(self.paths)[-1]:
+
+            # Get the next best prediction values
+            temp_list = list(self.paths)
+            next_values = temp_list[temp_list.index(current_value)+1:]
+
+            # Calculate next best shifts
+            shifts = [calculate_shift(features, path)
+                      for value in next_values
+                      for path in self.paths[value]]
+
+            # Return the minimum improvement shift
+            return min(shifts, key=lambda shifts: shifts[1])[0]
+
+        # Otherwise, return the zero-improvement shift
         return zeros(features.shape[1])

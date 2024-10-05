@@ -974,7 +974,7 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <property name="iconSize">
            <size>
@@ -1028,7 +1028,7 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-357</y>
+                 <y>0</y>
                  <width>369</width>
                  <height>912</height>
                 </rect>
@@ -4754,7 +4754,7 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-217</y>
+                 <y>0</y>
                  <width>369</width>
                  <height>840</height>
                 </rect>
@@ -7652,7 +7652,7 @@ border-color: rgb(186, 189, 182);</string>
    </property>
    <property name="font">
     <font>
-     <pointsize>9</pointsize>
+     <pointsize>10</pointsize>
     </font>
    </property>
    <property name="styleSheet">
@@ -7667,7 +7667,7 @@ color: rgb(255, 255, 255); border:1px solid; border-top-color: rgb(211, 215, 207
  <resources>
   <include location="../assets/resources.qrc"/>
   <include location="../assets/resources.qrc"/>
-  <include location="assets/resources.qrc"/>
+  <include location="../assets/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

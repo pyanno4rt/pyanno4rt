@@ -47,6 +47,9 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             {'retain', 'remove'} as an indicator for retaining/removing the \
             features prior to model fitting.
 
+        - static_features : dict, default={}
+            Dictionary with the names and values of the fixed features.
+
         - label_name : str
             Name of the label variable.
 
@@ -255,6 +258,8 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             'data_path': model_parameters.get('data_path'),
             'feature_filter': model_parameters.get(
                 'feature_filter', {'features': [], 'filter_mode': 'remove'}),
+            'static_features': model_parameters.get(
+                'static_features', {}),
             'label_name': model_parameters.get('label_name'),
             'label_bounds': model_parameters.get('label_bounds', [1, 1]),
             'time_variable_name': model_parameters.get('time_variable_name'),

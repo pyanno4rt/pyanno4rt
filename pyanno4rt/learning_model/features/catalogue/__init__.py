@@ -13,8 +13,7 @@ extensible catalogue which holds all available feature definitions.
 # Import the abstract feature classes
 from ._feature_class import (
     DosiomicFeature,
-    RadiomicFeature,
-    DemographicFeature)
+    RadiomicFeature)
 
 # Import the dosiomic features
 from ._dose_mean import DoseMean
@@ -44,14 +43,8 @@ from ._segment_eigenmin import SegmentEigenmin
 from ._segment_eigenmid import SegmentEigenmid
 from ._segment_eigenmax import SegmentEigenmax
 
-# Import the demographic features
-from ._patient_age import PatientAge
-from ._patient_sex import PatientSex
-from ._patient_daysafterrt import PatientDaysafterrt
-
 __all__ = ['DosiomicFeature',
            'RadiomicFeature',
-           'DemographicFeature',
            'DoseMean',
            'DoseDeviation',
            'DoseMaximum',
@@ -76,8 +69,5 @@ __all__ = ['DosiomicFeature',
            'SegmentEigenmid',
            'SegmentEigenmax',
            'SegmentEigenvalues',
-           'PatientAge',
-           'PatientSex',
-           'PatientDaysafterrt',
            'FeatureMapGenerator',
            'FeatureCalculator']

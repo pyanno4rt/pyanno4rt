@@ -38,6 +38,9 @@ class DataModelHandler():
         {'retain', 'remove'} as an indicator for retaining/removing the \
         features prior to model fitting.
 
+    static_features : dict
+        Dictionary with the names and values of the fixed features.
+
     label_name : None or str
         Name of the label variable.
 
@@ -102,6 +105,7 @@ class DataModelHandler():
             model_folder_path,
             data_path,
             feature_filter,
+            static_features,
             label_name,
             label_bounds,
             time_variable_name,
@@ -160,7 +164,8 @@ class DataModelHandler():
             model_label, fuzzy_matching)
 
         # Initialize the feature calculator
-        self.feature_calculator = FeatureCalculator(write_features)
+        self.feature_calculator = FeatureCalculator(
+            static_features, write_features)
 
     def integrate(self):
         """Integrate the learning model-related classes."""

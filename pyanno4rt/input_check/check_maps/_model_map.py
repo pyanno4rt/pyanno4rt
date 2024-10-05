@@ -42,6 +42,8 @@ model_map = {
             partial(check_value_in_set, options=('remove', 'retain'))
             ))
         ),
+    'static_features': (
+        partial(check_type, types=dict)),
     'label_name': (
         partial(check_type, types={True: (type(None), str), False: str}),
         ),

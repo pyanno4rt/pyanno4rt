@@ -322,7 +322,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             QPushButton:hover {background-color: rgb(25, 25, 25);}
             ''')
         self.version_label.setStyleSheet(
-            "QLabel {border: 0px; font-size: 9pt;}")
+            "QLabel {border: 0px; font-size: 10pt;}")
         self.github_pbutton.setStyleSheet(
             '''
             QPushButton {border: 0px;}

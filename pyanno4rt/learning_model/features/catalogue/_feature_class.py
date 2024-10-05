@@ -41,14 +41,3 @@ class RadiomicFeature(metaclass=ABCMeta):
     @abstractmethod
     def compute(self, mask, spacing):
         """Abstract method for computing the feature value."""
-
-
-class DemographicFeature(metaclass=ABCMeta):
-    """Abstract superclass for demographic features."""
-
-    # Set the feature class
-    feature_class = 'Demographics'
-
-    @abstractmethod
-    def compute(self, value):
-        """Abstract method for computing the feature value."""
