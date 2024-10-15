@@ -13,6 +13,8 @@ from sklearn.ensemble import RandomForestClassifier
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.frequentist import MachineLearningModel
+from pyanno4rt.learning_model.frequentist.extensions import (
+    OptimizableRandomForest)
 
 # %% Class definition
 
@@ -109,6 +111,9 @@ class RandomForestModel(MachineLearningModel):
             tune_space, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
 
+        # Get the optimization surrogate of the random forest model
+        self.optimization_model = self.get_optimization_model()
+
     def get_hyperparameter_set(
             self,
             proposal):
@@ -174,6 +179,25 @@ class RandomForestModel(MachineLearningModel):
         prediction_model.fit(features, labels)
 
         return prediction_model
+
+    def get_optimization_model(self):
+        """
+        Get the random forest optimization model.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning_model.frequentist.extensions._optimizable_random_forest.OptimizableRandomForest`
+            The object used to represent the optimization model.
+        """
+
+        # Initialize the optimizable random forest
+        optimization_model = OptimizableRandomForest()
+
+        # Initialize the members of the random forest
+        optimization_model.initialize_members(self.prediction_model)
+
+        return optimization_model
 
     def predict(
             self,

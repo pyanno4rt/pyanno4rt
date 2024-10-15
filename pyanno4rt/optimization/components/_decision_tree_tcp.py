@@ -195,7 +195,7 @@ class DecisionTreeTCP(MachineLearningComponentClass):
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        # Get the model gradient
+        # Compute the model gradient
         model_gradient = self.model.optimization_model.gradientize(
             preprocessed_features)/self.weight
 

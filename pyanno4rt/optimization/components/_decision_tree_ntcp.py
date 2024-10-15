@@ -158,7 +158,7 @@ class DecisionTreeNTCP(MachineLearningComponentClass):
             Value of the component function.
         """
 
-        # Calculate the feature vector from the dose vector(s) and segment(s)
+        # Compute the feature vector from the dose vector(s) and segment(s)
         raw_features = self.data_model_handler.feature_calculator.featurize(
             args[0], args[1])
 
@@ -189,21 +189,21 @@ class DecisionTreeNTCP(MachineLearningComponentClass):
         # Get the feature calculator
         feature_calculator = self.data_model_handler.feature_calculator
 
-        # Calculate the feature vector from the dose vector(s) and segment(s)
+        # Compute the feature vector from the dose vector(s) and segment(s)
         raw_features = feature_calculator.featurize(args[0], args[1])
 
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        # Get the model gradient
+        # Compute the model gradient
         model_gradient = self.model.optimization_model.gradientize(
             preprocessed_features)/self.weight
 
-        # Get the preprocessing pipeline gradient
+        # Compute the preprocessing pipeline gradient
         preprocessing_gradient = (
             self.model.preprocessor.gradientize(raw_features))
 
-        # Get the feature gradient
+        # Compute the feature gradient
         feature_gradient = feature_calculator.gradientize(args[0], args[1])
 
         return (model_gradient * preprocessing_gradient) @ feature_gradient

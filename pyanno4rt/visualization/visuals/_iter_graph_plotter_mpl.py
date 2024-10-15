@@ -1,4 +1,4 @@
-"""Iterative objective value plot (matplotlib)."""
+"""Iterative component value plot (matplotlib)."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -27,9 +27,9 @@ except AttributeError:
 
 class IterGraphPlotterMPL():
     """
-    Iterative objective value plot (Matplotlib) class.
+    Iterative component value plot (Matplotlib) class.
 
-    This class provides a plot with the iterative objective function values.
+    This class provides a plot with the iterative component function values.
 
     Attributes
     ----------
@@ -47,15 +47,15 @@ class IterGraphPlotterMPL():
     # Set the class attributes for the visual interface integration
     category = "Optimization problem analysis"
     name = "iterations_plotter"
-    label = "Iterative objective value plot"
+    label = "Iterative component value plot"
 
     def view(self):
-        """Open the full-screen view on the iterative objective value plot."""
+        """Open the full-screen view on the iterative component value plot."""
         # Initialize the datahub
         hub = Datahub()
 
         # Log a message about the plot opening
-        hub.logger.display_info("Opening iterative objective value plot ...")
+        hub.logger.display_info("Opening iterative component value plot ...")
 
         def get_plotting_information():
             """Get the labels for the plot legend."""
@@ -108,8 +108,10 @@ class IterGraphPlotterMPL():
         y_step = min(
              (5e-5, 5e-4, 5e-3, 5e-2, 5e-1, 5e0, 5e1, 5e2, 5e3, 5e4, 5e5),
              key=lambda x: abs(ceil((
-                 max(max(track) for track in tracker.values())
-                 - min(min(track) for track in tracker.values()))/x)-20))
+                 max(max([value for value in track if value is not None])
+                     for track in tracker.values())
+                 - min(min([value for value in track if value is not None])
+                       for track in tracker.values()))/x)-20))
 
         # Create a figure and subplots
         figure, axis = subplots(figsize=(14, 8))
@@ -132,8 +134,10 @@ class IterGraphPlotterMPL():
             int(ceil(max(len(track) for track in tracker.values())/x_step))+1))
             )
         axis.set_yticks(tuple(i*y_step for i in range(
-            int(floor(min(min(track) for track in tracker.values())/y_step))-1,
-            int(ceil(max(max(track) for track in tracker.values())/y_step))+1))
+            int(floor(min(min([value for value in track if value is not None])
+                          for track in tracker.values())/y_step))-1,
+            int(ceil(max(max([value for value in track if value is not None])
+                         for track in tracker.values())/y_step))+1))
             )
 
         # Set the font sizes for the tick labels
@@ -145,8 +149,10 @@ class IterGraphPlotterMPL():
         # Set the x- and y-limits
         axis.set_xlim(0, max(len(track) for track in tracker.values())+x_step)
         axis.set_ylim(
-            min(min(track) for track in tracker.values()) - y_step,
-            max(max(track) for track in tracker.values()) + y_step)
+            min(min([value for value in track if value is not None])
+                for track in tracker.values()) - y_step,
+            max(max([value for value in track if value is not None])
+                for track in tracker.values()) + y_step)
 
         # Set the facecolor for the axis
         axis.set_facecolor("whitesmoke")

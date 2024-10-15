@@ -10,7 +10,7 @@ from numpy import array, vstack
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.tools import (
-    get_machine_learning_constraints, get_machine_learning_objectives)
+    flatten, get_machine_learning_constraints, get_machine_learning_objectives)
 
 # %% Class definition
 
@@ -159,6 +159,21 @@ class LexicographicOptimization():
 
             # Otherwise, return zero
             return 0.0
+
+        # Check if the objective value should be tracked
+        if track:
+
+            # Get the labels from all upper ranks
+            upper_labels = flatten(
+                tuple(self.objectives[key].keys()) for key in {
+                    key: value for key, value in self.objectives.items()
+                    if key > layer})
+
+            # Loop over the labels
+            for label in upper_labels:
+
+                # Enter the value of None into the tracking dictionary
+                self.tracker[label] += (None,)
 
         return sum(compute_single_objective(label, objective)
                    for label, objective in self.objectives[layer].items())

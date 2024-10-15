@@ -166,7 +166,7 @@ class RandomForestTCP(MachineLearningComponentClass):
         preprocessed_features = self.model.preprocess(raw_features)
 
         return -self.model.predict(
-            preprocessed_features, self.model.prediction_model)
+            preprocessed_features, self.model.optimization_model)
 
     def compute_gradient(
             self,
@@ -196,7 +196,8 @@ class RandomForestTCP(MachineLearningComponentClass):
         preprocessed_features = self.model.preprocess(raw_features)
 
         # Compute the model gradient
-        model_gradient = 0
+        model_gradient = self.model.optimization_model.gradientize(
+            preprocessed_features)/self.weight
 
         # Compute the preprocessing pipeline gradient
         preprocessing_gradient = (

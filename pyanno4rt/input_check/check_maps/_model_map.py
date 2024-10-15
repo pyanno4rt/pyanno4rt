@@ -43,7 +43,8 @@ model_map = {
             ))
         ),
     'static_features': (
-        partial(check_type, types=dict)),
+        partial(check_type, types=dict),
+        ),
     'label_name': (
         partial(check_type, types={True: (type(None), str), False: str}),
         ),

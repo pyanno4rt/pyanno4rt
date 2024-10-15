@@ -5,6 +5,7 @@
 # %% External package import
 
 from pickle import dump, load
+
 from hyperopt import hp
 from sklearn.tree import DecisionTreeClassifier
 
@@ -175,7 +176,8 @@ class DecisionTreeModel(MachineLearningModel):
 
         Returns
         -------
-        object of class :class:``
+        object of class \
+            :class:`~pyanno4rt.learning_model.frequentist.extensions._optimizable_decision_tree.OptimizableDecisionTree`
             The object used to represent the optimization model.
         """
 

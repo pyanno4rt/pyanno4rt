@@ -232,7 +232,7 @@ class LogisticRegressionNTCP(MachineLearningComponentClass):
         # Compute the feature vector from the dose vector(s) and segment(s)
         raw_features = feature_calculator.featurize(args[0], args[1])
 
-        # Get the model gradient
+        # Compute the model gradient
         model_gradient = array(self.parameter_value)
 
         # Compute the preprocessing pipeline gradient
