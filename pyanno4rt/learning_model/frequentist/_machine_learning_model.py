@@ -333,6 +333,15 @@ class MachineLearningModel(metaclass=ABCMeta):
             # Set the update flag to False
             self.updated_model = False
 
+            # Log messages about the model file reading
+            hub.logger.display_info(
+                f'Reading "{self.model_label}" preprocessor from datahub ...')
+            hub.logger.display_info(
+                f'Reading "{self.model_label}" model from datahub ...')
+            hub.logger.display_info(
+                f'Reading "{self.model_label}" hyperparameters from datahub '
+                '...')
+
             # Read the model files
             preprocessor, prediction_model, hyperparameters = (
                 hub.model_instances[self.model_label]['preprocessor'],

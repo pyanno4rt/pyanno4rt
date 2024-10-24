@@ -10,7 +10,7 @@ from os.path import isdir, splitext
 # %% Function definition
 
 
-def check_regular_extension_directory(label, data, extensions):
+def check_regular_extension_directory(label, data, extensions, no_directory):
     """
     Check if a directory path is irregular or has invalid file extensions.
 
@@ -25,6 +25,9 @@ def check_regular_extension_directory(label, data, extensions):
     extensions : tuple
         Tuple with the allowed extensions for the directory files.
 
+    no_directory : tuple
+        Tuple with the valid single file formats if no directory.
+
     Raises
     ------
     NotADirectoryError
@@ -35,7 +38,7 @@ def check_regular_extension_directory(label, data, extensions):
     """
 
     # Check if the path references an irregular directory and not a valid file
-    if not isdir(data) and splitext(data)[1] not in ('.mat', '.p'):
+    if not isdir(data) and splitext(data)[1] not in no_directory:
 
         # Raise an error to indicate an irregular directory
         raise NotADirectoryError(

@@ -3,12 +3,13 @@
 # %% External package import
 
 from math import inf
+from os.path import isdir
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.dataset import (
-    EmptyDataGenerator, TabularDataGenerator)
+    EmptyDataGenerator, ImageDataGenerator, TabularDataGenerator)
 from pyanno4rt.learning_model.features import (
     FeatureMapGenerator, FeatureCalculator)
 
@@ -158,6 +159,15 @@ class DataModelHandler():
                 label_viewpoint=label_viewpoint,
                 tune_splits=tune_splits,
                 oof_splits=oof_splits)
+
+        # Check if the data path leads to an image folder
+        elif isdir(data_path):
+
+            # Initialize the image dataset generator
+            self.dataset = ImageDataGenerator(
+                model_label=model_label,
+                model_folder_path=model_folder_path)
+            raise ValueError
 
         # Initialize the feature map generator
         self.feature_map_generator = FeatureMapGenerator(

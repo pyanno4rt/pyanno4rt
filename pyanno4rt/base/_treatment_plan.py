@@ -25,7 +25,8 @@ from pyanno4rt.evaluation import DosimetricsEvaluator
 from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
-from pyanno4rt.tools import apply
+from pyanno4rt.tools import (
+    apply, get_machine_learning_constraints, get_machine_learning_objectives)
 
 # %% Class definition
 
@@ -459,7 +460,8 @@ class TreatmentPlan():
 
         # Initialize the plan generator
         self.plan_generator = PlanGenerator(
-            modality=self.configuration['modality'])
+            modality=self.configuration['modality'],
+            components=self.optimization['components'])
 
         # Initialize the dose information generator
         self.dose_info_generator = DoseInfoGenerator(
@@ -476,6 +478,56 @@ class TreatmentPlan():
         # Generate the dose information
         self.dose_info_generator.generate()
 
+        # Preprocess the input data for optimization
+        self.plan_generator.preprocess()
+
+    def model(self):
+        """
+        Set up the machine learning outcome prediction models.
+
+        Raises
+        ------
+        AttributeError
+            If the treatment plan has not been configured yet.
+        """
+
+        # Check if any required attribute is missing
+        if any(getattr(self, attribute) is None for attribute in (
+                'logger', 'datahub', 'input_checker', 'patient_loader',
+                'plan_generator', 'dose_info_generator')):
+
+            # Check if the logger has been initialized
+            if self.logger:
+
+                # Log a message about the attribute error
+                self.logger.display_error(
+                    "Please configure the treatment plan before modeling!")
+
+            # Raise an error to indicate a missing attribute
+            raise AttributeError(
+                "Please configure the treatment plan before modeling!")
+
+        # Get the segmentation dictionary
+        segmentation = Datahub().segmentation
+
+        # Get all machine learning objectives and constraints
+        ml_components = (
+            get_machine_learning_constraints(segmentation)
+            + get_machine_learning_objectives(segmentation))
+
+        # Check if any machine learning components are present
+        if len(ml_components) > 0:
+
+            # Add the machine learning outcome models to the components
+            apply(lambda component: component.add_model(), ml_components)
+
+        else:
+
+            # Log a message about machine learning components not being found
+            self.logger.display_info(
+                "Skipping setup of machine learning models (no machine "
+                "learning components found) ...")
+
     def optimize(self):
         """
         Initialize the fluence optimizer and solve the problem.
@@ -483,7 +535,8 @@ class TreatmentPlan():
         Raises
         ------
         AttributeError
-            If the treatment plan has not been configured yet.
+            If the treatment plan has not been configured yet or machine \
+            learning components have not been modeled.
         """
 
         # Check if any required attribute is missing
@@ -502,12 +555,27 @@ class TreatmentPlan():
             raise AttributeError(
                 "Please configure the treatment plan before optimization!")
 
+        # Get the segmentation dictionary
+        segmentation = Datahub().segmentation
+
+        # Check if machine learning components have not been modeled
+        if any(getattr(component, 'model') is None for component in (
+                get_machine_learning_constraints(segmentation)
+                + get_machine_learning_objectives(segmentation))):
+
+            # Log a message about the attribute error
+            self.logger.display_error("Please set up the machine learning "
+                                      "models before optimization!")
+
+            # Raise an error to indicate a missing attribute
+            raise AttributeError("Please set up the machine learning "
+                                 "models before optimization!")
+
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration['label']
 
         # Initialize the fluence optimizer
         self.fluence_optimizer = FluenceOptimizer(
-            components=self.optimization['components'],
             method=self.optimization['method'],
             solver=self.optimization['solver'],
             algorithm=self.optimization['algorithm'],
@@ -625,6 +693,7 @@ class TreatmentPlan():
 
         # Cycle the workflow
         self.configure()
+        self.model()
         self.optimize()
         self.evaluate()
         self.visualize()

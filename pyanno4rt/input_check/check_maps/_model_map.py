@@ -9,9 +9,9 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.input_check.check_functions import (
-    check_regular_extension, check_feature_filter, check_key_in_dict,
-    check_length, check_path, check_subtype, check_type, check_value,
-    check_value_in_set)
+    check_regular_extension, check_regular_extension_directory,
+    check_feature_filter, check_key_in_dict, check_length, check_path,
+    check_subtype, check_type, check_value, check_value_in_set)
 from pyanno4rt.learning_model.losses import loss_map
 from pyanno4rt.learning_model.preprocessing.cleaners import cleaner_map
 from pyanno4rt.learning_model.preprocessing.reducers import reducer_map
@@ -32,6 +32,8 @@ model_map = {
     'data_path': (
         partial(check_type, types={True: (type(None), str), False: str}),
         partial(check_regular_extension, extensions=('.csv',)),
+        partial(check_regular_extension_directory, extensions=(
+            'jpg', 'npy', 'npz', 'png'), no_directory=('.csv',))
         ),
     'feature_filter': (
         partial(check_type, types=dict),

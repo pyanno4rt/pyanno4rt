@@ -6186,7 +6186,7 @@ border-color: rgb(211, 215, 207);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="maximumSize">
@@ -6226,7 +6226,7 @@ border-color: rgb(186, 189, 182);</string>
                        </widget>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="chevron_conf_opt">
+                       <widget class="QPushButton" name="chevron_conf_mod">
                         <property name="sizePolicy">
                          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                           <horstretch>0</horstretch>
@@ -6236,7 +6236,87 @@ border-color: rgb(186, 189, 182);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
+                          <height>30</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;
+border-color: rgb(0, 0, 0);</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/white_icons/icons_white/chevrons-down.svg</normaloff>:/white_icons/icons_white/chevrons-down.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="model_pbutton">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>30</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
                           <height>40</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>MODEL</string>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../assets/resources.qrc">
+                          <normaloff>:/black_icons/icons_black/cpu.svg</normaloff>:/black_icons/icons_black/cpu.svg</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="chevron_mod_opt">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="styleSheet">
@@ -6266,7 +6346,7 @@ border-color: rgb(0, 0, 0);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="maximumSize">
@@ -6316,7 +6396,7 @@ border-color: rgb(186, 189, 182);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="styleSheet">
@@ -6346,7 +6426,7 @@ border-color: rgb(0, 0, 0);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="maximumSize">
@@ -6396,7 +6476,7 @@ border-color: rgb(186, 189, 182);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="styleSheet">
@@ -6426,7 +6506,7 @@ border-color: rgb(0, 0, 0);</string>
                         <property name="minimumSize">
                          <size>
                           <width>0</width>
-                          <height>40</height>
+                          <height>30</height>
                          </size>
                         </property>
                         <property name="maximumSize">
@@ -6782,9 +6862,6 @@ border-color: rgb(186, 189, 182);</string>
                        </spacer>
                       </item>
                      </layout>
-                     <zorder>chevron_conf_opt</zorder>
-                     <zorder>chevron_opt_eval</zorder>
-                     <zorder>chevron_eval_vis</zorder>
                      <zorder>actions_toolbox_widget</zorder>
                      <zorder>actions_toolbox_spacer_bottom</zorder>
                      <zorder>actions_toolbox_line</zorder>
@@ -6795,6 +6872,11 @@ border-color: rgb(186, 189, 182);</string>
                      <zorder>actions_top_spacer</zorder>
                      <zorder>actions_bottom_spacer</zorder>
                      <zorder>actions_toolbox_bottom_spacer</zorder>
+                     <zorder>model_pbutton</zorder>
+                     <zorder>chevron_conf_mod</zorder>
+                     <zorder>chevron_mod_opt</zorder>
+                     <zorder>chevron_opt_eval</zorder>
+                     <zorder>chevron_eval_vis</zorder>
                     </widget>
                    </item>
                   </layout>

@@ -5,6 +5,7 @@
 # %% External package import
 
 from functools import partial
+from importlib.metadata import version
 from logging import Handler
 from os.path import abspath, dirname, splitext
 from json import loads
@@ -32,7 +33,8 @@ from pyanno4rt.optimization.components import component_map
 from pyanno4rt.patient.import_functions import (
     read_data_from_dcm, read_data_from_mat, read_data_from_p)
 from pyanno4rt.tools import (
-    add_square_brackets, apply, copycat, load_list_from_file, snapshot)
+    add_square_brackets, apply, copycat, get_machine_learning_constraints,
+    get_machine_learning_objectives, load_list_from_file, snapshot)
 
 # %% Class definition
 
@@ -139,7 +141,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.logo_label.setPixmap(pixmap)
         self.logo_label.setStyleSheet("QLabel {border: 0px;}")
 
-        self.version_label = QLabel("v0.23.0")
+        self.version_label = QLabel(f"v{version('pyanno4rt')}")
 
         self.github_pbutton = QPushButton()
         self.github_pbutton.setIcon(
@@ -197,7 +199,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             'save_pbutton', 'drop_pbutton', 'update_configuration_pbutton',
             'update_optimization_pbutton', 'update_evaluation_pbutton',
             'reset_configuration_pbutton', 'reset_optimization_pbutton',
-            'reset_evaluation_pbutton', 'configure_pbutton',
+            'reset_evaluation_pbutton', 'configure_pbutton', 'model_pbutton',
             'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton',
             'actions_show_parameter_tbutton', 'actions_show_plan_tbutton',
             'actions_show_fmap_tbutton', 'actions_show_model_data_tbutton',
@@ -278,6 +280,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'clear_optimization_pbutton': pbutton_composer,
                          'clear_evaluation_pbutton': pbutton_composer,
                          'configure_pbutton': pbutton_workflow,
+                         'model_pbutton': pbutton_workflow,
                          'optimize_pbutton': pbutton_workflow,
                          'evaluate_pbutton': pbutton_workflow,
                          'visualize_pbutton': pbutton_workflow,
@@ -381,6 +384,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'lower_var_tbutton': self.add_lower_var_bounds,
                 'upper_var_tbutton': self.add_upper_var_bounds,
                 'configure_pbutton': self.start_configure,
+                'model_pbutton': self.start_model,
                 'optimize_pbutton': self.start_optimize,
                 'evaluate_pbutton': self.start_evaluate,
                 'visualize_pbutton': self.visualize,
@@ -849,11 +853,12 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Disable specific fields
             self.set_disabled((
-                'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton',
-                'actions_show_plan_tbutton', 'actions_show_log_tbutton',
-                'actions_show_model_data_tbutton', 'actions_show_fmap_tbutton',
-                'comp_show_plan_tbutton', 'comp_show_log_tbutton',
-                'comp_show_model_data_tbutton', 'comp_show_fmap_tbutton'))
+                'model_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
+                'visualize_pbutton', 'actions_show_plan_tbutton',
+                'actions_show_log_tbutton', 'actions_show_model_data_tbutton',
+                'actions_show_fmap_tbutton', 'comp_show_plan_tbutton',
+                'comp_show_log_tbutton', 'comp_show_model_data_tbutton',
+                'comp_show_fmap_tbutton'))
 
             # Disable the tab widgets
             self.composer_widget.widget(0).setEnabled(True)
@@ -909,6 +914,19 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Set the initial position label
                 self.slice_selection_pos.setText(''.join((
                     'z = ', str(self.slice_widget.slice), ' mm')))
+
+                # Check if machine learning components have not been modeled
+                if any(getattr(component, 'model') is None
+                       for component in (
+                        get_machine_learning_constraints(segmentation)
+                        + get_machine_learning_objectives(segmentation))):
+
+                    # Enable the 'model' button
+                    self.model_pbutton.setEnabled(True)
+
+                    self.status_bar.showMessage("Ready for modeling ...")
+
+                    return
 
                 # Enable the 'optimize' button
                 self.optimize_pbutton.setEnabled(True)
@@ -990,13 +1008,14 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'update_optimization_pbutton', 'update_evaluation_pbutton',
                 'reset_configuration_pbutton', 'reset_optimization_pbutton',
                 'reset_evaluation_pbutton', 'configure_pbutton',
-                'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton',
-                'actions_show_parameter_tbutton', 'actions_show_plan_tbutton',
-                'actions_show_fmap_tbutton', 'actions_show_model_data_tbutton',
-                'actions_show_log_tbutton', 'comp_show_parameter_tbutton',
-                'comp_show_plan_tbutton', 'comp_show_fmap_tbutton',
-                'comp_show_model_data_tbutton', 'comp_show_log_tbutton',
-                'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox'))
+                'model_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
+                'visualize_pbutton', 'actions_show_parameter_tbutton',
+                'actions_show_plan_tbutton', 'actions_show_fmap_tbutton',
+                'actions_show_model_data_tbutton', 'actions_show_log_tbutton',
+                'comp_show_parameter_tbutton', 'comp_show_plan_tbutton',
+                'comp_show_fmap_tbutton', 'comp_show_model_data_tbutton',
+                'comp_show_log_tbutton', 'init_fluence_ledit',
+                'init_fluence_tbutton', 'ref_plan_cbox'))
 
             # Disable the tab widgets
             self.composer_widget.widget(0).setEnabled(False)
@@ -1121,15 +1140,81 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Enable specific fields
         self.set_enabled((
-            'optimize_pbutton', 'actions_show_plan_tbutton',
-            'actions_show_log_tbutton', 'comp_show_plan_tbutton',
-            'comp_show_log_tbutton'))
+            'actions_show_plan_tbutton', 'actions_show_log_tbutton',
+            'comp_show_plan_tbutton', 'comp_show_log_tbutton'))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
             'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
             'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
             'ref_vol_ledit', 'ref_dose_ledit'))
+
+        if any(getattr(component, 'model') is None for component in (
+                get_machine_learning_constraints(segmentation)
+                + get_machine_learning_objectives(segmentation))):
+
+            self.model_pbutton.setEnabled(True)
+            self.status_bar.showMessage("Ready for modeling ...")
+
+        else:
+
+            self.model_pbutton.setEnabled(True)
+            self.optimize_pbutton.setEnabled(True)
+            self.status_bar.showMessage("Ready for optimization ...")
+
+        self.loader_label.hide()
+        self.stop_thread_pbutton.setEnabled(False)
+
+    def start_model(self):
+        """."""
+
+        # 
+        self.stop_thread_pbutton.setEnabled(True)
+        self.loader_label.show()
+
+        # Thread
+        modHandler = ConsoleWindowLogHandler()
+        modHandler.sigLog.connect(self.status_bar.showMessage)
+        self.plans[self.plan_ledit.text()].logger.logger.addHandler(
+            modHandler)
+        self.worker = Worker(self.model)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.update_after_model)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.start()
+
+    def model(self):
+        """
+        Set up the machine learning outcome prediction models.
+
+        Returns
+        -------
+        bool
+            Indicator for the success of the modeling.
+        """
+
+        self.plans[self.plan_ledit.text()].model()
+
+    def update_after_model(self):
+        """
+        Set up the machine learning outcome prediction models.
+
+        Returns
+        -------
+        bool
+            Indicator for the success of the modeling.
+        """
+
+        # Update the output of the log window
+        self.log_window.update_log_output()
+
+        # Enable specific fields
+        self.set_enabled((
+            'optimize_pbutton', 'actions_show_plan_tbutton',
+            'actions_show_log_tbutton', 'comp_show_plan_tbutton',
+            'comp_show_log_tbutton'))
 
         self.status_bar.showMessage("Ready for optimization ...")
         self.loader_label.hide()

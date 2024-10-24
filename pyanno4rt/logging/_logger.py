@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from importlib.metadata import version
 from io import StringIO
 from logging import (CRITICAL, DEBUG, ERROR, Formatter, getLogger, INFO,
                      StreamHandler, WARNING)
@@ -44,12 +45,13 @@ class Logger():
             self.logger = self.initialize_logger(
                 label=args[0], min_log_level=args[1])
 
+            # Log a message about the software versions used
+            self.display_info(
+                f"Running pyanno4rt v{version('pyanno4rt')} with Python "
+                f"{python_version()} ...")
+
             # Log a message about the initialization of the class
             self.display_info("Initializing logger ...")
-
-            # Log a message about the python version used
-            self.display_info(
-                f"You are running Python version {python_version()} ...")
 
     def initialize_logger(
             self,

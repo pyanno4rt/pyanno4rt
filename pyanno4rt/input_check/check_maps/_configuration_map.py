@@ -35,7 +35,8 @@ configuration_map = {
     'imaging_path': (
         partial(check_type, types=str),
         partial(check_regular_extension, extensions=('.mat', '.p')),
-        partial(check_regular_extension_directory, extensions=('dcm',))
+        partial(check_regular_extension_directory, extensions=('.dcm',),
+                no_directory=('.mat', '.p'))
         ),
     'target_imaging_resolution': (
         partial(check_type, types=(type(None), list)),
