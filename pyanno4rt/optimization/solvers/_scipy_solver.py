@@ -100,7 +100,7 @@ class SciPySolver():
         self.layer = None
 
         # Initialize the iteration counter
-        self.counter = 1
+        self.counter = None
 
     def callback(
             self,
@@ -155,8 +155,11 @@ class SciPySolver():
         # Initialize the datahub
         hub = Datahub()
 
+        # Reset the iteration counter
+        self.counter = 1
+
         # Check if the optimization problem is lexicographic
-        if self.arguments.pop('lexicographic'):
+        if self.arguments['lexicographic']:
 
             # Get all ranks from the arguments dictionary
             ranks = tuple(self.arguments)
@@ -253,6 +256,9 @@ class SciPySolver():
                 Datahub().logger.display_info(output_string)
 
             # Solve the optimization problem
-            result = self.fun(x0=initial_fluence, **self.arguments)
+            result = self.fun(
+                x0=initial_fluence,
+                **{key: value for key, value in self.arguments.items()
+                   if key != 'lexicographic'})
 
         return result.x, result.message

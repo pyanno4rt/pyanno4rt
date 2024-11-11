@@ -1,0 +1,41 @@
+"""Tracker and feature history resetting."""
+
+# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+
+# %% External package import
+
+from numpy import empty
+
+# %% Internal package import
+
+from pyanno4rt.datahub import Datahub
+from pyanno4rt.tools import (
+    get_machine_learning_constraints, get_machine_learning_objectives)
+
+# %% Function definition
+
+
+def reset_outputs():
+    """Reset the optimization tracker and feature calculation history."""
+
+    # Initialize the datahub
+    hub = Datahub()
+
+    # Get the segmentation from the datahub
+    segmentation = hub.segmentation
+
+    # Reset the optimization tracker
+    hub.optimization['problem'].tracker = {
+        key: [] for key in hub.optimization['problem'].tracker}
+
+    # Loop over the machine learning model-based components
+    for component in (
+            get_machine_learning_constraints(segmentation)
+            + get_machine_learning_objectives(segmentation)):
+
+        # Get the feature calculator of the component
+        feature_calculator = component.data_model_handler.feature_calculator
+
+        # Reset the feature history
+        feature_calculator.feature_history = empty(
+            shape=(1, len(feature_calculator.feature_map)))

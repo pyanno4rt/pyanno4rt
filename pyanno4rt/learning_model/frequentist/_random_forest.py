@@ -169,7 +169,7 @@ class RandomForestModel(MachineLearningModel):
         -------
         prediction_model : object of class \
             :class:`~sklearn.ensemble.RandomForestClassifier`
-            The fitted object used to represent the prediction model.
+            The object used to represent the pre-fitted prediction model.
         """
 
         # Initialize the random forest model

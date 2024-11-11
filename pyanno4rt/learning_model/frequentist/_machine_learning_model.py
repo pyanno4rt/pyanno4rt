@@ -68,7 +68,7 @@ class MachineLearningModel(metaclass=ABCMeta):
     display_options : dict
         Dictionary with the graph and KPI display options.
 
-    architecture : None or str, default=None
+    architecture : None or {'vanilla', 'vanilla-input-convex'}, default=None
         Type of architecture (only used in neural networks).
 
     max_hidden_layers : None or int, default=None
@@ -454,6 +454,9 @@ class MachineLearningModel(metaclass=ABCMeta):
 
                     # Check if the proposed set equals the trial set
                     if proposal == space_eval(space, values):
+
+                        # Increment the step variable
+                        self.step += 1
 
                         # Return an error status
                         return {'status': STATUS_FAIL}

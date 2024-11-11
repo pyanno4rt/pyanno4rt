@@ -17,29 +17,29 @@ class OptimizableRandomForest():
     Optimizable random forest class.
 
     This class implements an optimizable surrogate model for scikit-learn's \
-    random forest classifier. It exploits the pre-fitted structure of a \
-    random forest to express the probability prediction function as the mean \
-    function of all \
+    random forest classifier. It exploits the pre-fitted structure of the \
+    classifier to express the probability prediction function as the mean \
+    prediction function value of all \
         :class:`~pyanno4rt.learning_model.frequentist._optimizable_decision_tree.OptimizableDecisionTree`
-    objects from the member trees, and approximates a forest gradient as the \
+    objects from the subtrees, and approximates an input "gradient" as the \
     mean minimum input feature shift required to improve the prediction value.
 
     Attributes
     ----------
-    members : list
-        List with the optimizable decision tree members of the random forest.
+    subtrees : list
+        List with the optimizable decision trees in the random forest.
     """
 
     def __init__(self):
 
-        # Initialize the random forest members list
-        self.members = []
+        # Initialize the random forest subtree list
+        self.subtrees = []
 
-    def initialize_members(
+    def initialize_subtrees(
             self,
             forest):
         """
-        Initialize the optimizable decision tree members of the random forest.
+        Initialize the optimizable decision trees in the random forest.
 
         Parameters
         ----------
@@ -48,17 +48,17 @@ class OptimizableRandomForest():
             The object used to represent the pre-fitted random forest.
         """
 
-        # Loop over the members of the random forest
-        for member in forest.estimators_:
+        # Loop over the subtrees in the random forest
+        for subtree in forest.estimators_:
 
             # Initialize the optimizable decision tree
             optimizable_tree = OptimizableDecisionTree()
 
-            # Read the path information from the pre-fitted decision tree
-            optimizable_tree.traverse(member)
+            # Read the path information from the pre-fitted subtree
+            optimizable_tree.traverse(subtree)
 
-            # Append the tree to the members list
-            self.members.append(optimizable_tree)
+            # Append the optimizable tree to the subtree list
+            self.subtrees.append(optimizable_tree)
 
     def predict_proba(
             self,
@@ -83,9 +83,10 @@ class OptimizableRandomForest():
         # Check if the feature array has only a single row
         if features.shape[0] == 1:
 
-            # Calculate the mean prediction value of all members
-            prediction = mean([
-                sub.predict_proba(features) for sub in self.members], axis=0)
+            # Calculate the mean prediction value of all subtrees
+            prediction = mean(
+                [tree.predict_proba(features) for tree in self.subtrees],
+                axis=0)
 
             # Append the prediction value to the list
             predictions.append(prediction[0])
@@ -95,9 +96,10 @@ class OptimizableRandomForest():
             # Loop over the samples in the feature array
             for sample in features:
 
-                # Calculate the mean prediction value of all members
-                prediction = mean([
-                    sub.predict_proba(sample) for sub in self.members], axis=0)
+                # Calculate the mean prediction value of all subtrees
+                prediction = mean(
+                    [tree.predict_proba(sample) for tree in self.subtrees],
+                    axis=0)
 
                 # Append the prediction value to the list
                 predictions.append(prediction[0])
@@ -123,6 +125,6 @@ class OptimizableRandomForest():
         """
 
         # Get the minimum shifts of all members
-        shifts = [sub.gradientize(features) for sub in self.members]
+        shifts = [tree.gradientize(features) for tree in self.subtrees]
 
         return mean(shifts, axis=0)

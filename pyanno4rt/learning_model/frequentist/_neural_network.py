@@ -13,7 +13,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.frequentist import MachineLearningModel
 from pyanno4rt.learning_model.frequentist.extensions import (
-    build_iocnn, build_standard_nn, loss_map, optimizer_map)
+    build_vanilla_iocnn, build_vanilla_nn, loss_map, optimizer_map)
 
 # %% Class definition
 
@@ -271,15 +271,15 @@ class NeuralNetworkModel(MachineLearningModel):
         """
 
         # Check if the input-output convex architecture should be used
-        if self.configuration['architecture'] == 'input-convex':
+        if self.configuration['architecture'] == 'vanilla-input-convex':
 
-            # Build and return the input-output convex neural network (IOCNN)
-            return build_iocnn(
+            # Get the vanilla input-output convex neural network (IOC-NN)
+            return build_vanilla_iocnn(
                 input_shape, output_shape, self.configuration['bias'],
                 hyperparameters, squash_output)
 
-        # Build and return the standard neural network (Standard-NN)
-        return build_standard_nn(
+        # Get the vanilla neural network (NN)
+        return build_vanilla_nn(
             input_shape, output_shape, self.configuration['bias'],
             hyperparameters, squash_output)
 
@@ -309,7 +309,7 @@ class NeuralNetworkModel(MachineLearningModel):
         Returns
         -------
         prediction_model : object of class `Functional`
-            The fitted object used to represent the prediction model.
+            The object used to represent the pre-fitted prediction model.
         """
 
         # Compile the model

@@ -39,22 +39,28 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         # 
         self.baseline_slice_widget = SliceCompareWidget(self)
         self.reference_slice_widget = SliceCompareWidget(self)
+        self.difference_slice_widget = SliceCompareWidget(self)
 
         # 
         self.baseline_layout.insertWidget(0, self.baseline_slice_widget)
         self.reference_layout.insertWidget(0, self.reference_slice_widget)
+        self.difference_layout.insertWidget(0, self.difference_slice_widget)
 
         # 
         self.slice_selection_sbar.valueChanged.connect(
             self.baseline_slice_widget.change_image_slice)
         self.slice_selection_sbar.valueChanged.connect(
             self.reference_slice_widget.change_image_slice)
+        self.slice_selection_sbar.valueChanged.connect(
+            self.difference_slice_widget.change_image_slice)
 
         # 
         self.opacity_sbox.valueChanged.connect(
             self.baseline_slice_widget.change_dose_opacity)
         self.opacity_sbox.valueChanged.connect(
             self.reference_slice_widget.change_dose_opacity)
+        self.opacity_sbox.valueChanged.connect(
+            self.difference_slice_widget.change_dose_opacity)
 
         # 
         self.close_info_pbutton.clicked.connect(self.close)

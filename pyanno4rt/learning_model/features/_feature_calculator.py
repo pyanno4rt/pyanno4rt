@@ -29,6 +29,9 @@ class FeatureCalculator():
     write_features : bool
         Indicator for tracking the feature values.
 
+    verbose : bool, default=True
+        Boolean indicator for the logging of the initialization.
+
     Attributes
     ----------
     write_features : bool

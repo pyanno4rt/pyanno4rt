@@ -145,7 +145,7 @@ class LogisticRegressionModel(MachineLearningModel):
         -------
         prediction_model : object of class \
             :class:`~sklearn.linear_model.LogisticRegression`
-            The fitted object used to represent the prediction model.
+            The object used to represent the pre-fitted prediction model.
         """
 
         # Initialize the logistic regression model

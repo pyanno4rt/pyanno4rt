@@ -8,7 +8,7 @@ from tensorflow.keras.losses import (
     BinaryCrossentropy, BinaryFocalCrossentropy, KLDivergence)
 from tensorflow.keras.optimizers import Adam, Ftrl, SGD
 
-# %% Maps
+# %% Map definitions
 
 
 loss_map = {'BCE': BinaryCrossentropy,

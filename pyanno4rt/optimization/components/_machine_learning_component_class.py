@@ -91,7 +91,8 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             - 'Whitening' \
                 :class:`~pyanno4rt.learning_model.preprocessing.transformers._whitening.Whitening`
 
-        - architecture : {'input-convex', 'standard'}, default='input-convex'
+        - architecture : {'vanilla-input-convex', 'vanilla'}, \
+            default='vanilla-input-convex'
             Type of architecture for the neural network model.
 
         - max_hidden_layers : int, default=2
@@ -269,7 +270,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             'preprocessing_steps': model_parameters.get(
                 'preprocessing_steps', ['Identity']),
             'architecture': model_parameters.get(
-                'architecture', 'input-convex'),
+                'architecture', 'vanilla-input-convex'),
             'max_hidden_layers': model_parameters.get('max_hidden_layers', 2),
             'tune_space': model_parameters.get('tune_space', {}),
             'tune_evaluations': model_parameters.get('tune_evaluations', 50),

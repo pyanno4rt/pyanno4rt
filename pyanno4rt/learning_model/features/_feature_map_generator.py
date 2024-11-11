@@ -29,31 +29,30 @@ class FeatureMapGenerator():
 
     Parameters
     ----------
+    model_label : str
+        Label for the machine learning model.
+
     fuzzy_matching : bool
         Indicator for the use of fuzzy string matching (if 'False', exact \
         string matching is applied).
 
     Attributes
     ----------
+    model_label : str
+        See 'Parameters'.
+
     fuzzy_matching : bool
         See 'Parameters'.
 
-    feature_map : dict
-        Dictionary with information on the mapping of features in the dataset \
-        with the segmented structures and their computation/differentiation \
-        functions.
-
     Notes
     -----
-    In the current implementation, string matching works best if:
-        - names from segments in the segmentation do not have any special \
-          characters except "_" (which will automatically be removed before \
-          matching);
-        - feature names follow the scheme `<name of the segment>\
-          _<name of the feature in the catalogue>_<optional parameters>`, \
-          e.g. "parotidLeft_doseMean" (mean dose to the left parotid) or \
-          "parotidRight_doseGradient_x" (dose gradient in x-direction for the \
-          right parotid).
+    String matching works best if (1) the segment names in the segmentation \
+    dictionary do not include any special characters except "_" (which will \
+    be removed before matching), and (2) the feature names follow the scheme \
+    `<name of the segment>_<name of the feature in the catalogue>_\
+    <optional parameters>`, e.g. "parotidLeft_doseMean" (mean dose to the \
+    left parotid) or "parotidRight_doseGradient_x" (dose gradient in \
+    x-direction for the right parotid).
     """
 
     def __init__(
@@ -75,17 +74,18 @@ class FeatureMapGenerator():
             self,
             feature_names):
         """
-        Generate the feature map by fuzzy or exact string matching.
+        Generate the feature map by string matching.
 
         Parameters
         ----------
-        ...
+        feature_names : list
+            Names of the input features.
 
         Returns
         -------
         feature_map : dict
-            Dictionary with information on the mapping of features in the \
-            dataset with the segmented structures and their \
+            Dictionary with information on the mapping of the input features \
+            from the dataset with the segmented structures and their \
             computation/differentiation functions.
         """
 
@@ -93,161 +93,156 @@ class FeatureMapGenerator():
         hub = Datahub()
 
         # Log a message about the string matching
-        hub.logger.display_info("Performing {} string matching for segments "
-                                "and feature definitions ..."
-                                .format('fuzzy' if self.fuzzy_matching
-                                        else 'exact'))
+        hub.logger.display_info(
+            f"Performing {'fuzzy' if self.fuzzy_matching else 'exact'} string "
+            "matching for segments and feature definitions ...")
 
         def get_segment_from_cache(_, feature_segment):
             """Get the segment from the mapping cache."""
+
             return mapping_cache[feature_segment]
 
         def get_segment(feature_name, feature_segment):
-            """Get the segment by fuzzy or exact string matching."""
+            """Get the segment by string matching."""
 
             # Calculate the fuzzy partial ratios (similarity scores)
-            scores = tuple(fuzz.partial_ratio(feature_segment.lower(),
-                                              segment.replace('_', '').lower())
-                           for segment in segments)
+            scores = tuple(
+                fuzz.partial_ratio(
+                    feature_segment.lower(), segment.replace('_', '').lower())
+                for segment in segments)
 
             # Get the index of the maximum score
             max_index = argmax(scores)
 
-            # Check if fuzzy matching is used or the score is 100 (exact match)
+            # Check if fuzzy or exact string matching apply
             if self.fuzzy_matching or scores[max_index] == 100:
 
                 # Get the matching segment
-                segment_match = [segments[max_index]]
+                segment_match = (segments[max_index],)
 
                 # Add the matching segment to the mapping cache
                 mapping_cache[feature_segment] = segment_match
 
+                # Return the matching segment
                 return segment_match
 
-            # Log a message about an error and return None if no match is found
-            hub.logger.display_error("No valid segment match detected for {} "
-                                     "in {} ..."
-                                     .format(feature_segment, feature_name))
+            # Log a message about a failed match
+            hub.logger.display_error(
+                f"No matching segment found for {feature_segment} in "
+                f"{feature_name} ...")
 
+            # Return None for the matching segment
             return None
 
-        def get_definition_from_cache(_, feature_definition,
-                                      feature_parameters):
+        def get_definition_from_cache(
+                _, feature_definition, feature_parameters):
             """Get the feature definition from the mapping cache."""
+
             return mapping_cache['_'.join(
                 filter(None, (feature_definition, feature_parameters)))]
 
-        def get_definition(feature_name, feature_definition,
-                           feature_parameters):
-            """Get the feature definition by fuzzy or exact string matching."""
+        def get_definition(
+                feature_name, feature_definition, feature_parameters):
+            """Get the feature definition by string matching."""
 
             # Calculate the fuzzy partial ratios (similarity scores)
-            scores = [fuzz.ratio(feature_definition.lower(), clf.lower())
-                      for clf in catalogue]
+            scores = tuple(
+                fuzz.ratio(feature_definition.lower(), definition.lower())
+                for definition in catalogue)
 
             # Get the index of the maximum score
             max_index = argmax(scores)
 
-            # Check if fuzzy matching is used or the score is 100 (exact match)
+            # Check if fuzzy or exact string matching apply
             if self.fuzzy_matching or scores[max_index] == 100:
 
-                # Get the matching feature definition from the catalogue
-                catalogue_match = catalogue[max_index]
+                # Get the matching definition name
+                def_match = catalogue[max_index]
 
-                # Get the feature class from the catalogue match
-                feature_class = getattr(
-                    feature_catalogue, catalogue_match).feature_class
+                # Get the definition class
+                def_class = getattr(feature_catalogue, def_match).feature_class
 
-                # Get the computation function from the catalogue match
-                feature_computation = methods[feature_parameters is None](
-                        getattr(feature_catalogue, catalogue_match).compute,
+                # Get the definition computation function
+                def_computation = methods[feature_parameters is None](
+                    getattr(feature_catalogue, def_match).compute,
+                    feature_parameters)
+
+                # Check if the definition class is 'Dosiomics'
+                if def_class == 'Dosiomics':
+
+                    # Get the definition differentiation function
+                    def_differentiation = methods[feature_parameters is None](
+                        getattr(feature_catalogue, def_match).differentiate,
                         feature_parameters)
-
-                # Check if the feature class is 'Dosiomics'
-                if feature_class == 'Dosiomics':
-
-                    # Get the differentiation function from the catalogue match
-                    feature_differentiation = methods[
-                        feature_parameters is None](
-                            getattr(feature_catalogue,
-                                    catalogue_match).differentiate,
-                            feature_parameters)
 
                 else:
 
-                    # Set the differentiation function to None
-                    feature_differentiation = None
+                    # Set the definition differentiation function to None
+                    def_differentiation = None
 
-                # Connect the matching values to get the definition match
-                definition_match = list((feature_class, feature_computation,
-                                         feature_differentiation))
+                # Get the matching full definition
+                full_definition_match = (
+                    def_class, def_computation, def_differentiation)
 
-                # Add the definition match to the mapping cache
-                mapping_cache['_'.join(
-                    filter(None, (feature_definition,
-                                  feature_parameters)))] = definition_match
+                # Add the matching full definition to the mapping cache
+                mapping_cache['_'.join(filter(
+                    None, (feature_definition, feature_parameters)))] = (
+                        full_definition_match)
 
-                return definition_match
+                # Return the matching full definition
+                return full_definition_match
 
-            # Log a message about an error and return None if no match is found
-            hub.logger.display_error("\t\t\t No valid function match detected "
-                                     "for {} in {} ..."
-                                     .format(feature_definition, feature_name))
+            # Log a message about a failed match
+            hub.logger.display_error(
+                f"No matching definition found for {feature_definition} in "
+                f"{feature_name} ...")
 
+            # Return None for the matching full definition
             return None
 
-        # Get the structures from the segmentation
+        # Get the segmented structures
         segments = (*hub.segmentation,)
 
-        # Get the classes from the feature catalogue
-        catalogue = tuple(definition for definition in dir(feature_catalogue)
-                          if isclass(getattr(feature_catalogue, definition)))
-
-        # Split the feature names into its components
-        feature_name_splits = tuple(
-            (None, split[0], None) if len(split) == 1
-            else (split[0], split[1], None) if len(split) == 2
-            else (split[0], split[1], split[2])
-            for split in map(methodcaller('split', '_'), feature_names))
-
-        # Decompose the splits into segments, definitions and parameters
-        feature_segments, feature_definitions, feature_parameters = zip(
-            *feature_name_splits)
-
-        # Map the caching indicator to the get functions
-        get_segment_functions = {True: get_segment_from_cache,
-                                 False: get_segment}
-        get_definition_functions = {True: get_definition_from_cache,
-                                    False: get_definition}
-
-        # Map an indicator for the absence of feature parameters to the \
-        # argument methods
-        methods = {True: identity, False: partial}
+        # Get the definition classes from the feature catalogue
+        catalogue = tuple(
+            definition for definition in dir(feature_catalogue)
+            if isclass(getattr(feature_catalogue, definition)))
 
         # Initialize the feature mapping cache
         mapping_cache = {}
 
-        # Set the labels (keys) for the feature map
-        labels = ('segment', 'class', 'computation', 'differentiation')
+        # Split the feature names
+        feature_name_splits = tuple(
+            (split[0], split[1], None) if len(split) == 2
+            else (split[0], split[1], split[2]) if len(split) == 3
+            else (None, None, None)
+            for split in map(methodcaller('split', '_'), feature_names))
 
-        # Get the matches (values) for the feature map
-        matches = (
-            (get_segment_functions[feature_segments[i] in mapping_cache]
-             (feature_names[i], feature_segments[i])
-             if feature_segments[i] is not None else [None])
+        # Create a boolean mapping to the subfunctions
+        get_segment_functions = {
+            True: get_segment_from_cache, False: get_segment}
+        get_definition_functions = {
+            True: get_definition_from_cache, False: get_definition}
+
+        # Create a boolean mapping to the internal functions
+        methods = {True: identity, False: partial}
+
+        # Set the keys for the feature submaps
+        keys = ('segment', 'class', 'computation', 'differentiation')
+
+        # Get the values for the feature submaps
+        feature_matches = (
+            get_segment_functions[split[0] in mapping_cache](name, split[0])
             + get_definition_functions[
-                '_'.join(filter(None, (feature_definitions[i],
-                                       feature_parameters[i])))
-                in mapping_cache](feature_names[i], feature_definitions[i],
-                                  feature_parameters[i])
-            if feature_segments[i] is not None else [
-                    'Patient', 'Statics', None, None]
-            for i in range(len(feature_names)))
+                '_'.join(filter(None, (split[1], split[2]))) in mapping_cache]
+            (name, split[1], split[2])
+            for name, split in zip(feature_names, feature_name_splits))
 
-        # Construct the output feature map
-        feature_map = {feature_name: {label: value for label, value in zip(
-            labels, match) if value is not None}
-            for feature_name, match in zip(feature_names, matches)}
+        # Merge the keys and the values into the feature map
+        feature_map = {
+            feature_name: {key: value for key, value in zip(keys, matches)
+                           if value is not None}
+            for feature_name, matches in zip(feature_names, feature_matches)}
 
         # Enter the feature map into the datahub
         hub.feature_maps[self.model_label] = feature_map

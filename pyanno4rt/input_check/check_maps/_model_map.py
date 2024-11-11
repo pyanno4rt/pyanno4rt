@@ -77,7 +77,8 @@ model_map = {
         ),
     'architecture': (
         partial(check_type, types=str),
-        partial(check_value_in_set, options=('input-convex', 'standard'))
+        partial(check_value_in_set, options=(
+            'vanilla', 'vanilla-input-convex'))
         ),
     'max_hidden_layers': (
         partial(check_type, types=int),

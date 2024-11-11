@@ -187,7 +187,8 @@ class MainWindow(QMainWindow):
             button.clicked.connect(getattr(self, subclass.name).view)
 
             # Check if the iteration plot buttons should be disabled
-            if ((not hasattr(hub.optimization['problem'], 'tracker')
+            if (not hub.optimization or
+                (not hasattr(hub.optimization['problem'], 'tracker')
                  or all(value == [] for value
                         in hub.optimization['problem'].tracker.values()))
                     and subclass.name in (
@@ -209,8 +210,12 @@ class MainWindow(QMainWindow):
                 button.setEnabled(False)
 
             # Check if the feature iterations button should be disabled
-            if (all(objective.model_parameters['write_features'] is False
-                    for objective in ml_objectives)
+            if ((not hub.optimization or
+                (not hasattr(hub.optimization['problem'], 'tracker')
+                 or all(value == [] for value
+                        in hub.optimization['problem'].tracker.values()))
+                or all(objective.model_parameters['write_features'] is False
+                       for objective in ml_objectives))
                     and subclass.name == 'features_plotter'):
                 button.setEnabled(False)
 
@@ -232,7 +237,7 @@ class MainWindow(QMainWindow):
                 button.setEnabled(False)
 
             # Check if the CT/dose slice button should be disabled
-            if (hub.optimization['optimized_dose'] is None
+            if (not hub.computed_tomography or not hub.segmentation
                     and subclass.name in ('ct_dose_plotter')):
                 button.setEnabled(False)
 
@@ -379,9 +384,12 @@ class MainWindow(QMainWindow):
             layouts[i].addWidget(text)
 
         # Get all objectives
-        cv_objectives = get_conventional_objectives(hub.segmentation)
-        ml_objectives = get_machine_learning_objectives(hub.segmentation)
-        rb_objectives = get_radiobiology_objectives(hub.segmentation)
+        if hub.segmentation:
+            cv_objectives = get_conventional_objectives(hub.segmentation)
+            ml_objectives = get_machine_learning_objectives(hub.segmentation)
+            rb_objectives = get_radiobiology_objectives(hub.segmentation)
+        else:
+            cv_objectives, ml_objectives, rb_objectives = (), (), ()
 
         # Initialize the counter
         counts = [0, 0, 0]

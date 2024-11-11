@@ -450,7 +450,10 @@ class TreatmentPlan():
         self.visualizer = None
 
     def configure(self):
-        """Initialize the configuration classes and process the input data."""
+        """Initialize the internal classes and process the input data."""
+
+        # Reset the treatment plan label in the datahub
+        Datahub.label = self.configuration['label']
 
         # Initialize the patient loader
         self.patient_loader = PatientLoader(
@@ -458,10 +461,15 @@ class TreatmentPlan():
             target_imaging_resolution=self.configuration[
                 'target_imaging_resolution'])
 
+        # Load the patient data
+        self.patient_loader.load()
+
         # Initialize the plan generator
         self.plan_generator = PlanGenerator(
-            modality=self.configuration['modality'],
-            components=self.optimization['components'])
+            modality=self.configuration['modality'])
+
+        # Generate the plan information
+        self.plan_generator.generate()
 
         # Initialize the dose information generator
         self.dose_info_generator = DoseInfoGenerator(
@@ -469,113 +477,12 @@ class TreatmentPlan():
             dose_matrix_path=self.configuration['dose_matrix_path'],
             dose_resolution=self.configuration['dose_resolution'])
 
-        # Load the patient data
-        self.patient_loader.load()
-
-        # Generate the plan information
-        self.plan_generator.generate()
-
         # Generate the dose information
         self.dose_info_generator.generate()
 
-        # Preprocess the input data for optimization
-        self.plan_generator.preprocess()
-
-    def model(self):
-        """
-        Set up the machine learning outcome prediction models.
-
-        Raises
-        ------
-        AttributeError
-            If the treatment plan has not been configured yet.
-        """
-
-        # Check if any required attribute is missing
-        if any(getattr(self, attribute) is None for attribute in (
-                'logger', 'datahub', 'input_checker', 'patient_loader',
-                'plan_generator', 'dose_info_generator')):
-
-            # Check if the logger has been initialized
-            if self.logger:
-
-                # Log a message about the attribute error
-                self.logger.display_error(
-                    "Please configure the treatment plan before modeling!")
-
-            # Raise an error to indicate a missing attribute
-            raise AttributeError(
-                "Please configure the treatment plan before modeling!")
-
-        # Get the segmentation dictionary
-        segmentation = Datahub().segmentation
-
-        # Get all machine learning objectives and constraints
-        ml_components = (
-            get_machine_learning_constraints(segmentation)
-            + get_machine_learning_objectives(segmentation))
-
-        # Check if any machine learning components are present
-        if len(ml_components) > 0:
-
-            # Add the machine learning outcome models to the components
-            apply(lambda component: component.add_model(), ml_components)
-
-        else:
-
-            # Log a message about machine learning components not being found
-            self.logger.display_info(
-                "Skipping setup of machine learning models (no machine "
-                "learning components found) ...")
-
-    def optimize(self):
-        """
-        Initialize the fluence optimizer and solve the problem.
-
-        Raises
-        ------
-        AttributeError
-            If the treatment plan has not been configured yet or machine \
-            learning components have not been modeled.
-        """
-
-        # Check if any required attribute is missing
-        if any(getattr(self, attribute) is None for attribute in (
-                'logger', 'datahub', 'input_checker', 'patient_loader',
-                'plan_generator', 'dose_info_generator')):
-
-            # Check if the logger has been initialized
-            if self.logger:
-
-                # Log a message about the attribute error
-                self.logger.display_error(
-                    "Please configure the treatment plan before optimization!")
-
-            # Raise an error to indicate a missing attribute
-            raise AttributeError(
-                "Please configure the treatment plan before optimization!")
-
-        # Get the segmentation dictionary
-        segmentation = Datahub().segmentation
-
-        # Check if machine learning components have not been modeled
-        if any(getattr(component, 'model') is None for component in (
-                get_machine_learning_constraints(segmentation)
-                + get_machine_learning_objectives(segmentation))):
-
-            # Log a message about the attribute error
-            self.logger.display_error("Please set up the machine learning "
-                                      "models before optimization!")
-
-            # Raise an error to indicate a missing attribute
-            raise AttributeError("Please set up the machine learning "
-                                 "models before optimization!")
-
-        # Reset the treatment plan label in the datahub
-        Datahub.label = self.configuration['label']
-
         # Initialize the fluence optimizer
         self.fluence_optimizer = FluenceOptimizer(
+            components=self.optimization['components'],
             method=self.optimization['method'],
             solver=self.optimization['solver'],
             algorithm=self.optimization['algorithm'],
@@ -585,36 +492,6 @@ class TreatmentPlan():
             upper_variable_bounds=self.optimization['upper_variable_bounds'],
             max_iter=self.optimization['max_iter'],
             tolerance=self.optimization['tolerance'])
-
-        # Solve the optimization problem with the optimizer
-        self.fluence_optimizer.solve()
-
-    def evaluate(self):
-        """
-        Initialize the evaluation classes and compute the plan metrics.
-
-        Raises
-        ------
-        AttributeError
-            If the treatment plan has not been optimized yet.
-        """
-
-        # Check if the 'fluence_optimizer' attribute is missing
-        if getattr(self, 'fluence_optimizer') is None:
-
-            # Check if the logger has been initialized
-            if self.logger:
-
-                # Log a message about the attribute error
-                self.logger.display_error(
-                    "Please optimize the treatment plan before evaluation!")
-
-            # Raise an error to indicate the missing attribute
-            raise AttributeError(
-                "Please optimize the treatment plan before evaluation!")
-
-        # Reset the treatment plan label in the datahub
-        Datahub.label = self.configuration['label']
 
         # Initialize the DVH class
         self.dose_histogram = DVHEvaluator(
@@ -629,16 +506,120 @@ class TreatmentPlan():
             display_segments=self.evaluation['display_segments'],
             display_metrics=self.evaluation['display_metrics'])
 
-        # Check if the dose has been optimized
-        if self.datahub.optimization['optimized_dose'] is not None:
+    def model(self):
+        """
+        Set up the machine learning outcome prediction models.
 
-            # Compute the dose-volume histogram from the optimized dose
-            self.dose_histogram.evaluate(
-                self.datahub.optimization['optimized_dose'])
+        Raises
+        ------
+        AttributeError
+            If the treatment plan has not been configured yet.
+        """
 
-            # Compute the dosimetrics from the optimized dose
-            self.dosimetrics.evaluate(
-                self.datahub.optimization['optimized_dose'])
+        # Reset the treatment plan label in the datahub
+        Datahub.label = self.configuration['label']
+
+        # Check if the plan has not been configured yet
+        if any(getattr(self, attribute) is None for attribute in (
+                'logger', 'datahub', 'input_checker', 'patient_loader',
+                'plan_generator', 'dose_info_generator', 'fluence_optimizer',
+                'dose_histogram', 'dosimetrics')):
+
+            # Log a message about the non-configured plan
+            self.logger.display_error(
+                "Please configure the treatment plan before modeling!")
+
+            # Raise an error to indicate the non-configured plan
+            raise AttributeError(
+                "Please configure the treatment plan before modeling!")
+
+        # Get the segmentation dictionary
+        segmentation = Datahub().segmentation
+
+        # Add the machine learning outcome models to the components
+        apply(lambda component: component.add_model(), (
+            get_machine_learning_constraints(segmentation)
+            + get_machine_learning_objectives(segmentation)))
+
+    def optimize(self):
+        """
+        Solve the inverse planning problem.
+
+        Raises
+        ------
+        AttributeError
+            If the treatment plan has not been configured yet or machine \
+            learning components have not been modeled.
+        """
+
+        # Reset the treatment plan label in the datahub
+        Datahub.label = self.configuration['label']
+
+        # Check if the plan has not been configured yet
+        if any(getattr(self, attribute) is None for attribute in (
+                'logger', 'datahub', 'input_checker', 'patient_loader',
+                'plan_generator', 'dose_info_generator', 'fluence_optimizer',
+                'dose_histogram', 'dosimetrics')):
+
+            # Log a message about the non-configured plan
+            self.logger.display_error(
+                "Please configure the treatment plan before optimization!")
+
+            # Raise an error to indicate the non-configured plan
+            raise AttributeError(
+                "Please configure the treatment plan before optimization!")
+
+        # Get the segmentation dictionary
+        segmentation = Datahub().segmentation
+
+        # Check if machine learning components have not been modeled
+        if any(getattr(component, 'model') is None for component in (
+                get_machine_learning_constraints(segmentation)
+                + get_machine_learning_objectives(segmentation))):
+
+            # Log a message about the non-modeled components
+            self.logger.display_error("Please set up the machine learning "
+                                      "models before optimization!")
+
+            # Raise an error to indicate the non-modeled components
+            raise AttributeError("Please set up the machine learning "
+                                 "models before optimization!")
+
+        # Solve the optimization problem
+        self.fluence_optimizer.solve()
+
+    def evaluate(self):
+        """
+        Initialize the evaluation classes and compute the plan metrics.
+
+        Raises
+        ------
+        AttributeError
+            If the treatment plan has not been optimized yet.
+        """
+
+        # Reset the treatment plan label in the datahub
+        Datahub.label = self.configuration['label']
+
+        # Check if the plan has not been optimized yet
+        if (getattr(self, 'fluence_optimizer') is None
+                or 'optimized_dose' not in Datahub().optimization):
+
+            # Log a message about the non-optimized plan
+            self.logger.display_error(
+                "Please optimize the treatment plan before evaluation!")
+
+            # Raise an error to indicate the non-optimized plan
+            raise AttributeError(
+                "Please optimize the treatment plan before evaluation!")
+
+        # Compute the dose-volume histogram from the optimized dose
+        self.dose_histogram.evaluate(
+            self.datahub.optimization['optimized_dose'])
+
+        # Compute the dosimetrics from the optimized dose
+        self.dosimetrics.evaluate(
+            self.datahub.optimization['optimized_dose'])
 
     def visualize(
             self,
@@ -658,23 +639,6 @@ class TreatmentPlan():
         AttributeError
             If the treatment plan has not been optimized (and evaluated) yet.
         """
-
-        # Check if any required attribute is missing
-        if all(getattr(self, attribute) is None for attribute in (
-                'fluence_optimizer', 'dose_histogram', 'dosimetrics')):
-
-            # Check if the logger has been initialized
-            if self.logger:
-
-                # Log a message about the attribute error
-                self.logger.display_error(
-                    "Please optimize and evaluate the treatment plan "
-                    "before launching the visualization interface!")
-
-            # Raise an error to indicate a missing attribute
-            raise AttributeError(
-                "Please optimize and evaluate the treatment plan "
-                "before launching the visualization interface!")
 
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration['label']
@@ -712,7 +676,7 @@ class TreatmentPlan():
         Raises
         ------
         KeyError
-            If any update key is not included in the parameter dictionaries.
+            If any update key is not included in the input dictionaries.
         """
 
         # Approve the key-value pairs
@@ -741,14 +705,11 @@ class TreatmentPlan():
 
             else:
 
-                # Check if the logger has been initialized
-                if self.logger:
-
-                    # Log a message about the key error
-                    self.logger.display_error(
-                        f"The update dictionary key '{key}' is not part of "
-                        "the configuration, optimization or evaluation "
-                        "dictionary!")
+                # Log a message about the key error
+                self.logger.display_error(
+                    f"The update dictionary key '{key}' is not part of "
+                    "the configuration, optimization or evaluation "
+                    "dictionary!")
 
                 # Raise an error to indicate an invalid key
                 raise KeyError(

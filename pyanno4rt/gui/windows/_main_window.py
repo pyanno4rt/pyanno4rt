@@ -2210,16 +2210,20 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.baseline_cbox.currentText())
             self.compare_window.reference_label.setText(
                 self.reference_cbox.currentText())
+            self.compare_window.difference_label.setText('Difference')
 
             # 
             self.compare_window.baseline_slice_widget.reset_images()
             self.compare_window.reference_slice_widget.reset_images()
+            self.compare_window.difference_slice_widget.reset_images()
 
             # 
             self.compare_window.baseline_slice_widget.add_ct(
                 baseline, baseline.datahub.computed_tomography['cube'])
             self.compare_window.reference_slice_widget.add_ct(
                 reference, reference.datahub.computed_tomography['cube'])
+            self.compare_window.difference_slice_widget.add_ct(
+                baseline, baseline.datahub.computed_tomography['cube'])
 
             # Get the axial dimension of the CT cube
             axial_length = baseline.datahub.computed_tomography[
@@ -2232,6 +2236,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.compare_window.reference_slice_widget.add_segments(
                 reference.datahub.computed_tomography,
                 reference.datahub.segmentation)
+            self.compare_window.difference_slice_widget.add_segments(
+                baseline.datahub.computed_tomography,
+                baseline.datahub.segmentation)
 
             # Set the range of the slice selection scrollbar
             self.compare_window.slice_selection_sbar.setRange(
@@ -2268,9 +2275,18 @@ class MainWindow(QMainWindow, Ui_main_window):
                 reference.datahub.optimization['optimized_dose'],
                 minima, maxima)
 
+            # Get the dose difference
+            difference = (reference.datahub.optimization['optimized_dose']
+                          - baseline.datahub.optimization['optimized_dose'])
+
+            # Add the dose difference image to the slice widget
+            self.compare_window.difference_slice_widget.add_dose(
+                difference, [difference.min()], [difference.max()])
+
             # 
             self.compare_window.baseline_slice_widget.update_images()
             self.compare_window.reference_slice_widget.update_images()
+            self.compare_window.difference_slice_widget.update_images()
 
             # Set the position of the window
             self.compare_window.position()

@@ -122,7 +122,7 @@ class KNeighborsModel(MachineLearningModel):
         -------
         prediction_model : object of class \
             :class:`~sklearn.neighbors.KNeighborsClassifier`
-            The fitted object used to represent the prediction model.
+            The object used to represent the pre-fitted prediction model.
         """
 
         # Initialize the k-nearest neighbors model

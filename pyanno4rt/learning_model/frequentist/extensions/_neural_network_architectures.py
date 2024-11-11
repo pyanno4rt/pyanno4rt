@@ -6,21 +6,21 @@
 
 from numpy import log
 from tensorflow.keras import Input, Model
+from tensorflow.keras.constraints import non_neg
 from tensorflow.keras.initializers import Constant
 from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
-from tensorflow.keras.constraints import non_neg
 
 # %% Build functions
 
 
-def build_iocnn(
+def build_vanilla_iocnn(
         input_shape,
         output_shape,
         bias,
         hyperparameters,
         squash_output):
     """
-    Build the input-output convex neural network architecture.
+    Build the vanilla input-output convex neural network architecture.
 
     Parameters
     ----------
@@ -82,14 +82,14 @@ def build_iocnn(
     return Model(inputs, outputs)
 
 
-def build_standard_nn(
+def build_vanilla_nn(
         input_shape,
         output_shape,
         bias,
         hyperparameters,
         squash_output):
     """
-    Build the standard neural network architecture.
+    Build the vanilla neural network architecture.
 
     Parameters
     ----------

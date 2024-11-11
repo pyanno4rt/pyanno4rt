@@ -139,7 +139,7 @@ class SupportVectorMachineModel(MachineLearningModel):
         Returns
         -------
         prediction_model : object of class :class:`~sklearn.svm.SVC`
-            The fitted object used to represent the prediction model.
+            The object used to represent the pre-fitted prediction model.
         """
 
         # Initialize the support vector machine model

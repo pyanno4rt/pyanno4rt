@@ -16,7 +16,7 @@ def linear_decision_function(svm, features):
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the prediction model.
+        The object used to represent the pre-fitted prediction model.
 
     features : ndarray
         Values of the input features.
@@ -37,7 +37,7 @@ def rbf_decision_function(svm, features):
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the prediction model.
+        The object used to represent the pre-fitted prediction model.
 
     features : ndarray
         Values of the input features.
@@ -67,7 +67,7 @@ def poly_decision_function(svm, features):
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the prediction model.
+        The object used to represent the pre-fitted prediction model.
 
     features : ndarray
         Values of the input features.
@@ -95,7 +95,7 @@ def sigmoid_decision_function(svm, features):
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the prediction model.
+        The object used to represent the pre-fitted prediction model.
 
     features : ndarray
         Values of the input features.
@@ -125,12 +125,12 @@ def linear_decision_gradient(svm, _):
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the prediction model.
+        The object used to represent the pre-fitted prediction model.
 
     Returns
     -------
     ndarray
-        Gradient of the linear decision function.
+        Input gradient of the linear decision function.
     """
 
     return svm.coef_.reshape(-1)
@@ -143,7 +143,7 @@ def rbf_decision_gradient(svm, features):
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the prediction model.
+        The object used to represent the pre-fitted prediction model.
 
     features : ndarray
         Values of the input features.
@@ -151,11 +151,11 @@ def rbf_decision_gradient(svm, features):
     Returns
     -------
     ndarray
-        Gradient of the radial basis decision function.
+        Input gradient of the radial basis decision function.
     """
 
     def kernel_gradient(features, support_vectors, gamma):
-        """Compute the rbf kernel gradient."""
+        """Compute the radial basis kernel gradient."""
 
         return -2*gamma*(features-support_vectors)*exp(-gamma*(
             dot(features, features.T)-2*dot(features, support_vectors.T)
@@ -173,7 +173,7 @@ def poly_decision_gradient(svm, features):
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the prediction model.
+        The object used to represent the pre-fitted prediction model.
 
     features : ndarray
         Values of the input features.
@@ -181,7 +181,7 @@ def poly_decision_gradient(svm, features):
     Returns
     -------
     ndarray
-        Gradient of the polynomial decision function.
+        Input gradient of the polynomial decision function.
     """
 
     def kernel_gradient(features, support_vectors, coef0, degree, gamma):
@@ -202,7 +202,7 @@ def sigmoid_decision_gradient(svm, features):
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the prediction model.
+        The object used to represent the pre-fitted prediction model.
 
     features : ndarray
         Values of the input features.
@@ -210,7 +210,7 @@ def sigmoid_decision_gradient(svm, features):
     Returns
     -------
     ndarray
-        Gradient of the sigmoid decision function.
+        Input gradient of the sigmoid decision function.
     """
 
     def kernel_gradient(features, support_vectors, coef0, gamma):

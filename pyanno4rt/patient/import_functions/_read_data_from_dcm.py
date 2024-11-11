@@ -30,7 +30,7 @@ def read_data_from_dcm(path):
     """
 
     # Load the DICOM files
-    files = tuple(dcmread(f'{path}{file}') for file in listdir(path))
+    files = tuple(dcmread(f'{path}/{file}') for file in listdir(path))
 
     # Get the (axially ordered) CT data files
     computed_tomography_data = tuple(sorted(

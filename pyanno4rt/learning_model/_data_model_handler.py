@@ -167,7 +167,7 @@ class DataModelHandler():
             self.dataset = ImageDataGenerator(
                 model_label=model_label,
                 model_folder_path=model_folder_path)
-            raise ValueError
+            raise ValueError("Not yet implemented")
 
         # Initialize the feature map generator
         self.feature_map_generator = FeatureMapGenerator(

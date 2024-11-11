@@ -2,10 +2,11 @@
 
 # %% External package import
 
+from operator import gt, itemgetter, le
+
 from itertools import chain, groupby
 from numpy import argwhere, array, prod, zeros
 from numpy.linalg import norm
-from operator import gt, itemgetter, le
 
 # %% Class definition
 
@@ -15,11 +16,11 @@ class OptimizableDecisionTree():
     Optimizable decision tree class.
 
     This class implements an optimizable surrogate model for scikit-learn's \
-    decision tree classifier. It exploits the pre-fitted structure of a \
-    decision tree to express the probability prediction function as a sum of \
-    path-wise products of indicator functions, and approximates a decision \
-    tree gradient as the minimum input feature shift required to improve the \
-    prediction value.
+    decision tree classifier. It exploits the pre-fitted structure of the \
+    classifier to express the probability prediction function as a sum of \
+    path-wise weighted products of indicator functions, and approximates an \
+    input "gradient" as the minimum input feature shift required to improve \
+    the prediction value.
 
     Attributes
     ----------
@@ -44,7 +45,7 @@ class OptimizableDecisionTree():
             The object used to represent the pre-fitted decision tree.
         """
 
-        # Get the structure of the tree object
+        # Get the structural properties of the tree object
         (node_count, children_left, children_right, feature, threshold,
          value) = (getattr(tree.tree_, name) for name in (
              'node_count', 'children_left', 'children_right', 'feature',
@@ -54,83 +55,88 @@ class OptimizableDecisionTree():
         nodes, thresholds, signs = [], [], []
 
         # Get the boolean leaf indicators
-        is_leaf = [cl == cr for cl, cr in zip(children_left, children_right)]
+        is_leaf = [
+            left_child == right_child
+            for left_child, right_child in zip(children_left, children_right)]
 
         # Loop over the number of nodes
         for i in range(node_count):
 
-            # Check if the starting node is the tree root
+            # Check if the current node is the root
             if i == 0:
 
-                # Append the initial left/right path
+                # Append the initial left and right path
                 nodes.append([i, children_left[i]])
                 nodes.append([i, children_right[i]])
 
-                # Append the initial left/right thresholds
+                # Append the initial left and right thresholds
                 thresholds.append(
                     [threshold[i], threshold[children_left[i]]])
                 thresholds.append(
                     [threshold[i], threshold[children_right[i]]])
 
-                # Append the initial left/right signs
+                # Append the initial left and right signs
                 signs.append([le])
                 signs.append([gt])
 
             # Check if the current node is a leaf
             elif is_leaf[i]:
 
-                # Get the end nodes for all current paths
-                end_node = array([node[-1] for node in nodes])
+                # Get the end nodes of all current paths
+                end_nodes = array([node[-1] for node in nodes])
 
                 # Check if the current node terminates a path
-                if i in end_node:
+                if i in end_nodes:
 
                     # Get the feature numbers for the path
                     features = [
                         feature[node] for node in
-                        nodes.pop(argwhere(i == end_node)[0][0])[:-1]]
+                        nodes.pop(argwhere(i == end_nodes)[0][0])[:-1]]
 
-                    # Construct the output tuple for the path
-                    output = (
+                    # Construct the data tuple for the path
+                    path_data = (
                         features,
-                        thresholds.pop(argwhere(i == end_node)[0][0]),
-                        signs.pop(argwhere(i == end_node)[0][0]),
+                        thresholds.pop(argwhere(i == end_nodes)[0][0]),
+                        signs.pop(argwhere(i == end_nodes)[0][0]),
                         value[i][:, 1][0])
 
-                    # Append the converted output to the path list
+                    # Append the data to the path list
                     self.paths.append(dict(zip(
-                        ('nodes', 'thresholds', 'signs', 'value'), output)))
+                        ('nodes', 'thresholds', 'signs', 'value'), path_data)))
 
             else:
 
-                # Get the left/right children of the current node
-                cl, cr = children_left[i], children_right[i]
+                # Get the left and right children of the current node
+                left_children, right_children = (
+                    children_left[i], children_right[i])
 
-                # Loop over the current storage lists
+                # Loop over the storage lists
                 for j, lists in enumerate(zip(nodes, thresholds, signs)):
 
                     # Check if the current node terminates the current path
                     if i == lists[0][-1]:
 
                         # Extend the paths by the children nodes
-                        nodes[j] = lists[0] + [cl]
-                        nodes.append(lists[0] + [cr])
+                        nodes[j] = lists[0] + [left_children]
+                        nodes.append(lists[0] + [right_children])
 
                         # Extend the thresholds by the children thresholds
                         thresholds[j] = lists[1] + (
-                            [threshold[cl]]*int(threshold[cl] != -2.0))
+                            [threshold[left_children]]
+                            * int(threshold[left_children] != -2.0))
                         thresholds.append(lists[1] + (
-                            [threshold[cr]]*int(threshold[cr] != -2.0)))
+                            [threshold[right_children]]
+                            * int(threshold[right_children] != -2.0)))
 
                         # Extend the signs by the children signs
                         signs[j] = lists[2] + [le]
                         signs.append(lists[2] + [gt])
 
-        # Convert the path list into a sorted/grouped path dictionary
+        # Convert the path list into a structured path dictionary
         self.paths = {
-            key: tuple(data) for (key, data) in
-            groupby(sorted(self.paths, key=itemgetter('value'), reverse=True),
-                    itemgetter('value'))}
+            key: tuple(data) for (key, data) in groupby(
+                sorted(self.paths, key=itemgetter('value'), reverse=True),
+                itemgetter('value'))}
 
     def predict_proba(
             self,
@@ -204,47 +210,38 @@ class OptimizableDecisionTree():
             # Initialize the shift vector
             shift = zeros(features.shape[1])
 
-            # Initialize the perturbation variable
-            eps = 1e-12
-
             # Get the path structure
             nodes, thresholds, signs = (
                 path[key] for key in ('nodes', 'thresholds', 'signs'))
 
             # Loop over the path nodes
-            for j, node in enumerate(nodes):
+            for i, node in enumerate(nodes):
 
                 # Check if the path condition is not fulfilled
-                if not signs[j](features[0, node], thresholds[j]):
+                if not signs[i](features[0, node], thresholds[i]):
 
-                    # Check if the condition sign is "<="
-                    if signs[j] == le:
+                    # Calculate the shift
+                    shift[node] = (
+                        features[0, node] - thresholds[i]
+                        - 1e-12*(signs[i].__name__ == 'gt'))
 
-                        # Calculate the shift
-                        shift[node] = features[0, node] - thresholds[j]
-
-                    else:
-
-                        # Otherwise, calculate the shift with perturbation
-                        shift[node] = features[0, node] - thresholds[j] - eps
-
-            # Return the shift array and its l2-norm
+            # Return the shift array and the l2-norm
             return shift, norm(shift)
 
-        # Get the current prediction value
-        current_value = self.predict_proba(features)[0][1]
+        # Get the prediction value
+        prediction = self.predict_proba(features)[0][1]
 
         # Check if the prediction value is not yet minimal
-        if len(self.paths) > 0 and current_value != tuple(self.paths)[-1]:
+        if len(self.paths) > 0 and prediction != tuple(self.paths)[-1]:
 
             # Get the next best prediction values
             temp_list = list(self.paths)
-            next_values = temp_list[temp_list.index(current_value)+1:]
+            next_values = temp_list[temp_list.index(prediction)+1:]
 
-            # Calculate next best shifts
-            shifts = [calculate_shift(features, path)
-                      for value in next_values
-                      for path in self.paths[value]]
+            # Calculate the next best shifts
+            shifts = [
+                calculate_shift(features, path) for value in next_values
+                for path in self.paths[value]]
 
             # Return the minimum improvement shift
             return min(shifts, key=lambda shifts: shifts[1])[0]

@@ -35,6 +35,7 @@ from ._monotonic import monotonic
 from ._sigmoid import sigmoid
 from ._snapshot import snapshot
 from ._replace_nan import replace_nan
+from ._reset_outputs import reset_outputs
 
 __all__ = ['add_square_brackets',
            'apply',
@@ -62,4 +63,5 @@ __all__ = ['add_square_brackets',
            'monotonic',
            'sigmoid',
            'snapshot',
-           'replace_nan']
+           'replace_nan',
+           'reset_outputs']

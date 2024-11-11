@@ -63,31 +63,22 @@ def snapshot(instance, path, include_patient_data=False,
                              "plan before taking a snapshot!")
 
     def dict_path_to_absolute(search_key, dictionary):
-        """Search a key and convert the value into an absolute path."""
+        """Search a path key and convert the value into an absolute path."""
 
         # Loop over the dictionary items
         for key, value in dictionary.items():
 
-            # Check if the current key is the searched one
+            # Check if the current key has been searched
             if key == search_key:
 
-                # Check if the value is not None
-                if value:
+                # Convert the path into an absolute value
+                dictionary[key] = abspath(value)
 
-                    # Convert the value into an absolute path
-                    dictionary[key] = abspath(value)
-
-                # Yield the modified dictionary
-                yield dictionary
-
-            # Check if the value itself is a dictionary
-            if isinstance(value, dict):
+            # Check if the value is a dictionary
+            elif isinstance(value, dict):
 
                 # Loop recursively over the function output
-                for output in dict_path_to_absolute(search_key, value):
-
-                    # Yield the output
-                    yield output
+                dict_path_to_absolute(search_key, value)
 
             # Else, check if the value is a list
             elif isinstance(value, list):
@@ -99,11 +90,9 @@ def snapshot(instance, path, include_patient_data=False,
                     if isinstance(element, dict):
 
                         # Loop recursively over the function output
-                        for output in dict_path_to_absolute(
-                                search_key, element):
+                        dict_path_to_absolute(search_key, element)
 
-                            # Yield the output
-                            yield output
+        return dictionary
 
     def save_ml_model(data):
         """Create and save the machine learning model data files."""
@@ -169,13 +158,13 @@ def snapshot(instance, path, include_patient_data=False,
     if len(ml_model_data) > 0:
 
         # Convert the data file paths into absolute paths
-        input_dictionaries['optimization'] = next(dict_path_to_absolute(
-            'data_path', input_dictionaries['optimization']))
+        input_dictionaries['optimization'] = dict_path_to_absolute(
+            'data_path', input_dictionaries['optimization'])
 
     # Convert the configuration file paths into absolute paths
     for key in ('imaging_path', 'dose_matrix_path'):
-        input_dictionaries['configuration'] = next(dict_path_to_absolute(
-            key, input_dictionaries['configuration']))
+        input_dictionaries['configuration'] = dict_path_to_absolute(
+            key, input_dictionaries['configuration'])
 
     # Open a file stream
     with open(f'{snap_path}/input_parameters.json', 'w',

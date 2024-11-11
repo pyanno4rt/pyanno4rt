@@ -116,7 +116,7 @@ class NaiveBayesModel(MachineLearningModel):
         -------
         prediction_model : object of class \
             :class:`~sklearn.naive_bayes.GaussianNB`
-            The fitted object used to represent the prediction model.
+            The object used to represent the pre-fitted prediction model.
         """
 
         # Initialize the naive Bayes model

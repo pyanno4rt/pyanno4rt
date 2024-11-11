@@ -620,10 +620,20 @@ class CtDoseSlicingWindowPyQt(QMainWindow):
         # Log a message about the plot opening
         hub.logger.display_info("Opening CT/dose slice plot ...")
 
-        # Get the CT, segmentation and optimized dose data from the datahub
+        # Get the CT and segmentation from the datahub
         computed_tomography = hub.computed_tomography
         segmentation = hub.segmentation
-        optimized_dose = hub.optimization['optimized_dose'].copy()
+
+        # Check if optimized dose data is available
+        if 'optimized_dose' in hub.optimization:
+
+            # Get the optimized dose array
+            optimized_dose = hub.optimization['optimized_dose'].copy()
+
+        else:
+
+            # Set the optimized dose to zero
+            optimized_dose = zeros(hub.computed_tomography['cube_dimensions'])
 
         def add_logo(layout):
             """Create and add the pyanno4rt logo."""
