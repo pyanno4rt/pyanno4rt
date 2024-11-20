@@ -158,9 +158,9 @@ def configure_scipy(problem_instance, lower_variable_bounds,
                 'tol': tolerance,
                 'options': {'disp': False,
                             'verbose': 0,
-                            'initial_tr_radius': 1,
-                            'sparse_jacobian': True,
-                            'factorization_method': 'AugmentedSystem',
+                            'initial_tr_radius': 100,
+                            'sparse_jacobian': None,
+                            'factorization_method': None,
                             'maxiter': max_iter},
                 'callback': callback}
 

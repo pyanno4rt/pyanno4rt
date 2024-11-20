@@ -80,33 +80,6 @@ class SliceWidget(QWidget):
         self.positions = self.parent.plans[
             self.parent.plan_ledit.text()].datahub.computed_tomography['z']
 
-    def add_dose(self, dose_cube):
-
-        self.dose_cube = rot90(transpose(dose_cube, (0, 1, 2)), 3)
-
-        self.dose_cube_with_nan = self.dose_cube.copy()
-        self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
-
-        self.image_window.addItem(self.bar)
-
-        quantiles = [0.1*factor1 for factor1 in range(1, 10)]
-        quantiles.extend([0.95+0.05*factor2 for factor2 in range(0, 6)])
-
-        reference_dose = self.dose_cube.max()/1.2
-
-        levels = [reference_dose*level for level in quantiles]
-        norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
-        mapper = ScalarMappable(norm=norm, cmap=colormaps['jet'])
-
-        self.dose_contours = []
-        for level in levels:
-            contour = IsocurveItem(level=level, pen=mkPen(
-                tuple([255*rgba for rgba in mapper.to_rgba(level)]),
-                width=2.5))
-            contour.setParentItem(self.dose_image)
-            contour.setZValue(5)
-            self.dose_contours.append(contour)
-
     def add_segments(self, computed_tomography, segmentation):
 
         def generate_segment_mask(segment):
@@ -142,6 +115,33 @@ class SliceWidget(QWidget):
             contour.setParentItem(image)
             contour.setZValue(5)
             self.segment_contours.append(contour)
+
+    def add_dose(self, dose_cube):
+
+        self.dose_cube = rot90(transpose(dose_cube, (0, 1, 2)), 3)
+
+        self.dose_cube_with_nan = self.dose_cube.copy()
+        self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
+
+        self.image_window.addItem(self.bar)
+
+        quantiles = [0.1*factor1 for factor1 in range(1, 10)]
+        quantiles.extend([0.95+0.05*factor2 for factor2 in range(0, 6)])
+
+        reference_dose = self.dose_cube.max()/1.2
+
+        levels = [reference_dose*level for level in quantiles]
+        norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
+        mapper = ScalarMappable(norm=norm, cmap=colormaps['jet'])
+
+        self.dose_contours = []
+        for level in levels:
+            contour = IsocurveItem(level=level, pen=mkPen(
+                tuple([255*rgba for rgba in mapper.to_rgba(level)]),
+                width=2.5))
+            contour.setParentItem(self.dose_image)
+            contour.setZValue(5)
+            self.dose_contours.append(contour)
 
     def change_dose_opacity(self):
         """."""

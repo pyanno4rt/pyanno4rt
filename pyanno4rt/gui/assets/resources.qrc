@@ -1475,6 +1475,10 @@
     <file>icons_special/presentation-chart-4-svgrepo-com.svg</file>
     <file>icons_special/find-path-svgrepo-com.svg</file>
     <file>icons_special/machine-learning-03-svgrepo-com.svg</file>
+    <file>icons_special/load.gif</file>
+    <file>icons_special/stop.svg</file>
+    <file>icons_special/logo_black_icon.png</file>
+    <file>icons_special/logo_white_icon.png</file>
   </qresource>
   <qresource prefix="black_icons">
     <file>icons_black/activity.svg</file>

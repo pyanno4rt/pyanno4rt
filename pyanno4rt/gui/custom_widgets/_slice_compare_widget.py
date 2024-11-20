@@ -19,17 +19,18 @@ from pyqtgraph import (
 class SliceCompareWidget(QWidget):
     """."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, cmap='jet'):
 
         # Call the superclass constructor
         super().__init__()
 
         # 
         self.parent = parent
+        self.cmap = cmap
 
         # Set the vertical layout for the slice widget
         slice_layout = QVBoxLayout(self)
-        slice_layout.setContentsMargins(10, 10, 10, 0)
+        slice_layout.setContentsMargins(0, 0, 0, 0)
 
         # Create an image window, set its size, and add it to the slice layout
         self.image_window = GraphicsLayoutWidget()
@@ -46,13 +47,13 @@ class SliceCompareWidget(QWidget):
         self.dose_image = ImageItem()
         self.dose_image.setOpacity(0.7)
         self.dose_image.setLookupTable(
-            colormap.get('jet', 'matplotlib').getLookupTable(0.0, 1.0))
+            colormap.get(cmap, 'matplotlib').getLookupTable(0.0, 1.0))
         self.viewbox.addItem(self.dose_image)
 
         # 
         self.bar = ColorBarItem(
             interactive=False, width=25, label='',
-            rounding=0.1, colorMap=colormap.get('jet', 'matplotlib'),
+            rounding=0.1, colorMap=colormap.get(cmap, 'matplotlib'),
             orientation='vertical')
         self.bar.setImageItem(self.dose_image)
 
@@ -82,36 +83,6 @@ class SliceCompareWidget(QWidget):
 
         # 
         self.positions = plan.datahub.computed_tomography['z']
-
-    def add_dose(self, dose_cube, minima, maxima):
-
-        self.minima = minima
-        self.maxima = maxima
-
-        self.dose_cube = rot90(transpose(dose_cube, (0, 1, 2)), 3)
-
-        self.dose_cube_with_nan = self.dose_cube.copy()
-        self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
-
-        self.image_window.addItem(self.bar)
-
-        quantiles = [0.1*factor1 for factor1 in range(1, 10)]
-        quantiles.extend([0.95+0.05*factor2 for factor2 in range(0, 6)])
-
-        reference_dose = max(self.maxima)/1.2
-
-        levels = [reference_dose*level for level in quantiles]
-        norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
-        mapper = ScalarMappable(norm=norm, cmap=colormaps['jet'])
-
-        self.dose_contours = []
-        for level in levels:
-            contour = IsocurveItem(level=level, pen=mkPen(
-                tuple([255*rgba for rgba in mapper.to_rgba(level)]),
-                width=2.5))
-            contour.setParentItem(self.dose_image)
-            contour.setZValue(5)
-            self.dose_contours.append(contour)
 
     def add_segments(self, computed_tomography, segmentation):
 
@@ -148,6 +119,36 @@ class SliceCompareWidget(QWidget):
             contour.setParentItem(image)
             contour.setZValue(5)
             self.segment_contours.append(contour)
+
+    def add_dose(self, dose_cube, minima, maxima):
+
+        self.minima = minima
+        self.maxima = maxima
+
+        self.dose_cube = rot90(transpose(dose_cube, (0, 1, 2)), 3)
+
+        self.dose_cube_with_nan = self.dose_cube.copy()
+        self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
+
+        self.image_window.addItem(self.bar)
+
+        quantiles = [0.1*factor1 for factor1 in range(1, 10)]
+        quantiles.extend([0.95+0.05*factor2 for factor2 in range(0, 6)])
+
+        reference_dose = max(self.maxima)/1.2
+
+        levels = [reference_dose*level for level in quantiles]
+        norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
+        mapper = ScalarMappable(norm=norm, cmap=colormaps[self.cmap])
+
+        self.dose_contours = []
+        for level in levels:
+            contour = IsocurveItem(level=level, pen=mkPen(
+                tuple([255*rgba for rgba in mapper.to_rgba(level)]),
+                width=2.5))
+            contour.setParentItem(self.dose_image)
+            contour.setZValue(5)
+            self.dose_contours.append(contour)
 
     def change_dose_opacity(self):
         """."""
@@ -232,7 +233,7 @@ class SliceCompareWidget(QWidget):
                 # Update the dose contour lines
                 contour.setData(self.dose_cube[:, :, self.slice])
 
-            self.bar.setLevels((min(0, self.dose_cube.min()),
+            self.bar.setLevels((min(0, round(min(self.minima), 1)-0.1),
                                 round(max(self.maxima), 1)+0.1))
 
         if (self.segment_masks is not None

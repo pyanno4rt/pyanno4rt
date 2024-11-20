@@ -121,7 +121,8 @@ class DataModelHandler():
 
         # Loop over the model-related datahub attributes
         for attribute in ('datasets', 'feature_maps', 'model_instances',
-                          'model_inspections', 'model_evaluations'):
+                          'model_inspections', 'model_evaluations',
+                          'model_outcomes'):
 
             # Check if the attribute has not been initialized yet
             if not getattr(hub, attribute):

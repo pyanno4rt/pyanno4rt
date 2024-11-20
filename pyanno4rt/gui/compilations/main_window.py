@@ -424,7 +424,7 @@ class Ui_main_window(object):
         self.scroll_configuration.setWidgetResizable(True)
         self.scroll_configuration.setObjectName("scroll_configuration")
         self.scroll_configuration_content = QtWidgets.QWidget()
-        self.scroll_configuration_content.setGeometry(QtCore.QRect(0, 0, 369, 912))
+        self.scroll_configuration_content.setGeometry(QtCore.QRect(0, 0, 368, 912))
         self.scroll_configuration_content.setObjectName("scroll_configuration_content")
         self.scroll_configuration_meta_layout = QtWidgets.QVBoxLayout(self.scroll_configuration_content)
         self.scroll_configuration_meta_layout.setContentsMargins(10, 10, 10, 10)
@@ -973,6 +973,8 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.components_lwidget.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.components_lwidget.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.components_lwidget.setObjectName("components_lwidget")
         self.optimization_content_layout.addWidget(self.components_lwidget)
         spacerItem36 = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -1533,7 +1535,7 @@ class Ui_main_window(object):
         self.scroll_evaluation.setWidgetResizable(True)
         self.scroll_evaluation.setObjectName("scroll_evaluation")
         self.scroll_evaluation_content = QtWidgets.QWidget()
-        self.scroll_evaluation_content.setGeometry(QtCore.QRect(0, 0, 369, 840))
+        self.scroll_evaluation_content.setGeometry(QtCore.QRect(0, -457, 369, 840))
         self.scroll_evaluation_content.setObjectName("scroll_evaluation_content")
         self.scroll_evaluation_meta_layout = QtWidgets.QVBoxLayout(self.scroll_evaluation_content)
         self.scroll_evaluation_meta_layout.setContentsMargins(10, 10, 10, 10)
@@ -1768,6 +1770,9 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.display_segments_lwidget.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.display_segments_lwidget.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.display_segments_lwidget.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.display_segments_lwidget.setFlow(QtWidgets.QListView.TopToBottom)
         self.display_segments_lwidget.setObjectName("display_segments_lwidget")
         self.horizontalLayout.addWidget(self.display_segments_lwidget)
@@ -1784,6 +1789,9 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.display_metrics_lwidget.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.display_metrics_lwidget.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.display_metrics_lwidget.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.display_metrics_lwidget.setFlow(QtWidgets.QListView.TopToBottom)
         self.display_metrics_lwidget.setViewMode(QtWidgets.QListView.ListMode)
         self.display_metrics_lwidget.setObjectName("display_metrics_lwidget")
@@ -2635,8 +2643,8 @@ class Ui_main_window(object):
         main_window.setStatusBar(self.status_bar)
 
         self.retranslateUi(main_window)
-        self.viewer_widget.setCurrentIndex(0)
-        self.composer_widget.setCurrentIndex(0)
+        self.viewer_widget.setCurrentIndex(1)
+        self.composer_widget.setCurrentIndex(2)
         self.log_level_cbox.setCurrentIndex(1)
         self.method_cbox.setCurrentIndex(2)
         self.solver_cbox.setCurrentIndex(3)

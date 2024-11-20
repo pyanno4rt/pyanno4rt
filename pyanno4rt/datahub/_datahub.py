@@ -79,6 +79,10 @@ class Datahub():
         evaluators. Each evaluator holds information on the evaluation \
         measures calculated.
 
+    model_outcomes : None or dict
+        Dictionary with pairs of model labels and associated model outcome \
+        predictions after optimization.
+
     dose_histogram : None or dict
         Dictionary with information on the cumulative or differential \
         dose-volume histogram for each segmented structure.
@@ -105,6 +109,7 @@ class Datahub():
     model_instances = None
     model_inspections = None
     model_evaluations = None
+    model_outcomes = None
     dose_histogram = None
     dosimetrics = None
 

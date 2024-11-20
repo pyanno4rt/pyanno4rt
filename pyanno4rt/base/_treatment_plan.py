@@ -466,7 +466,8 @@ class TreatmentPlan():
 
         # Initialize the plan generator
         self.plan_generator = PlanGenerator(
-            modality=self.configuration['modality'])
+            modality=self.configuration['modality'],
+            components=self.optimization['components'])
 
         # Generate the plan information
         self.plan_generator.generate()
@@ -480,41 +481,8 @@ class TreatmentPlan():
         # Generate the dose information
         self.dose_info_generator.generate()
 
-        # Initialize the fluence optimizer
-        self.fluence_optimizer = FluenceOptimizer(
-            components=self.optimization['components'],
-            method=self.optimization['method'],
-            solver=self.optimization['solver'],
-            algorithm=self.optimization['algorithm'],
-            initial_strategy=self.optimization['initial_strategy'],
-            initial_fluence_vector=self.optimization['initial_fluence_vector'],
-            lower_variable_bounds=self.optimization['lower_variable_bounds'],
-            upper_variable_bounds=self.optimization['upper_variable_bounds'],
-            max_iter=self.optimization['max_iter'],
-            tolerance=self.optimization['tolerance'])
-
-        # Initialize the DVH class
-        self.dose_histogram = DVHEvaluator(
-            dvh_type=self.evaluation['dvh_type'],
-            number_of_points=self.evaluation['number_of_points'],
-            display_segments=self.evaluation['display_segments'])
-
-        # Initialize the dosimetrics class
-        self.dosimetrics = DosimetricsEvaluator(
-            reference_volume=self.evaluation['reference_volume'],
-            reference_dose=self.evaluation['reference_dose'],
-            display_segments=self.evaluation['display_segments'],
-            display_metrics=self.evaluation['display_metrics'])
-
     def model(self):
-        """
-        Set up the machine learning outcome prediction models.
-
-        Raises
-        ------
-        AttributeError
-            If the treatment plan has not been configured yet.
-        """
+        """Set up the machine learning outcome prediction models."""
 
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration['label']
@@ -522,58 +490,42 @@ class TreatmentPlan():
         # Check if the plan has not been configured yet
         if any(getattr(self, attribute) is None for attribute in (
                 'logger', 'datahub', 'input_checker', 'patient_loader',
-                'plan_generator', 'dose_info_generator', 'fluence_optimizer',
-                'dose_histogram', 'dosimetrics')):
+                'plan_generator', 'dose_info_generator')):
 
             # Log a message about the non-configured plan
             self.logger.display_error(
                 "Please configure the treatment plan before modeling!")
 
-            # Raise an error to indicate the non-configured plan
-            raise AttributeError(
-                "Please configure the treatment plan before modeling!")
+        else:
 
-        # Get the segmentation dictionary
-        segmentation = Datahub().segmentation
+            # Get the segmentation dictionary
+            segmentation = Datahub().segmentation
 
-        # Add the machine learning outcome models to the components
-        apply(lambda component: component.add_model(), (
-            get_machine_learning_constraints(segmentation)
-            + get_machine_learning_objectives(segmentation)))
+            # Add the machine learning outcome models to the components
+            apply(lambda component: component.add_model(), (
+                get_machine_learning_constraints(segmentation)
+                + get_machine_learning_objectives(segmentation)))
 
     def optimize(self):
-        """
-        Solve the inverse planning problem.
-
-        Raises
-        ------
-        AttributeError
-            If the treatment plan has not been configured yet or machine \
-            learning components have not been modeled.
-        """
+        """Solve the inverse planning problem."""
 
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration['label']
 
+        # Get the segmentation dictionary
+        segmentation = Datahub().segmentation
+
         # Check if the plan has not been configured yet
         if any(getattr(self, attribute) is None for attribute in (
                 'logger', 'datahub', 'input_checker', 'patient_loader',
-                'plan_generator', 'dose_info_generator', 'fluence_optimizer',
-                'dose_histogram', 'dosimetrics')):
+                'plan_generator', 'dose_info_generator')):
 
             # Log a message about the non-configured plan
             self.logger.display_error(
                 "Please configure the treatment plan before optimization!")
 
-            # Raise an error to indicate the non-configured plan
-            raise AttributeError(
-                "Please configure the treatment plan before optimization!")
-
-        # Get the segmentation dictionary
-        segmentation = Datahub().segmentation
-
         # Check if machine learning components have not been modeled
-        if any(getattr(component, 'model') is None for component in (
+        elif any(getattr(component, 'model') is None for component in (
                 get_machine_learning_constraints(segmentation)
                 + get_machine_learning_objectives(segmentation))):
 
@@ -581,22 +533,28 @@ class TreatmentPlan():
             self.logger.display_error("Please set up the machine learning "
                                       "models before optimization!")
 
-            # Raise an error to indicate the non-modeled components
-            raise AttributeError("Please set up the machine learning "
-                                 "models before optimization!")
+        else:
 
-        # Solve the optimization problem
-        self.fluence_optimizer.solve()
+            # Initialize the fluence optimizer
+            self.fluence_optimizer = FluenceOptimizer(
+                method=self.optimization['method'],
+                solver=self.optimization['solver'],
+                algorithm=self.optimization['algorithm'],
+                initial_strategy=self.optimization['initial_strategy'],
+                initial_fluence_vector=self.optimization[
+                    'initial_fluence_vector'],
+                lower_variable_bounds=self.optimization[
+                    'lower_variable_bounds'],
+                upper_variable_bounds=self.optimization[
+                    'upper_variable_bounds'],
+                max_iter=self.optimization['max_iter'],
+                tolerance=self.optimization['tolerance'])
+
+            # Solve the optimization problem
+            self.fluence_optimizer.solve()
 
     def evaluate(self):
-        """
-        Initialize the evaluation classes and compute the plan metrics.
-
-        Raises
-        ------
-        AttributeError
-            If the treatment plan has not been optimized yet.
-        """
+        """Initialize the evaluation classes and compute the plan metrics."""
 
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration['label']
@@ -609,17 +567,28 @@ class TreatmentPlan():
             self.logger.display_error(
                 "Please optimize the treatment plan before evaluation!")
 
-            # Raise an error to indicate the non-optimized plan
-            raise AttributeError(
-                "Please optimize the treatment plan before evaluation!")
+        else:
 
-        # Compute the dose-volume histogram from the optimized dose
-        self.dose_histogram.evaluate(
-            self.datahub.optimization['optimized_dose'])
+            # Initialize the DVH class
+            self.dose_histogram = DVHEvaluator(
+                dvh_type=self.evaluation['dvh_type'],
+                number_of_points=self.evaluation['number_of_points'],
+                display_segments=self.evaluation['display_segments'])
 
-        # Compute the dosimetrics from the optimized dose
-        self.dosimetrics.evaluate(
-            self.datahub.optimization['optimized_dose'])
+            # Initialize the dosimetrics class
+            self.dosimetrics = DosimetricsEvaluator(
+                reference_volume=self.evaluation['reference_volume'],
+                reference_dose=self.evaluation['reference_dose'],
+                display_segments=self.evaluation['display_segments'],
+                display_metrics=self.evaluation['display_metrics'])
+
+            # Compute the dose-volume histogram from the optimized dose
+            self.dose_histogram.evaluate(
+                self.datahub.optimization['optimized_dose'])
+
+            # Compute the dosimetrics from the optimized dose
+            self.dosimetrics.evaluate(
+                self.datahub.optimization['optimized_dose'])
 
     def visualize(
             self,
@@ -633,11 +602,6 @@ class TreatmentPlan():
             :class:`~pyanno4rt.gui.windows._main_window.MainWindow`, \
                 default=None
             The object used as a parent window for the visualization interface.
-
-        Raises
-        ------
-        AttributeError
-            If the treatment plan has not been optimized (and evaluated) yet.
         """
 
         # Reset the treatment plan label in the datahub
@@ -710,8 +674,3 @@ class TreatmentPlan():
                     f"The update dictionary key '{key}' is not part of "
                     "the configuration, optimization or evaluation "
                     "dictionary!")
-
-                # Raise an error to indicate an invalid key
-                raise KeyError(
-                    f"The update dictionary key '{key}' is not part of the "
-                    "configuration, optimization or evaluation dictionary!")

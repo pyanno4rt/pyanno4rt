@@ -15,7 +15,6 @@ from scipy.ndimage import zoom
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components import component_map
 from pyanno4rt.optimization.initializers import FluenceInitializer
 from pyanno4rt.optimization.projections import projection_map
 from pyanno4rt.optimization.methods import method_map
@@ -70,7 +69,6 @@ class FluenceOptimizer():
 
     def __init__(
             self,
-            components,
             method,
             solver,
             algorithm,
@@ -91,8 +89,8 @@ class FluenceOptimizer():
         start_time = time()
 
         # Set the objective and constraint functions
-        objectives, constraints = FluenceOptimizer.set_optimization_components(
-            components)
+        objectives, constraints = (
+            hub.optimization['objectives'], hub.optimization['constraints'])
 
         # Remove overlaps between segments according to their priority
         FluenceOptimizer.remove_overlap(objectives | constraints)
@@ -148,134 +146,8 @@ class FluenceOptimizer():
             'solver_object': solver_object,
             'initial_time': time()-start_time}
 
-        # Check if the optimization dictionary already exists
-        if hub.optimization:
-
-            # Extend the optimization dictionary in the datahub
-            hub.optimization |= optimization_dictionary
-
-        else:
-
-            # Overwrite the optimization dictionary in the datahub
-            hub.optimization = optimization_dictionary
-
-    @staticmethod
-    def set_optimization_components(components):
-        """
-        Set the components of the optimization problem.
-
-        Parameters
-        ----------
-        components : dict
-            Optimization components for each segment of interest, i.e., \
-            objectives and constraints, in the raw user format.
-
-        Returns
-        -------
-        dict
-            Dictionary with the internally configured objectives.
-
-        dict
-            Dictionary with the internally configured constraints.
-        """
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the logger and the segmentation data
-        logger, segmentation = hub.logger, hub.segmentation
-
-        # Loop over the segments
-        for segment in segmentation:
-
-            # Reset the segment objective and constraint key
-            segmentation[segment]['objective'] = None
-            segmentation[segment]['constraint'] = None
-
-        # Log a message about the components setting
-        logger.display_info("Setting objectives and constraints ...")
-
-        # Initialize the objective and constraint dictionaries
-        objectives, constraints = {}, {}
-
-        # Set the base dictionaries for the component types
-        bases = {'objective': objectives, 'constraint': constraints}
-
-        def set_component(component, segment, category, base_dict):
-            """Set the component by its segment and type assignment."""
-
-            # Get the instance from the component map
-            instance = component_map[component['class']](
-                **component['parameters'])
-
-            # Log a message about setting the instance
-            logger.display_info(
-                f"Setting {category} '{instance.name}' for "
-                f"{[segment]+instance.link} ...")
-
-            # Get the instance key for the base dictionary
-            instance_key = '-'.join(filter(
-                None, (f"{[segment]+instance.link}", instance.name,
-                       instance.identifier)))
-
-            # Check if the instance is already included in the base dictionary
-            if instance_key not in base_dict:
-
-                # Add the instance to the base dictionary
-                base_dict[instance_key] = {
-                    'segments': [segment]+instance.link,
-                    'instance': instance}
-
-                # Check if no instance has been set yet
-                if not segmentation[segment][category]:
-
-                    # Add the instance to the segment
-                    segmentation[segment][category] = instance
-
-                else:
-
-                    # Check if the component is a list
-                    if isinstance(segmentation[segment][category], list):
-
-                        # Append the instance
-                        segmentation[segment][category].append(instance)
-
-                    else:
-
-                        # Make a list and add the instance
-                        segmentation[segment][category] = [
-                            segmentation[segment][category], instance]
-
-        # Loop over the segments in the components dictionary
-        for segment in components:
-
-            # Check if the segment holds a list of components
-            if isinstance(components[segment], list):
-
-                # Loop over the component list
-                for element in components[segment]:
-
-                    # Get the category and component
-                    category, component = element.values()
-
-                    # Get the base dictionary
-                    base_dict = bases[category]
-
-                    # Set the component
-                    set_component(component, segment, category, base_dict)
-
-            else:
-
-                # Get the category and component
-                category, component = components[segment].values()
-
-                # Get the base dictionary
-                base_dict = bases[category]
-
-                # Set the component
-                set_component(component, segment, category, base_dict)
-
-        return objectives, constraints
+        # Extend the optimization dictionary in the datahub
+        hub.optimization |= optimization_dictionary
 
     @staticmethod
     def remove_overlap(components):
@@ -602,6 +474,10 @@ class FluenceOptimizer():
                     100*(sign*value)**(1-is_sigmoidal)
                     * ((sign == -1)+sign*sigmoid(value, multiplier, summand))
                     ** is_sigmoidal, 2)
+
+                # Add the (N)TCP prediction value to the datahub
+                hub.model_outcomes[
+                    component.data_model_handler.model_label] = value
 
                 # Log a message about the (N)TCP prediction
                 logger.display_info(

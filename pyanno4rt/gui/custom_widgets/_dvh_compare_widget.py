@@ -1,4 +1,4 @@
-"""DVH widget."""
+"""DVH comparison widget."""
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
@@ -12,7 +12,7 @@ from pyqtgraph import (colormap, InfiniteLine, mkPen, PlotWidget, SignalProxy)
 # %% Class definition
 
 
-class DVHWidget(QWidget):
+class DVHCompareWidget(QWidget):
     """."""
 
     def __init__(self, parent=None):
@@ -25,7 +25,7 @@ class DVHWidget(QWidget):
 
         # Set the vertical layout for the DVH widget
         dvh_layout = QVBoxLayout(self)
-        dvh_layout.setContentsMargins(10, 10, 10, 0)
+        dvh_layout.setContentsMargins(0, 0, 0, 0)
 
         # 
         self.plot_graph = PlotWidget()
@@ -55,14 +55,19 @@ class DVHWidget(QWidget):
         self.plot_graph.addItem(self.vertical_line, ignoreBounds=True)
         self.plot_graph.addItem(self.horizontal_line, ignoreBounds=True)
 
-    def add_style_and_data(self, dose_histogram):
+    def add_style_and_data(self, dose_histogram, x_range=None, y_range=None,
+                           baseline=None, reference=None):
         """."""
 
         # 
         self.dose_histogram = dose_histogram
+        self.x_range = x_range
+        self.y_range = y_range
+        self.baseline = baseline
+        self.reference = reference
 
         # 
-        self.segments = tuple(segment for segment in (*dose_histogram,)
+        self.segments = tuple(segment for segment in self.dose_histogram
                               if segment not in ('evaluation_points',
                                                  'display_segments'))
 
@@ -106,9 +111,21 @@ class DVHWidget(QWidget):
                                  % (0, 0.0))
 
         # 
+        if x_range is None:
+
+            # 
+            self.x_range = (0, max(self.dose_histogram['evaluation_points']))
+
+        # 
+        if y_range is None:
+
+            # 
+            self.y_range = (0, 100)
+
+        # 
         self.plot_graph.plotItem.vb.setLimits(
-            xMin=0, xMax=max(dose_histogram['evaluation_points']),
-            yMin=-0.1, yMax=100.1)
+            xMin=self.x_range[0], xMax=self.x_range[1],
+            yMin=self.y_range[0]-0.1, yMax=self.y_range[1]+0.1)
 
         # 
         self.plot_graph.plotItem.vb.enableAutoRange()
@@ -117,8 +134,33 @@ class DVHWidget(QWidget):
         """."""
 
         # 
-        dosimetrics = (self.parent.plans[self.parent.plan_ledit.text()]
-                       .datahub.dosimetrics)
+        if self.baseline and not self.reference:
+
+            # 
+            dosimetrics = self.baseline.datahub.dosimetrics
+
+        # 
+        elif self.reference and not self.baseline:
+
+            # 
+            dosimetrics = self.reference.datahub.dosimetrics
+
+        # 
+        if self.baseline and self.reference:
+
+            # 
+            dosimetrics = {
+                segment: {metric: (
+                    self.reference.datahub.dosimetrics[segment][metric]
+                    - self.baseline.datahub.dosimetrics[segment][metric])
+                    for metric in self.baseline.datahub.dosimetrics[segment]}
+                for segment in self.baseline.datahub.dosimetrics
+                if segment not in ('display_segments', 'display_metrics')}
+            dosimetrics |= {
+                'display_segments': (
+                    self.baseline.datahub.dosimetrics['display_segments']),
+                'display_metrics': (
+                    self.baseline.datahub.dosimetrics['display_metrics'])}
 
         # 
         self.parent.segment_ledit.setText(event.name())
@@ -199,9 +241,8 @@ class DVHWidget(QWidget):
             mouse_point = self.plot_graph.plotItem.vb.mapSceneToView(
                 coordinates)
 
-            if ((0 <= mouse_point.x() <=
-                self.plot_graph.plotItem.vb.getState()['limits']['xLimits'][1])
-                    and 0 <= mouse_point.y() <= 100):
+            if (self.x_range[0] <= mouse_point.x() <= self.x_range[1]
+                    and self.y_range[0] <= mouse_point.y() <= self.y_range[1]):
 
                 # Update the graph title
                 self.plot_graph.setTitle(
@@ -225,12 +266,10 @@ class DVHWidget(QWidget):
             self.vertical_line.setPos(mouse_point.x())
             self.horizontal_line.setPos(mouse_point.y())
 
-    def update_dvh(self):
+    def update_dvh(self, segments):
         """."""
 
-        for segment in (
-                segment for segment in self.segments
-                if segment in self.dose_histogram['display_segments']):
+        for segment in segments:
 
             pen = mkPen(color=self.segment_styles[segment][0],
                         style=self.segment_styles[segment][1],

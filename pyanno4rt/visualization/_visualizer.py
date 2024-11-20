@@ -187,8 +187,8 @@ class MainWindow(QMainWindow):
             button.clicked.connect(getattr(self, subclass.name).view)
 
             # Check if the iteration plot buttons should be disabled
-            if (not hub.optimization or
-                (not hasattr(hub.optimization['problem'], 'tracker')
+            if (('problem' not in hub.optimization or
+                not hasattr(hub.optimization['problem'], 'tracker')
                  or all(value == [] for value
                         in hub.optimization['problem'].tracker.values()))
                     and subclass.name in (
@@ -210,7 +210,7 @@ class MainWindow(QMainWindow):
                 button.setEnabled(False)
 
             # Check if the feature iterations button should be disabled
-            if ((not hub.optimization or
+            if (('problem' not in hub.optimization or
                 (not hasattr(hub.optimization['problem'], 'tracker')
                  or all(value == [] for value
                         in hub.optimization['problem'].tracker.values()))

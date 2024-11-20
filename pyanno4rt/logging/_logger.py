@@ -47,8 +47,8 @@ class Logger():
 
             # Log a message about the software versions used
             self.display_info(
-                f"Running pyanno4rt v{version('pyanno4rt')} with Python "
-                f"{python_version()} ...")
+                f"Running pyanno4rt Amadeus v{version('pyanno4rt')} with "
+                "Python {python_version()} ...")
 
             # Log a message about the initialization of the class
             self.display_info("Initializing logger ...")

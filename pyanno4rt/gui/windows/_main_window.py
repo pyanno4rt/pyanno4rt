@@ -20,6 +20,7 @@ from webbrowser import open as webopen
 # %% Internal package import
 
 from pyanno4rt.base import TreatmentPlan
+from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.main_window import Ui_main_window
 from pyanno4rt.gui.custom_widgets import DVHWidget, SliceWidget
 from pyanno4rt.gui.styles._custom_styles import (
@@ -72,7 +73,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.setupUi(self)
 
         # Set the window icon
-        self.setWindowIcon(QIcon('./logo/logo_white_icon.png'))
+        self.setWindowIcon(QIcon(
+            ':/special_icons/icons_special/logo_white_icon.png'))
 
         # Initialize the GUI plans dictionary
         self.plans = {}
@@ -124,40 +126,40 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.status_bar.reformat()
 
         self.loader_label = QLabel(self)
-        self.movie = QMovie('./pyanno4rt/gui/assets/load.gif')
+        self.movie = QMovie(':/special_icons/icons_special/load.gif')
         self.loader_label.setMovie(self.movie)
         self.movie.start()
         self.loader_label.hide()
 
         self.stop_thread_pbutton = QPushButton()
         self.stop_thread_pbutton.setIcon(
-            QIcon('./pyanno4rt/gui/assets/icons_special/stop.svg'))
+            QIcon(':/special_icons/icons_special/stop.svg'))
         self.stop_thread_pbutton.setToolTip("Stop the current process")
         self.stop_thread_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.logo_label = QLabel()
-        pixmap = QPixmap('./logo/logo_black_icon.png')
+        pixmap = QPixmap(':/special_icons/icons_special/logo_black_icon.png')
         pixmap = pixmap.scaled(int(pixmap.width()/4), int(pixmap.height()/4))
         self.logo_label.setPixmap(pixmap)
         self.logo_label.setStyleSheet("QLabel {border: 0px;}")
 
-        self.version_label = QLabel(f"v{version('pyanno4rt')}")
+        self.version_label = QLabel(f"Amadeus v{version('pyanno4rt')}")
 
         self.github_pbutton = QPushButton()
         self.github_pbutton.setIcon(
-            QIcon('./pyanno4rt/gui/assets/icons_white/github.svg'))
+            QIcon(':/white_icons/icons_white/github.svg'))
         self.github_pbutton.setToolTip("Open Github")
         self.github_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.rtd_pbutton = QPushButton()
         self.rtd_pbutton.setIcon(
-            QIcon('./pyanno4rt/gui/assets/icons_white/file-text.svg'))
+            QIcon(':/white_icons/icons_white/file-text.svg'))
         self.rtd_pbutton.setToolTip("Open Read the Docs")
         self.rtd_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.pypi_pbutton = QPushButton()
         self.pypi_pbutton.setIcon(
-            QIcon('./pyanno4rt/gui/assets/icons_white/box.svg'))
+            QIcon(':/white_icons/icons_white/box.svg'))
         self.pypi_pbutton.setToolTip("Open PyPI")
         self.pypi_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
 
@@ -301,6 +303,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'collapse_tree_pbutton': pbutton_composer,
                          'close_tree_pbutton': pbutton_composer,
                          'close_log_pbutton': pbutton_composer,
+                         'joint_dvh_pbutton': pbutton_composer,
+                         'joint_ntcp_pbutton': pbutton_composer,
+                         'close_compare_pbutton': pbutton_composer,
                          'reset_settings_pbutton': pbutton_composer,
                          'save_settings_pbutton': pbutton_composer,
                          'close_text_pbutton': pbutton_composer,
@@ -352,7 +357,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.set_initial_plan(treatment_plan)
 
         # Set the initial window size
-        self.resize(1024, 768)
+        self.resize(1920, 1080)
         self.show()
 
     def connect_signals(self):
@@ -482,23 +487,17 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Filter the event
             return True
 
-        # Else, return the even
+        # Else, return the event
         return super().eventFilter(source, event)
 
     def mousePressEvent(self, event):
 
         super(QListWidget, self.components_lwidget).mousePressEvent(event)
-        super(QListWidget, self.display_segments_lwidget).mousePressEvent(event)
-        super(QListWidget, self.display_metrics_lwidget).mousePressEvent(event)
 
         if not self.components_lwidget.indexAt(event.pos()).isValid():
             self.components_lwidget.clearSelection()
-
-        if not self.display_segments_lwidget.indexAt(event.pos()).isValid():
-            self.display_segments_lwidget.clearSelection()
-
-        if not self.display_metrics_lwidget.indexAt(event.pos()).isValid():
-            self.display_metrics_lwidget.clearSelection()
+            self.set_disabled((
+                'components_minus_tbutton', 'components_edit_tbutton'))
 
     def set_initial_plan(
             self,
@@ -598,12 +597,13 @@ class MainWindow(QMainWindow, Ui_main_window):
             if key not in ('composer_widget', 'tab_workflow',
                            'viewer_widget', 'expand_tree_pbutton',
                            'collapse_tree_pbutton', 'close_tree_pbutton',
-                           'close_log_pbutton', 'reset_settings_pbutton',
-                           'save_settings_pbutton', 'close_text_pbutton',
-                           'close_info_pbutton', 'create_plan_pbutton',
-                           'close_plan_pbutton', 'new_plan_ref_cbox',
-                           'new_modality_cbox', 'new_img_path_tbutton',
-                           'new_dose_path_tbutton'):
+                           'close_log_pbutton', 'joint_dvh_pbutton',
+                           'joint_ntcp_pbutton', 'close_compare_pbutton',
+                           'reset_settings_pbutton', 'save_settings_pbutton',
+                           'close_text_pbutton', 'close_info_pbutton',
+                           'create_plan_pbutton', 'close_plan_pbutton',
+                           'new_plan_ref_cbox', 'new_modality_cbox',
+                           'new_img_path_tbutton', 'new_dose_path_tbutton'):
 
                 # Get the attribute and set the stylesheet
                 getattr(self, key).setStyleSheet(value)
@@ -632,6 +632,11 @@ class MainWindow(QMainWindow, Ui_main_window):
 
                 # Get the attribute and set the stylesheet
                 getattr(self.settings_window, key).setStyleSheet(value)
+
+            elif key in ('joint_dvh_pbutton', 'joint_ntcp_pbutton',
+                         'close_compare_pbutton'):
+
+                getattr(self.compare_window, key).setStyleSheet(value)
 
             elif key == 'close_text_pbutton':
 
@@ -845,20 +850,19 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Enable specific fields
             self.set_enabled((
                 'save_pbutton', 'drop_pbutton', 'configure_pbutton',
-                'update_configuration_pbutton', 'update_optimization_pbutton',
-                'update_evaluation_pbutton', 'reset_configuration_pbutton',
-                'reset_optimization_pbutton', 'reset_evaluation_pbutton',
-                'actions_show_parameter_tbutton',
+                'visualize_pbutton', 'update_configuration_pbutton',
+                'update_optimization_pbutton', 'update_evaluation_pbutton',
+                'reset_configuration_pbutton', 'reset_optimization_pbutton',
+                'reset_evaluation_pbutton', 'actions_show_parameter_tbutton',
                 'comp_show_parameter_tbutton'))
 
             # Disable specific fields
             self.set_disabled((
                 'model_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
-                'visualize_pbutton', 'actions_show_plan_tbutton',
-                'actions_show_log_tbutton', 'actions_show_model_data_tbutton',
-                'actions_show_fmap_tbutton', 'comp_show_plan_tbutton',
-                'comp_show_log_tbutton', 'comp_show_model_data_tbutton',
-                'comp_show_fmap_tbutton'))
+                'actions_show_plan_tbutton', 'actions_show_log_tbutton',
+                'actions_show_model_data_tbutton', 'actions_show_fmap_tbutton',
+                'comp_show_plan_tbutton', 'comp_show_log_tbutton',
+                'comp_show_model_data_tbutton', 'comp_show_fmap_tbutton'))
 
             # Disable the tab widgets
             self.composer_widget.widget(0).setEnabled(True)
@@ -871,23 +875,20 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
                 'ref_vol_ledit', 'ref_dose_ledit'))
 
-            # Check if the selected plan has been initialized
-            if instance.datahub and instance.logger:
+            # Update the log output
+            self.log_window.update_log_output()
 
-                # Update the log output
-                self.log_window.update_log_output()
+            # Enable the plan data and logging tool buttons
+            self.set_enabled((
+                'actions_show_plan_tbutton', 'actions_show_log_tbutton',
+                'comp_show_plan_tbutton', 'comp_show_log_tbutton'))
 
-                # Enable the plan data and logging tool buttons
-                self.set_enabled((
-                    'actions_show_plan_tbutton', 'actions_show_log_tbutton',
-                    'comp_show_plan_tbutton', 'comp_show_log_tbutton'))
-
-                self.status_bar.showMessage("Ready for configuration ...")
+            self.status_bar.showMessage("Ready for configuration ...")
 
             # Check if the selected plan has been configured
-            if (all(getattr(instance, unit) is not None
-                for unit in ('patient_loader', 'plan_generator',
-                             'dose_info_generator'))):
+            if all(getattr(instance, unit) is not None for unit in (
+                   'input_checker', 'patient_loader', 'plan_generator',
+                   'dose_info_generator')):
 
                 # Get the CT dictionary
                 computed_tomography = instance.datahub.computed_tomography
@@ -915,18 +916,34 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.slice_selection_pos.setText(''.join((
                     'z = ', str(self.slice_widget.slice), ' mm')))
 
-                # Check if machine learning components have not been modeled
-                if any(getattr(component, 'model') is None
-                       for component in (
-                        get_machine_learning_constraints(segmentation)
-                        + get_machine_learning_objectives(segmentation))):
+                # Update the images of the slice widget
+                self.slice_widget.update_images()
+
+                # Check if machine learning components are present
+                if len(get_machine_learning_constraints(segmentation)
+                       + get_machine_learning_objectives(segmentation)) > 0:
 
                     # Enable the 'model' button
                     self.model_pbutton.setEnabled(True)
 
                     self.status_bar.showMessage("Ready for modeling ...")
 
-                    return
+                    # 
+                    if any(getattr(component, unit) is None for unit in (
+                            'data_model_handler', 'model') for component in (
+                            get_machine_learning_constraints(segmentation)
+                            + get_machine_learning_objectives(segmentation))):
+
+                        # 
+                        return
+
+                    else:
+
+                        self.set_enabled((
+                            'actions_show_model_data_tbutton',
+                            'actions_show_fmap_tbutton',
+                            'comp_show_model_data_tbutton',
+                            'comp_show_fmap_tbutton'))
 
                 # Enable the 'optimize' button
                 self.optimize_pbutton.setEnabled(True)
@@ -934,16 +951,17 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.status_bar.showMessage("Ready for optimization ...")
 
                 # Check if the selected plan has been optimized
-                if getattr(instance, 'fluence_optimizer') is not None:
+                if (getattr(instance, 'fluence_optimizer') is not None
+                        and 'optimized_dose' in instance.datahub.optimization):
 
                     # Get the optimized dose array
                     optimized_dose = instance.datahub.optimization[
                         'optimized_dose']
 
-                    # Check if the plan has already been optimized
+                    # Check if the plan has not been added to the list
                     if selection not in self.optimized_plans:
 
-                        # Append the treatment plan to the optimized plans list
+                        # Append the treatment plan to the optimized plans
                         self.optimized_plans.append(selection)
 
                         # Update the comparison plans
@@ -952,14 +970,13 @@ class MainWindow(QMainWindow, Ui_main_window):
                     # Add the dose image to the slice widget
                     self.slice_widget.add_dose(optimized_dose)
 
-                    # Enable the 'evaluate' and 'visualize' buttons
-                    self.set_enabled(('evaluate_pbutton', 'visualize_pbutton'))
+                    # Enable the 'evaluate' button
+                    self.evaluate_pbutton.setEnabled(True)
 
-                    self.status_bar.showMessage(
-                        "Ready for evaluation & visualization ...")
+                    self.status_bar.showMessage("Ready for evaluation ...")
 
-                # Update the images of the slice widget
-                self.slice_widget.update_images()
+                    # Update the images of the slice widget
+                    self.slice_widget.update_images()
 
                 # Check if the selected plan has been evaluated
                 if all(getattr(instance, unit) for unit in (
@@ -975,47 +992,31 @@ class MainWindow(QMainWindow, Ui_main_window):
                     self.status_bar.showMessage(
                         f'"{self.plan_ledit.text()}" plan is ready ...')
 
-            # Check if the selected plan includes data models
-            if instance.datahub and any(unit is not None for unit in (
-                    instance.datahub.datasets, instance.datahub.feature_maps,
-                    instance.datahub.model_instances,
-                    instance.datahub.model_inspections,
-                    instance.datahub.model_evaluations)):
-
-                # Enable the model data and feature maps tool button
-                self.set_enabled((
-                    'actions_show_model_data_tbutton',
-                    'actions_show_fmap_tbutton',
-                    'comp_show_model_data_tbutton',
-                    'comp_show_fmap_tbutton'))
-
         else:
 
             # 
             self.last_selection = ''
-
-            # 
-            self.plan_ledit.setReadOnly(False)
 
             # Clear the configuration, optimization and evaluation tab fields
             self.clear_configuration()
             self.clear_optimization()
             self.clear_evaluation()
 
-            # Disable specific fields
             self.set_disabled((
                 'save_pbutton', 'drop_pbutton', 'update_configuration_pbutton',
                 'update_optimization_pbutton', 'update_evaluation_pbutton',
                 'reset_configuration_pbutton', 'reset_optimization_pbutton',
-                'reset_evaluation_pbutton', 'configure_pbutton',
-                'model_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
-                'visualize_pbutton', 'actions_show_parameter_tbutton',
-                'actions_show_plan_tbutton', 'actions_show_fmap_tbutton',
-                'actions_show_model_data_tbutton', 'actions_show_log_tbutton',
-                'comp_show_parameter_tbutton', 'comp_show_plan_tbutton',
-                'comp_show_fmap_tbutton', 'comp_show_model_data_tbutton',
-                'comp_show_log_tbutton', 'init_fluence_ledit',
-                'init_fluence_tbutton', 'ref_plan_cbox'))
+                'reset_evaluation_pbutton', 'configure_pbutton', 'model_pbutton',
+                'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton',
+                'actions_show_parameter_tbutton', 'actions_show_plan_tbutton',
+                'actions_show_fmap_tbutton', 'actions_show_model_data_tbutton',
+                'actions_show_log_tbutton', 'comp_show_parameter_tbutton',
+                'comp_show_plan_tbutton', 'comp_show_fmap_tbutton',
+                'comp_show_model_data_tbutton', 'comp_show_log_tbutton',
+                'compare_pbutton', 'baseline_cbox', 'reference_cbox',
+                'components_minus_tbutton', 'components_edit_tbutton',
+                'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox',
+                'opacity_sbox', 'slice_selection_sbar', 'stop_thread_pbutton'))
 
             # Disable the tab widgets
             self.composer_widget.widget(0).setEnabled(False)
@@ -1158,7 +1159,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         else:
 
-            self.model_pbutton.setEnabled(True)
+            self.model_pbutton.setEnabled(False)
             self.optimize_pbutton.setEnabled(True)
             self.status_bar.showMessage("Ready for optimization ...")
 
@@ -1293,8 +1294,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Update the output of the log window
         self.log_window.update_log_output()
 
-        # Enable the evaluation and visualization button
-        self.set_enabled(('evaluate_pbutton', 'visualize_pbutton'))
+        # Enable the evaluation button
+        self.set_enabled(('evaluate_pbutton',))
 
         # Check if the selected plan includes data models
         if instance.datahub and any(unit is not None for unit in (
@@ -1364,8 +1365,6 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.dvh_widget.add_style_and_data(
             self.plans[self.plan_ledit.text()].datahub.dose_histogram)
 
-        self.set_enabled(('visualize_pbutton',))
-
         # Update the plot of the DVH widget
         self.dvh_widget.update_dvh()
 
@@ -1377,6 +1376,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
             'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
             'ref_vol_ledit', 'ref_dose_ledit'))
+
+        # 
+        self.viewer_widget.setCurrentIndex(1)
 
         # 
         self.status_bar.showMessage(
@@ -1409,7 +1411,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Disable specific fields
             self.set_disabled((
-                'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton'))
+                'optimize_pbutton', 'evaluate_pbutton'))
 
             # Set the line edit cursor positions to zero
             self.set_zero_line_cursor((
@@ -1465,7 +1467,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             instance.update(self.transform_optimization_to_dict())
 
             # Disable specific fields
-            self.set_disabled(('evaluate_pbutton', 'visualize_pbutton'))
+            self.set_disabled(('evaluate_pbutton',))
 
             # Set the line edit cursor positions to zero
             self.set_zero_line_cursor((
@@ -1498,9 +1500,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Overwrite the evaluation dictionary of the current instance
             instance.update(self.transform_evaluation_to_dict())
 
-            # Disable specific fields
-            self.set_disabled(('visualize_pbutton',))
-
             # Set the line edit cursor positions to zero
             self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))
 
@@ -1511,7 +1510,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             if getattr(instance, 'fluence_optimizer') is not None:
 
                 self.status_bar.showMessage(
-                    "Ready for evaluation & visualization ...")
+                    "Ready for evaluation ...")
 
         except Exception as error:
 
@@ -2202,8 +2201,27 @@ class MainWindow(QMainWindow, Ui_main_window):
         reference = self.plans[self.reference_cbox.currentText()]
 
         # 
-        if (baseline.datahub.computed_tomography['cube'].shape ==
+        if (baseline.datahub.computed_tomography['cube'].shape !=
                 reference.datahub.computed_tomography['cube'].shape):
+
+            message = ("Baseline and reference plan have different CT cube "
+                       "dimensions. Only plans with equal dimensions can be "
+                       "compared!")
+
+            QMessageBox.information(self, 'pyanno4rt', message)
+
+        # 
+        elif any(getattr(plan, unit) is None for unit in (
+                'dose_histogram', 'dosimetrics')
+                for plan in (baseline, reference)):
+
+            message = ("Either baseline or reference plan have not been "
+                       "evaluated yet. Please make sure that both plans are "
+                       "evaluated!")
+
+            QMessageBox.information(self, 'pyanno4rt', message)
+
+        else:
 
             # 
             self.compare_window.baseline_label.setText(
@@ -2213,94 +2231,13 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.compare_window.difference_label.setText('Difference')
 
             # 
-            self.compare_window.baseline_slice_widget.reset_images()
-            self.compare_window.reference_slice_widget.reset_images()
-            self.compare_window.difference_slice_widget.reset_images()
-
-            # 
-            self.compare_window.baseline_slice_widget.add_ct(
-                baseline, baseline.datahub.computed_tomography['cube'])
-            self.compare_window.reference_slice_widget.add_ct(
-                reference, reference.datahub.computed_tomography['cube'])
-            self.compare_window.difference_slice_widget.add_ct(
-                baseline, baseline.datahub.computed_tomography['cube'])
-
-            # Get the axial dimension of the CT cube
-            axial_length = baseline.datahub.computed_tomography[
-                'cube_dimensions'][2]
-
-            # Add the segments to the slice widget
-            self.compare_window.baseline_slice_widget.add_segments(
-                baseline.datahub.computed_tomography,
-                baseline.datahub.segmentation)
-            self.compare_window.reference_slice_widget.add_segments(
-                reference.datahub.computed_tomography,
-                reference.datahub.segmentation)
-            self.compare_window.difference_slice_widget.add_segments(
-                baseline.datahub.computed_tomography,
-                baseline.datahub.segmentation)
-
-            # Set the range of the slice selection scrollbar
-            self.compare_window.slice_selection_sbar.setRange(
-                0, axial_length-1)
-
-            # Set the initial scrollbar value
-            self.compare_window.slice_selection_sbar.setValue(
-                int((axial_length-1)/2))
-
-            # Set the initial position label
-            self.compare_window.slice_selection_pos.setText(''.join((
-                'z = ', str(self.compare_window.baseline_slice_widget.slice),
-                ' mm')))
-
-            # Get the joint minimum and maximum dose
-            minima = [min(
-                baseline.datahub.optimization[
-                    'optimized_dose'][:, :, index].min(),
-                reference.datahub.optimization[
-                    'optimized_dose'][:, :, index].min())
-                for index in range(axial_length)]
-            maxima = [max(
-                baseline.datahub.optimization[
-                    'optimized_dose'][:, :, index].max(),
-                reference.datahub.optimization[
-                    'optimized_dose'][:, :, index].max())
-                for index in range(axial_length)]
-
-            # Add the dose image to the slice widget
-            self.compare_window.baseline_slice_widget.add_dose(
-                baseline.datahub.optimization['optimized_dose'],
-                minima, maxima)
-            self.compare_window.reference_slice_widget.add_dose(
-                reference.datahub.optimization['optimized_dose'],
-                minima, maxima)
-
-            # Get the dose difference
-            difference = (reference.datahub.optimization['optimized_dose']
-                          - baseline.datahub.optimization['optimized_dose'])
-
-            # Add the dose difference image to the slice widget
-            self.compare_window.difference_slice_widget.add_dose(
-                difference, [difference.min()], [difference.max()])
-
-            # 
-            self.compare_window.baseline_slice_widget.update_images()
-            self.compare_window.reference_slice_widget.update_images()
-            self.compare_window.difference_slice_widget.update_images()
+            self.compare_window.add_plots(baseline, reference)
 
             # Set the position of the window
             self.compare_window.position()
 
             # Show the window
             self.compare_window.show()
-
-        else:
-
-            message = ("Baseline and reference plan have different CT cube "
-                       "dimensions. Only plans with equal dimensions can be "
-                       "compared!")
-
-            QMessageBox.information(self, 'pyanno4rt', message)
 
     def open_component_window(self, name):
         """Open a component window."""
@@ -2392,7 +2329,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             'datasets': instance.datahub.datasets,
             'model_instances': instance.datahub.model_instances,
             'model_inspections': instance.datahub.model_inspections,
-            'model_evaluations': instance.datahub.model_evaluations},
+            'model_evaluations': instance.datahub.model_evaluations,
+            'model_outcomes': instance.datahub.model_outcomes},
             parent=self.model_data_window.tree_widget)
 
         # Set the resize mode for the first tree column
