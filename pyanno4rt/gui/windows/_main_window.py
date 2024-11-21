@@ -15,6 +15,7 @@ from PyQt5.QtGui import QCursor, QIcon, QMovie, QPixmap
 from PyQt5.QtWidgets import (
     QComboBox, QFileDialog, QFrame, QHeaderView, QLabel, QListWidget,
     QListWidgetItem, QMainWindow, QMenu, QMessageBox, QPushButton, QSpinBox)
+from time import sleep
 from webbrowser import open as webopen
 
 # %% Internal package import
@@ -28,7 +29,7 @@ from pyanno4rt.gui.styles._custom_styles import (
     selector, tab, tbutton_composer, tbutton_workflow)
 from pyanno4rt.gui.windows import (
     CompareWindow, InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow,
-    TreeWindow)
+    SplashScreenWindow, TreeWindow)
 from pyanno4rt.gui.windows.components import component_window_map
 from pyanno4rt.optimization.components import component_map
 from pyanno4rt.patient.import_functions import (
@@ -66,8 +67,24 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Run the constructor from the superclass
         super().__init__()
 
+        # Initialize the splash screen window
+        self.splash_screen_window = SplashScreenWindow()
+
+        # Show the splash screen window
+        self.splash_screen_window.show()
+
+        # Relocate the splash screen window to the center
+        self.splash_screen_window.position()
+
         # Get the application from the argument
         self.application = application
+
+        # 
+        for i in range(10000):
+            self.application.processEvents()
+
+        # Add some waiting time
+        sleep(3)
 
         # Build the UI main window
         self.setupUi(self)
@@ -359,6 +376,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Set the initial window size
         self.resize(1920, 1080)
         self.show()
+
+        # Close the splash screen window
+        self.splash_screen_window.close()
 
     def connect_signals(self):
         """Connect the event signals to the GUI elements."""

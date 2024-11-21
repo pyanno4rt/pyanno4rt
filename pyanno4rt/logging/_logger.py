@@ -8,7 +8,6 @@ from importlib.metadata import version
 from io import StringIO
 from logging import (CRITICAL, DEBUG, ERROR, Formatter, getLogger, INFO,
                      StreamHandler, WARNING)
-from platform import python_version
 
 # %% Class definition
 
