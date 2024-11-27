@@ -13,6 +13,7 @@ from pyqtgraph import mkPen
 
 from pyanno4rt.gui.compilations.compare_window import Ui_compare_window
 from pyanno4rt.gui.custom_widgets import DVHCompareWidget, SliceCompareWidget
+from pyanno4rt.tools import get_constraint_segments, get_objective_segments
 
 # %% Class definition
 
@@ -198,15 +199,15 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                 baseline.datahub.dose_histogram['display_segments'])}
 
         # 
-        self.joint_segments = sorted(tuple(
+        joint_segments = sorted(tuple(
             set(baseline.datahub.dose_histogram['display_segments'])
             & set(reference.datahub.dose_histogram['display_segments'])),
             key=lambda t: t[0])
 
         # 
-        if len(self.joint_segments) == 0:
+        if len(joint_segments) == 0:
 
-            self.joint_segments = None
+            joint_segments = None
 
         # 
         diff_ranges = {
@@ -217,11 +218,11 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             'y': (
                 min(min(
                     dvh_diff[segment]['dvh_values'])
-                    for segment in self.joint_segments
+                    for segment in joint_segments
                     if segment not in ('evaluation_points', 'display_segments')),
                 max(max(
                     dvh_diff[segment]['dvh_values'])
-                    for segment in self.joint_segments
+                    for segment in joint_segments
                     if segment not in ('evaluation_points', 'display_segments')))}
 
         # Add the style and input data to the DVH widget
@@ -236,9 +237,9 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             baseline=baseline, reference=reference)
 
         # Update the plot of the DVH widget
-        self.baseline_dvh_widget.update_dvh(self.joint_segments)
-        self.reference_dvh_widget.update_dvh(self.joint_segments)
-        self.difference_dvh_widget.update_dvh(self.joint_segments)
+        self.baseline_dvh_widget.update_dvh(joint_segments)
+        self.reference_dvh_widget.update_dvh(joint_segments)
+        self.difference_dvh_widget.update_dvh(joint_segments)
 
     def adjust_slider_by_orientation(self):
         """."""
@@ -306,14 +307,23 @@ class CompareWindow(QMainWindow, Ui_compare_window):
     def open_joint_dvh(self):
         """."""
 
+        # Get the segments to be displayed
+        segments = sorted(tuple(
+            set(get_constraint_segments(self.baseline.datahub.segmentation)
+                + get_objective_segments(self.baseline.datahub.segmentation))
+            &
+            set(get_constraint_segments(self.reference.datahub.segmentation)
+                + get_objective_segments(self.reference.datahub.segmentation)))
+            )
+
         # Get the colormap
-        colors = get_cmap('jet')(linspace(0, 1.0, len(self.joint_segments)))
+        colors = get_cmap('jet')(linspace(0, 1.0, len(segments)))
 
         # Create a figure and subplots
         figure, axis = subplots(figsize=(14, 8))
 
         # Add the dose-volume histogram curve for each segment
-        for i, segment in enumerate(self.joint_segments):
+        for i, segment in enumerate(segments):
 
             # Baseline curves
             axis.plot(

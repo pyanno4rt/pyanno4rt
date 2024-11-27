@@ -377,7 +377,7 @@ class FluenceOptimizer():
         logger, segmentation, problem = (
             hub.logger, hub.segmentation, hub.optimization['problem'])
 
-        # Reset the tracker (and feature history if applicable)
+        # Reset the tracker and feature history if applicable
         reset_outputs()
 
         # Log a message about the problem solving

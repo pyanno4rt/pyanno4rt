@@ -24,9 +24,13 @@ def reset_outputs():
     # Get the segmentation from the datahub
     segmentation = hub.segmentation
 
-    # Reset the optimization tracker
-    hub.optimization['problem'].tracker = {
-        key: [] for key in hub.optimization['problem'].tracker}
+    # Check if lexicographic or weighted-sum optimization are selected
+    if type(hub.optimization['problem']).__name__ in (
+            'LexicographicOptimization', 'WeightedSumOptimization'):
+
+        # Reset the optimization tracker
+        hub.optimization['problem'].tracker = {
+            key: [] for key in hub.optimization['problem'].tracker}
 
     # Loop over the machine learning model-based components
     for component in (

@@ -66,13 +66,10 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
     def get_objective_gradient(X):
         """Get the objective gradient for the current solution."""
 
-        return problem_instance.gradient(X)[:, None]
+        return problem_instance.gradient(X)
 
     def estimate_lipschitz(X, it=0):
         """Estimate the Lipschitz constant of the gradient function."""
-
-        # Reshape the array
-        X = X.reshape(-1)
 
         # Determine the step size from a line search
         L = line_search(
@@ -99,8 +96,8 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
         return X - step*get_objective_gradient(X)
 
     # Convert the lower and upper variable bounds into 2D arrays
-    lower_variable_bounds = array(lower_variable_bounds)[:, None]
-    upper_variable_bounds = array(upper_variable_bounds)[:, None]
+    lower_variable_bounds = array(lower_variable_bounds)
+    upper_variable_bounds = array(upper_variable_bounds)
 
     # Initialize the arguments dictionary
     arguments = {'e_rel': 1e-2,

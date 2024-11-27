@@ -134,7 +134,7 @@ class ProxminSolver():
         """
 
         # Make a deep copy of the initial fluence vector
-        decision_vector = initial_fluence.copy()[:, None]
+        decision_vector = initial_fluence.copy()
 
         # Solve the optimization problem
         result = self.fun(X=decision_vector, **self.arguments)
@@ -150,4 +150,4 @@ class ProxminSolver():
             # Assign the maximum number of iterations message
             message = "Maximum number of iterations reached."
 
-        return decision_vector.reshape(-1), message
+        return decision_vector, message
