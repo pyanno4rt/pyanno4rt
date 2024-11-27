@@ -47,10 +47,10 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> h5py (>=3.12.1) </li>
 	<li> pandas (>=2.2.3) </li>
 	<li> fuzzywuzzy (>=0.18.0) </li>
-	<li> jax (>=0.4.33) </li>
-	<li> jaxlib (>=0.4.33) </li>
+	<li> jax (>=0.4.35) </li>
+	<li> jaxlib (>=0.4.35) </li>
 	<li> numba (>=0.60.0) </li>
-	<li> python-levenshtein (>=0.26.0) </li>
+	<li> python-levenshtein (>=0.26.1) </li>
 	<li> scikit-learn (>=1.5.2) </li>
 	<li> tensorflow (==2.11.1) </li>
 	<li> tensorflow-io-gcs-filesystem (==0.31.0) </li>
@@ -59,7 +59,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> pyqt5-qt5 (==5.15.2) </li>
 	<li> pyqt5 (==5.15.10) </li>
 	<li> pyqtgraph (>=0.13.7) </li>
-	<li> ipython (>=8.28.0) </li>
+	<li> ipython (>=8.29.0) </li>
 	<li> matplotlib (==3.8.3) </li>
 	<li> seaborn (>=0.13.2) </li>
 	<li> pypop7 (>=0.0.82) </li>

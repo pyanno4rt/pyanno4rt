@@ -13,9 +13,9 @@ class Ui_settings_window(object):
     def setupUi(self, settings_window):
         settings_window.setObjectName("settings_window")
         settings_window.setWindowModality(QtCore.Qt.ApplicationModal)
-        settings_window.resize(730, 320)
-        settings_window.setMinimumSize(QtCore.QSize(730, 320))
-        settings_window.setMaximumSize(QtCore.QSize(730, 320))
+        settings_window.resize(720, 640)
+        settings_window.setMinimumSize(QtCore.QSize(720, 640))
+        settings_window.setMaximumSize(QtCore.QSize(720, 640))
         settings_window.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);\n"
 "border: 1px solid;\n"
@@ -27,7 +27,7 @@ class Ui_settings_window(object):
 "border-color: rgb(186, 189, 182);")
         self.settings_widget.setObjectName("settings_widget")
         self.general_settings_line = QtWidgets.QFrame(self.settings_widget)
-        self.general_settings_line.setGeometry(QtCore.QRect(20, 50, 321, 2))
+        self.general_settings_line.setGeometry(QtCore.QRect(10, 50, 331, 2))
         self.general_settings_line.setMinimumSize(QtCore.QSize(0, 2))
         self.general_settings_line.setMaximumSize(QtCore.QSize(16777215, 2))
         self.general_settings_line.setStyleSheet("border-color: rgb(0, 0, 0);")
@@ -48,7 +48,7 @@ class Ui_settings_window(object):
         icon1.addPixmap(QtGui.QPixmap(":/special_icons/icons_special/sun-2-svgrepo-com.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.light_mode_cbox.addItem(icon1, "")
         self.general_settings_label = QtWidgets.QLabel(self.settings_widget)
-        self.general_settings_label.setGeometry(QtCore.QRect(20, 20, 181, 31))
+        self.general_settings_label.setGeometry(QtCore.QRect(10, 20, 191, 31))
         font = QtGui.QFont()
         font.setPointSize(14)
         font.setBold(True)
@@ -102,7 +102,7 @@ class Ui_settings_window(object):
 "color: rgb(0, 0, 0);")
         self.incl_dij_check.setObjectName("incl_dij_check")
         self.reset_settings_pbutton = QtWidgets.QPushButton(self.settings_widget)
-        self.reset_settings_pbutton.setGeometry(QtCore.QRect(560, 280, 71, 31))
+        self.reset_settings_pbutton.setGeometry(QtCore.QRect(560, 600, 71, 31))
         self.reset_settings_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.reset_settings_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
@@ -168,7 +168,7 @@ class Ui_settings_window(object):
         self.save_tpi_line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.save_tpi_line.setObjectName("save_tpi_line")
         self.save_settings_pbutton = QtWidgets.QPushButton(self.settings_widget)
-        self.save_settings_pbutton.setGeometry(QtCore.QRect(640, 280, 71, 31))
+        self.save_settings_pbutton.setGeometry(QtCore.QRect(640, 600, 71, 31))
         self.save_settings_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.save_settings_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"

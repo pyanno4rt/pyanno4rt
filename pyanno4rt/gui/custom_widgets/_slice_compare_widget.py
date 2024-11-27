@@ -59,8 +59,6 @@ class SliceCompareWidget(QWidget):
 
         # 
         self.slice = None
-
-        # 
         self.positions = None
 
         # 
@@ -75,16 +73,14 @@ class SliceCompareWidget(QWidget):
         self.segment_masks = None
         self.segment_contours = None
 
-    def add_ct(self, plan, ct_cube):
+        # 
+        self.orientations = {
+            'axial': ((0, 1, 2), 3, 'z'),
+            'coronal': ((0, 2, 1), 0, 'x'),
+            'sagittal': ((2, 1, 0), 1, 'y')}
+
+    def add_image_data(self, plan, minimum, maximum):
         """."""
-
-        # 
-        self.ct_cube = rot90(transpose(ct_cube, (0, 1, 2)), 3)
-
-        # 
-        self.positions = plan.datahub.computed_tomography['z']
-
-    def add_segments(self, computed_tomography, segmentation):
 
         def generate_segment_mask(segment):
             """Generate the segmentation masks as a single cube."""
@@ -98,44 +94,50 @@ class SliceCompareWidget(QWidget):
 
             return segment_mask
 
-        segment_colors = tuple(
-            255*segmentation[segment]['parameters']['visibleColor']
-            for segment in (*segmentation,))
+        # 
+        if isinstance(plan, tuple):
 
-        raw_masks = tuple(
-            generate_segment_mask(segment) for segment in (*segmentation,))
+            # 
+            computed_tomography = plan[0].datahub.computed_tomography
+            segmentation = plan[0].datahub.segmentation
 
-        segment_images = [ImageItem() for _ in raw_masks]
-        for image in segment_images:
-            self.viewbox.addItem(image)
+            # 
+            self.plan = plan[0]
+            self.dose_cube = (
+                plan[1].datahub.optimization['optimized_dose']
+                - plan[0].datahub.optimization['optimized_dose'])
+            max_diff = max(
+                abs(self.dose_cube.min()), abs(self.dose_cube.max()))
+            self.minimum, self.maximum = -max_diff, max_diff
 
-        self.segment_masks = tuple(rot90(
-            transpose(mask, (0, 1, 2)), 3) for mask in raw_masks)
+        else:
 
-        self.segment_contours = []
-        for color, image in zip(segment_colors, segment_images):
-            contour = IsocurveItem(level=1, pen=mkPen(mkColor(color),
-                                                      width=2.5))
-            contour.setParentItem(image)
-            contour.setZValue(5)
-            self.segment_contours.append(contour)
+            # 
+            computed_tomography = plan.datahub.computed_tomography
+            segmentation = plan.datahub.segmentation
 
-    def add_dose(self, dose_cube, minima, maxima):
+            # 
+            self.plan = plan
+            self.dose_cube = self.plan.datahub.optimization['optimized_dose']
+            self.minimum, self.maximum = minimum, maximum
 
-        self.minima = minima
-        self.maxima = maxima
+        # 
+        self.ct_cube = self.plan.datahub.computed_tomography['cube']
 
-        self.dose_cube = rot90(transpose(dose_cube, (0, 1, 2)), 3)
+        # 
+        self.positions = (
+            self.plan.datahub.computed_tomography['x'],
+            self.plan.datahub.computed_tomography['y'],
+            self.plan.datahub.computed_tomography['z'])
 
+        # 
         self.dose_cube_with_nan = self.dose_cube.copy()
         self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
-
-        self.image_window.addItem(self.bar)
 
         quantiles = [0.1*factor1 for factor1 in range(1, 10)]
         quantiles.extend([0.95+0.05*factor2 for factor2 in range(0, 6)])
 
-        reference_dose = max(self.maxima)/1.2
+        reference_dose = maximum/1.2
 
         levels = [reference_dose*level for level in quantiles]
         norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
@@ -150,6 +152,277 @@ class SliceCompareWidget(QWidget):
             contour.setZValue(5)
             self.dose_contours.append(contour)
 
+        # 
+        self.segment_masks = tuple(
+            generate_segment_mask(segment) for segment in segmentation)
+
+        segment_colors = tuple(
+            255*segmentation[segment]['parameters']['visibleColor']
+            for segment in (*segmentation,))
+
+        segment_images = [ImageItem() for _ in self.segment_masks]
+        for image in segment_images:
+            self.viewbox.addItem(image)
+
+        self.segment_contours = []
+        for color, image in zip(segment_colors, segment_images):
+            contour = IsocurveItem(level=1, pen=mkPen(mkColor(color),
+                                                      width=2.5))
+            contour.setParentItem(image)
+            contour.setZValue(5)
+            self.segment_contours.append(contour)
+
+    def update_ct(self):
+        """."""
+
+        # 
+        orientation, rotations, _ = self.orientations[
+            self.parent.orient_cbox.currentText()]
+
+        # 
+        if self.ct_cube is not None and not self.parent.disCT_cbox.isChecked():
+
+            # 
+            ct_cube = rot90(
+                transpose(self.ct_cube, orientation), rotations)
+
+            # Update the CT image
+            self.ct_image.setImage(ct_cube[:, :, self.slice])
+
+    def update_dose(self):
+        """."""
+
+        # 
+        orientation, rotations, _ = self.orientations[
+            self.parent.orient_cbox.currentText()]
+
+        if (self.dose_cube_with_nan is not None
+                and not self.parent.disDose_cbox.isChecked()):
+
+            # 
+            dose_cube_with_nan = rot90(
+                transpose(self.dose_cube_with_nan, orientation), rotations)
+
+            # Update the dose image
+            self.dose_image.setImage(dose_cube_with_nan[:, :, self.slice])
+
+            # 
+            self.image_window.addItem(self.bar)
+
+            # 
+            self.bar.setLevels((min(0, round(self.minimum, 1)-0.1),
+                                round(self.maximum, 1)+0.1))
+
+    def update_dose_contours(self):
+        """."""
+
+        # 
+        orientation, rotations, _ = self.orientations[
+            self.parent.orient_cbox.currentText()]
+
+        if (self.dose_cube is not None
+                and self.dose_contours is not None
+                and not self.parent.disDoseCon_cbox.isChecked()):
+
+            # 
+            dose_cube = rot90(
+                transpose(self.dose_cube, orientation), rotations)
+
+            # Loop over the dose contours
+            for contour in self.dose_contours:
+
+                # Update the dose contour lines
+                contour.setData(dose_cube[:, :, self.slice])
+
+    def update_segment_contours(self):
+        """."""
+
+        # 
+        orientation, rotations, _ = self.orientations[
+            self.parent.orient_cbox.currentText()]
+
+        if (self.segment_masks is not None
+                and self.segment_contours is not None
+                and not self.parent.disSegm_cbox.isChecked()):
+
+            # 
+            segment_masks = tuple(rot90(
+                transpose(mask, orientation), rotations)
+                for mask in self.segment_masks)
+
+            # Loop over the segment contours
+            for mask, contour in zip(segment_masks, self.segment_contours):
+
+                # Update the segment contour lines
+                contour.setData(mask[:, :, self.slice])
+
+    def update_parent(self):
+        """."""
+
+        # 
+        axis = self.orientations[self.parent.orient_cbox.currentText()][2]
+
+        # 
+        if self.positions is not None:
+
+            # 
+            position = round(
+                self.plan.datahub.computed_tomography[axis][self.slice], 2)
+
+            # 
+            self.parent.slice_selection_pos.setText(
+                f'{axis} = {position} mm')
+
+    def update_images(self):
+        """Update all images."""
+
+        self.update_ct()
+        self.update_dose()
+        self.update_dose_contours()
+        self.update_segment_contours()
+        self.update_parent()
+
+    def reset_ct(self):
+        """."""
+
+        if self.ct_cube is not None:
+
+            # Update the CT image
+            self.ct_image.clear()
+
+    def reset_dose(self):
+        """."""
+
+        if self.dose_cube_with_nan is not None:
+
+            # Update the dose image
+            self.dose_image.clear()
+
+            # 
+            self.image_window.removeItem(self.bar)
+
+    def reset_dose_contours(self):
+        """."""
+
+        # 
+        orientation, rotations, axis = self.orientations[
+            self.parent.orient_cbox.currentText()]
+
+        if self.dose_cube is not None and self.dose_contours is not None:
+
+            # 
+            dose_cube = rot90(
+                transpose(self.dose_cube, orientation), rotations)
+
+            # Loop over the dose contours
+            for contour in self.dose_contours:
+
+                # Update the dose contour lines
+                contour.setData(zeros(dose_cube[:, :, self.slice].shape))
+
+    def reset_segment_contours(self):
+        """."""
+
+        # 
+        orientation, rotations, axis = self.orientations[
+            self.parent.orient_cbox.currentText()]
+
+        if (self.segment_masks is not None
+                and self.segment_contours is not None):
+
+            # 
+            segment_masks = tuple(rot90(
+                transpose(mask, orientation), rotations)
+                for mask in self.segment_masks)
+
+            # Loop over the segment contours
+            for mask, contour in zip(segment_masks, self.segment_contours):
+
+                # Update the segment contour lines
+                contour.setData(zeros(mask[:, :, self.slice].shape))
+
+    def reset_parent(self):
+        """."""
+
+        self.parent.slice_selection_pos.clear()
+
+    def reset_images(self):
+        """."""
+
+        self.reset_ct()
+        self.reset_dose()
+        self.reset_dose_contours()
+        self.reset_segment_contours()
+        self.reset_parent()
+
+    def toggle_ct(self):
+        """."""
+
+        # 
+        if self.parent.disCT_cbox.isChecked():
+
+            # 
+            self.reset_ct()
+
+        else:
+
+            # 
+            self.update_ct()
+
+    def toggle_dose(self):
+        """."""
+
+        # 
+        if self.parent.disDose_cbox.isChecked():
+
+            # 
+            self.reset_dose()
+
+        else:
+
+            # 
+            self.update_dose()
+
+    def toggle_dose_contours(self):
+        """."""
+
+        # 
+        if self.parent.disDoseCon_cbox.isChecked():
+
+            # 
+            self.reset_dose_contours()
+
+        else:
+
+            # 
+            self.update_dose_contours()
+
+    def toggle_segment_contours(self):
+        """."""
+
+        # 
+        if self.parent.disSegm_cbox.isChecked():
+
+            # 
+            self.reset_segment_contours()
+
+        else:
+
+            # 
+            self.update_segment_contours()
+
+    def change_orientation(self):
+        """."""
+
+        # 
+        self.slice = self.parent.slice_selection_sbar.value()
+
+        # 
+        self.viewbox.enableAutoRange()
+
+        # 
+        self.update_images()
+
     def change_dose_opacity(self):
         """."""
 
@@ -157,7 +430,7 @@ class SliceCompareWidget(QWidget):
         self.dose_image.setOpacity(self.parent.opacity_sbox.value()/100)
 
         # 
-        self.update_images()
+        self.update_dose()
 
     def change_image_slice(self):
         """."""
@@ -167,90 +440,3 @@ class SliceCompareWidget(QWidget):
 
         # 
         self.update_images()
-
-    def reset_images(self):
-        """."""
-
-        if self.ct_cube is not None:
-
-            # Update the CT image
-            self.ct_image.clear()
-            self.ct_cube = None
-
-        if self.dose_cube_with_nan is not None:
-
-            # Update the dose image
-            self.dose_image.clear()
-            self.dose_cube_with_nan = None
-
-        if self.dose_cube is not None or self.dose_contours is not None:
-
-            # Loop over the dose contours
-            for contour in self.dose_contours:
-
-                # Update the dose contour lines
-                contour.setData(zeros(self.dose_cube[:, :, self.slice].shape))
-
-            self.dose_cube = None
-            self.dose_contours = None
-            self.image_window.removeItem(self.bar)
-
-        if (self.segment_masks is not None
-                or self.segment_contours is not None):
-
-            # Loop over the segment contours
-            for mask, contour in zip(self.segment_masks,
-                                     self.segment_contours):
-
-                # Update the segment contour lines
-                contour.setData(zeros(mask[:, :, self.slice].shape))
-
-            self.segment_masks = None
-            self.segment_contours = None
-
-        self.parent.slice_selection_pos.clear()
-        self.parent.opacity_sbox.setEnabled(False)
-        self.parent.slice_selection_sbar.setEnabled(False)
-
-    def update_images(self):
-        """Update the images when scrolling."""
-
-        if self.ct_cube is not None:
-
-            # Update the CT image
-            self.ct_image.setImage(self.ct_cube[:, :, self.slice])
-
-        if self.dose_cube_with_nan is not None:
-
-            # Update the dose image
-            self.dose_image.setImage(self.dose_cube_with_nan[:, :, self.slice])
-
-        if self.dose_cube is not None and self.dose_contours is not None:
-
-            # Loop over the dose contours
-            for contour in self.dose_contours:
-
-                # Update the dose contour lines
-                contour.setData(self.dose_cube[:, :, self.slice])
-
-            self.bar.setLevels((min(0, round(min(self.minima), 1)-0.1),
-                                round(max(self.maxima), 1)+0.1))
-
-        if (self.segment_masks is not None
-                and self.segment_contours is not None):
-
-            # Loop over the segment contours
-            for mask, contour in zip(self.segment_masks,
-                                     self.segment_contours):
-
-                # Update the segment contour lines
-                contour.setData(mask[:, :, self.slice])
-
-        # 
-        if self.positions is not None:
-
-            self.parent.slice_selection_pos.setText(
-                ''.join(('z = ', str(self.positions[self.slice]), ' mm')))
-
-        self.parent.opacity_sbox.setEnabled(True)
-        self.parent.slice_selection_sbar.setEnabled(True)

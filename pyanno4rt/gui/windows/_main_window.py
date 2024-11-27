@@ -83,8 +83,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         for i in range(10000):
             self.application.processEvents()
 
-        # Add some waiting time
-        sleep(3)
+        # Increase the progress bar
+        self.splash_screen_window.progress()
 
         # Build the UI main window
         self.setupUi(self)
@@ -160,7 +160,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.logo_label.setPixmap(pixmap)
         self.logo_label.setStyleSheet("QLabel {border: 0px;}")
 
-        self.version_label = QLabel(f"Amadeus v{version('pyanno4rt')}")
+        self.version_label = QLabel(f'v{version("pyanno4rt")} "Amadeus"')
 
         self.github_pbutton = QPushButton()
         self.github_pbutton.setIcon(
@@ -653,8 +653,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Get the attribute and set the stylesheet
                 getattr(self.settings_window, key).setStyleSheet(value)
 
-            elif key in ('joint_dvh_pbutton', 'joint_ntcp_pbutton',
-                         'close_compare_pbutton'):
+            elif key in ('joint_dvh_pbutton', 'close_compare_pbutton'):
 
                 getattr(self.compare_window, key).setStyleSheet(value)
 
@@ -1183,6 +1182,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.optimize_pbutton.setEnabled(True)
             self.status_bar.showMessage("Ready for optimization ...")
 
+        # 
+        self.viewer_widget.setCurrentIndex(0)
+
         self.loader_label.hide()
         self.stop_thread_pbutton.setEnabled(False)
 
@@ -1336,6 +1338,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
             'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
             'ref_vol_ledit', 'ref_dose_ledit'))
+
+        # 
+        self.viewer_widget.setCurrentIndex(0)
 
         self.status_bar.showMessage("Ready for evaluation ...")
         self.loader_label.hide()

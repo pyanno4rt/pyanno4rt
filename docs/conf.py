@@ -94,9 +94,10 @@ autoapi_options = [
 autoapi_ignore = [
     '*/resources_rc.py', '*/compare_window.py', '*/info_window.py',
     '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py',
-    '*/settings_window.py', '*/text_window.py', '*/tree_window.py',
-    '*/decision_tree_ntcp_window.py', '*/decision_tree_tcp_window.py',
-    '*/dose_uniformity_window.py', '*/equivalent_uniform_dose_window.py',
+    '*/settings_window.py', '*/splash_screen_window.py', '*/text_window.py',
+    '*/tree_window.py', '*/decision_tree_ntcp_window.py',
+    '*/decision_tree_tcp_window.py', '*/dose_uniformity_window.py',
+    '*/equivalent_uniform_dose_window.py',
     '*/k_nearest_neighbors_ntcp_window.py',
     '*/k_nearest_neighbors_tcp_window.py', '*/lkb_ntcp_window.py',
     '*/logistic_regression_ntcp_window.py',

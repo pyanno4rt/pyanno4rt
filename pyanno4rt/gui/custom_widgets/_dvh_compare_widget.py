@@ -198,33 +198,11 @@ class DVHCompareWidget(QWidget):
         self.parent.maximum_ledit.clear()
         self.parent.minimum_ledit.clear()
 
-    def select_dvh_curve(self, event):
+    def select_dvh_curves_from_parent(self, event):
         """."""
 
         # Get all plot items
-        items = self.plot_graph.getPlotItem().listDataItems()
-
-        for item in items:
-            pen = item.curve.opts['pen']
-            if item == event:
-                pen = mkPen(pen)
-                if pen.width() == 2:
-                    event.curve.setPen(mkPen(color=pen.color(),
-                                             style=pen.style(),
-                                             width=5))
-                else:
-                    event.curve.setPen(mkPen(color=pen.color(),
-                                             style=pen.style(),
-                                             width=2))
-                    self.parent.segment_ledit.clear()
-                    self.parent.mean_ledit.clear()
-                    self.parent.std_ledit.clear()
-                    self.parent.maximum_ledit.clear()
-                    self.parent.minimum_ledit.clear()
-            else:
-                item.curve.setPen(mkPen(color=pen.color(),
-                                        style=pen.style(),
-                                        width=2))
+        self.parent.select_dvh_curves(event)
 
     def update_crosshair(
             self,
@@ -273,11 +251,11 @@ class DVHCompareWidget(QWidget):
 
             pen = mkPen(color=self.segment_styles[segment][0],
                         style=self.segment_styles[segment][1],
-                        width=2)
+                        width=1)
 
             plot = self.plot_graph.plot(
                 self.dose_histogram['evaluation_points'],
                 self.dose_histogram[segment]['dvh_values'],
                 pen=pen, name=segment, clickable=True)
             plot.sigClicked.connect(self.get_segment_statistics)
-            plot.sigClicked.connect(self.select_dvh_curve)
+            plot.sigClicked.connect(self.select_dvh_curves_from_parent)

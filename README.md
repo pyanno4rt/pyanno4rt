@@ -222,7 +222,7 @@ Note: the "docs" folder on Github includes example files with CT/segmentation da
 <h3>Contact</h3>
 
 <ul>
-	<li> Mail: <a href="mailto:tim.ortkamp@kit.edu?subject=Request on pyanno4rt">tim.ortkamp@kit.edu</a> </li>
+	<li> Mail: <a href="mailto:tim.ortkamp@gmx.de?subject=Request on pyanno4rt">tim.ortkamp@gmx.de</a> </li>
 	<li> Github Discussions: https://github.com/pyanno4rt/pyanno4rt/discussions </li>
 	<li> LinkedIn: https://www.linkedin.com/in/tim-ortkamp/
 	

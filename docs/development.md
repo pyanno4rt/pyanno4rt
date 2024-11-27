@@ -3,9 +3,9 @@
 <h3>Important links</h3>
 
 <ul>
-	<li> Official source code repo: https://github.com/pyanno4rt/pyanno4rt </li>
-	<li> Download releases: https://pypi.org/project/pyanno4rt/
-	<li> Issue tracker: https://github.com/pyanno4rt/pyanno4rt/issues </li>
+	<li> Official source code repo: <a href="https://github.com/pyanno4rt/pyanno4rt">https://github.com/pyanno4rt/pyanno4rt</a> </li>
+	<li> Download releases: <a href="https://pypi.org/project/pyanno4rt/">https://pypi.org/project/pyanno4rt/</a> </li>
+	<li> Issue tracker: <a href="https://github.com/pyanno4rt/pyanno4rt/issues">https://github.com/pyanno4rt/pyanno4rt/issues</a> </li>
 	
 </ul>
 

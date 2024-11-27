@@ -8,6 +8,7 @@ from importlib.metadata import version
 from io import StringIO
 from logging import (CRITICAL, DEBUG, ERROR, Formatter, getLogger, INFO,
                      StreamHandler, WARNING)
+from platform import python_version
 
 # %% Class definition
 
@@ -46,8 +47,8 @@ class Logger():
 
             # Log a message about the software versions used
             self.display_info(
-                f"Running pyanno4rt Amadeus v{version('pyanno4rt')} with "
-                "Python {python_version()} ...")
+                f'Running pyanno4rt v{version("pyanno4rt")} "Amadeus" with '
+                f'Python {python_version()} ...')
 
             # Log a message about the initialization of the class
             self.display_info("Initializing logger ...")

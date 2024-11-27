@@ -6,12 +6,14 @@
 
 from importlib.metadata import version
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QIcon
 from PyQt5.QtWidgets import (
     QGraphicsDropShadowEffect, QMainWindow, QDesktopWidget)
+from time import sleep
 
 # %% Internal package import
 
+from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.splash_screen_window import Ui_splash_window
 
 # %% Class definition
@@ -32,19 +34,38 @@ class SplashScreenWindow(QMainWindow, Ui_splash_window):
         # Build the UI main window
         self.setupUi(self)
 
+        # Set the window icon
+        self.setWindowIcon(QIcon(
+            ':/special_icons/icons_special/logo_white_icon.png'))
+
         # Add the version label
         self.version_label.setText(
-            ' '.join(('Amadeus', version('pyanno4rt'))))
+            ' '.join((f'v{version("pyanno4rt")}', '"Amadeus"')))
 
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.shadow = QGraphicsDropShadowEffect(self)
-        self.shadow.setBlurRadius(30)
+        self.shadow.setBlurRadius(70)
         self.shadow.setXOffset(0)
         self.shadow.setYOffset(0)
-        self.shadow.setColor(QColor(0, 0, 0, 150))
+        self.shadow.setColor(QColor(0, 0, 0, 100))
         self.splash_widget.setGraphicsEffect(self.shadow)
+
+    def progress(self):
+        """."""
+
+        # 
+        for i in range(1, 101):
+
+            # 
+            sleep(0.04)
+
+            # 
+            self.progressBar.setValue(i)
+
+        # 
+        sleep(0.2)
 
     def position(self):
         """."""

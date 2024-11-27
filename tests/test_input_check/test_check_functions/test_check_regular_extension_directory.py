@@ -22,7 +22,7 @@ def test_check_regular_extension_directory_valid():
     # Assert the run-through of the function
     assert check_regular_extension_directory(
         'label', './tests/extra_files/load_list_from_file',
-        ('.json', '.p', '.py', '.txt')) is None
+        ('.json', '.p', '.py', '.txt'), ('.mat', '.p')) is None
 
 
 # Define the invalid argument sets
@@ -43,4 +43,4 @@ def test_check_regular_extension_directory_invalid(label, data, extensions,
 
     # Assert the raise of an error exception
     with raises(expected):
-        check_regular_extension_directory(label, data, extensions)
+        check_regular_extension_directory(label, data, extensions, ('.mat', '.p'))

@@ -4,7 +4,10 @@
 
 # %% External package import
 
+from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
+from numpy import ceil, linspace
 from PyQt5.QtWidgets import QMainWindow
+from pyqtgraph import mkPen
 
 # %% Internal package import
 
@@ -26,14 +29,17 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             self,
             parent=None):
 
-        # Get the application from the argument
-        self.parent = parent
-
         # Run the constructor from the superclass
         super().__init__()
 
         # Build the UI main window
         self.setupUi(self)
+
+        # Get the application from the argument
+        self.parent = parent
+
+        # 
+        self.baseline, self.reference = None, None
 
         # 
         self.baseline_dose_slice_widget = SliceCompareWidget(self)
@@ -59,12 +65,30 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.difference_dvh_layout.insertWidget(0, self.difference_dvh_widget)
 
         # 
-        self.slice_selection_sbar.valueChanged.connect(
-            self.baseline_dose_slice_widget.change_image_slice)
-        self.slice_selection_sbar.valueChanged.connect(
-            self.reference_dose_slice_widget.change_image_slice)
-        self.slice_selection_sbar.valueChanged.connect(
-            self.difference_dose_slice_widget.change_image_slice)
+        self.baseline_dose_slice_widget.viewbox.setXLink(
+            self.reference_dose_slice_widget.viewbox)
+        self.baseline_dose_slice_widget.viewbox.setYLink(
+            self.reference_dose_slice_widget.viewbox)
+        self.difference_dose_slice_widget.viewbox.setXLink(
+            self.baseline_dose_slice_widget.viewbox)
+        self.difference_dose_slice_widget.viewbox.setYLink(
+            self.reference_dose_slice_widget.viewbox)
+
+        # 
+        self.baseline_dvh_widget.plot_graph.getPlotItem().vb.setXLink(
+            self.reference_dvh_widget.plot_graph.getPlotItem().vb)
+        self.baseline_dvh_widget.plot_graph.getPlotItem().vb.setYLink(
+            self.reference_dvh_widget.plot_graph.getPlotItem().vb)
+
+        # 
+        self.orient_cbox.currentTextChanged.connect(
+            self.adjust_slider_by_orientation)
+        self.orient_cbox.currentTextChanged.connect(
+            self.baseline_dose_slice_widget.change_orientation)
+        self.orient_cbox.currentTextChanged.connect(
+            self.reference_dose_slice_widget.change_orientation)
+        self.orient_cbox.currentTextChanged.connect(
+            self.difference_dose_slice_widget.change_orientation)
 
         # 
         self.opacity_sbox.valueChanged.connect(
@@ -75,81 +99,80 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             self.difference_dose_slice_widget.change_dose_opacity)
 
         # 
+        self.slice_selection_sbar.valueChanged.connect(
+            self.baseline_dose_slice_widget.change_image_slice)
+        self.slice_selection_sbar.valueChanged.connect(
+            self.reference_dose_slice_widget.change_image_slice)
+        self.slice_selection_sbar.valueChanged.connect(
+            self.difference_dose_slice_widget.change_image_slice)
+
+        # 
+        self.disCT_cbox.stateChanged.connect(
+            self.baseline_dose_slice_widget.toggle_ct)
+        self.disCT_cbox.stateChanged.connect(
+            self.reference_dose_slice_widget.toggle_ct)
+        self.disCT_cbox.stateChanged.connect(
+            self.difference_dose_slice_widget.toggle_ct)
+
+        # 
+        self.disDose_cbox.stateChanged.connect(
+            self.baseline_dose_slice_widget.toggle_dose)
+        self.disDose_cbox.stateChanged.connect(
+            self.reference_dose_slice_widget.toggle_dose)
+        self.disDose_cbox.stateChanged.connect(
+            self.difference_dose_slice_widget.toggle_dose)
+
+        # 
+        self.disDoseCon_cbox.stateChanged.connect(
+            self.baseline_dose_slice_widget.toggle_dose_contours)
+        self.disDoseCon_cbox.stateChanged.connect(
+            self.reference_dose_slice_widget.toggle_dose_contours)
+        self.disDoseCon_cbox.stateChanged.connect(
+            self.difference_dose_slice_widget.toggle_dose_contours)
+
+        # 
+        self.disSegm_cbox.stateChanged.connect(
+            self.baseline_dose_slice_widget.toggle_segment_contours)
+        self.disSegm_cbox.stateChanged.connect(
+            self.reference_dose_slice_widget.toggle_segment_contours)
+        self.disSegm_cbox.stateChanged.connect(
+            self.difference_dose_slice_widget.toggle_segment_contours)
+
+        # 
+        self.joint_dvh_pbutton.clicked.connect(self.open_joint_dvh)
+
+        # 
         self.close_compare_pbutton.clicked.connect(self.close)
 
     def add_plots(self, baseline, reference):
         """."""
 
         # 
+        self.baseline, self.reference = baseline, reference
+
+        # 
         self.baseline_dose_slice_widget.reset_images()
         self.reference_dose_slice_widget.reset_images()
         self.difference_dose_slice_widget.reset_images()
 
-        # 
-        self.baseline_dose_slice_widget.add_ct(
-            baseline, baseline.datahub.computed_tomography['cube'])
-        self.reference_dose_slice_widget.add_ct(
-            reference, reference.datahub.computed_tomography['cube'])
-        self.difference_dose_slice_widget.add_ct(
-            baseline, baseline.datahub.computed_tomography['cube'])
-
-        # Get the axial dimension of the CT cube
-        axial_length = baseline.datahub.computed_tomography[
-            'cube_dimensions'][2]
-
-        # Add the segments to the slice widget
-        self.baseline_dose_slice_widget.add_segments(
-            baseline.datahub.computed_tomography,
-            baseline.datahub.segmentation)
-        self.reference_dose_slice_widget.add_segments(
-            reference.datahub.computed_tomography,
-            reference.datahub.segmentation)
-        self.difference_dose_slice_widget.add_segments(
-            baseline.datahub.computed_tomography,
-            baseline.datahub.segmentation)
-
-        # Set the range of the slice selection scrollbar
-        self.slice_selection_sbar.setRange(0, axial_length-1)
-
-        # Set the initial scrollbar value
-        self.slice_selection_sbar.setValue(int((axial_length-1)/2))
-
-        # Set the initial position label
-        self.slice_selection_pos.setText(''.join((
-            'z = ', str(self.baseline_dose_slice_widget.slice), ' mm')))
-
         # Get the joint minimum and maximum dose
-        minima = [min(
-            baseline.datahub.optimization[
-                'optimized_dose'][:, :, index].min(),
-            reference.datahub.optimization[
-                'optimized_dose'][:, :, index].min())
-            for index in range(axial_length)]
-        maxima = [max(
-            baseline.datahub.optimization[
-                'optimized_dose'][:, :, index].max(),
-            reference.datahub.optimization[
-                'optimized_dose'][:, :, index].max())
-            for index in range(axial_length)]
+        minimum = min(
+            baseline.datahub.optimization['optimized_dose'].min(),
+            reference.datahub.optimization['optimized_dose'].min())
+        maximum = max(
+            baseline.datahub.optimization['optimized_dose'].max(),
+            reference.datahub.optimization['optimized_dose'].max())
 
-        # Add the dose image to the slice widget
-        self.baseline_dose_slice_widget.add_dose(
-            baseline.datahub.optimization['optimized_dose'],
-            minima, maxima)
-        self.reference_dose_slice_widget.add_dose(
-            reference.datahub.optimization['optimized_dose'],
-            minima, maxima)
+        # 
+        self.baseline_dose_slice_widget.add_image_data(
+            baseline, minimum, maximum)
+        self.reference_dose_slice_widget.add_image_data(
+            reference, minimum, maximum)
+        self.difference_dose_slice_widget.add_image_data(
+            (baseline, reference), minimum, maximum)
 
-        # Get the dose difference
-        dose_diff = (reference.datahub.optimization['optimized_dose']
-                     - baseline.datahub.optimization['optimized_dose'])
-
-        # Get the maximum absolute difference
-        max_diff = max(abs(dose_diff.min()), abs(dose_diff.max()))
-
-        # Add the dose difference image to the slice widget
-        self.difference_dose_slice_widget.add_dose(
-            dose_diff, [-max_diff], [max_diff])
+        # 
+        self.adjust_slider_by_orientation()
 
         # 
         self.baseline_dose_slice_widget.update_images()
@@ -175,14 +198,15 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                 baseline.datahub.dose_histogram['display_segments'])}
 
         # 
-        joint_segments = tuple(
+        self.joint_segments = sorted(tuple(
             set(baseline.datahub.dose_histogram['display_segments'])
-            & set(reference.datahub.dose_histogram['display_segments']))
+            & set(reference.datahub.dose_histogram['display_segments'])),
+            key=lambda t: t[0])
 
         # 
-        if len(joint_segments) == 0:
+        if len(self.joint_segments) == 0:
 
-            joint_segments = None
+            self.joint_segments = None
 
         # 
         diff_ranges = {
@@ -192,10 +216,12 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                       )),
             'y': (
                 min(min(
-                    dvh_diff[segment]['dvh_values']) for segment in joint_segments
+                    dvh_diff[segment]['dvh_values'])
+                    for segment in self.joint_segments
                     if segment not in ('evaluation_points', 'display_segments')),
                 max(max(
-                    dvh_diff[segment]['dvh_values']) for segment in joint_segments
+                    dvh_diff[segment]['dvh_values'])
+                    for segment in self.joint_segments
                     if segment not in ('evaluation_points', 'display_segments')))}
 
         # Add the style and input data to the DVH widget
@@ -210,9 +236,159 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             baseline=baseline, reference=reference)
 
         # Update the plot of the DVH widget
-        self.baseline_dvh_widget.update_dvh(joint_segments)
-        self.reference_dvh_widget.update_dvh(joint_segments)
-        self.difference_dvh_widget.update_dvh(joint_segments)
+        self.baseline_dvh_widget.update_dvh(self.joint_segments)
+        self.reference_dvh_widget.update_dvh(self.joint_segments)
+        self.difference_dvh_widget.update_dvh(self.joint_segments)
+
+    def adjust_slider_by_orientation(self):
+        """."""
+
+        # 
+        if self.orient_cbox.currentText() == 'axial':
+
+            # Get the axial dimension of the CT cube
+            axial_length = self.baseline.datahub.computed_tomography[
+                'cube_dimensions'][2]
+
+        # 
+        elif self.orient_cbox.currentText() == 'coronal':
+
+            # Get the axial dimension of the CT cube
+            axial_length = self.baseline.datahub.computed_tomography[
+                'cube_dimensions'][0]
+
+        else:
+
+            # Get the axial dimension of the CT cube
+            axial_length = self.baseline.datahub.computed_tomography[
+                'cube_dimensions'][1]
+
+        # Set the range of the slice selection scrollbar
+        self.slice_selection_sbar.setRange(0, axial_length-1)
+
+        # Set the initial scrollbar value
+        self.slice_selection_sbar.setValue(int((axial_length-1)/2))
+
+    def select_dvh_curves(self, event):
+        """."""
+
+        # 
+        event_pen_width = event.curve.opts['pen'].width()
+
+        for widget in (self.baseline_dvh_widget, self.reference_dvh_widget,
+                       self.difference_dvh_widget):
+
+            # Get all plot items
+            items = widget.plot_graph.getPlotItem().listDataItems()
+
+            for item in items:
+                pen = item.curve.opts['pen']
+                item.curve.setPen(mkPen(
+                    color=pen.color(), style=pen.style(), width=1))
+                if item != event and item.name() == event.name():
+                    if event_pen_width != 4:
+                        item.curve.setPen(mkPen(
+                            color=pen.color(), style=pen.style(), width=2))
+                    else:
+                        item.curve.setPen(mkPen(
+                            color=pen.color(), style=pen.style(), width=1))
+                elif item == event:
+                    if event_pen_width != 4:
+                        item.curve.setPen(mkPen(
+                            color=pen.color(), style=pen.style(), width=4))
+                    else:
+                        self.segment_ledit.clear()
+                        self.mean_ledit.clear()
+                        self.std_ledit.clear()
+                        self.maximum_ledit.clear()
+                        self.minimum_ledit.clear()
+
+    def open_joint_dvh(self):
+        """."""
+
+        # Get the colormap
+        colors = get_cmap('jet')(linspace(0, 1.0, len(self.joint_segments)))
+
+        # Create a figure and subplots
+        figure, axis = subplots(figsize=(14, 8))
+
+        # Add the dose-volume histogram curve for each segment
+        for i, segment in enumerate(self.joint_segments):
+
+            # Baseline curves
+            axis.plot(
+                self.baseline.datahub.dose_histogram['evaluation_points'],
+                self.baseline.datahub.dose_histogram[segment]['dvh_values'],
+                linewidth=1.7,
+                color=colors[i],
+                linestyle='-',
+                label=''.join((segment, ' (baseline) ')))
+
+            # Reference curves
+            axis.plot(
+                self.reference.datahub.dose_histogram['evaluation_points'],
+                self.reference.datahub.dose_histogram[segment]['dvh_values'],
+                linewidth=1.7,
+                color=colors[i],
+                linestyle='--',
+                label=''.join((segment, ' (reference) ')))
+
+        # Set x- and y-label
+        axis.set_xlabel("Dose per fraction [Gy]", fontsize=16)
+        axis.set_ylabel("Relative volume [%]", fontsize=16)
+
+        # Change the tick label sizes for both axes
+        axis.tick_params(axis='both', which='major', labelsize=13)
+
+        # Determine the step length on the x-axis
+        x_step = min(
+            (0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100),
+            key=lambda x: abs(ceil(max(
+                max(
+                    self.baseline.datahub.dose_histogram['evaluation_points']),
+                max(self.reference.datahub.dose_histogram['evaluation_points'])
+                )/x)-20))
+
+        # Set x- and y-ticks
+        axis.set_xticks(tuple(i*x_step for i in range(
+            int(ceil(max(
+                max(
+                    self.baseline.datahub.dose_histogram['evaluation_points']),
+                max(
+                    self.reference.datahub.dose_histogram['evaluation_points'])
+                ))/x_step)+1)))
+        axis.set_yticks(tuple(i*5 for i in range(21)))
+
+        # Set the x- and y-limits
+        axis.set_xlim(left=-0.05)
+        axis.set_ylim(-1, 101)
+
+        # Set the facecolor for the axis
+        axis.set_facecolor('whitesmoke')
+
+        # Specify the grid with a subgrid
+        axis.grid(which='major', color='lightgray', linewidth=0.8)
+        axis.grid(which='minor', color='lightgray', linestyle=':',
+                  linewidth=0.5)
+        axis.minorticks_on()
+
+        # Set the legend and its facecolor
+        _, labels = axis.get_legend_handles_labels()
+        legend = axis.legend(labels, fontsize=13, framealpha=1)
+        legend.get_frame().set_facecolor('snow')
+
+        # Apply a tight layout to the figure
+        figure.tight_layout()
+
+        # Get the figure manager
+        figure_manager = get_current_fig_manager()
+
+        # Set the window title
+        figure_manager.set_window_title(
+            "pyanno4rt - joint dose-volume histogram (DVH)")
+
+        # Show the plot in screen size
+        figure_manager.window.showMaximized()
 
     def position(self):
         """."""

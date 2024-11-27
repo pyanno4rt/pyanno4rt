@@ -47,7 +47,7 @@ class Ui_log_window(object):
 
     def retranslateUi(self, log_window):
         _translate = QtCore.QCoreApplication.translate
-        log_window.setWindowTitle(_translate("log_window", "Logging"))
+        log_window.setWindowTitle(_translate("log_window", "Logging Viewer"))
         self.close_log_pbutton.setText(_translate("log_window", "Close"))
         self.log_tedit.setHtml(_translate("log_window", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"

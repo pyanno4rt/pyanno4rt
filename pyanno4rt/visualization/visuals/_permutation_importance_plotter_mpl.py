@@ -135,7 +135,8 @@ class PermutationImportancePlotterMPL():
 
             # Plot the validation permutation importance boxplots
             sns_boxplot(data=data_zipped[2][i], x='feature', y='importance',
-                        hue='fold', palette=color_palette(), ax=axis[1])
+                        hue='fold', palette=color_palette(n_colors=5),
+                        ax=axis[1])
 
             for j in range(0, 2):
 

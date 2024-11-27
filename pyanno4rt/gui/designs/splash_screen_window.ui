@@ -2,12 +2,15 @@
 <ui version="4.0">
  <class>splash_window</class>
  <widget class="QMainWindow" name="splash_window">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>423</width>
-    <height>350</height>
+    <height>360</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,12 +19,15 @@
   <property name="windowOpacity">
    <double>1.000000000000000</double>
   </property>
+  <property name="styleSheet">
+   <string notr="true">b</string>
+  </property>
   <widget class="QWidget" name="splash_widget">
    <widget class="QFrame" name="image_frame">
     <property name="geometry">
      <rect>
       <x>1</x>
-      <y>2</y>
+      <y>-80</y>
       <width>421</width>
       <height>381</height>
      </rect>
@@ -44,9 +50,9 @@ border-radius: 15px;</string>
     <property name="geometry">
      <rect>
       <x>1</x>
-      <y>262</y>
+      <y>210</y>
       <width>421</width>
-      <height>121</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -62,7 +68,7 @@ border-radius: 15px;</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>20</y>
+       <y>0</y>
        <width>420</width>
        <height>30</height>
       </rect>
@@ -79,7 +85,7 @@ border-radius: 15px;</string>
 color: rgb(254, 144, 41);</string>
      </property>
      <property name="text">
-      <string/>
+      <string>v0.23.0 &quot;Amadeus&quot;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -89,7 +95,7 @@ color: rgb(254, 144, 41);</string>
      <property name="geometry">
       <rect>
        <x>-1</x>
-       <y>60</y>
+       <y>40</y>
        <width>421</width>
        <height>25</height>
       </rect>
@@ -108,6 +114,33 @@ color: rgb(211, 215, 207);</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>70</y>
+       <width>341</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QProgressBar{
+		background-color: transparent;
+}
+QProgressBar::chunk{
+       background-color: qlineargradient(x0: 0, x2: 1,  stop: 0 #4664aa, stop: 0.11765 #009682, stop: 0.2353 #8cb63c, stop: 0.3529 #a7822e, stop: 0.4706 #df9b1b, stop: 0.588 #a22223);
+}</string>
+     </property>
+     <property name="minimum">
+      <number>0</number>
+     </property>
+     <property name="value">
+      <number>0</number>
+     </property>
+     <property name="textVisible">
+      <bool>false</bool>
      </property>
     </widget>
    </widget>
