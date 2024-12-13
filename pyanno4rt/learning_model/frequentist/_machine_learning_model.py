@@ -803,8 +803,11 @@ class MachineLearningModel(metaclass=ABCMeta):
             for key in ('feature_values', 'label_values',
                         'time_variable_values', 'tune_folds', 'oof_folds'):
 
-                # Convert the array into a list
-                configuration[key] = configuration[key].tolist()
+                # Check if the key value is not a list
+                if not isinstance(configuration[key], list):
+
+                    # Convert the array into a list
+                    configuration[key] = configuration[key].tolist()
 
         else:
 

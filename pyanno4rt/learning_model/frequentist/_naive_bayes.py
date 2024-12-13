@@ -54,8 +54,11 @@ class NaiveBayesModel(MachineLearningModel):
         # Configure the internal hyperparameter search space
         tune_space = {
             'priors': tune_space.get(
-                'priors', [None, [1-mean(dataset['label_values']),
-                                  mean(dataset['label_values'])]]),
+                'priors', [
+                    [i/100, 1-i/100] for i in range(1, 100)]
+                + [[mean(dataset['label_values']),
+                    1-mean(dataset['label_values'])],
+                   None]),
             'var_smoothing': tune_space.get('var_smoothing', [1e-12, 1])}
 
         # Configure the hyperopt search space

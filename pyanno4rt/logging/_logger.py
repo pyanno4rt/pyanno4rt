@@ -47,8 +47,14 @@ class Logger():
 
             # Log a message about the software versions used
             self.display_info(
-                f'Running pyanno4rt v{version("pyanno4rt")} "Amadeus" with '
+                f'Running pyanno4rt "Amadeus" v{version("pyanno4rt")} with '
                 f'Python {python_version()} ...')
+
+            # Log a message about the warranty clause
+            self.display_info(
+                'Caution: pyanno4rt is an open-source package and not a '
+                'medical product. It is provided "as-is", without warranty of '
+                'any kind, and intended for research and education only ...')
 
             # Log a message about the initialization of the class
             self.display_info("Initializing logger ...")

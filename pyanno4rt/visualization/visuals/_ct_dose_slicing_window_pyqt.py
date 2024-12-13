@@ -669,7 +669,7 @@ class CtDoseSlicingWindowPyQt(QMainWindow):
             """Create a slice widget and add it to the layout."""
             slice_view = SliceWidget(
                 label=label,
-                ct_cube=transpose(computed_tomography['cube'], orientation),
+                ct_cube=transpose(computed_tomography['cubeHU'], orientation),
                 dose_cube=transpose(optimized_dose, orientation),
                 segment_masks=tuple(transpose(mask, orientation)
                                     for mask in segment_masks),

@@ -27,6 +27,9 @@ class NeuralNetworkNTCP(MachineLearningComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     model_parameters : dict
         Dictionary with the data handling & learning model parameters, see \
         the class
@@ -76,6 +79,7 @@ class NeuralNetworkNTCP(MachineLearningComponentClass):
 
     def __init__(
             self,
+            segment,
             model_parameters,
             embedding='active',
             weight=1.0,
@@ -87,6 +91,7 @@ class NeuralNetworkNTCP(MachineLearningComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Neural Network NTCP',
+                         segment=segment,
                          parameter_name=('(weight, bias)',),
                          parameter_category=('parameter',),
                          model_parameters=model_parameters,

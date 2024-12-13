@@ -71,8 +71,16 @@ def snapshot(instance, path, include_patient_data=False,
             # Check if the current key has been searched
             if key == search_key:
 
-                # Convert the path into an absolute value
-                dictionary[key] = abspath(value)
+                # Check if the value is None
+                if value is None:
+
+                    # Set the path to None
+                    dictionary[key] = value
+
+                else:
+
+                    # Convert the path into an absolute value
+                    dictionary[key] = abspath(value)
 
             # Check if the value is a dictionary
             elif isinstance(value, dict):

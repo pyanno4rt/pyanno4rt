@@ -24,6 +24,9 @@ class SquaredOverdosing(ConventionalComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     maximum_dose : int or float
         Maximum value for the dose.
 
@@ -58,6 +61,7 @@ class SquaredOverdosing(ConventionalComponentClass):
 
     def __init__(
             self,
+            segment,
             maximum_dose=None,
             embedding='active',
             weight=1.0,
@@ -69,6 +73,7 @@ class SquaredOverdosing(ConventionalComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Squared Overdosing',
+                         segment=segment,
                          parameter_name=('maximum_dose',),
                          parameter_category=('dose',),
                          parameter_value=(maximum_dose,),

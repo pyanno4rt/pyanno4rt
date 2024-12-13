@@ -25,6 +25,9 @@ class LQPoissonTCP(RadiobiologyComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     alpha : int or float
         Alpha coefficient for the tumor volume (in the LQ model).
 
@@ -65,6 +68,7 @@ class LQPoissonTCP(RadiobiologyComponentClass):
 
     def __init__(
             self,
+            segment,
             alpha=None,
             beta=None,
             volume_parameter=None,
@@ -78,6 +82,7 @@ class LQPoissonTCP(RadiobiologyComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='LQ Poisson TCP',
+                         segment=segment,
                          parameter_name=('alpha', 'beta', 'volume_parameter'),
                          parameter_category=(
                              'coefficient', 'coefficient', 'coefficient'),

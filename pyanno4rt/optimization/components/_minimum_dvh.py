@@ -24,6 +24,9 @@ class MinimumDVH(ConventionalComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     target_dose : int or float
         Target value for the dose.
 
@@ -61,6 +64,7 @@ class MinimumDVH(ConventionalComponentClass):
 
     def __init__(
             self,
+            segment,
             target_dose=None,
             quantile_volume=None,
             embedding='active',
@@ -73,6 +77,7 @@ class MinimumDVH(ConventionalComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Minimum DVH',
+                         segment=segment,
                          parameter_name=('target_dose', 'quantile_volume'),
                          parameter_category=('dose', 'volume'),
                          parameter_value=(target_dose, quantile_volume),

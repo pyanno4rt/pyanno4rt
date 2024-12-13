@@ -124,8 +124,8 @@ def generate_ct_from_dcm(data, resolution):
             computed_tomography['cube_dimensions'], old_dimensions))
 
         # Interpolate the CT cube to the target resolution
-        computed_tomography['cube'] = zoom(
-            computed_tomography['cube'], zooms, order=1)
+        computed_tomography['cubeHU'] = zoom(
+            computed_tomography['cubeHU'], zooms, order=1)
 
         # Update the number of voxels
         computed_tomography['number_of_voxels'] = prod(
@@ -140,7 +140,7 @@ def generate_ct_from_dcm(data, resolution):
     computed_tomography = {}
 
     # Add the interpolated RED/RSP cube to the dictionary
-    computed_tomography['cube'] = calculate_3d_cube(data)
+    computed_tomography['cubeHU'] = calculate_3d_cube(data)
 
     # Add the grid resolution to the dictionary
     computed_tomography['resolution'] = {
@@ -164,7 +164,7 @@ def generate_ct_from_dcm(data, resolution):
 
     # Add the cube dimensions to the dictionary
     computed_tomography['cube_dimensions'] = array(
-        computed_tomography['cube'].shape)
+        computed_tomography['cubeHU'].shape)
 
     # Add the number of voxels to the dictionary
     computed_tomography['number_of_voxels'] = prod(

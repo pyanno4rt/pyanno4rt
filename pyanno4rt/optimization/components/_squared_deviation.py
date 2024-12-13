@@ -24,6 +24,9 @@ class SquaredDeviation(ConventionalComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     target_dose : int or float
         Target value for the dose.
 
@@ -58,6 +61,7 @@ class SquaredDeviation(ConventionalComponentClass):
 
     def __init__(
             self,
+            segment,
             target_dose=None,
             embedding='active',
             weight=1.0,
@@ -69,6 +73,7 @@ class SquaredDeviation(ConventionalComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Squared Deviation',
+                         segment=segment,
                          parameter_name=('target_dose',),
                          parameter_category=('dose',),
                          parameter_value=(target_dose,),

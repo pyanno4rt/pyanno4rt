@@ -17,7 +17,7 @@ from pyanno4rt.tools import apply
 # %% Function definition
 
 
-def copycat(base_class, path):
+def copycat(base_class, path, ignore_optimum=False):
     """
     Create a copycat from a treatment plan snapshot.
 
@@ -28,6 +28,9 @@ def copycat(base_class, path):
 
     path : str
         Directory path of the snapshot.
+
+    ignore_optimum : bool
+        Indicator for ignoring the optimal fluence file (if available).
 
     Returns
     -------
@@ -54,6 +57,10 @@ def copycat(base_class, path):
                 instance['parameters']['model_parameters'][
                     'model_folder_path'] = inputs[0]
 
+                # Set the model data path to None
+                instance['parameters']['model_parameters'][
+                    'data_path'] = None
+
                 # Loop over the model path files
                 for filename in listdir(inputs[0]):
 
@@ -63,12 +70,6 @@ def copycat(base_class, path):
                         # Overwrite the model data path
                         instance['parameters']['model_parameters'][
                             'data_path'] = f'{inputs[0]}/{filename}'
-
-                    else:
-
-                        # Set the model data path to None
-                        instance['parameters']['model_parameters'][
-                            'data_path'] = None
 
         # Get the component
         component = treatment_plan.optimization[
@@ -122,7 +123,7 @@ def copycat(base_class, path):
           product(model_paths, (*treatment_plan.optimization['components'],)))
 
     # Check if the optimized fluence file exists
-    if 'optimized_fluence.npy' in listdir(path):
+    if 'optimized_fluence.npy' in listdir(path) and not ignore_optimum:
 
         # Load the optimized fluence array
         treatment_plan.datahub.optimization = {

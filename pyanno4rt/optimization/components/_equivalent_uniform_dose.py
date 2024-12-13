@@ -24,6 +24,9 @@ class EquivalentUniformDose(ConventionalComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     target_eud : int or float
         Target value for the EUD.
 
@@ -61,6 +64,7 @@ class EquivalentUniformDose(ConventionalComponentClass):
 
     def __init__(
             self,
+            segment,
             target_eud=None,
             volume_parameter=None,
             embedding='active',
@@ -73,6 +77,7 @@ class EquivalentUniformDose(ConventionalComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Equivalent Uniform Dose',
+                         segment=segment,
                          parameter_name=('target_eud', 'volume_parameter'),
                          parameter_category=('dose', 'parameter'),
                          parameter_value=(target_eud, volume_parameter),

@@ -22,6 +22,9 @@ class KNeighborsTCP(MachineLearningComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     model_parameters : dict
         Dictionary with the data handling & learning model parameters, see \
         the class
@@ -71,6 +74,7 @@ class KNeighborsTCP(MachineLearningComponentClass):
 
     def __init__(
             self,
+            segment,
             model_parameters,
             embedding='active',
             weight=1.0,
@@ -82,6 +86,7 @@ class KNeighborsTCP(MachineLearningComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='K-Nearest Neighbors TCP',
+                         segment=segment,
                          parameter_name=(),
                          parameter_category=(),
                          model_parameters=model_parameters,

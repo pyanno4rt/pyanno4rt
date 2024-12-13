@@ -100,7 +100,7 @@ class PlanGenerator():
 
             # Get the instance from the component map
             instance = component_map[component['class']](
-                **component['parameters'])
+                segment=segment, **component['parameters'])
 
             # Log a message about setting the instance
             logger.display_info(

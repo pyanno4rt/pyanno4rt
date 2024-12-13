@@ -62,10 +62,16 @@ class LogisticRegressionModel(MachineLearningModel):
         hp_space = {
             'regularization': hp.choice(
                 'regularization', [
-                    {'penalty': None, 'C': 0.01},
+                    {'penalty': None},
                     *[{'penalty': norm, 'C': hp.uniform(
                         f'C_{norm}', tune_space['C'][0], tune_space['C'][1])}
-                        for norm in tune_space['penalty']]]),
+                      if norm != 'elasticnet' else
+                      {'penalty': 'elasticnet', 'l1_ratio': 0.5,
+                       'C': hp.uniform(
+                           f'C_{norm}', tune_space['C'][0], tune_space['C'][1]
+                           )}
+                      for norm in tune_space['penalty']]
+                    ]),
             'tol': hp.choice('tol', tune_space['tol']),
             'class_weight': hp.choice(
                 'class_weight', tune_space['class_weight'])}
@@ -117,8 +123,7 @@ class LogisticRegressionModel(MachineLearningModel):
             'max_iter': 10**6,
             'verbose': 0,
             'warm_start': False,
-            'n_jobs': -1,
-            'l1_ratio': 0.5}
+            'n_jobs': -1}
 
         return hyperparameters
 

@@ -2,6 +2,12 @@
 
 # Author: Tim Ortkamp <tim.ortkamp@kit.edu>
 
+# %% External package import
+
+from numpy import exp, log, pi, size
+from numpy import sum as nsum
+from scipy.special import logsumexp
+
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
@@ -21,6 +27,9 @@ class NaiveBayesNTCP(MachineLearningComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     model_parameters : dict
         Dictionary with the data handling & learning model parameters, see \
         the class
@@ -70,6 +79,7 @@ class NaiveBayesNTCP(MachineLearningComponentClass):
 
     def __init__(
             self,
+            segment,
             model_parameters,
             embedding='active',
             weight=1.0,
@@ -81,6 +91,7 @@ class NaiveBayesNTCP(MachineLearningComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Naive Bayes NTCP',
+                         segment=segment,
                          parameter_name=(),
                          parameter_category=(),
                          model_parameters=model_parameters,
@@ -186,6 +197,46 @@ class NaiveBayesNTCP(MachineLearningComponentClass):
             Value of the component gradient.
         """
 
+        def calculate_model_gradient(features):
+            """Calculate the naive Bayes model gradient."""
+
+            # Get the number of classes
+            number_of_classes = size(self.model.prediction_model.classes_)
+
+            # Get the fitted mean and variance parameters
+            means = self.model.prediction_model.theta_
+            variances = self.model.prediction_model.var_
+
+            # Calculate the joint log likelihood value for all classes
+            joint_log_likelihood = [
+                log(self.model.prediction_model.class_prior_[i])
+                - 0.5*nsum(log(2*pi*variances[i, :]))
+                - 0.5*nsum(((preprocessed_features - means[i, :])**2)
+                           / (variances[i, :]), 1)
+                for i in range(number_of_classes)]
+
+            # Calculate the joint log likelihood gradient for all classes
+            joint_log_likelihood_gradient = [
+                (-1*(features-means[i, :]) / variances[i, :])
+                for i in range(number_of_classes)]
+
+            # Calculate the log evidence gradient
+            log_evidence_gradient = (nsum(
+                joint_log_likelihood_gradient[0]*exp(joint_log_likelihood[0])
+                for i in range(number_of_classes))
+                / nsum(exp(joint_log_likelihood[i])
+                       for i in range(number_of_classes)))
+
+            # Calculate the probability prediction from the model
+            prediction = exp(
+                joint_log_likelihood[1][0] - logsumexp(joint_log_likelihood))
+
+            # Calculate the input feature gradient
+            gradient = prediction * (
+                joint_log_likelihood_gradient[1] - log_evidence_gradient)
+
+            return gradient.reshape(-1)
+
         # Get the feature calculator
         feature_calculator = self.data_model_handler.feature_calculator
 
@@ -196,7 +247,7 @@ class NaiveBayesNTCP(MachineLearningComponentClass):
         preprocessed_features = self.model.preprocess(raw_features)
 
         # Compute the model gradient
-        model_gradient = 0
+        model_gradient = calculate_model_gradient(preprocessed_features)
 
         # Compute the preprocessing pipeline gradient
         preprocessing_gradient = (

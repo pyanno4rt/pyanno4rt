@@ -27,6 +27,9 @@ class LogisticRegressionNTCP(MachineLearningComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     model_parameters : dict
         Dictionary with the data handling & learning model parameters, see \
         the class
@@ -79,6 +82,7 @@ class LogisticRegressionNTCP(MachineLearningComponentClass):
 
     def __init__(
             self,
+            segment,
             model_parameters,
             embedding='active',
             weight=1.0,
@@ -90,6 +94,7 @@ class LogisticRegressionNTCP(MachineLearningComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Logistic Regression NTCP',
+                         segment=segment,
                          parameter_name=('beta',),
                          parameter_category=('coefficient',),
                          model_parameters=model_parameters,

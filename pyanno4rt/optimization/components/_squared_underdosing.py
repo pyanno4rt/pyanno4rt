@@ -24,6 +24,9 @@ class SquaredUnderdosing(ConventionalComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     minimum_dose : int or float
         Minimum value for the dose.
 
@@ -58,6 +61,7 @@ class SquaredUnderdosing(ConventionalComponentClass):
 
     def __init__(
             self,
+            segment,
             minimum_dose=None,
             embedding='active',
             weight=1.0,
@@ -69,6 +73,7 @@ class SquaredUnderdosing(ConventionalComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Squared Underdosing',
+                         segment=segment,
                          parameter_name=('minimum_dose',),
                          parameter_category=('dose',),
                          parameter_value=(minimum_dose,),

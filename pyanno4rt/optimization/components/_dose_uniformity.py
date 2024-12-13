@@ -25,6 +25,9 @@ class DoseUniformity(ConventionalComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
         value is computed and tracked, but not considered in the optimization \
@@ -56,6 +59,7 @@ class DoseUniformity(ConventionalComponentClass):
 
     def __init__(
             self,
+            segment,
             embedding='active',
             weight=1.0,
             rank=1,
@@ -66,6 +70,7 @@ class DoseUniformity(ConventionalComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Dose Uniformity',
+                         segment=segment,
                          parameter_name=(),
                          parameter_category=(),
                          parameter_value=(),

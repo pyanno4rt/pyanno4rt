@@ -153,7 +153,7 @@ class DVHCompareWidget(QWidget):
                 segment: {metric: (
                     self.reference.datahub.dosimetrics[segment][metric]
                     - self.baseline.datahub.dosimetrics[segment][metric])
-                    for metric in self.baseline.datahub.dosimetrics[segment]}
+                    for metric in ['mean', 'std', 'max', 'min']}
                 for segment in self.baseline.datahub.dosimetrics
                 if segment not in ('display_segments', 'display_metrics')}
             dosimetrics |= {

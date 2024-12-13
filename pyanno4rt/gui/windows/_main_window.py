@@ -15,7 +15,6 @@ from PyQt5.QtGui import QCursor, QIcon, QMovie, QPixmap
 from PyQt5.QtWidgets import (
     QComboBox, QFileDialog, QFrame, QHeaderView, QLabel, QListWidget,
     QListWidgetItem, QMainWindow, QMenu, QMessageBox, QPushButton, QSpinBox)
-from time import sleep
 from webbrowser import open as webopen
 
 # %% Internal package import
@@ -160,7 +159,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.logo_label.setPixmap(pixmap)
         self.logo_label.setStyleSheet("QLabel {border: 0px;}")
 
-        self.version_label = QLabel(f'v{version("pyanno4rt")} "Amadeus"')
+        self.version_label = QLabel(f'"Amadeus" v{version("pyanno4rt")}')
 
         self.github_pbutton = QPushButton()
         self.github_pbutton.setIcon(
@@ -919,7 +918,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 segmentation = instance.datahub.segmentation
 
                 # Add the CT cube to the slice widget
-                self.slice_widget.add_ct(computed_tomography['cube'])
+                self.slice_widget.add_ct(computed_tomography['cubeHU'])
 
                 # Add the segments to the slice widget
                 self.slice_widget.add_segments(
@@ -1136,7 +1135,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.slice_widget.reset_images()
 
         # Add the CT cube to the slice widget
-        self.slice_widget.add_ct(computed_tomography['cube'])
+        self.slice_widget.add_ct(computed_tomography['cubeHU'])
 
         # Add the segments to the slice widget
         self.slice_widget.add_segments(computed_tomography, segmentation)
@@ -2226,8 +2225,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         reference = self.plans[self.reference_cbox.currentText()]
 
         # 
-        if (baseline.datahub.computed_tomography['cube'].shape !=
-                reference.datahub.computed_tomography['cube'].shape):
+        if (baseline.datahub.computed_tomography['cubeHU'].shape !=
+                reference.datahub.computed_tomography['cubeHU'].shape):
 
             message = ("Baseline and reference plan have different CT cube "
                        "dimensions. Only plans with equal dimensions can be "
@@ -2725,6 +2724,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Extend the plans by all optimized plans
         plans.extend(self.optimized_plans)
+        plans = sorted(plans)
 
         # 
         self.baseline_cbox.clear()

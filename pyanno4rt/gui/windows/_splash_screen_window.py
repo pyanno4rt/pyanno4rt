@@ -39,8 +39,7 @@ class SplashScreenWindow(QMainWindow, Ui_splash_window):
             ':/special_icons/icons_special/logo_white_icon.png'))
 
         # Add the version label
-        self.version_label.setText(
-            ' '.join((f'v{version("pyanno4rt")}', '"Amadeus"')))
+        self.version_label.setText(f'"Amadeus" v{version("pyanno4rt")}')
 
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -59,13 +58,13 @@ class SplashScreenWindow(QMainWindow, Ui_splash_window):
         for i in range(1, 101):
 
             # 
-            sleep(0.04)
+            sleep(0.03)
 
             # 
             self.progressBar.setValue(i)
 
         # 
-        sleep(0.2)
+        sleep(0.3)
 
     def position(self):
         """."""

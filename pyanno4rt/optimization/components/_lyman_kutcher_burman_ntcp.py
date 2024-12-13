@@ -25,6 +25,9 @@ class LymanKutcherBurmanNTCP(RadiobiologyComponentClass):
 
     Parameters
     ----------
+    segment : str
+        Name of the segment associated with the component.
+
     tolerance_dose_50 : int or float
         Tolerance value for the dose at 50% tumor control.
 
@@ -65,6 +68,7 @@ class LymanKutcherBurmanNTCP(RadiobiologyComponentClass):
 
     def __init__(
             self,
+            segment,
             tolerance_dose_50=None,
             slope_parameter=None,
             volume_parameter=None,
@@ -78,6 +82,7 @@ class LymanKutcherBurmanNTCP(RadiobiologyComponentClass):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(name='Lyman-Kutcher-Burman NTCP',
+                         segment=segment,
                          parameter_name=(
                              'tolerance_dose_50', 'slope_parameter',
                              'volume_parameter'),

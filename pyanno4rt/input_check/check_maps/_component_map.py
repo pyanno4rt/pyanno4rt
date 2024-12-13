@@ -18,6 +18,9 @@ component_map = {
     'name': (
         partial(check_type, types=str),
         ),
+    'segment': (
+        partial(check_type, types=str),
+        ),
     'parameter_name': (
         partial(check_type, types=tuple),
         partial(check_subtype, types=str),

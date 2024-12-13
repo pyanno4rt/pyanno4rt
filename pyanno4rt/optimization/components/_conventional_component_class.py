@@ -23,6 +23,9 @@ class ConventionalComponentClass(metaclass=ABCMeta):
     name : str
         Name of the component class.
 
+    segment : str
+        Name of the segment associated with the component.
+
     parameter_name : tuple
         Name of the component parameters.
 
@@ -58,6 +61,9 @@ class ConventionalComponentClass(metaclass=ABCMeta):
     Attributes
     ----------
     name : str
+        See 'Parameters'.
+
+    segment : str
         See 'Parameters'.
 
     parameter_name : tuple
@@ -103,6 +109,7 @@ class ConventionalComponentClass(metaclass=ABCMeta):
     def __init__(
             self,
             name,
+            segment,
             parameter_name,
             parameter_category,
             parameter_value,
@@ -134,6 +141,7 @@ class ConventionalComponentClass(metaclass=ABCMeta):
 
         # Set the instance attributes from the class arguments
         self.name = name
+        self.segment = segment
         self.parameter_name = parameter_name
         self.parameter_category = parameter_category
         self.parameter_value = list(parameter_value)

@@ -122,7 +122,7 @@ class SliceCompareWidget(QWidget):
             self.minimum, self.maximum = minimum, maximum
 
         # 
-        self.ct_cube = self.plan.datahub.computed_tomography['cube']
+        self.ct_cube = self.plan.datahub.computed_tomography['cubeHU']
 
         # 
         self.positions = (

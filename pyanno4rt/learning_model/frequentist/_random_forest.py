@@ -195,7 +195,7 @@ class RandomForestModel(MachineLearningModel):
         optimization_model = OptimizableRandomForest()
 
         # Initialize the members of the random forest
-        optimization_model.initialize_members(self.prediction_model)
+        optimization_model.initialize_subtrees(self.prediction_model)
 
         return optimization_model
 
