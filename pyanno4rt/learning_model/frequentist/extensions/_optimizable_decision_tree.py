@@ -5,7 +5,7 @@
 from operator import gt, itemgetter, le
 
 from itertools import chain, groupby
-from numpy import argwhere, array, prod, zeros
+from numpy import argmin, argwhere, array, prod, zeros
 from numpy.linalg import norm
 
 # %% Class definition
@@ -19,7 +19,7 @@ class OptimizableDecisionTree():
     decision tree classifier. It exploits the pre-fitted structure of the \
     classifier to express the probability prediction function as a sum of \
     path-wise weighted products of indicator functions, and approximates an \
-    input "gradient" as the minimum input feature shift required to improve \
+    input gradient using the minimum input feature shift required to improve \
     the prediction value.
 
     Attributes
@@ -191,7 +191,7 @@ class OptimizableDecisionTree():
             self,
             features):
         """
-        Gradientize the features with the minimum improvement shift.
+        Gradientize the features with the minimum distance improvement shift.
 
         Parameters
         ----------
@@ -201,7 +201,7 @@ class OptimizableDecisionTree():
         Returns
         -------
         ndarray
-            Values of the minimum improvement shift.
+            Values of the gradient.
         """
 
         def calculate_shift(features, path):
@@ -222,8 +222,8 @@ class OptimizableDecisionTree():
 
                     # Calculate the shift
                     shift[node] = (
-                        features[0, node] - thresholds[i]
-                        - 1e-12*(signs[i].__name__ == 'gt'))
+                        thresholds[i] - features[0, node]
+                        + 1e-12*(signs[i].__name__ == 'gt'))
 
             # Return the shift array and the l2-norm
             return shift, norm(shift)
@@ -243,8 +243,14 @@ class OptimizableDecisionTree():
                 calculate_shift(features, path) for value in next_values
                 for path in self.paths[value]]
 
-            # Return the minimum improvement shift
-            return min(shifts, key=lambda shifts: shifts[1])[0]
+            # Get the index of the minimum distance shift
+            index = argmin(shift[1] for shift in shifts)
 
-        # Otherwise, return the zero-improvement shift
+            # Get the minimum shift
+            shift, length = shifts[index]
+
+            # Return the gradient value
+            return (shift*(next_values[index] - prediction)/length**2)
+
+        # Otherwise, return the zero gradient
         return zeros(features.shape[1])

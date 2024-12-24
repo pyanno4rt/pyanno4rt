@@ -93,7 +93,8 @@ class FluenceOptimizer():
             hub.optimization['objectives'], hub.optimization['constraints'])
 
         # Remove overlaps between segments according to their priority
-        FluenceOptimizer.remove_overlap(objectives | constraints)
+        objectives, constraints = FluenceOptimizer.remove_overlap(
+            objectives, constraints)
 
         # Resize the segments to the dose grid
         FluenceOptimizer.resize_segments_to_dose()
@@ -150,7 +151,7 @@ class FluenceOptimizer():
         hub.optimization |= optimization_dictionary
 
     @staticmethod
-    def remove_overlap(components):
+    def remove_overlap(objectives, constraints):
         """
         Remove overlaps between segments.
 
@@ -177,8 +178,8 @@ class FluenceOptimizer():
             superior_indices = [
                 segmentation[segment]['raw_indices']
                 for segment in set(flatten(
-                        [component['segments']
-                         for component in components.values()]))
+                    [component['segments']
+                     for component in (objectives | constraints).values()]))
                 if (segmentation[segment]['parameters']['priority']
                     < segmentation[reference]['parameters']['priority'])]
 
@@ -187,8 +188,64 @@ class FluenceOptimizer():
                 segmentation[reference]['raw_indices'],
                 reduce(union1d, superior_indices, -1))
 
+            # Check if the prioritized index set is empty and relevant
+            if (len(segmentation[reference]['prioritized_indices']) == 0
+                    and any(parameter is not None for parameter in (
+                        segmentation[reference]['objective'],
+                        segmentation[reference]['constraint']))):
+
+                # Get the objective keys associated with the reference segment
+                objective_keys = [
+                    key for key in objectives
+                    if reference in objectives[key]['segments']]
+
+                # Get the constraint keys associated with the reference segment
+                constraint_keys = [
+                    key for key in constraints
+                    if reference in constraints[key]['segments']]
+
+                # Loop over the objective keys
+                for key in objective_keys:
+
+                    # Remove the reference segment
+                    objectives[key]['segments'].remove(reference)
+
+                    # Check if the segment list is empty
+                    if len(objectives[key]['segments']) == 0:
+
+                        # Log a message about the objective removal
+                        hub.logger.display_info(
+                            "Removing objective "
+                            f"'{objectives[key]['instance'].name}' from "
+                            f"fully enclosed segment '{reference}' ...")
+
+                        # Delete the objective from the dictionaries
+                        del objectives[key]
+                        segmentation[reference]['objective'] = None
+
+                # Loop over the constraint keys
+                for key in constraint_keys:
+
+                    # Remove the reference segment
+                    constraints[key]['segments'].remove(reference)
+
+                    # Check if the segment list is empty
+                    if len(constraints[key]['segments']) == 0:
+
+                        # Log a message about the constraint removal
+                        hub.logger.display_info(
+                            "Removing constraint "
+                            f"'{constraints[key]['instance'].name}' from "
+                            f"fully enclosed segment '{reference}' ...")
+
+                        # Delete the constraint from the dictionaries
+                        del constraints[key]
+                        segmentation[reference]['constraint'] = None
+
         # Remove the overlaps from all segments
         apply(remove_segment_overlap, (*segmentation,))
+
+        return objectives, constraints
 
     @staticmethod
     def resize_segments_to_dose():

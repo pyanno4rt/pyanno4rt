@@ -207,7 +207,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         for box in ('log_level_cbox', 'modality_cbox', 'nfx_sbox',
                     'method_cbox', 'solver_cbox', 'algorithm_cbox',
                     'init_strat_cbox', 'ref_plan_cbox', 'max_iter_sbox',
-                    'dvh_type_cbox', 'n_points_sbox', 'opacity_sbox'):
+                    'dvh_type_cbox', 'n_points_sbox', 'orient_cbox',
+                    'opacity_sbox'):
 
             # Install the custom event filters
             getattr(self, box).installEventFilter(self)
@@ -227,7 +228,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             'compare_pbutton', 'baseline_cbox', 'reference_cbox',
             'components_minus_tbutton', 'components_edit_tbutton',
             'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox',
-            'opacity_sbox', 'slice_selection_sbar', 'stop_thread_pbutton'))
+            'orient_cbox', 'opacity_sbox', 'slice_selection_sbar',
+            'stop_thread_pbutton'))
 
         # Disable the tab widgets initially
         self.composer_widget.widget(0).setEnabled(False)
@@ -272,6 +274,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'n_points_sbox': sbox,
                          'ref_vol_ledit': ledit,
                          'ref_dose_ledit': ledit,
+                         'orient_cbox': cbox,
                          'opacity_sbox': sbox,
                          'load_pbutton': pbutton_menu,
                          'save_pbutton': pbutton_menu,
@@ -447,7 +450,8 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'init_strat_cbox': self.update_by_initial_strategy,
                 'ref_plan_cbox': self.update_by_reference,
                 'baseline_cbox': self.update_compare_button,
-                'reference_cbox': self.update_compare_button
+                'reference_cbox': self.update_compare_button,
+                'orient_cbox': self.slice_widget.change_orientation
                 }.items():
 
             # Connect the 'currentTextChanged' signal
@@ -538,7 +542,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Else, check if the treatment plan is a list of instances
         elif (isinstance(treatment_plan, list) and
-              all(isinstance(plan, TreatmentPlan) for plan in treatment_plan)):
+              all(type(plan).__name__ is TreatmentPlan.__name__
+                  for plan in treatment_plan)):
 
             # Activate each treatment plan in the GUI
             apply(self.activate, treatment_plan)
@@ -908,31 +913,14 @@ class MainWindow(QMainWindow, Ui_main_window):
                    'input_checker', 'patient_loader', 'plan_generator',
                    'dose_info_generator')):
 
-                # Get the CT dictionary
-                computed_tomography = instance.datahub.computed_tomography
-
-                # Get the axial dimension of the CT cube
-                axial_length = computed_tomography['cube_dimensions'][2]
-
                 # Get the segmentation dictionary
                 segmentation = instance.datahub.segmentation
 
                 # Add the CT cube to the slice widget
-                self.slice_widget.add_ct(computed_tomography['cubeHU'])
+                self.slice_widget.add_ct()
 
-                # Add the segments to the slice widget
-                self.slice_widget.add_segments(
-                    computed_tomography, segmentation)
-
-                # Set the range of the slice selection scrollbar
-                self.slice_selection_sbar.setRange(0, axial_length-1)
-
-                # Set the initial scrollbar value
-                self.slice_selection_sbar.setValue(int((axial_length-1)/2))
-
-                # Set the initial position label
-                self.slice_selection_pos.setText(''.join((
-                    'z = ', str(self.slice_widget.slice), ' mm')))
+                # 
+                self.adjust_slider_by_orientation()
 
                 # Update the images of the slice widget
                 self.slice_widget.update_images()
@@ -963,7 +951,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                             'comp_show_model_data_tbutton',
                             'comp_show_fmap_tbutton'))
 
-                # Enable the 'optimize' button
+                # Enable the optimize button
                 self.optimize_pbutton.setEnabled(True)
 
                 self.status_bar.showMessage("Ready for optimization ...")
@@ -971,10 +959,6 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Check if the selected plan has been optimized
                 if (getattr(instance, 'fluence_optimizer') is not None
                         and 'optimized_dose' in instance.datahub.optimization):
-
-                    # Get the optimized dose array
-                    optimized_dose = instance.datahub.optimization[
-                        'optimized_dose']
 
                     # Check if the plan has not been added to the list
                     if selection not in self.optimized_plans:
@@ -986,9 +970,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                         self.update_comparison_plans()
 
                     # Add the dose image to the slice widget
-                    self.slice_widget.add_dose(optimized_dose)
+                    self.slice_widget.add_dose()
 
-                    # Enable the 'evaluate' button
+                    # Enable the evaluate button
                     self.evaluate_pbutton.setEnabled(True)
 
                     self.status_bar.showMessage("Ready for evaluation ...")
@@ -1034,7 +1018,8 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'compare_pbutton', 'baseline_cbox', 'reference_cbox',
                 'components_minus_tbutton', 'components_edit_tbutton',
                 'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox',
-                'opacity_sbox', 'slice_selection_sbar', 'stop_thread_pbutton'))
+                'orient_cbox', 'opacity_sbox', 'slice_selection_sbar',
+                'stop_thread_pbutton'))
 
             # Disable the tab widgets
             self.composer_widget.widget(0).setEnabled(False)
@@ -1122,12 +1107,6 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Get the treatment plan instance
         instance = self.plans[self.plan_ledit.text()]
 
-        # Get the CT dictionary
-        computed_tomography = instance.datahub.computed_tomography
-
-        # Get the axial dimension of the CT cube
-        axial_length = computed_tomography['cube_dimensions'][2]
-
         # Get the segmentation dictionary
         segmentation = instance.datahub.segmentation
 
@@ -1135,21 +1114,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.slice_widget.reset_images()
 
         # Add the CT cube to the slice widget
-        self.slice_widget.add_ct(computed_tomography['cubeHU'])
+        self.slice_widget.add_ct()
 
-        # Add the segments to the slice widget
-        self.slice_widget.add_segments(computed_tomography, segmentation)
-
-        # Set the range of the slice selection scrollbar
-        self.slice_selection_sbar.setRange(0, axial_length-1)
-
-        # Set the initial scrollbar value
-        self.slice_selection_sbar.setValue(int((axial_length-1)/2))
-
-        # Set the initial position label
-        self.slice_selection_pos.setText(''.join((
-            str(computed_tomography['z'][int((axial_length-1)/2)]),
-            ' mm')))
+        # 
+        self.adjust_slider_by_orientation()
 
         # Update the images of the slice widget
         self.slice_widget.update_images()
@@ -1160,7 +1128,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Enable specific fields
         self.set_enabled((
             'actions_show_plan_tbutton', 'actions_show_log_tbutton',
-            'comp_show_plan_tbutton', 'comp_show_log_tbutton'))
+            'comp_show_plan_tbutton', 'comp_show_log_tbutton',
+            'orient_cbox', 'slice_selection_sbar'))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1290,9 +1259,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Update the comparison plans
             self.update_comparison_plans()
 
-        # Get the optimized dose array
-        optimized_dose = instance.datahub.optimization['optimized_dose']
-
         # Check if any dose contours have been computed
         if self.slice_widget.dose_contours:
 
@@ -1307,7 +1273,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.slice_widget.dose_contours = None
 
         # Add the dose image to the slice widget
-        self.slice_widget.add_dose(optimized_dose)
+        self.slice_widget.add_dose()
 
         # Update the images of the slice widget
         self.slice_widget.update_images()
@@ -1316,7 +1282,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.log_window.update_log_output()
 
         # Enable the evaluation button
-        self.set_enabled(('evaluate_pbutton',))
+        self.set_enabled(('evaluate_pbutton', 'opacity_sbox'))
 
         # Check if the selected plan includes data models
         if instance.datahub and any(unit is not None for unit in (
@@ -1327,10 +1293,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Enable the model data and feature maps tool button
             self.set_enabled((
-                'actions_show_model_data_tbutton',
-                'actions_show_fmap_tbutton',
-                'comp_show_model_data_tbutton',
-                'comp_show_fmap_tbutton'))
+                'actions_show_model_data_tbutton', 'actions_show_fmap_tbutton',
+                'comp_show_model_data_tbutton', 'comp_show_fmap_tbutton'))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -2764,6 +2728,38 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # 
             self.compare_pbutton.setEnabled(False)
+
+    def adjust_slider_by_orientation(self):
+        """."""
+
+        # 
+        if self.orient_cbox.currentText() == 'axial':
+
+            # Get the axial dimension of the CT cube
+            axial_length = self.plans[
+                self.plan_ledit.text()].datahub.computed_tomography[
+                'cube_dimensions'][2]
+
+        # 
+        elif self.orient_cbox.currentText() == 'coronal':
+
+            # Get the axial dimension of the CT cube
+            axial_length = self.plans[
+                self.plan_ledit.text()].datahub.computed_tomography[
+                'cube_dimensions'][0]
+
+        else:
+
+            # Get the axial dimension of the CT cube
+            axial_length = self.plans[
+                self.plan_ledit.text()].datahub.computed_tomography[
+                'cube_dimensions'][1]
+
+        # Set the range of the slice selection scrollbar
+        self.slice_selection_sbar.setRange(0, axial_length-1)
+
+        # Set the initial scrollbar value
+        self.slice_selection_sbar.setValue(int((axial_length-1)/2))
 
     def stop_thread(self):
         self.stop_thread_pbutton.setEnabled(False)

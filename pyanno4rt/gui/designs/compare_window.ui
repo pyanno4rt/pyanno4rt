@@ -1022,7 +1022,7 @@ border: 0px solid</string>
      <string>Disable dose contours</string>
     </property>
    </widget>
-   <widget class="QLabel" name="opacity_label_2">
+   <widget class="QLabel" name="orient_label">
     <property name="geometry">
      <rect>
       <x>10</x>
