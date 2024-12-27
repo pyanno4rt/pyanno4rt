@@ -1449,17 +1449,13 @@
   </qresource>
   <qresource prefix="special_icons">
     <file>icons_special/compare-svgrepo-com.svg</file>
-    <file>icons_special/configuration-vertical-control-svgrepo-com.svg</file>
-    <file>icons_special/dashboard-svgrepo-com.svg</file>
-    <file>icons_special/filter-svgrepo-com.svg</file>
+    <file>icons_special/schedule-svgrepo-com.svg</file>
+    <file>icons_special/database-share-svgrepo-com.svg</file>
+    <file>icons_special/analytics-graph-svgrepo-com.svg</file>
+    <file>icons_special/path-points-svgrepo-com.svg</file>
     <file>icons_special/flag-for-flag-france-svgrepo-com.svg</file>
     <file>icons_special/flag-for-flag-italy-svgrepo-com.svg</file>
     <file>icons_special/flag-for-flag-spain-svgrepo-com.svg</file>
-    <file>icons_special/pipeline-solid-svgrepo-com.svg</file>
-    <file>icons_special/inspect-svgrepo-com.svg</file>
-    <file>icons_special/map-svgrepo-com.svg</file>
-    <file>icons_special/schedule-svgrepo-com.svg</file>
-    <file>icons_special/find-path-svgrepo-com.svg</file>
     <file>icons_special/target-green-svgrepo-com.svg</file>
     <file>icons_special/frame-green-svgrepo-com.svg</file>
     <file>icons_special/frame-red-svgrepo-com.svg</file>
@@ -1470,11 +1466,6 @@
     <file>icons_special/decrease-svgrepo-com.svg</file>
     <file>icons_special/i-imaging-root-category-svgrepo-com.svg</file>
     <file>icons_special/sun-2-svgrepo-com.svg</file>
-    <file>icons_special/list-check-all-svgrepo-com.svg</file>
-    <file>icons_special/input-svgrepo-com.svg</file>
-    <file>icons_special/presentation-chart-4-svgrepo-com.svg</file>
-    <file>icons_special/find-path-svgrepo-com.svg</file>
-    <file>icons_special/machine-learning-03-svgrepo-com.svg</file>
     <file>icons_special/load.gif</file>
     <file>icons_special/stop.svg</file>
     <file>icons_special/logo_black_icon.png</file>
