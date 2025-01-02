@@ -2,7 +2,6 @@
 
 # %% External package import
 
-from math import inf
 from os.path import isdir
 
 # %% Internal package import
@@ -10,8 +9,7 @@ from os.path import isdir
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.dataset import (
     EmptyDataGenerator, ImageDataGenerator, TabularDataGenerator)
-from pyanno4rt.learning_model.features import (
-    FeatureMapGenerator, FeatureCalculator)
+from pyanno4rt.learning_model.features import FeatureCalculator
 
 # %% Class definition
 
@@ -21,7 +19,7 @@ class DataModelHandler():
     Data & learning model handling class.
 
     This class implements methods to handle the integration of the base \
-    dataset, the feature map generator and the feature calculator.
+    dataset and the feature (re-)calculation.
 
     Parameters
     ----------
@@ -34,28 +32,8 @@ class DataModelHandler():
     data_path : None or str
         Path to the data set used for fitting the machine learning model.
 
-    feature_filter : dict
-        Dictionary with a list of feature names and a value from \
-        {'retain', 'remove'} as an indicator for retaining/removing the \
-        features prior to model fitting.
-
-    static_features : dict
-        Dictionary with the names and values of the fixed features.
-
-    label_name : None or str
-        Name of the label variable.
-
-    label_bounds : list
-        Bounds for the label values to binarize into positive (value lies \
-        inside the bounds) and negative class (value lies outside the bounds).
-
-    time_variable_name : None or str
-        Name of the time-after-radiotherapy variable (unit should be days).
-
-    label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', \
-                       'profile'}
-        Time of observation for the presence of tumor control and/or normal \
-        tissue complication events.
+    data_columns : dict
+        Dictionary with the column information on features and label.
 
     tune_splits : int
         Number of splits for the stratified cross-validation within each \
@@ -64,10 +42,6 @@ class DataModelHandler():
     oof_splits : int
         Number of splits for the stratified cross-validation within the \
         out-of-folds evaluation step.
-
-    fuzzy_matching : bool
-        Indicator for the use of fuzzy string matching to generate the \
-        feature map (if False, exact string matching is applied).
 
     write_features : bool
         Indicator for writing the iteratively calculated feature vectors into \
@@ -78,22 +52,13 @@ class DataModelHandler():
     model_label : str
         See 'Parameters'.
 
-    model_folder_path : None or str
-        See 'Parameters'.
-
-    data_path : str
-        See 'Parameters'.
-
     write_features : bool
         See 'Parameters'.
 
-    dataset : object of class \
+    data_generator : object of class \
+        :class:`~pyanno4rt.learning_model.dataset._empty_data_generator.EmptyDataGenerator`\
         :class:`~pyanno4rt.learning_model.dataset._tabular_data_generator.TabularDataGenerator`
         The object used to handle the base dataset.
-
-    feature_map_generator : object of class \
-        :class:`~pyanno4rt.learning_model.features._feature_map_generator.FeatureMapGenerator`
-        The object used to map the dataset features to the feature definitions.
 
     feature_calculator : object of class \
         :class:`~pyanno4rt.learning_model.features._feature_calculator.FeatureCalculator`
@@ -105,15 +70,9 @@ class DataModelHandler():
             model_label,
             model_folder_path,
             data_path,
-            feature_filter,
-            static_features,
-            label_name,
-            label_bounds,
-            time_variable_name,
-            label_viewpoint,
+            data_columns,
             tune_splits,
             oof_splits,
-            fuzzy_matching,
             write_features):
 
         # Initialize the datahub
@@ -131,33 +90,24 @@ class DataModelHandler():
                 setattr(hub, attribute, {})
 
         # Get the instance attributes from the arguments
-        self.model_label, self.data_path, self.write_features = (
-            model_label, data_path, write_features)
+        self.model_label, self.write_features = model_label, write_features
 
         # Check if no data path has been passed
         if not data_path:
 
             # Initialize the empty dataset generator
-            self.dataset = EmptyDataGenerator(
+            self.data_generator = EmptyDataGenerator(
                 model_label=model_label,
                 model_folder_path=model_folder_path)
 
         # Check if the data path leads to a tabular file
         elif data_path.endswith('.csv'):
 
-            # Transform the label bounds by replacing None with limit values
-            label_bounds = [
-                label_bounds[index] if label_bounds[index] is not None
-                else (-1)**(index+1)*inf for index in range(2)]
-
             # Initialize the tabular dataset generator
-            self.dataset = TabularDataGenerator(
+            self.data_generator = TabularDataGenerator(
                 model_label=model_label,
-                feature_filter=feature_filter,
-                label_name=label_name,
-                label_bounds=label_bounds,
-                time_variable_name=time_variable_name,
-                label_viewpoint=label_viewpoint,
+                data_path=data_path,
+                data_columns=data_columns,
                 tune_splits=tune_splits,
                 oof_splits=oof_splits)
 
@@ -165,28 +115,24 @@ class DataModelHandler():
         elif isdir(data_path):
 
             # Initialize the image dataset generator
-            self.dataset = ImageDataGenerator(
+            self.data_generator = ImageDataGenerator(
                 model_label=model_label,
                 model_folder_path=model_folder_path)
-            raise ValueError("Not yet implemented")
-
-        # Initialize the feature map generator
-        self.feature_map_generator = FeatureMapGenerator(
-            model_label, fuzzy_matching)
+            raise ValueError("Image-based data generation has not been "
+                             "implemented yet ...")
 
         # Initialize the feature calculator
-        self.feature_calculator = FeatureCalculator(
-            static_features, write_features)
+        self.feature_calculator = FeatureCalculator(write_features)
 
     def integrate(self):
         """Integrate the learning model-related classes."""
 
         # Generate the data information dictionary
-        data_information = self.dataset.generate(self.data_path)
+        data_information, feature_map = self.data_generator.generate()
 
-        # Generate the feature map from the dataset
-        feature_map = self.feature_map_generator.generate(
-            data_information['feature_names'])
+        # Add the static values map to the feature calculator
+        self.feature_calculator.add_static_map(
+            data_information['feature_statics'])
 
         # Add the feature map to the feature calculator
         self.feature_calculator.add_feature_map(feature_map)

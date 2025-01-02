@@ -1448,11 +1448,14 @@
     <file>logo_white_square.png</file>
   </qresource>
   <qresource prefix="special_icons">
+    <file>icons_special/line-chart-svgrepo-com.svg</file>
+    <file>icons_special/py-file-format-symbol-svgrepo-com.svg</file>
+    <file>icons_special/configuration-svgrepo-com.svg</file>
+    <file>icons_special/warehouse-svgrepo-com.svg</file>
+    <file>icons_special/presentation-chart-4-svgrepo-com.svg</file>
     <file>icons_special/compare-svgrepo-com.svg</file>
     <file>icons_special/schedule-svgrepo-com.svg</file>
     <file>icons_special/database-share-svgrepo-com.svg</file>
-    <file>icons_special/analytics-graph-svgrepo-com.svg</file>
-    <file>icons_special/path-points-svgrepo-com.svg</file>
     <file>icons_special/flag-for-flag-france-svgrepo-com.svg</file>
     <file>icons_special/flag-for-flag-italy-svgrepo-com.svg</file>
     <file>icons_special/flag-for-flag-spain-svgrepo-com.svg</file>

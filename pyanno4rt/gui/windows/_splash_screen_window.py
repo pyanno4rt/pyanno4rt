@@ -8,7 +8,7 @@ from importlib.metadata import version
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QIcon
 from PyQt5.QtWidgets import (
-    QGraphicsDropShadowEffect, QMainWindow, QDesktopWidget)
+    QApplication, QGraphicsDropShadowEffect, QMainWindow, QDesktopWidget)
 from time import sleep
 
 # %% Internal package import
@@ -70,6 +70,8 @@ class SplashScreenWindow(QMainWindow, Ui_splash_window):
         """."""
 
         qtRectangle = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
+        screen = QApplication.desktop().screenNumber(
+            QApplication.desktop().cursor().pos())
+        centerPoint = QApplication.desktop().screenGeometry(screen).center()
         qtRectangle.moveCenter(centerPoint)
         self.move(qtRectangle.topLeft())

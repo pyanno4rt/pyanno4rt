@@ -98,7 +98,7 @@ class TreatmentPlan():
 
             .. note:: The declaration scheme for a single component is
 
-                {<segment>: {'type': <1>, 'instance': {'class': <2>, \
+                {<segment>: {'type': <1>, 'instance': {'function': <2>, \
                                                        'parameters': <3>}
 
                 - <1>: 'objective' or 'constraint'

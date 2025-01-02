@@ -70,7 +70,7 @@ def check_components(label, data, check_functions):
             check_functions[3](paths[0], instance)
 
             # Check if the 'class' key is invalid
-            check_functions[4](paths[1], instance['class'])
+            check_functions[4](paths[1], instance['function'])
 
             # Check if the 'parameters' key is not a dictionary
             check_functions[5](paths[2], instance['parameters'])

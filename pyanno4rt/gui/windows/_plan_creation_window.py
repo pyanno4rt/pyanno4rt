@@ -296,6 +296,9 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             # 
             self.parent.initialize()
 
+            # 
+            self.parent.load_segments_from_data()
+
         # 
         self.parent.plan_ledit.setReadOnly(True)
 

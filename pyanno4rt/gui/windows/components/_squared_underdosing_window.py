@@ -58,7 +58,7 @@ class SquaredUnderdosingWindow(QMainWindow, Ui_squared_underdosing_window):
                          'close_component_pbutton': pbutton_composer})
 
         # 
-        self.segment_cbox.addItems(self.parent.segments)
+        self.segment_cbox.addItems(list(self.parent.segments.keys()))
         self.segment_cbox.setCurrentIndex(-1)
 
         # 
@@ -145,7 +145,7 @@ class SquaredUnderdosingWindow(QMainWindow, Ui_squared_underdosing_window):
             self.segment_cbox.currentText(): {
                 'type': self.type_cbox.currentText(),
                 'instance': {
-                    'class': 'Squared Underdosing',
+                    'function': 'Squared Underdosing',
                     'parameters': {
                         'minimum_dose': float(self.min_dose_ledit.text()),
                         'embedding': self.embedding_cbox.currentText(),
@@ -169,18 +169,39 @@ class SquaredUnderdosingWindow(QMainWindow, Ui_squared_underdosing_window):
         # 
         value = component[self.segment_cbox.currentText()]
 
+        # 
+        segment = self.segment_cbox.currentText()
+
         # Check if the component is an objective
         if value['type'] == 'objective':
 
-            # Set the icon path on the red target
-            icon_path = (":/special_icons/icons_special/"
-                         "target-red-svgrepo-com.svg")
+            # 
+            if self.parent.segments[segment] == 'TARGET':
+
+                # Set the icon path on the red target
+                icon_path = (":/special_icons/icons_special/"
+                             "target-red-svgrepo-com.svg")
+
+            else:
+
+                # Set the icon path on the green target
+                icon_path = (":/special_icons/icons_special/"
+                             "target-green-svgrepo-com.svg")
 
         else:
 
-            # Set the icon path on the red frame
-            icon_path = (":/special_icons/icons_special/"
-                         "frame-red-svgrepo-com.svg")
+            # 
+            if self.parent.segments[segment] == 'TARGET':
+
+                # Set the icon path on the red target
+                icon_path = (":/special_icons/icons_special/"
+                             "frame-red-svgrepo-com.svg")
+
+            else:
+
+                # Set the icon path on the green target
+                icon_path = (":/special_icons/icons_special/"
+                             "frame-green-svgrepo-com.svg")
 
         # Initialize the icon object
         icon = QIcon()
@@ -199,9 +220,9 @@ class SquaredUnderdosingWindow(QMainWindow, Ui_squared_underdosing_window):
         weight = ''.join(
             ('weight: ', str(value['instance']['parameters']['weight'])))
 
-        # Join the segment and class name
+        # Join the segment and function name
         component_string = ' - '.join((substring for substring in (
-            self.segment_cbox.currentText(), value['instance']['class'],
+            self.segment_cbox.currentText(), value['instance']['function'],
             identifier, embedding, weight) if substring))
 
         # 

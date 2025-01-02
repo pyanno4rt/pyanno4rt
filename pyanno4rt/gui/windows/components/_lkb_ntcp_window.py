@@ -57,7 +57,7 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
                          'close_component_pbutton': pbutton_composer})
 
         # 
-        self.segment_cbox.addItems(self.parent.segments)
+        self.segment_cbox.addItems(list(self.parent.segments.keys()))
         self.segment_cbox.setCurrentIndex(-1)
 
         # 
@@ -156,7 +156,7 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
             self.segment_cbox.currentText(): {
                 'type': self.type_cbox.currentText(),
                 'instance': {
-                    'class': 'Lyman-Kutcher-Burman NTCP',
+                    'function': 'Lyman-Kutcher-Burman NTCP',
                     'parameters': {
                         'tolerance_dose_50': float(self.td50_ledit.text()),
                         'slope_parameter': float(self.slope_ledit.text()),
@@ -183,18 +183,39 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
         # 
         value = component[self.segment_cbox.currentText()]
 
+        # 
+        segment = self.segment_cbox.currentText()
+
         # Check if the component is an objective
         if value['type'] == 'objective':
 
-            # Set the icon path on the red target
-            icon_path = (":/special_icons/icons_special/"
-                         "target-red-svgrepo-com.svg")
+            # 
+            if self.parent.segments[segment] == 'TARGET':
+
+                # Set the icon path on the red target
+                icon_path = (":/special_icons/icons_special/"
+                             "target-red-svgrepo-com.svg")
+
+            else:
+
+                # Set the icon path on the green target
+                icon_path = (":/special_icons/icons_special/"
+                             "target-green-svgrepo-com.svg")
 
         else:
 
-            # Set the icon path on the red frame
-            icon_path = (":/special_icons/icons_special/"
-                         "frame-red-svgrepo-com.svg")
+            # 
+            if self.parent.segments[segment] == 'TARGET':
+
+                # Set the icon path on the red target
+                icon_path = (":/special_icons/icons_special/"
+                             "frame-red-svgrepo-com.svg")
+
+            else:
+
+                # Set the icon path on the green target
+                icon_path = (":/special_icons/icons_special/"
+                             "frame-green-svgrepo-com.svg")
 
         # Initialize the icon object
         icon = QIcon()
@@ -213,9 +234,9 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
         weight = ''.join(
             ('weight: ', str(value['instance']['parameters']['weight'])))
 
-        # Join the segment and class name
+        # Join the segment and function name
         component_string = ' - '.join((substring for substring in (
-            self.segment_cbox.currentText(), value['instance']['class'],
+            self.segment_cbox.currentText(), value['instance']['function'],
             identifier, embedding, weight) if substring))
 
         # 

@@ -118,15 +118,9 @@ class NaiveBayesNTCP(MachineLearningComponentClass):
             model_label=self.model_parameters['model_label'],
             model_folder_path=self.model_parameters['model_folder_path'],
             data_path=self.model_parameters['data_path'],
-            feature_filter=self.model_parameters['feature_filter'],
-            static_features=self.model_parameters['static_features'],
-            label_name=self.model_parameters['label_name'],
-            label_bounds=self.model_parameters['label_bounds'],
-            time_variable_name=self.model_parameters['time_variable_name'],
-            label_viewpoint=self.model_parameters['label_viewpoint'],
+            data_columns=self.model_parameters['data_columns'],
             tune_splits=self.model_parameters['tune_splits'],
             oof_splits=self.model_parameters['oof_splits'],
-            fuzzy_matching=self.model_parameters['fuzzy_matching'],
             write_features=self.model_parameters['write_features'])
 
         # Integrate the model-related classes

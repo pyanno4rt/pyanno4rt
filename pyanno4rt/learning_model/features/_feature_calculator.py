@@ -23,9 +23,6 @@ class FeatureCalculator():
 
     Parameters
     ----------
-    static_features : dict
-        Dictionary with the names and values of the fixed features.
-
     write_features : bool
         Indicator for tracking the feature values.
 
@@ -50,7 +47,7 @@ class FeatureCalculator():
         feature values. It allows to retrieve the feature values after first \
         computation and thus prevents unnecessary recalculation.
 
-    static_features : dict
+    statics : dict
         See 'Parameters'.
 
     feature_inputs : dict
@@ -72,7 +69,6 @@ class FeatureCalculator():
 
     def __init__(
             self,
-            static_features,
             write_features,
             verbose=True):
 
@@ -88,7 +84,7 @@ class FeatureCalculator():
 
         # Initialize the radiomics/static feature dictionaries to store values
         self.radiomics = {}
-        self.static_features = static_features
+        self.statics = {}
 
         # Initialize the feature map and history
         self.feature_map = None
@@ -109,6 +105,18 @@ class FeatureCalculator():
         # Initialize the dose and the feature cache
         self.__dose_cache__ = array([])
         self.__feature_cache__ = array([])
+
+    def add_static_map(
+            self,
+            statics):
+        """."""
+
+        # Log a message about the static values map addition
+        Datahub().logger.display_info(
+            "Adding static values map to the feature calculator ...")
+
+        # Initialize the static values map from the argument
+        self.statics = statics
 
     def add_feature_map(
             self,
@@ -344,17 +352,17 @@ class FeatureCalculator():
                 """Get the value of a static feature."""
 
                 # Check if the feature is included as static
-                if feature in self.static_features:
+                if feature in self.statics:
 
                     # Return the value from the static feature dictionary
-                    return self.static_features[feature]
+                    return self.statics[feature]
 
                 else:
 
                     # Log a message about a missing static feature
                     hub.logger.display_error(
                         f"The feature '{feature}' is missing in the static "
-                        "feature dictionary ...")
+                        "values map ...")
 
                     # Raise an attribute error
                     raise AttributeError

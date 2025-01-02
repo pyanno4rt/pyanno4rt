@@ -365,9 +365,6 @@ border-color: rgb(186, 189, 182);</string>
              <property name="cursor">
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
-             <property name="toolTipDuration">
-              <number>0</number>
-             </property>
              <property name="styleSheet">
               <string notr="true">background-color: rgb(211, 215, 207);
 border-color: rgb(186, 189, 182);
@@ -510,7 +507,7 @@ color: rgb(211, 215, 207);</string>
              <item>
               <widget class="QTabWidget" name="tab_workflow">
                <property name="currentIndex">
-                <number>0</number>
+                <number>1</number>
                </property>
                <property name="iconSize">
                 <size>
@@ -519,9 +516,6 @@ color: rgb(211, 215, 207);</string>
                 </size>
                </property>
                <property name="documentMode">
-                <bool>true</bool>
-               </property>
-               <property name="movable">
                 <bool>true</bool>
                </property>
                <widget class="QWidget" name="tab_actions">
@@ -559,9 +553,6 @@ border-color: rgb(211, 215, 207);</string>
                   <layout class="QVBoxLayout" name="tab_actions_layout">
                    <item>
                     <widget class="QWidget" name="actions_widget" native="true">
-                     <property name="styleSheet">
-                      <string notr="true"/>
-                     </property>
                      <layout class="QVBoxLayout" name="actions_layout">
                       <property name="spacing">
                        <number>0</number>
@@ -618,7 +609,6 @@ border-color: rgb(211, 215, 207);</string>
                          <font>
                           <family>Ubuntu</family>
                           <weight>75</weight>
-                          <italic>false</italic>
                           <bold>true</bold>
                          </font>
                         </property>
@@ -1049,10 +1039,10 @@ border-color: rgb(0, 0, 0);</string>
                          <item>
                           <layout class="QHBoxLayout" name="actions_toolbox_layout">
                            <property name="spacing">
-                            <number>5</number>
+                            <number>17</number>
                            </property>
                            <item>
-                            <widget class="QToolButton" name="actions_show_parameter_tbutton">
+                            <widget class="QToolButton" name="actions_show_config_tbutton">
                              <property name="minimumSize">
                               <size>
                                <width>40</width>
@@ -1079,7 +1069,7 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="icon">
                               <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/sliders.svg</normaloff>:/black_icons/icons_black/sliders.svg</iconset>
+                               <normaloff>:/special_icons/icons_special/configuration-svgrepo-com.svg</normaloff>:/special_icons/icons_special/configuration-svgrepo-com.svg</iconset>
                              </property>
                              <property name="iconSize">
                               <size>
@@ -1090,7 +1080,7 @@ border-color: rgb(186, 189, 182);</string>
                             </widget>
                            </item>
                            <item>
-                            <widget class="QToolButton" name="actions_show_plan_tbutton">
+                            <widget class="QToolButton" name="actions_show_datahub_tbutton">
                              <property name="minimumSize">
                               <size>
                                <width>40</width>
@@ -1107,7 +1097,7 @@ border-color: rgb(186, 189, 182);</string>
                               <cursorShape>PointingHandCursor</cursorShape>
                              </property>
                              <property name="toolTip">
-                              <string>Show the plan data</string>
+                              <string>Show the datahub content</string>
                              </property>
                              <property name="styleSheet">
                               <string notr="true">color: rgb(0, 0, 0);
@@ -1117,83 +1107,7 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="icon">
                               <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/clipboard.svg</normaloff>:/black_icons/icons_black/clipboard.svg</iconset>
-                             </property>
-                             <property name="iconSize">
-                              <size>
-                               <width>20</width>
-                               <height>20</height>
-                              </size>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QToolButton" name="actions_show_model_data_tbutton">
-                             <property name="minimumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="maximumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="cursor">
-                              <cursorShape>PointingHandCursor</cursorShape>
-                             </property>
-                             <property name="toolTip">
-                              <string>Show the model data</string>
-                             </property>
-                             <property name="styleSheet">
-                              <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                             </property>
-                             <property name="icon">
-                              <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/database.svg</normaloff>:/black_icons/icons_black/database.svg</iconset>
-                             </property>
-                             <property name="iconSize">
-                              <size>
-                               <width>20</width>
-                               <height>20</height>
-                              </size>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QToolButton" name="actions_show_fmap_tbutton">
-                             <property name="minimumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="maximumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="cursor">
-                              <cursorShape>PointingHandCursor</cursorShape>
-                             </property>
-                             <property name="toolTip">
-                              <string>Show the feature maps</string>
-                             </property>
-                             <property name="styleSheet">
-                              <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                             </property>
-                             <property name="icon">
-                              <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/map.svg</normaloff>:/black_icons/icons_black/map.svg</iconset>
+                               <normaloff>:/special_icons/icons_special/warehouse-svgrepo-com.svg</normaloff>:/special_icons/icons_special/warehouse-svgrepo-com.svg</iconset>
                              </property>
                              <property name="iconSize">
                               <size>
@@ -1221,7 +1135,7 @@ border-color: rgb(186, 189, 182);</string>
                               <cursorShape>PointingHandCursor</cursorShape>
                              </property>
                              <property name="toolTip">
-                              <string>Show the logging</string>
+                              <string>Show the logging file</string>
                              </property>
                              <property name="styleSheet">
                               <string notr="true">color: rgb(0, 0, 0);
@@ -1232,6 +1146,44 @@ border-color: rgb(186, 189, 182);</string>
                              <property name="icon">
                               <iconset resource="../assets/resources.qrc">
                                <normaloff>:/black_icons/icons_black/activity.svg</normaloff>:/black_icons/icons_black/activity.svg</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>20</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QToolButton" name="actions_export_to_pyfile_tbutton">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="toolTip">
+                              <string>Export to a python file</string>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="icon">
+                              <iconset resource="../assets/resources.qrc">
+                               <normaloff>:/special_icons/icons_special/py-file-format-symbol-svgrepo-com.svg</normaloff>:/special_icons/icons_special/py-file-format-symbol-svgrepo-com.svg</iconset>
                              </property>
                              <property name="iconSize">
                               <size>
@@ -1606,7 +1558,7 @@ border-color: rgb(186, 189, 182);</string>
                        </widget>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="chevron_base_comp_2">
+                       <widget class="QPushButton" name="chevron_bottom_comp">
                         <property name="sizePolicy">
                          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                           <horstretch>0</horstretch>
@@ -1732,12 +1684,12 @@ border-color: rgb(0, 0, 0);</string>
                           <number>0</number>
                          </property>
                          <item>
-                          <layout class="QHBoxLayout" name="comp_toolbox_layout">
+                          <layout class="QHBoxLayout" name="actions_toolbox_layout_2">
                            <property name="spacing">
-                            <number>5</number>
+                            <number>17</number>
                            </property>
                            <item>
-                            <widget class="QToolButton" name="comp_show_parameter_tbutton">
+                            <widget class="QToolButton" name="compare_show_config_tbutton">
                              <property name="minimumSize">
                               <size>
                                <width>40</width>
@@ -1764,18 +1716,18 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="icon">
                               <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/sliders.svg</normaloff>:/black_icons/icons_black/sliders.svg</iconset>
+                               <normaloff>:/special_icons/icons_special/configuration-svgrepo-com.svg</normaloff>:/special_icons/icons_special/configuration-svgrepo-com.svg</iconset>
                              </property>
                              <property name="iconSize">
                               <size>
-                               <width>20</width>
-                               <height>20</height>
+                               <width>22</width>
+                               <height>22</height>
                               </size>
                              </property>
                             </widget>
                            </item>
                            <item>
-                            <widget class="QToolButton" name="comp_show_plan_tbutton">
+                            <widget class="QToolButton" name="compare_show_datahub_tbutton">
                              <property name="minimumSize">
                               <size>
                                <width>40</width>
@@ -1792,7 +1744,7 @@ border-color: rgb(186, 189, 182);</string>
                               <cursorShape>PointingHandCursor</cursorShape>
                              </property>
                              <property name="toolTip">
-                              <string>Show the plan data</string>
+                              <string>Show the datahub content</string>
                              </property>
                              <property name="styleSheet">
                               <string notr="true">color: rgb(0, 0, 0);
@@ -1802,18 +1754,18 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="icon">
                               <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/clipboard.svg</normaloff>:/black_icons/icons_black/clipboard.svg</iconset>
+                               <normaloff>:/special_icons/icons_special/warehouse-svgrepo-com.svg</normaloff>:/special_icons/icons_special/warehouse-svgrepo-com.svg</iconset>
                              </property>
                              <property name="iconSize">
                               <size>
-                               <width>20</width>
-                               <height>20</height>
+                               <width>22</width>
+                               <height>22</height>
                               </size>
                              </property>
                             </widget>
                            </item>
                            <item>
-                            <widget class="QToolButton" name="comp_show_model_data_tbutton">
+                            <widget class="QToolButton" name="compare_show_log_tbutton">
                              <property name="minimumSize">
                               <size>
                                <width>40</width>
@@ -1830,83 +1782,7 @@ border-color: rgb(186, 189, 182);</string>
                               <cursorShape>PointingHandCursor</cursorShape>
                              </property>
                              <property name="toolTip">
-                              <string>Show the model data</string>
-                             </property>
-                             <property name="styleSheet">
-                              <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                             </property>
-                             <property name="icon">
-                              <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/database.svg</normaloff>:/black_icons/icons_black/database.svg</iconset>
-                             </property>
-                             <property name="iconSize">
-                              <size>
-                               <width>20</width>
-                               <height>20</height>
-                              </size>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QToolButton" name="comp_show_fmap_tbutton">
-                             <property name="minimumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="maximumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="cursor">
-                              <cursorShape>PointingHandCursor</cursorShape>
-                             </property>
-                             <property name="toolTip">
-                              <string>Show the feature maps</string>
-                             </property>
-                             <property name="styleSheet">
-                              <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(211, 215, 207);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                             </property>
-                             <property name="icon">
-                              <iconset resource="../assets/resources.qrc">
-                               <normaloff>:/black_icons/icons_black/map.svg</normaloff>:/black_icons/icons_black/map.svg</iconset>
-                             </property>
-                             <property name="iconSize">
-                              <size>
-                               <width>20</width>
-                               <height>20</height>
-                              </size>
-                             </property>
-                            </widget>
-                           </item>
-                           <item>
-                            <widget class="QToolButton" name="comp_show_log_tbutton">
-                             <property name="minimumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="maximumSize">
-                              <size>
-                               <width>40</width>
-                               <height>40</height>
-                              </size>
-                             </property>
-                             <property name="cursor">
-                              <cursorShape>PointingHandCursor</cursorShape>
-                             </property>
-                             <property name="toolTip">
-                              <string>Show the logging</string>
+                              <string>Show the logging file</string>
                              </property>
                              <property name="styleSheet">
                               <string notr="true">color: rgb(0, 0, 0);
@@ -1920,8 +1796,46 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="iconSize">
                               <size>
-                               <width>20</width>
-                               <height>20</height>
+                               <width>22</width>
+                               <height>22</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QToolButton" name="compare_export_to_pyfile_tbutton">
+                             <property name="minimumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>40</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="toolTip">
+                              <string>Export to a python file</string>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(211, 215, 207);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="icon">
+                              <iconset resource="../assets/resources.qrc">
+                               <normaloff>:/special_icons/icons_special/py-file-format-symbol-svgrepo-com.svg</normaloff>:/special_icons/icons_special/py-file-format-symbol-svgrepo-com.svg</iconset>
+                             </property>
+                             <property name="iconSize">
+                              <size>
+                               <width>22</width>
+                               <height>22</height>
                               </size>
                              </property>
                             </widget>
@@ -1961,7 +1875,7 @@ border-color: rgb(186, 189, 182);</string>
                      <zorder>compare_toolbox_bottom_spacer</zorder>
                      <zorder>compare_top_spacer</zorder>
                      <zorder>compare_bottom_spacer</zorder>
-                     <zorder>chevron_base_comp_2</zorder>
+                     <zorder>chevron_bottom_comp</zorder>
                     </widget>
                    </item>
                   </layout>
@@ -1984,7 +1898,7 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="iconSize">
            <size>
@@ -1993,9 +1907,6 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="documentMode">
-           <bool>true</bool>
-          </property>
-          <property name="movable">
            <bool>true</bool>
           </property>
           <widget class="QWidget" name="tab_configuration">
@@ -2039,7 +1950,7 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>369</width>
+                 <width>368</width>
                  <height>912</height>
                 </rect>
                </property>
@@ -2697,7 +2608,7 @@ border-color: rgb(186, 189, 182);</string>
                        <cursorShape>PointingHandCursor</cursorShape>
                       </property>
                       <property name="toolTip">
-                       <string>Add the CT and segmentation data from a folder</string>
+                       <string>Add the CT and segmentation data from a file</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color: rgb(238, 238, 236);
@@ -2876,9 +2787,6 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
                       </property>
-                      <property name="text">
-                       <string/>
-                      </property>
                       <property name="alignment">
                        <set>Qt::AlignCenter</set>
                       </property>
@@ -2929,9 +2837,6 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
                       </property>
-                      <property name="text">
-                       <string/>
-                      </property>
                       <property name="alignment">
                        <set>Qt::AlignCenter</set>
                       </property>
@@ -2981,9 +2886,6 @@ border-color: rgb(186, 189, 182);</string>
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                      </property>
-                      <property name="text">
-                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignCenter</set>
@@ -3167,7 +3069,7 @@ border-color: rgb(186, 189, 182);</string>
                        <cursorShape>PointingHandCursor</cursorShape>
                       </property>
                       <property name="toolTip">
-                       <string>Add the dose-influence matrix from a folder</string>
+                       <string>Add the dose-influence matrix from a file</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color: rgb(238, 238, 236);
@@ -3521,6 +3423,9 @@ border-color: rgb(186, 189, 182);</string>
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Expanding</enum>
+                      </property>
                       <property name="sizeHint" stdset="0">
                        <size>
                         <width>100</width>
@@ -3721,7 +3626,7 @@ background-color: rgb(211, 215, 207);</string>
            </property>
            <attribute name="icon">
             <iconset resource="../assets/resources.qrc">
-             <normaloff>:/special_icons/icons_special/path-points-svgrepo-com.svg</normaloff>:/special_icons/icons_special/path-points-svgrepo-com.svg</iconset>
+             <normaloff>:/special_icons/icons_special/line-chart-svgrepo-com.svg</normaloff>:/special_icons/icons_special/line-chart-svgrepo-com.svg</iconset>
            </attribute>
            <attribute name="title">
             <string/>
@@ -3933,7 +3838,7 @@ border-color: rgb(186, 189, 182);</string>
                        <cursorShape>PointingHandCursor</cursorShape>
                       </property>
                       <property name="toolTip">
-                       <string>Add objective/constraint</string>
+                       <string>Add a component</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color: rgb(238, 238, 236);
@@ -3986,7 +3891,7 @@ border-color: rgb(186, 189, 182);</string>
                        <cursorShape>PointingHandCursor</cursorShape>
                       </property>
                       <property name="toolTip">
-                       <string>Remove objective/constraint</string>
+                       <string>Remove the selected component</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color: rgb(238, 238, 236);
@@ -4006,7 +3911,7 @@ border-color: rgb(186, 189, 182);</string>
                      </widget>
                     </item>
                     <item>
-                     <spacer name="horizontalSpacer">
+                     <spacer name="horizontal_spacer">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -4824,7 +4729,7 @@ border-color: rgb(186, 189, 182);</string>
                        <cursorShape>PointingHandCursor</cursorShape>
                       </property>
                       <property name="toolTip">
-                       <string>Add the initial fluence vector from a folder</string>
+                       <string>Add the initial fluence vector from a file</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color: rgb(238, 238, 236);
@@ -5087,7 +4992,7 @@ border-color: rgb(186, 189, 182);</string>
                        <cursorShape>PointingHandCursor</cursorShape>
                       </property>
                       <property name="toolTip">
-                       <string>Add the lower variable bound (list) from a folder</string>
+                       <string>Add the lower variable bound (list) from a fileer</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color: rgb(238, 238, 236);
@@ -5234,7 +5139,7 @@ border-color: rgb(186, 189, 182);</string>
                        <cursorShape>PointingHandCursor</cursorShape>
                       </property>
                       <property name="toolTip">
-                       <string>Add the upper variable bound (list) from a folder</string>
+                       <string>Add the upper variable bound (list) from a file</string>
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color: rgb(238, 238, 236);
@@ -5737,7 +5642,7 @@ background-color: rgb(211, 215, 207);</string>
            </property>
            <attribute name="icon">
             <iconset resource="../assets/resources.qrc">
-             <normaloff>:/special_icons/icons_special/analytics-graph-svgrepo-com.svg</normaloff>:/special_icons/icons_special/analytics-graph-svgrepo-com.svg</iconset>
+             <normaloff>:/special_icons/icons_special/presentation-chart-4-svgrepo-com.svg</normaloff>:/special_icons/icons_special/presentation-chart-4-svgrepo-com.svg</iconset>
            </attribute>
            <attribute name="title">
             <string/>
@@ -6498,7 +6403,7 @@ border-color: rgb(186, 189, 182);</string>
                    </spacer>
                   </item>
                   <item>
-                   <layout class="QHBoxLayout" name="horizontalLayout">
+                   <layout class="QHBoxLayout" name="horizontal_layout">
                     <property name="spacing">
                      <number>10</number>
                     </property>
@@ -7017,9 +6922,6 @@ border-color: rgb(186, 189, 182);</string>
           <property name="documentMode">
            <bool>true</bool>
           </property>
-          <property name="movable">
-           <bool>true</bool>
-          </property>
           <widget class="QWidget" name="tab_slices">
            <property name="styleSheet">
             <string notr="true">color: rgb(0, 0, 0);
@@ -7266,9 +7168,6 @@ margin-right: 6px;</string>
                      <weight>75</weight>
                      <bold>true</bold>
                     </font>
-                   </property>
-                   <property name="text">
-                    <string/>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -7874,6 +7773,7 @@ color: rgb(255, 255, 255); border:1px solid; border-top-color: rgb(211, 215, 207
   </widget>
  </widget>
  <resources>
+  <include location="../assets/resources.qrc"/>
   <include location="../assets/resources.qrc"/>
  </resources>
  <connections/>

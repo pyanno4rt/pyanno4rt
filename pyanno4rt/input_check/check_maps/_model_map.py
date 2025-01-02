@@ -9,9 +9,9 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.input_check.check_functions import (
-    check_regular_extension, check_regular_extension_directory,
-    check_feature_filter, check_key_in_dict, check_length, check_path,
-    check_subtype, check_type, check_value, check_value_in_set)
+    check_data_columns, check_key_in_dict, check_path, check_regular_extension,
+    check_regular_extension_directory, check_subtype, check_type, check_value,
+    check_value_in_set)
 from pyanno4rt.learning_model.losses import loss_map
 from pyanno4rt.learning_model.preprocessing.cleaners import cleaner_map
 from pyanno4rt.learning_model.preprocessing.reducers import reducer_map
@@ -35,39 +35,9 @@ model_map = {
         partial(check_regular_extension_directory, extensions=(
             'jpg', 'npy', 'npz', 'png'), no_directory=('.csv',))
         ),
-    'feature_filter': (
+    'data_columns': (
         partial(check_type, types=dict),
-        partial(check_feature_filter, check_functions=(
-            partial(check_key_in_dict, keys=('features', 'filter_mode')),
-            partial(check_type, types=list),
-            partial(check_subtype, types=str),
-            partial(check_value_in_set, options=('remove', 'retain'))
-            ))
-        ),
-    'static_features': (
-        partial(check_type, types=dict),
-        ),
-    'label_name': (
-        partial(check_type, types={True: (type(None), str), False: str}),
-        ),
-    'label_bounds': (
-        partial(check_type, types=list),
-        partial(check_length, reference=2, sign='=='),
-        partial(check_subtype, types=(type(None), int, float)),
-        partial(check_value, reference=0, sign='>=', is_vector=True)
-        ),
-    'time_variable_name': (
-        partial(check_type, types={
-            'early': str, 'late': str, 'long-term': str,
-            'longitudinal': type(None), 'profile': str}),
-        ),
-    'label_viewpoint': (
-        partial(check_type, types=str),
-        partial(check_value_in_set, options=(
-            'early', 'late', 'long-term', 'longitudinal', 'profile'))
-        ),
-    'fuzzy_matching': (
-        partial(check_type, types=bool),
+        partial(check_data_columns, ())
         ),
     'preprocessing_steps': (
         partial(check_type, types=list),

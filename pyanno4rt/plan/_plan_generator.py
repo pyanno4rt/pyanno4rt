@@ -99,7 +99,7 @@ class PlanGenerator():
             """Set the component by its segment and type assignment."""
 
             # Get the instance from the component map
-            instance = component_map[component['class']](
+            instance = component_map[component['function']](
                 segment=segment, **component['parameters'])
 
             # Log a message about setting the instance

@@ -52,9 +52,9 @@ class Logger():
 
             # Log a message about the warranty clause
             self.display_info(
-                'Caution: pyanno4rt is an open-source package and not a '
-                'medical product. It is provided "as-is", without warranty of '
-                'any kind, and intended for research and education only ...')
+                'pyanno4rt is an open-source package and NOT a medical '
+                'product. It is provided "as-is", without warranty of any '
+                'kind, and intended for research and education only ...')
 
             # Log a message about the initialization of the class
             self.display_info("Initializing logger ...")

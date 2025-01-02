@@ -32,7 +32,7 @@ def test_copycat():
                 'Core': {
                     'type': 'objective',
                     'instance': {
-                        'class': 'Squared Overdosing',
+                        'function': 'Squared Overdosing',
                         'parameters': {
                             'maximum_dose': 25,
                             'weight': 100,
@@ -42,7 +42,7 @@ def test_copycat():
                 'OuterTarget': {
                     'type': 'objective',
                     'instance': {
-                        'class': 'Squared Deviation',
+                        'function': 'Squared Deviation',
                         'parameters': {
                             'target_dose': 60,
                             'weight': 1000
@@ -52,7 +52,7 @@ def test_copycat():
                 'BODY': {
                     'type': 'objective',
                     'instance': {
-                        'class': 'Squared Overdosing',
+                        'function': 'Squared Overdosing',
                         'parameters': {
                             'maximum_dose': 30,
                             'weight': 800

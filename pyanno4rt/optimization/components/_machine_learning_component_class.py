@@ -44,42 +44,8 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
         - data_path : str
             Path to the data set used for fitting the machine learning model.
 
-        - feature_filter : dict, default={'features': [], \
-                                          'filter_mode': 'remove'}
-            Dictionary with a list of feature names and a value from \
-            {'retain', 'remove'} as an indicator for retaining/removing the \
-            features prior to model fitting.
-
-        - static_features : dict, default={}
-            Dictionary with the names and values of the fixed features.
-
-        - label_name : str
-            Name of the label variable.
-
-        - label_bounds : list, default=[1, 1]
-            Bounds for the label values to binarize into positive (value lies \
-            inside the bounds) and negative class (value lies outside the \
-            bounds).
-
-        - time_variable_name : None or str, default=None
-            Name of the time-after-radiotherapy variable (unit should be days).
-
-        - label_viewpoint : {'early', 'late', 'long-term', 'longitudinal', \
-                             'profile'}, default='longitudinal'
-            Time of observation for the presence of tumor control and/or \
-            normal tissue complication events. The options can be described \
-            as follows:
-
-            - 'early' : event between 0 and 6 months after treatment
-            - 'late' : event between 6 and 15 months after treatment
-            - 'long-term' : event between 15 and 24 months after treatment
-            - 'longitudinal' : no period, time after treatment as covariate
-            - 'profile' : TCP/NTCP profiling over time, multi-label scenario \
-               with one label per month (up to 24 labels in total).
-
-        - fuzzy_matching : bool, default=True
-            Indicator for the use of fuzzy string matching to generate the \
-            feature map (if False, exact string matching is applied).
+        - data_columns : dict
+            Dictionary with the column information on features and label.
 
         - preprocessing_steps : list, default=['Identity']
             Sequence of labels associated with preprocessing algorithms to \
@@ -265,16 +231,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             'model_label': model_parameters.get('model_label'),
             'model_folder_path': model_parameters.get('model_folder_path'),
             'data_path': model_parameters.get('data_path'),
-            'feature_filter': model_parameters.get(
-                'feature_filter', {'features': [], 'filter_mode': 'remove'}),
-            'static_features': model_parameters.get(
-                'static_features', {}),
-            'label_name': model_parameters.get('label_name'),
-            'label_bounds': model_parameters.get('label_bounds', [1, 1]),
-            'time_variable_name': model_parameters.get('time_variable_name'),
-            'label_viewpoint': model_parameters.get(
-                'label_viewpoint', 'longitudinal'),
-            'fuzzy_matching': model_parameters.get('fuzzy_matching', True),
+            'data_columns': model_parameters.get('data_columns'),
             'preprocessing_steps': model_parameters.get(
                 'preprocessing_steps', ['Identity']),
             'architecture': model_parameters.get(

@@ -13,8 +13,9 @@ from numpy import zeros
 from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QThread
 from PyQt5.QtGui import QCursor, QIcon, QMovie, QPixmap
 from PyQt5.QtWidgets import (
-    QComboBox, QFileDialog, QFrame, QHeaderView, QLabel, QListWidget,
-    QListWidgetItem, QMainWindow, QMenu, QMessageBox, QPushButton, QSpinBox)
+    QApplication, QComboBox, QFileDialog, QFrame, QHeaderView, QLabel,
+    QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox, QPushButton,
+    QSpinBox)
 from webbrowser import open as webopen
 
 # %% Internal package import
@@ -112,10 +113,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.settings_window = SettingsWindow(self)
         self.info_window = InfoWindow(self)
         self.compare_window = CompareWindow(self)
-        self.parameter_window = TreeWindow('Plan Parameters Viewer', self)
-        self.plan_window = TreeWindow('Plan Data Viewer', self)
-        self.model_data_window = TreeWindow('Model Data Viewer', self)
-        self.feature_map_window = TreeWindow('Feature Maps Viewer', self)
+        self.config_window = TreeWindow('Plan Configuration Viewer', self)
+        self.datahub_window = TreeWindow('Datahub Content Viewer', self)
         self.log_window = LogWindow(self)
 
         # Initialize the custom widgets
@@ -220,11 +219,10 @@ class MainWindow(QMainWindow, Ui_main_window):
             'reset_configuration_pbutton', 'reset_optimization_pbutton',
             'reset_evaluation_pbutton', 'configure_pbutton', 'model_pbutton',
             'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton',
-            'actions_show_parameter_tbutton', 'actions_show_plan_tbutton',
-            'actions_show_fmap_tbutton', 'actions_show_model_data_tbutton',
-            'actions_show_log_tbutton', 'comp_show_parameter_tbutton',
-            'comp_show_plan_tbutton', 'comp_show_fmap_tbutton',
-            'comp_show_model_data_tbutton', 'comp_show_log_tbutton',
+            'actions_show_config_tbutton', 'actions_show_datahub_tbutton',
+            'actions_show_log_tbutton', 'actions_export_to_pyfile_tbutton',
+            'compare_show_config_tbutton', 'compare_show_datahub_tbutton',
+            'compare_show_log_tbutton', 'compare_export_to_pyfile_tbutton',
             'compare_pbutton', 'baseline_cbox', 'reference_cbox',
             'components_minus_tbutton', 'components_edit_tbutton',
             'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox',
@@ -305,16 +303,14 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'optimize_pbutton': pbutton_workflow,
                          'evaluate_pbutton': pbutton_workflow,
                          'visualize_pbutton': pbutton_workflow,
-                         'actions_show_parameter_tbutton': tbutton_workflow,
-                         'actions_show_plan_tbutton': tbutton_workflow,
-                         'actions_show_model_data_tbutton': tbutton_workflow,
-                         'actions_show_fmap_tbutton': tbutton_workflow,
+                         'actions_show_config_tbutton': tbutton_workflow,
+                         'actions_show_datahub_tbutton': tbutton_workflow,
                          'actions_show_log_tbutton': tbutton_workflow,
-                         'comp_show_parameter_tbutton': tbutton_workflow,
-                         'comp_show_plan_tbutton': tbutton_workflow,
-                         'comp_show_model_data_tbutton': tbutton_workflow,
-                         'comp_show_fmap_tbutton': tbutton_workflow,
-                         'comp_show_log_tbutton': tbutton_workflow,
+                         'actions_export_to_pyfile_tbutton': tbutton_workflow,
+                         'compare_show_config_tbutton': tbutton_workflow,
+                         'compare_show_datahub_tbutton': tbutton_workflow,
+                         'compare_show_log_tbutton': tbutton_workflow,
+                         'compare_export_to_pyfile_tbutton': tbutton_workflow,
                          'baseline_cbox': cbox,
                          'reference_cbox': cbox,
                          'compare_pbutton': pbutton_workflow,
@@ -375,8 +371,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Set the initial treatment plan
             self.set_initial_plan(treatment_plan)
 
-        # Set the initial window size
+        # Set the initial window size and position
         self.resize(1920, 1080)
+        self.position()
         self.show()
 
         # Close the splash screen window
@@ -415,16 +412,12 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'optimize_pbutton': self.start_optimize,
                 'evaluate_pbutton': self.start_evaluate,
                 'visualize_pbutton': self.visualize,
-                'actions_show_parameter_tbutton': self.open_parameter_window,
-                'actions_show_plan_tbutton': self.open_plan_window,
-                'actions_show_model_data_tbutton': self.open_model_data_window,
-                'actions_show_fmap_tbutton': self.open_feature_map_window,
+                'actions_show_config_tbutton': self.open_config_window,
+                'actions_show_datahub_tbutton': self.open_datahub_window,
                 'actions_show_log_tbutton': self.open_log_window,
-                'comp_show_parameter_tbutton': self.open_parameter_window,
-                'comp_show_plan_tbutton': self.open_plan_window,
-                'comp_show_model_data_tbutton': self.open_model_data_window,
-                'comp_show_fmap_tbutton': self.open_feature_map_window,
-                'comp_show_log_tbutton': self.open_log_window,
+                'compare_show_config_tbutton': self.open_config_window,
+                'compare_show_datahub_tbutton': self.open_datahub_window,
+                'compare_show_log_tbutton': self.open_log_window,
                 'stop_thread_pbutton': self.stop_thread,
                 'github_pbutton': self.open_github_link,
                 'rtd_pbutton': self.open_rtd_link,
@@ -641,8 +634,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                          'close_tree_pbutton'):
 
                 for window in (
-                        self.parameter_window, self.plan_window,
-                        self.model_data_window, self.feature_map_window):
+                        self.config_window, self.datahub_window):
 
                     # Get the attribute and set the stylesheet
                     getattr(window, key).setStyleSheet(value)
@@ -664,8 +656,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             elif key == 'close_text_pbutton':
 
                 for window in (
-                        self.parameter_window, self.plan_window,
-                        self.model_data_window, self.feature_map_window):
+                        self.config_window, self.datahub_window):
 
                     # Get the attribute and set the stylesheet
                     getattr(window.text_window, key).setStyleSheet(value)
@@ -870,24 +861,27 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Reset the DVH widget
             self.dvh_widget.reset_dvh()
 
+            # Update the log output
+            self.log_window.update_log_output()
+
             # Enable specific fields
             self.set_enabled((
                 'save_pbutton', 'drop_pbutton', 'configure_pbutton',
                 'visualize_pbutton', 'update_configuration_pbutton',
                 'update_optimization_pbutton', 'update_evaluation_pbutton',
                 'reset_configuration_pbutton', 'reset_optimization_pbutton',
-                'reset_evaluation_pbutton', 'actions_show_parameter_tbutton',
-                'comp_show_parameter_tbutton'))
+                'reset_evaluation_pbutton', 'actions_show_config_tbutton',
+                'actions_show_datahub_tbutton', 'actions_show_log_tbutton',
+                'actions_export_to_pyfile_tbutton',
+                'compare_show_config_tbutton', 'compare_show_datahub_tbutton',
+                'compare_show_log_tbutton', 'compare_export_to_pyfile_tbutton')
+                )
 
             # Disable specific fields
             self.set_disabled((
-                'model_pbutton', 'optimize_pbutton', 'evaluate_pbutton',
-                'actions_show_plan_tbutton', 'actions_show_log_tbutton',
-                'actions_show_model_data_tbutton', 'actions_show_fmap_tbutton',
-                'comp_show_plan_tbutton', 'comp_show_log_tbutton',
-                'comp_show_model_data_tbutton', 'comp_show_fmap_tbutton'))
+                'model_pbutton', 'optimize_pbutton', 'evaluate_pbutton'))
 
-            # Disable the tab widgets
+            # Enable the tab widgets
             self.composer_widget.widget(0).setEnabled(True)
             self.composer_widget.widget(1).setEnabled(True)
             self.composer_widget.widget(2).setEnabled(True)
@@ -897,14 +891,6 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
                 'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
                 'ref_vol_ledit', 'ref_dose_ledit'))
-
-            # Update the log output
-            self.log_window.update_log_output()
-
-            # Enable the plan data and logging tool buttons
-            self.set_enabled((
-                'actions_show_plan_tbutton', 'actions_show_log_tbutton',
-                'comp_show_plan_tbutton', 'comp_show_log_tbutton'))
 
             self.status_bar.showMessage("Ready for configuration ...")
 
@@ -942,14 +928,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
                         # 
                         return
-
-                    else:
-
-                        self.set_enabled((
-                            'actions_show_model_data_tbutton',
-                            'actions_show_fmap_tbutton',
-                            'comp_show_model_data_tbutton',
-                            'comp_show_fmap_tbutton'))
 
                 # Enable the optimize button
                 self.optimize_pbutton.setEnabled(True)
@@ -1010,11 +988,10 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'reset_configuration_pbutton', 'reset_optimization_pbutton',
                 'reset_evaluation_pbutton', 'configure_pbutton', 'model_pbutton',
                 'optimize_pbutton', 'evaluate_pbutton', 'visualize_pbutton',
-                'actions_show_parameter_tbutton', 'actions_show_plan_tbutton',
-                'actions_show_fmap_tbutton', 'actions_show_model_data_tbutton',
-                'actions_show_log_tbutton', 'comp_show_parameter_tbutton',
-                'comp_show_plan_tbutton', 'comp_show_fmap_tbutton',
-                'comp_show_model_data_tbutton', 'comp_show_log_tbutton',
+                'actions_show_config_tbutton', 'actions_show_datahub_tbutton',
+                'actions_show_log_tbutton', 'actions_export_to_pyfile_tbutton',
+                'compare_show_config_tbutton', 'compare_show_datahub_tbutton',
+                'compare_show_log_tbutton', 'compare_export_to_pyfile_tbutton',
                 'compare_pbutton', 'baseline_cbox', 'reference_cbox',
                 'components_minus_tbutton', 'components_edit_tbutton',
                 'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox',
@@ -1126,10 +1103,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.log_window.update_log_output()
 
         # Enable specific fields
-        self.set_enabled((
-            'actions_show_plan_tbutton', 'actions_show_log_tbutton',
-            'comp_show_plan_tbutton', 'comp_show_log_tbutton',
-            'orient_cbox', 'slice_selection_sbar'))
+        self.set_enabled(('orient_cbox', 'slice_selection_sbar'))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1202,10 +1176,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.log_window.update_log_output()
 
         # Enable specific fields
-        self.set_enabled((
-            'optimize_pbutton', 'actions_show_plan_tbutton',
-            'actions_show_log_tbutton', 'comp_show_plan_tbutton',
-            'comp_show_log_tbutton'))
+        self.set_enabled(('optimize_pbutton',))
 
         self.status_bar.showMessage("Ready for optimization ...")
         self.loader_label.hide()
@@ -1283,18 +1254,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Enable the evaluation button
         self.set_enabled(('evaluate_pbutton', 'opacity_sbox'))
-
-        # Check if the selected plan includes data models
-        if instance.datahub and any(unit is not None for unit in (
-                instance.datahub.datasets, instance.datahub.feature_maps,
-                instance.datahub.model_instances,
-                instance.datahub.model_inspections,
-                instance.datahub.model_evaluations)):
-
-            # Enable the model data and feature maps tool button
-            self.set_enabled((
-                'actions_show_model_data_tbutton', 'actions_show_fmap_tbutton',
-                'comp_show_model_data_tbutton', 'comp_show_fmap_tbutton'))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1398,8 +1357,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             instance.update(self.transform_configuration_to_dict())
 
             # Disable specific fields
-            self.set_disabled((
-                'optimize_pbutton', 'evaluate_pbutton'))
+            self.set_disabled(('optimize_pbutton', 'evaluate_pbutton'))
 
             # Set the line edit cursor positions to zero
             self.set_zero_line_cursor((
@@ -1410,7 +1368,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # 
             self.display_segments_lwidget.clear()
-            self.display_segments_lwidget.addItems(self.segments)
+            self.display_segments_lwidget.addItems(list(self.segments.keys()))
 
             # Loop over the display segments
             for index in range(self.display_segments_lwidget.count()):
@@ -1571,15 +1529,33 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Check if the component is an objective
             if component['type'] == 'objective':
 
-                # Set the icon path on the red target
-                icon_path = (":/special_icons/icons_special/"
-                             "target-red-svgrepo-com.svg")
+                # 
+                if self.segments[segment] == 'TARGET':
+
+                    # Set the icon path on the red target
+                    icon_path = (":/special_icons/icons_special/"
+                                 "target-red-svgrepo-com.svg")
+
+                else:
+
+                    # Set the icon path on the green target
+                    icon_path = (":/special_icons/icons_special/"
+                                 "target-green-svgrepo-com.svg")
 
             else:
 
-                # Set the icon path on the red frame
-                icon_path = (":/special_icons/icons_special/"
-                             "frame-red-svgrepo-com.svg")
+                # 
+                if self.segments[segment] == 'TARGET':
+
+                    # Set the icon path on the red frame
+                    icon_path = (":/special_icons/icons_special/"
+                                 "frame-red-svgrepo-com.svg")
+
+                else:
+
+                    # Set the icon path on the green frame
+                    icon_path = (":/special_icons/icons_special/"
+                                 "frame-green-svgrepo-com.svg")
 
             # Initialize the icon object
             icon = QIcon()
@@ -1627,7 +1603,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Join the segment and class name
             component_string = ' - '.join((substring for substring in (
-                segment, component['instance']['class'], identifier,
+                segment, component['instance']['function'], identifier,
                 embedding, weight) if substring))
 
             # Add the icon with the component string to the list
@@ -1761,7 +1737,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # 
         self.display_segments_lwidget.clear()
-        self.display_segments_lwidget.addItems(self.segments)
+        self.display_segments_lwidget.addItems(list(self.segments.keys()))
 
         # Loop over the display segments
         for index in range(self.display_segments_lwidget.count()):
@@ -2068,7 +2044,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.img_path_ledit.text())
 
             # Initialize the segments list
-            self.segments = []
+            self.segments = {}
 
             # Loop over the ROI contours
             for roi_contour in segmentation_data.ROIContourSequence:
@@ -2079,8 +2055,21 @@ class MainWindow(QMainWindow, Ui_main_window):
                     for sequence in segmentation_data.StructureSetROISequence
                     if roi_contour.ReferencedROINumber == sequence.ROINumber)
 
+                # Check if the segment is a target volume
+                if any(string in roi_structure.lower() for string in (
+                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost',
+                        'tumor')):
+
+                    # Set the segment type to 'TARGET'
+                    segment_type = 'TARGET'
+
+                else:
+
+                    # Set the segment type to 'OAR'
+                    segment_type = 'OAR'
+
                 # Append the segment to the list
-                self.segments.append(roi_structure.ROIName)
+                self.segments |= {roi_structure.ROIName: segment_type}
 
         # Check if the path leads to a MATLAB file
         elif splitext(self.img_path_ledit.text())[1] == '.mat':
@@ -2090,8 +2079,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.img_path_ledit.text())
 
             # Get the segments
-            self.segments = [
-                segment_values[1] for segment_values in segmentation_data]
+            self.segments = {
+                segment_values[1]: ('TARGET' if any(
+                    string in segment_values[1].lower() for string in (
+                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor'))
+                    else 'OAR') for segment_values in segmentation_data}
 
         # Check if the path leads to a Python file
         elif splitext(self.img_path_ledit.text())[1] == '.p':
@@ -2101,11 +2093,15 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.img_path_ledit.text())
 
             # Get the segments
-            self.segments = list(segmentation_data.keys())
+            self.segments = {
+                segment: ('TARGET' if any(
+                    string in segment.lower() for string in (
+                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor'))
+                    else 'OAR') for segment in segmentation_data}
 
         else:
 
-            self.segments = []
+            self.segments = {}
 
     def open_plan_creation_window(self):
         """Open the plan creation window."""
@@ -2238,14 +2234,14 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Show the window
         self.current_component_window.show()
 
-    def open_parameter_window(self):
-        """Open the plan parameter window."""
+    def open_config_window(self):
+        """Open the plan configuration window."""
 
         # Set the position of the window
-        self.parameter_window.position()
+        self.config_window.position()
 
-        # Clear the parameter window
-        self.parameter_window.tree_widget.clear()
+        # Clear the configuration window
+        self.config_window.tree_widget.clear()
 
         # Get the treatment plan instance
         instance = self.plans[self.plan_ledit.text()]
@@ -2256,34 +2252,34 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Convert the input into absolute paths
             instance.configuration[key] = abspath(instance.configuration[key])
 
-        # Create the parameter tree from the input dictionaries
-        self.parameter_window.create_tree_from_dict(data={
+        # Create the configuration tree from the input dictionaries
+        self.config_window.create_tree_from_dict(data={
             'configuration': instance.configuration,
             'optimization': instance.optimization,
             'evaluation': instance.evaluation},
-            parent=self.parameter_window.tree_widget)
+            parent=self.config_window.tree_widget)
 
         # Set the resize mode for the first tree column
-        self.parameter_window.tree_widget.header().setSectionResizeMode(
+        self.config_window.tree_widget.header().setSectionResizeMode(
             0, QHeaderView.Stretch)
 
         # Show the window
-        self.parameter_window.show()
+        self.config_window.show()
 
-    def open_plan_window(self):
-        """Open the plan data window."""
+    def open_datahub_window(self):
+        """Open the datahub content window."""
 
         # Set the position of the window
-        self.plan_window.position()
+        self.datahub_window.position()
 
-        # Clear the plan data window
-        self.plan_window.tree_widget.clear()
+        # Clear the datahub window
+        self.datahub_window.tree_widget.clear()
 
         # Get the treatment plan instance
         instance = self.plans[self.plan_ledit.text()]
 
-        # Create the plan data tree from the internal plan dictionaries
-        self.plan_window.create_tree_from_dict(data={
+        # Create the datahub tree from the internal plan dictionaries
+        self.datahub_window.create_tree_from_dict(data={
             'computed_tomography': instance.datahub.computed_tomography,
             'segmentation': instance.datahub.segmentation,
             'plan_configuration': instance.datahub.plan_configuration,
@@ -2291,63 +2287,14 @@ class MainWindow(QMainWindow, Ui_main_window):
             'optimization': instance.datahub.optimization,
             'dose_histogram': instance.datahub.dose_histogram,
             'dosimetrics': instance.datahub.dosimetrics},
-            parent=self.plan_window.tree_widget)
+            parent=self.datahub_window.tree_widget)
 
         # Set the resize mode for the first tree column
-        self.plan_window.tree_widget.header().setSectionResizeMode(
+        self.datahub_window.tree_widget.header().setSectionResizeMode(
             0, QHeaderView.Stretch)
 
         # Show the window
-        self.plan_window.show()
-
-    def open_model_data_window(self):
-        """Open the model data window."""
-
-        # Set the position of the window
-        self.model_data_window.position()
-
-        # Clear the model data window
-        self.model_data_window.tree_widget.clear()
-
-        # Get the treatment plan instance
-        instance = self.plans[self.plan_ledit.text()]
-
-        # Create the model data tree from the internal model dictionaries
-        self.model_data_window.create_tree_from_dict(data={
-            'datasets': instance.datahub.datasets,
-            'model_instances': instance.datahub.model_instances,
-            'model_inspections': instance.datahub.model_inspections,
-            'model_evaluations': instance.datahub.model_evaluations,
-            'model_outcomes': instance.datahub.model_outcomes},
-            parent=self.model_data_window.tree_widget)
-
-        # Set the resize mode for the first tree column
-        self.model_data_window.tree_widget.header().setSectionResizeMode(
-            0, QHeaderView.Stretch)
-
-        # Show the window
-        self.model_data_window.show()
-
-    def open_feature_map_window(self):
-        """Open the feature map window."""
-
-        # Set the position of the window
-        self.feature_map_window.position()
-
-        # Clear the feature map window
-        self.feature_map_window.tree_widget.clear()
-
-        # Create the feature map tree from the internal dictionary
-        self.feature_map_window.create_tree_from_dict(
-            data=self.plans[self.plan_ledit.text()].datahub.feature_maps,
-            parent=self.feature_map_window.tree_widget)
-
-        # Set the resize mode for the first tree column
-        self.feature_map_window.tree_widget.header().setSectionResizeMode(
-            0, QHeaderView.Stretch)
-
-        # Show the window
-        self.feature_map_window.show()
+        self.datahub_window.show()
 
     def open_log_window(self):
         """Open the log window."""
@@ -2484,7 +2431,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # 
             self.current_component_window = component_window_map[
-                value['instance']['class']](self)
+                value['instance']['function']](self)
 
         # Set the position of the window
         self.current_component_window.position()
@@ -2775,6 +2722,16 @@ class MainWindow(QMainWindow, Ui_main_window):
 
     def open_pypi_link(args):
         return webopen('https://pypi.org/project/pyanno4rt/')
+
+    def position(self):
+        """."""
+
+        qtRectangle = self.frameGeometry()
+        screen = QApplication.desktop().screenNumber(
+            QApplication.desktop().cursor().pos())
+        centerPoint = QApplication.desktop().screenGeometry(screen).center()
+        qtRectangle.moveCenter(centerPoint)
+        self.move(qtRectangle.topLeft())
 
     def exit_window(self):
         """Exit the session and close the window."""
