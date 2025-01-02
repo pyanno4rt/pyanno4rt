@@ -507,7 +507,7 @@ color: rgb(211, 215, 207);</string>
              <item>
               <widget class="QTabWidget" name="tab_workflow">
                <property name="currentIndex">
-                <number>1</number>
+                <number>0</number>
                </property>
                <property name="iconSize">
                 <size>
@@ -1073,8 +1073,8 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="iconSize">
                               <size>
-                               <width>20</width>
-                               <height>20</height>
+                               <width>22</width>
+                               <height>22</height>
                               </size>
                              </property>
                             </widget>
@@ -1111,8 +1111,8 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="iconSize">
                               <size>
-                               <width>20</width>
-                               <height>20</height>
+                               <width>22</width>
+                               <height>22</height>
                               </size>
                              </property>
                             </widget>
@@ -1149,8 +1149,8 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="iconSize">
                               <size>
-                               <width>20</width>
-                               <height>20</height>
+                               <width>22</width>
+                               <height>22</height>
                               </size>
                              </property>
                             </widget>
@@ -1187,8 +1187,8 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <property name="iconSize">
                               <size>
-                               <width>20</width>
-                               <height>20</height>
+                               <width>22</width>
+                               <height>22</height>
                               </size>
                              </property>
                             </widget>
