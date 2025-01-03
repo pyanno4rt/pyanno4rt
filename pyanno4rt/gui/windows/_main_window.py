@@ -4,11 +4,11 @@
 
 # %% External package import
 
-from functools import partial
+from functools import partial, reduce
 from importlib.metadata import version
 from logging import Handler
 from os.path import abspath, dirname, splitext
-from json import loads
+from json import dumps, loads
 from numpy import zeros
 from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QThread
 from PyQt5.QtGui import QCursor, QIcon, QMovie, QPixmap
@@ -415,9 +415,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'actions_show_config_tbutton': self.open_config_window,
                 'actions_show_datahub_tbutton': self.open_datahub_window,
                 'actions_show_log_tbutton': self.open_log_window,
+                'actions_export_to_pyfile_tbutton': self.export_to_pyfile,
                 'compare_show_config_tbutton': self.open_config_window,
                 'compare_show_datahub_tbutton': self.open_datahub_window,
                 'compare_show_log_tbutton': self.open_log_window,
+                'compare_export_to_pyfile_tbutton': self.export_to_pyfile,
                 'stop_thread_pbutton': self.stop_thread,
                 'github_pbutton': self.open_github_link,
                 'rtd_pbutton': self.open_rtd_link,
@@ -2254,9 +2256,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Create the configuration tree from the input dictionaries
         self.config_window.create_tree_from_dict(data={
-            'configuration': instance.configuration,
-            'optimization': instance.optimization,
-            'evaluation': instance.evaluation},
+            key: value for key, value in vars(instance).items()
+            if isinstance(value, dict)},
             parent=self.config_window.tree_widget)
 
         # Set the resize mode for the first tree column
@@ -2280,13 +2281,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Create the datahub tree from the internal plan dictionaries
         self.datahub_window.create_tree_from_dict(data={
-            'computed_tomography': instance.datahub.computed_tomography,
-            'segmentation': instance.datahub.segmentation,
-            'plan_configuration': instance.datahub.plan_configuration,
-            'dose_information': instance.datahub.dose_information,
-            'optimization': instance.datahub.optimization,
-            'dose_histogram': instance.datahub.dose_histogram,
-            'dosimetrics': instance.datahub.dosimetrics},
+            key: value for key, value in vars(instance.datahub).items()
+            if isinstance(value, dict)},
             parent=self.datahub_window.tree_widget)
 
         # Set the resize mode for the first tree column
@@ -2304,6 +2300,66 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Show the window
         self.log_window.show()
+
+    def export_to_pyfile(self):
+        """Export the treatment plan instance to a Python file (.py)."""
+
+        # Get the file path
+        path, _ = QFileDialog.getSaveFileName(
+            self, 'Export to Python file',
+            'tp.py', 'Python file (*.py)')
+
+        # Check if the file path exists
+        if path:
+
+            # 
+            instance = self.plans[self.plan_ledit.text()]
+
+            # Open a file stream
+            with open(path, 'w') as file:
+
+                # Create a string replacement mapping
+                mapping = {
+                    '\n': '\n' + '    ',
+                    'null': 'None',
+                    'true': 'True',
+                    'false': 'False'}
+
+                # Convert the input dictionaries to formatted strings
+                configuration, optimization, evaluation = (
+                    reduce(lambda x, y: x.replace(*y),
+                           [dumps(getattr(instance, dct), indent=4),
+                            *list(mapping.items())])
+                    for dct in ('configuration', 'optimization', 'evaluation'))
+
+                # Write the string output to the file
+                file.write(
+                    '"""\n'
+                    f'Python script for the '
+                    '"{instance.configuration["label"]}" plan.\n\n'
+                    'Generated from the pyanno4rt GUI.\n"""\n\n'
+                    '# %% Internal package import\n\n'
+                    'from pyanno4rt.base import TreatmentPlan\n'
+                    'from pyanno4rt.gui import GraphicalUserInterface\n\n'
+                    '# %% Initialization\n\n'
+                    'tp = TreatmentPlan(\n\n'
+                    f'    configuration={configuration},\n\n'
+                    f'    optimization={optimization},\n\n'
+                    f'    evaluation={evaluation}\n\n'
+                    ')\n\n'
+                    '# %% Workflow\n\n'
+                    'tp.configure()\n'
+                    'tp.model()\n'
+                    'tp.optimize()\n'
+                    'tp.evaluate()\n'
+                    'tp.visualize()\n\n'
+                    '# %% GUI\n\n'
+                    'gui = GraphicalUserInterface()\n'
+                    'gui.launch(tp)\n'
+                    '')
+
+                # Close the file stream
+                file.close()
 
     def open_question_dialog(self):
         """Open a question dialog."""
