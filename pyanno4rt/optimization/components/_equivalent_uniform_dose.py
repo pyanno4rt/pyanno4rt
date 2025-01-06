@@ -1,6 +1,6 @@
 """Equivalent uniform dose (EUD) component."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% External package import
 

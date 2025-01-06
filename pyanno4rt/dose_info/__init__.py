@@ -7,7 +7,7 @@ This module aims to provide methods and classes to generate the dose \
 information dictionary.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._dose_info_generator import DoseInfoGenerator
 

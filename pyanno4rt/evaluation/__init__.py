@@ -7,7 +7,7 @@ This module aims to provide methods and classes to evaluate the generated \
 treatment plans.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._dosimetrics_evaluator import DosimetricsEvaluator
 from ._dvh_evaluator import DVHEvaluator

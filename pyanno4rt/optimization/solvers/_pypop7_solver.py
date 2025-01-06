@@ -1,6 +1,6 @@
 """PyPop7 wrapper."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 # Reference: https://pypop.readthedocs.io/en/latest/
 # Paper: https://doi.org/10.48550/arXiv.2212.05652
 

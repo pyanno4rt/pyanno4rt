@@ -1,6 +1,6 @@
 """DVH widget."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% External package import
 
@@ -166,14 +166,14 @@ class DVHWidget(QWidget):
             pen = item.curve.opts['pen']
             if item == event:
                 pen = mkPen(pen)
-                if pen.width() == 2:
+                if pen.width() == 1:
                     event.curve.setPen(mkPen(color=pen.color(),
                                              style=pen.style(),
-                                             width=5))
+                                             width=4))
                 else:
                     event.curve.setPen(mkPen(color=pen.color(),
                                              style=pen.style(),
-                                             width=2))
+                                             width=1))
                     self.parent.segment_ledit.clear()
                     self.parent.mean_ledit.clear()
                     self.parent.std_ledit.clear()
@@ -182,7 +182,7 @@ class DVHWidget(QWidget):
             else:
                 item.curve.setPen(mkPen(color=pen.color(),
                                         style=pen.style(),
-                                        width=2))
+                                        width=1))
 
     def update_crosshair(
             self,
@@ -234,7 +234,7 @@ class DVHWidget(QWidget):
 
             pen = mkPen(color=self.segment_styles[segment][0],
                         style=self.segment_styles[segment][1],
-                        width=2)
+                        width=1)
 
             plot = self.plot_graph.plot(
                 self.dose_histogram['evaluation_points'],

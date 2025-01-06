@@ -1,6 +1,6 @@
 """Main window."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% External package import
 
@@ -25,8 +25,8 @@ from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.main_window import Ui_main_window
 from pyanno4rt.gui.custom_widgets import DVHWidget, SliceWidget
 from pyanno4rt.gui.styles._custom_styles import (
-    cbox, ledit, pbutton_menu, pbutton_composer, pbutton_workflow, sbox,
-    selector, tab, tbutton_composer, tbutton_workflow)
+    cbox, ledit, pbutton_menu, pbutton_composer, pbutton_statusbar,
+    pbutton_workflow, sbox, selector, tab, tbutton_composer, tbutton_workflow)
 from pyanno4rt.gui.windows import (
     CompareWindow, InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow,
     SplashScreenWindow, TreeWindow)
@@ -45,68 +45,54 @@ class MainWindow(QMainWindow, Ui_main_window):
     """
     Main window for the GUI.
 
-    This class creates the main window for the graphical user interface, \
-    including logo, labels, and input/control elements.
+    This class sets up the main window for the graphical user interface, \
+    including the main surface with all input/control elements.
 
     Parameters
     ----------
-    treatment_plan : object of class `TreatmentPlan`
-        Instance of the class `TreatmentPlan`, which provides methods and \
-        classes to generate treatment plans.
+    treatment_plan : object of class \
+        :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`, default=None
+        The object used to represent the initial treatment plan to launch the \
+        graphical user interface with.
 
-    application : object of class `SpyderQApplication`
-        Instance of the class `SpyderQApplication` for managing control flow \
-        and main settings of the graphical user interface.
+    application : object of class :class:`~PyQt5.QtWidgets.QApplication`, \
+        default=None
+        The object used to represent the widget-based Qt application.
     """
 
     def __init__(
             self,
-            treatment_plan,
+            treatment_plan=None,
             application=None):
 
         # Run the constructor from the superclass
         super().__init__()
 
-        # Initialize the splash screen window
-        self.splash_screen_window = SplashScreenWindow()
-
-        # Show the splash screen window
-        self.splash_screen_window.show()
-
-        # Relocate the splash screen window to the center
-        self.splash_screen_window.position()
-
-        # Get the application from the argument
-        self.application = application
-
-        # 
-        for i in range(10000):
-            self.application.processEvents()
-
-        # Increase the progress bar
-        self.splash_screen_window.progress()
-
         # Build the UI main window
         self.setupUi(self)
 
         # Set the window icon
-        self.setWindowIcon(QIcon(
-            ':/special_icons/icons_special/logo_white_icon.png'))
+        self.setWindowIcon(
+            QIcon(':/special_icons/icons_special/logo_white_icon.png'))
 
-        # Initialize the GUI plans dictionary
-        self.plans = {}
+        # Initialize the splash screen window
+        self.splash_screen_window = SplashScreenWindow()
 
-        # Initialize the optimized plans list
-        self.optimized_plans = []
+        # Set the position of the splash screen and main window
+        self.splash_screen_window.position(), self.position()
 
-        # Initialize the GUI optimization components
-        self.plan_components = {}
+        # Show the splash screen window
+        self.splash_screen_window.show()
 
-        # Initialize the current component window
-        self.current_component_window = None
+        # Get the application
+        self.application = application
 
-        # Initialize the last selected plan
-        self.last_selection = ''
+        # Create a event process loop to run the splash screen
+        for i in range(10000):
+            self.application.processEvents()
+
+        # Start the splash screen progress bar
+        self.splash_screen_window.progress()
 
         # Initialize the child windows
         self.plan_creation_window = PlanCreationWindow(self)
@@ -121,98 +107,44 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.slice_widget = SliceWidget(self)
         self.dvh_widget = DVHWidget(self)
 
-        # Insert the custom widgets into the viewer
+        # Insert the custom widgets into the viewer layouts
         self.tab_slices_layout.insertWidget(0, self.slice_widget)
         self.tab_dvh_layout.insertWidget(0, self.dvh_widget)
 
-        # Get the base dictionaries
+        # Initialize the GUI plans dictionary
+        self.plans = {}
+
+        # Initialize the last selected plan
+        self.last_selection = ''
+
+        # Initialize the current component window
+        self.current_component_window = None
+
+        # Initialize the plan component dictionary
+        self.plan_components = {}
+
+        # Initialize the optimized plans list
+        self.optimized_plans = []
+
+        # Get the base input dictionaries
         self.base_configuration = self.transform_configuration_to_dict()
         self.base_optimization = self.transform_optimization_to_dict()
         self.base_evaluation = self.transform_evaluation_to_dict()
 
-        # Add dropdown menu to component adding button
-        menu = QMenu()
-        for key in component_map:
-            menu.addAction(key, partial(self.open_component_window, key))
-        self.components_plus_tbutton.setPopupMode(2)
-        self.components_plus_tbutton.setMenu(menu)
+        # Initialize the worker thread
+        self.thread = QThread()
+
+        # Add the dropdown menu to the components 'plus' button
+        self.add_dropdown_to_components()
 
         # Configure the status bar
-        self.status_bar.reformat()
+        self.configure_status_bar()
 
-        self.loader_label = QLabel(self)
-        self.movie = QMovie(':/special_icons/icons_special/load.gif')
-        self.loader_label.setMovie(self.movie)
-        self.movie.start()
-        self.loader_label.hide()
-
-        self.stop_thread_pbutton = QPushButton()
-        self.stop_thread_pbutton.setIcon(
-            QIcon(':/special_icons/icons_special/stop.svg'))
-        self.stop_thread_pbutton.setToolTip("Stop the current process")
-        self.stop_thread_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
-
-        self.logo_label = QLabel()
-        pixmap = QPixmap(':/special_icons/icons_special/logo_black_icon.png')
-        pixmap = pixmap.scaled(int(pixmap.width()/4), int(pixmap.height()/4))
-        self.logo_label.setPixmap(pixmap)
-        self.logo_label.setStyleSheet("QLabel {border: 0px;}")
-
-        self.version_label = QLabel(f'"Amadeus" v{version("pyanno4rt")}')
-
-        self.github_pbutton = QPushButton()
-        self.github_pbutton.setIcon(
-            QIcon(':/white_icons/icons_white/github.svg'))
-        self.github_pbutton.setToolTip("Open Github")
-        self.github_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
-
-        self.rtd_pbutton = QPushButton()
-        self.rtd_pbutton.setIcon(
-            QIcon(':/white_icons/icons_white/file-text.svg'))
-        self.rtd_pbutton.setToolTip("Open Read the Docs")
-        self.rtd_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
-
-        self.pypi_pbutton = QPushButton()
-        self.pypi_pbutton.setIcon(
-            QIcon(':/white_icons/icons_white/box.svg'))
-        self.pypi_pbutton.setToolTip("Open PyPI")
-        self.pypi_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
-
-        self.status_bar.addPermanentWidget(self.loader_label)
-        self.status_bar.addPermanentWidget(self.stop_thread_pbutton)
-        self.statusBar().addPermanentWidget(VLine())
-        self.status_bar.addPermanentWidget(self.logo_label)
-        self.status_bar.addPermanentWidget(self.version_label)
-        self.statusBar().addPermanentWidget(VLine())
-        self.status_bar.addPermanentWidget(self.github_pbutton)
-        self.status_bar.addPermanentWidget(self.rtd_pbutton)
-        self.status_bar.addPermanentWidget(self.pypi_pbutton)
-        self.statusBar().addPermanentWidget(VLine())
-
-        # 
+        # Set the initial status bar message
         self.status_bar.showMessage(
             "Ready to load/select/create a treatment plan ...")
 
-        # 
-        self.thread = QThread()
-
-        # Loop over the tab widgets
-        for widget in ('composer_widget', 'tab_workflow', 'viewer_widget'):
-
-            # Set the initial tab index
-            getattr(self, widget).setCurrentIndex(0)
-
-        # Loop over the QComboBox and QSpinBox elements
-        for box in ('log_level_cbox', 'modality_cbox', 'nfx_sbox',
-                    'method_cbox', 'solver_cbox', 'algorithm_cbox',
-                    'init_strat_cbox', 'ref_plan_cbox', 'max_iter_sbox',
-                    'dvh_type_cbox', 'n_points_sbox', 'orient_cbox',
-                    'opacity_sbox'):
-
-            # Install the custom event filters
-            getattr(self, box).installEventFilter(self)
-
-        # Disable some fields initially
+        # Disable specific fields
         self.set_disabled((
             'save_pbutton', 'drop_pbutton', 'update_configuration_pbutton',
             'update_optimization_pbutton', 'update_evaluation_pbutton',
@@ -229,10 +161,101 @@ class MainWindow(QMainWindow, Ui_main_window):
             'orient_cbox', 'opacity_sbox', 'slice_selection_sbar',
             'stop_thread_pbutton'))
 
-        # Disable the tab widgets initially
-        self.composer_widget.widget(0).setEnabled(False)
-        self.composer_widget.widget(1).setEnabled(False)
-        self.composer_widget.widget(2).setEnabled(False)
+        # Set the stylesheets
+        self.set_styles({
+            'composer_widget': tab,
+            'tab_workflow': tab,
+            'viewer_widget': tab,
+            'load_pbutton': pbutton_menu,
+            'save_pbutton': pbutton_menu,
+            'drop_pbutton': pbutton_menu,
+            'plan_select_cbox': selector,
+            'settings_pbutton': pbutton_menu,
+            'info_pbutton': pbutton_menu,
+            'exit_pbutton': pbutton_menu,
+            'plan_ledit': ledit,
+            'log_level_cbox': cbox,
+            'modality_cbox': cbox,
+            'nfx_sbox': sbox,
+            'img_path_ledit': ledit,
+            'img_path_tbutton': tbutton_composer,
+            'img_res_ledit_x': ledit,
+            'img_res_ledit_y': ledit,
+            'img_res_ledit_z': ledit,
+            'dose_path_ledit': ledit,
+            'dose_path_tbutton': tbutton_composer,
+            'dose_res_ledit_x': ledit,
+            'dose_res_ledit_y': ledit,
+            'dose_res_ledit_z': ledit,
+            'update_configuration_pbutton': pbutton_composer,
+            'reset_configuration_pbutton': pbutton_composer,
+            'clear_configuration_pbutton': pbutton_composer,
+            'components_plus_tbutton': tbutton_composer,
+            'components_minus_tbutton': tbutton_composer,
+            'components_edit_tbutton': tbutton_composer,
+            'method_cbox': cbox,
+            'solver_cbox': cbox,
+            'algorithm_cbox': cbox,
+            'init_strat_cbox': cbox,
+            'init_fluence_ledit': ledit,
+            'init_fluence_tbutton': tbutton_composer,
+            'ref_plan_cbox': cbox,
+            'lower_var_ledit': ledit,
+            'lower_var_tbutton': tbutton_composer,
+            'upper_var_ledit': ledit,
+            'upper_var_tbutton': tbutton_composer,
+            'max_iter_sbox': sbox,
+            'tolerance_ledit': ledit,
+            'update_optimization_pbutton': pbutton_composer,
+            'reset_optimization_pbutton': pbutton_composer,
+            'clear_optimization_pbutton': pbutton_composer,
+            'dvh_type_cbox': cbox,
+            'n_points_sbox': sbox,
+            'ref_vol_ledit': ledit,
+            'ref_dose_ledit': ledit,
+            'update_evaluation_pbutton': pbutton_composer,
+            'reset_evaluation_pbutton': pbutton_composer,
+            'clear_evaluation_pbutton': pbutton_composer,
+            'configure_pbutton': pbutton_workflow,
+            'model_pbutton': pbutton_workflow,
+            'optimize_pbutton': pbutton_workflow,
+            'evaluate_pbutton': pbutton_workflow,
+            'visualize_pbutton': pbutton_workflow,
+            'actions_show_config_tbutton': tbutton_workflow,
+            'actions_show_datahub_tbutton': tbutton_workflow,
+            'actions_show_log_tbutton': tbutton_workflow,
+            'actions_export_to_pyfile_tbutton': tbutton_workflow,
+            'baseline_cbox': cbox,
+            'reference_cbox': cbox,
+            'compare_pbutton': pbutton_workflow,
+            'compare_show_config_tbutton': tbutton_workflow,
+            'compare_show_datahub_tbutton': tbutton_workflow,
+            'compare_show_log_tbutton': tbutton_workflow,
+            'compare_export_to_pyfile_tbutton': tbutton_workflow,
+            'orient_cbox': cbox,
+            'opacity_sbox': sbox,
+            # These should be moved to the respective window classes
+            'expand_tree_pbutton': pbutton_composer,
+            'collapse_tree_pbutton': pbutton_composer,
+            'close_tree_pbutton': pbutton_composer,
+            'close_log_pbutton': pbutton_composer,
+            'joint_dvh_pbutton': pbutton_composer,
+            'close_compare_pbutton': pbutton_composer,
+            'reset_settings_pbutton': pbutton_composer,
+            'save_settings_pbutton': pbutton_composer,
+            'close_text_pbutton': pbutton_composer,
+            'close_info_pbutton': pbutton_composer})
+
+        # Loop over the QComboBox and QSpinBox elements
+        for box in (
+                'log_level_cbox', 'modality_cbox', 'nfx_sbox', 'method_cbox',
+                'solver_cbox', 'algorithm_cbox', 'init_strat_cbox',
+                'ref_plan_cbox', 'max_iter_sbox', 'dvh_type_cbox',
+                'n_points_sbox', 'baseline_cbox', 'reference_cbox',
+                'orient_cbox', 'opacity_sbox'):
+
+            # Install the custom event filter
+            getattr(self, box).installEventFilter(self)
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -240,127 +263,25 @@ class MainWindow(QMainWindow, Ui_main_window):
             'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
             'ref_vol_ledit', 'ref_dose_ledit'))
 
-        # Set the stylesheets
-        self.set_styles({'composer_widget': tab,
-                         'tab_workflow': tab,
-                         'viewer_widget': tab,
-                         'plan_ledit': ledit,
-                         'log_level_cbox': cbox,
-                         'modality_cbox': cbox,
-                         'nfx_sbox': sbox,
-                         'img_path_ledit': ledit,
-                         'img_res_ledit_x': ledit,
-                         'img_res_ledit_y': ledit,
-                         'img_res_ledit_z': ledit,
-                         'dose_path_ledit': ledit,
-                         'dose_res_ledit_x': ledit,
-                         'dose_res_ledit_y': ledit,
-                         'dose_res_ledit_z': ledit,
-                         'method_cbox': cbox,
-                         'solver_cbox': cbox,
-                         'algorithm_cbox': cbox,
-                         'init_strat_cbox': cbox,
-                         'init_fluence_ledit': ledit,
-                         'ref_plan_cbox': cbox,
-                         'lower_var_ledit': ledit,
-                         'lower_var_tbutton': tbutton_composer,
-                         'upper_var_ledit': ledit,
-                         'upper_var_tbutton': tbutton_composer,
-                         'max_iter_sbox': sbox,
-                         'tolerance_ledit': ledit,
-                         'dvh_type_cbox': cbox,
-                         'n_points_sbox': sbox,
-                         'ref_vol_ledit': ledit,
-                         'ref_dose_ledit': ledit,
-                         'orient_cbox': cbox,
-                         'opacity_sbox': sbox,
-                         'load_pbutton': pbutton_menu,
-                         'save_pbutton': pbutton_menu,
-                         'drop_pbutton': pbutton_menu,
-                         'plan_select_cbox': selector,
-                         'settings_pbutton': pbutton_menu,
-                         'info_pbutton': pbutton_menu,
-                         'exit_pbutton': pbutton_menu,
-                         'img_path_tbutton': tbutton_composer,
-                         'dose_path_tbutton': tbutton_composer,
-                         'components_plus_tbutton': tbutton_composer,
-                         'components_minus_tbutton': tbutton_composer,
-                         'components_edit_tbutton': tbutton_composer,
-                         'init_fluence_tbutton': tbutton_composer,
-                         'lower_var_tbutton': tbutton_composer,
-                         'upper_var_tbutton': tbutton_composer,
-                         'update_configuration_pbutton': pbutton_composer,
-                         'update_optimization_pbutton': pbutton_composer,
-                         'update_evaluation_pbutton': pbutton_composer,
-                         'reset_configuration_pbutton': pbutton_composer,
-                         'reset_optimization_pbutton': pbutton_composer,
-                         'reset_evaluation_pbutton': pbutton_composer,
-                         'clear_configuration_pbutton': pbutton_composer,
-                         'clear_optimization_pbutton': pbutton_composer,
-                         'clear_evaluation_pbutton': pbutton_composer,
-                         'configure_pbutton': pbutton_workflow,
-                         'model_pbutton': pbutton_workflow,
-                         'optimize_pbutton': pbutton_workflow,
-                         'evaluate_pbutton': pbutton_workflow,
-                         'visualize_pbutton': pbutton_workflow,
-                         'actions_show_config_tbutton': tbutton_workflow,
-                         'actions_show_datahub_tbutton': tbutton_workflow,
-                         'actions_show_log_tbutton': tbutton_workflow,
-                         'actions_export_to_pyfile_tbutton': tbutton_workflow,
-                         'compare_show_config_tbutton': tbutton_workflow,
-                         'compare_show_datahub_tbutton': tbutton_workflow,
-                         'compare_show_log_tbutton': tbutton_workflow,
-                         'compare_export_to_pyfile_tbutton': tbutton_workflow,
-                         'baseline_cbox': cbox,
-                         'reference_cbox': cbox,
-                         'compare_pbutton': pbutton_workflow,
-                         'expand_tree_pbutton': pbutton_composer,
-                         'collapse_tree_pbutton': pbutton_composer,
-                         'close_tree_pbutton': pbutton_composer,
-                         'close_log_pbutton': pbutton_composer,
-                         'joint_dvh_pbutton': pbutton_composer,
-                         'joint_ntcp_pbutton': pbutton_composer,
-                         'close_compare_pbutton': pbutton_composer,
-                         'reset_settings_pbutton': pbutton_composer,
-                         'save_settings_pbutton': pbutton_composer,
-                         'close_text_pbutton': pbutton_composer,
-                         'close_info_pbutton': pbutton_composer,
-                         'create_plan_pbutton': pbutton_composer,
-                         'close_plan_pbutton': pbutton_composer,
-                         'new_plan_ref_cbox': cbox,
-                         'new_modality_cbox': cbox,
-                         'new_img_path_tbutton': tbutton_composer,
-                         'new_dose_path_tbutton': tbutton_composer})
+        # Loop over the tab widgets
+        for widget in ('composer_widget', 'tab_workflow', 'viewer_widget'):
 
-        # 
-        self.display_segments_lwidget.setSpacing(4)
-        self.display_metrics_lwidget.setSpacing(4)
+            # Set the initial tab index
+            getattr(self, widget).setCurrentIndex(0)
 
-        # 
-        self.loader_label.setStyleSheet(
-            "QLabel {border: 0px;}")
-        self.stop_thread_pbutton.setStyleSheet(
-            '''
-            QPushButton {border: 0px;}
-            QPushButton:hover {background-color: rgb(25, 25, 25);}
-            ''')
-        self.version_label.setStyleSheet(
-            "QLabel {border: 0px; font-size: 10pt;}")
-        self.github_pbutton.setStyleSheet(
-            '''
-            QPushButton {border: 0px;}
-            QPushButton:hover {background-color: rgb(25, 25, 25);}
-            ''')
-        self.rtd_pbutton.setStyleSheet(
-            '''
-            QPushButton {border: 0px;}
-            QPushButton:hover {background-color: rgb(25, 25, 25);}
-            ''')
-        self.pypi_pbutton.setStyleSheet(
-            '''
-            QPushButton {border: 0px;}
-            QPushButton:hover {background-color: rgb(25, 25, 25);}
-            ''')
+        # Loop over the composer subwidgets
+        for i in range(3):
+
+            # Disable the subwidget
+            self.composer_widget.widget(i).setEnabled(False)
+
+        # Loop over the list widgets
+        for widget in (
+                'components_lwidget', 'display_segments_lwidget',
+                'display_metrics_lwidget'):
+
+            # Adjust the spacing
+            getattr(self, widget).setSpacing(4)
 
         # Connect the event signals
         self.connect_signals()
@@ -371,13 +292,126 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Set the initial treatment plan
             self.set_initial_plan(treatment_plan)
 
-        # Set the initial window size and position
+        # Set the initial window size
         self.resize(1920, 1080)
-        self.position()
+
+        # Show the window
         self.show()
 
         # Close the splash screen window
         self.splash_screen_window.close()
+
+    def configure_status_bar(self):
+        """Configure the status bar."""
+
+        # Reformat the status bar
+        self.status_bar.reformat()
+
+        # Initialize the loader label
+        self.loader_label = QLabel()
+
+        # Initialize and start the loader gif
+        movie = QMovie(':/special_icons/icons_special/load.gif')
+        movie.start()
+
+        # Add the loader gif to the label
+        self.loader_label.setMovie(movie)
+
+        # Hide the label initially
+        self.loader_label.hide()
+
+        # Initialize the stop button
+        self.stop_thread_pbutton = QPushButton()
+
+        # Set the stop icon
+        self.stop_thread_pbutton.setIcon(
+            QIcon(':/special_icons/icons_special/stop.svg'))
+
+        # Set the tooltip for the stop button
+        self.stop_thread_pbutton.setToolTip("Stop the current process")
+
+        # Set the cursor for the stop button
+        self.stop_thread_pbutton.setCursor(QCursor(Qt.PointingHandCursor))
+
+        # Initialize the logo label
+        self.logo_label = QLabel()
+
+        # Set the logo icon
+        logo = QPixmap(':/special_icons/icons_special/logo_black_icon.png')
+
+        # Rescale the logo icon
+        logo = logo.scaled(int(logo.width()/4), int(logo.height()/4))
+
+        # Add the logo to the label
+        self.logo_label.setPixmap(logo)
+
+        # Initialize the version label
+        self.version_label = QLabel(f'"Amadeus" v{version("pyanno4rt")}')
+
+        # Loop over the link push buttons
+        for key, value in {
+                'github_pbutton': (
+                    ':/white_icons/icons_white/github.svg',
+                    'Open Github'),
+                'rtd_pbutton': (
+                    ':/white_icons/icons_white/file-text.svg',
+                    'Open Read the Docs'),
+                'pypi_pbutton': (
+                    ':/white_icons/icons_white/box.svg',
+                    'Open PyPI')}.items():
+
+            # Set the push button attribute
+            setattr(self, key, QPushButton())
+
+            # Get the push button object
+            button = getattr(self, key)
+
+            # Set the icon
+            button.setIcon(QIcon(value[0]))
+
+            # Set the tool tip
+            button.setToolTip(value[1])
+
+            # Set the cursor
+            button.setCursor(QCursor(Qt.PointingHandCursor))
+
+        # Set the stylesheets of the status bar elements
+        self.set_styles({
+            'loader_label': "QLabel {border: 0px;}",
+            'stop_thread_pbutton': pbutton_statusbar,
+            'logo_label': "QLabel {border: 0px;}",
+            'version_label': "QLabel {border: 0px; font-size: 10pt;}",
+            'github_pbutton': pbutton_statusbar,
+            'rtd_pbutton': pbutton_statusbar,
+            'pypi_pbutton': pbutton_statusbar})
+
+        # Loop over the status bar elements
+        for element in (
+                self.loader_label, self.stop_thread_pbutton, VLine(),
+                self.logo_label, self.version_label, VLine(),
+                self.github_pbutton, self.rtd_pbutton, self.pypi_pbutton,
+                VLine()):
+
+            # Add the element to the status bar
+            self.status_bar.addPermanentWidget(element)
+
+    def add_dropdown_to_components(self):
+        """Add the dropdown menu to the components 'plus' button."""
+
+        # Initialize the dropdown menu
+        menu = QMenu()
+
+        # Loop over the component map keys
+        for key in component_map:
+
+            # Add the key to the dropdown menu
+            menu.addAction(key, partial(self.open_component_window, key))
+
+        # Set the popup mode for the component 'plus' button
+        self.components_plus_tbutton.setPopupMode(2)
+
+        # Add the dropdown menu to the 'plus' button
+        self.components_plus_tbutton.setMenu(menu)
 
     def connect_signals(self):
         """Connect the event signals to the GUI elements."""
@@ -530,7 +564,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         """
 
         # Check if the treatment plan is a single instance
-        if isinstance(treatment_plan, TreatmentPlan):
+        if type(treatment_plan).__name__ is TreatmentPlan.__name__:
 
             # Activate the treatment plan in the GUI
             self.activate(treatment_plan)
@@ -617,12 +651,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                            'viewer_widget', 'expand_tree_pbutton',
                            'collapse_tree_pbutton', 'close_tree_pbutton',
                            'close_log_pbutton', 'joint_dvh_pbutton',
-                           'joint_ntcp_pbutton', 'close_compare_pbutton',
-                           'reset_settings_pbutton', 'save_settings_pbutton',
-                           'close_text_pbutton', 'close_info_pbutton',
-                           'create_plan_pbutton', 'close_plan_pbutton',
-                           'new_plan_ref_cbox', 'new_modality_cbox',
-                           'new_img_path_tbutton', 'new_dose_path_tbutton'):
+                           'close_compare_pbutton', 'reset_settings_pbutton',
+                           'save_settings_pbutton', 'close_text_pbutton',
+                           'close_info_pbutton'):
 
                 # Get the attribute and set the stylesheet
                 getattr(self, key).setStyleSheet(value)
@@ -667,13 +698,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
                 # Get the attribute and set the stylesheet
                 getattr(self.info_window, key).setStyleSheet(value)
-
-            elif key in ('create_plan_pbutton', 'close_plan_pbutton',
-                         'new_plan_ref_cbox', 'new_modality_cbox',
-                         'new_img_path_tbutton', 'new_dose_path_tbutton'):
-
-                # Get the attribute and set the stylesheet
-                getattr(self.plan_creation_window, key).setStyleSheet(value)
 
     def activate(
             self,
@@ -961,8 +985,8 @@ class MainWindow(QMainWindow, Ui_main_window):
                     self.slice_widget.update_images()
 
                 # Check if the selected plan has been evaluated
-                if all(getattr(instance, unit) for unit in (
-                        'dose_histogram', 'dosimetrics')) is not None:
+                if all(getattr(instance, unit) is not None for unit in (
+                        'dose_histogram', 'dosimetrics')):
 
                     # Add the style and input data to the DVH widget
                     self.dvh_widget.add_style_and_data(
@@ -1016,14 +1040,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 "Ready to load/select/create a treatment plan ...")
 
     def initialize(self):
-        """
-        Initialize the treatment plan.
-
-        Returns
-        -------
-        bool
-            Indicator for the success of the initialization.
-        """
+        """Initialize the treatment plan."""
 
         self.stop_thread_pbutton.setEnabled(True)
         self.loader_label.show()
@@ -1056,32 +1073,33 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.worker = Worker(self.configure)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.update_after_configure)
-        self.worker.finished.connect(self.worker.deleteLater)
         self.thread.start()
 
     def configure(self):
-        """
-        Configure the treatment plan.
+        """Configure the treatment plan."""
 
-        Returns
-        -------
-        bool
-            Indicator for the success of the optimization.
-        """
+        try:
 
-        self.plans[self.plan_ledit.text()].configure()
+            # 
+            self.plans[self.plan_ledit.text()].configure()
+
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.update_after_configure)
+            self.worker.finished.connect(self.worker.deleteLater)
+
+        except Exception:
+
+            # 
+            self.status_bar.showMessage(
+                "Exception occurred during configuration - please check the "
+                "configuration parameters ...")
+
+            # 
+            self.loader_label.hide()
+            self.stop_thread_pbutton.setEnabled(False)
 
     def update_after_configure(self):
-        """
-        Configure the treatment plan.
-
-        Returns
-        -------
-        bool
-            Indicator for the success of the configuration.
-        """
+        """Update the GUI after treatment plan configuration."""
 
         # Get the treatment plan instance
         instance = self.plans[self.plan_ledit.text()]
@@ -1147,32 +1165,33 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.worker = Worker(self.model)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.update_after_model)
-        self.worker.finished.connect(self.worker.deleteLater)
         self.thread.start()
 
     def model(self):
-        """
-        Set up the machine learning outcome prediction models.
+        """Set up the machine learning outcome prediction models."""
 
-        Returns
-        -------
-        bool
-            Indicator for the success of the modeling.
-        """
+        try:
 
-        self.plans[self.plan_ledit.text()].model()
+            # 
+            self.plans[self.plan_ledit.text()].model()
+
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.update_after_model)
+            self.worker.finished.connect(self.worker.deleteLater)
+
+        except Exception:
+
+            # 
+            self.status_bar.showMessage(
+                "Exception occurred during modeling - please check the "
+                "modeling parameters ...")
+
+            # 
+            self.loader_label.hide()
+            self.stop_thread_pbutton.setEnabled(False)
 
     def update_after_model(self):
-        """
-        Set up the machine learning outcome prediction models.
-
-        Returns
-        -------
-        bool
-            Indicator for the success of the modeling.
-        """
+        """Update the GUI after outcome model fitting."""
 
         # Update the output of the log window
         self.log_window.update_log_output()
@@ -1198,30 +1217,33 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.worker = Worker(self.optimize)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.update_after_optimize)
-        self.worker.finished.connect(self.worker.deleteLater)
         self.thread.start()
 
     def optimize(self):
-        """
-        Optimize the treatment plan.
+        """Optimize the treatment plan."""
 
-        Returns
-        -------
-        bool
-            Indicator for the success of the optimization.
-        """
+        try:
 
-        self.plans[self.plan_ledit.text()].optimize()
+            # 
+            self.plans[self.plan_ledit.text()].optimize()
+
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.update_after_optimize)
+            self.worker.finished.connect(self.worker.deleteLater)
+
+        except Exception:
+
+            # 
+            self.status_bar.showMessage(
+                "Exception occurred during optimization - please check the "
+                "optimization parameters ...")
+
+            # 
+            self.loader_label.hide()
+            self.stop_thread_pbutton.setEnabled(False)
 
     def update_after_optimize(self):
-        """
-        Update the GUI after treatment plan optimization.
-        """
-
-        # Get the treatment plan instance
-        instance = self.plans[self.plan_ledit.text()]
+        """Update the GUI after treatment plan optimization."""
 
         # Check if the plan has already been optimized
         if self.plan_ledit.text() not in self.optimized_plans:
@@ -1242,6 +1264,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 contour.setData(zeros(self.slice_widget.dose_cube[
                     :, :, self.slice_widget.slice].shape))
 
+        # 
         self.slice_widget.dose_cube = None
         self.slice_widget.dose_contours = None
 
@@ -1284,28 +1307,33 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.worker = Worker(self.evaluate)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.update_after_evaluate)
-        self.worker.finished.connect(self.worker.deleteLater)
         self.thread.start()
 
     def evaluate(self):
-        """
-        Evaluate the treatment plan.
+        """Evaluate the treatment plan."""
 
-        Returns
-        -------
-        bool
-            Indicator for the success of the evaluation.
-        """
+        try:
 
-        # Evaluate the treatment plan
-        self.plans[self.plan_ledit.text()].evaluate()
+            # Evaluate the treatment plan
+            self.plans[self.plan_ledit.text()].evaluate()
+
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.update_after_evaluate)
+            self.worker.finished.connect(self.worker.deleteLater)
+
+        except Exception:
+
+            # 
+            self.status_bar.showMessage(
+                "Exception occurred during evaluation - please check the "
+                "evaluation parameters ...")
+
+            # 
+            self.loader_label.hide()
+            self.stop_thread_pbutton.setEnabled(False)
 
     def update_after_evaluate(self):
-        """
-        Update the GUI after treatment plan evaluation.
-        """
+        """Update the GUI after treatment plan evaluation."""
 
         # Reset the DVH widget
         self.dvh_widget.reset_dvh()
@@ -1336,14 +1364,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.stop_thread_pbutton.setEnabled(False)
 
     def visualize(self):
-        """
-        Visualize the treatment plan.
-
-        Returns
-        -------
-        bool
-            Indicator for the success of the visualization.
-        """
+        """Visualize the treatment plan."""
 
         # Visualize the treatment plan
         self.plans[self.plan_ledit.text()].visualize(parent=self)
@@ -1413,6 +1434,17 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Overwrite the optimization dictionary of the current instance
             instance.update(self.transform_optimization_to_dict())
+
+            # 
+            if instance.plan_generator is not None:
+
+                # 
+                instance.plan_generator.components = instance.optimization[
+                    'components']
+
+                # 
+                instance.plan_generator.set_optimization_components(
+                    verbose=False)
 
             # Disable specific fields
             self.set_disabled(('evaluate_pbutton',))
@@ -2112,31 +2144,29 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.plan_creation_window.position()
 
         # 
+        self.plan_creation_window.plan_ledit.clear()
+        self.plan_creation_window.ref_plan_cbox.clear()
+        self.plan_creation_window.img_path_ledit.clear()
+        self.plan_creation_window.dose_path_ledit.clear()
+        self.plan_creation_window.dose_res_ledit_x.clear()
+        self.plan_creation_window.dose_res_ledit_y.clear()
+        self.plan_creation_window.dose_res_ledit_z.clear()
+        self.plan_creation_window.components_lwidget.clear()
+
+        # 
+        self.plan_creation_window.ref_plan_cbox.addItem('None')
+
+        # 
         if [self.plan_select_cbox.itemText(i) for i in range(
                 self.plan_select_cbox.count())] != ['', 'Create new plan']:
 
             # 
-            self.plan_creation_window.new_plan_ref_cbox.setEnabled(True)
+            self.plan_creation_window.ref_plan_cbox.setEnabled(True)
 
         else:
 
             # 
-            self.plan_creation_window.new_plan_ref_cbox.setEnabled(False)
-
-        # 
-        self.plan_creation_window.create_plan_pbutton.setEnabled(False)
-
-        # 
-        self.plan_creation_window.new_plan_ledit.clear()
-        self.plan_creation_window.new_plan_ref_cbox.clear()
-        self.plan_creation_window.new_img_path_ledit.clear()
-        self.plan_creation_window.new_dose_path_ledit.clear()
-        self.plan_creation_window.new_dose_res_ledit_x.clear()
-        self.plan_creation_window.new_dose_res_ledit_y.clear()
-        self.plan_creation_window.new_dose_res_ledit_z.clear()
-
-        # 
-        self.plan_creation_window.new_plan_ref_cbox.addItem('None')
+            self.plan_creation_window.ref_plan_cbox.setEnabled(False)
 
         # 
         for plan in (self.plan_select_cbox.itemText(i)
@@ -2146,10 +2176,20 @@ class MainWindow(QMainWindow, Ui_main_window):
             if plan not in ('', 'Create new plan'):
 
                 # 
-                self.plan_creation_window.new_plan_ref_cbox.addItem(plan)
+                self.plan_creation_window.ref_plan_cbox.addItem(plan)
 
         # Sort the items in the selector alphabetically
-        self.plan_creation_window.new_plan_ref_cbox.model().sort(0)
+        self.plan_creation_window.ref_plan_cbox.model().sort(0)
+
+        # 
+        self.plan_creation_window.create_plan_pbutton.setEnabled(False)
+
+        # 
+        scroll_creator = self.plan_creation_window.scroll_creator
+
+        # 
+        scroll_creator.verticalScrollBar().setValue(
+            scroll_creator.verticalScrollBar().minimum())
 
         # Show the window
         self.plan_creation_window.show()
@@ -2335,8 +2375,8 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Write the string output to the file
                 file.write(
                     '"""\n'
-                    f'Python script for the '
-                    '"{instance.configuration["label"]}" plan.\n\n'
+                    'Python script for the '
+                    f'"{instance.configuration["label"]}" plan.\n\n'
                     'Generated from the pyanno4rt GUI.\n"""\n\n'
                     '# %% Internal package import\n\n'
                     'from pyanno4rt.base import TreatmentPlan\n'
@@ -2770,13 +2810,13 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.thread.quit()
         self.thread.wait()
 
-    def open_github_link(args):
+    def open_github_link(self):
         return webopen('https://github.com/pyanno4rt/pyanno4rt')
 
-    def open_rtd_link(args):
+    def open_rtd_link(self):
         return webopen('https://pyanno4rt.readthedocs.io/en/latest/')
 
-    def open_pypi_link(args):
+    def open_pypi_link(self):
         return webopen('https://pypi.org/project/pyanno4rt/')
 
     def position(self):

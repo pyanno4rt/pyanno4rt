@@ -10,7 +10,7 @@ pipelines and Bayesian hyperparameter optimization with k-fold cross-\
 validation.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._machine_learning_model import MachineLearningModel
 

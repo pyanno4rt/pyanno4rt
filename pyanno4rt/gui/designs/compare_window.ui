@@ -9,20 +9,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1051</width>
-    <height>801</height>
+    <width>920</width>
+    <height>680</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>1040</width>
-    <height>801</height>
+    <width>920</width>
+    <height>680</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1170</width>
-    <height>801</height>
+    <width>920</width>
+    <height>680</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -42,10 +42,10 @@ border-color: rgb(186, 189, 182);</string>
    <widget class="QPushButton" name="close_compare_pbutton">
     <property name="geometry">
      <rect>
-      <x>970</x>
-      <y>760</y>
+      <x>840</x>
+      <y>640</y>
       <width>71</width>
-      <height>30</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="cursor">
@@ -65,9 +65,9 @@ border-color: rgb(186, 189, 182);</string>
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>30</y>
-      <width>351</width>
-      <height>311</height>
+      <y>25</y>
+      <width>311</width>
+      <height>251</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -102,10 +102,10 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QScrollBar" name="slice_selection_sbar">
     <property name="geometry">
      <rect>
-      <x>221</x>
-      <y>700</y>
-      <width>501</width>
-      <height>30</height>
+      <x>230</x>
+      <y>570</y>
+      <width>376</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -117,13 +117,13 @@ border-color: rgb(211, 215, 207);</string>
     <property name="minimumSize">
      <size>
       <width>239</width>
-      <height>30</height>
+      <height>31</height>
      </size>
     </property>
     <property name="maximumSize">
      <size>
       <width>16777215</width>
-      <height>30</height>
+      <height>31</height>
      </size>
     </property>
     <property name="styleSheet">
@@ -142,10 +142,10 @@ border-color: rgb(186, 189, 182);</string>
    <widget class="QWidget" name="reference_dose_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>350</x>
-      <y>30</y>
-      <width>351</width>
-      <height>311</height>
+      <x>305</x>
+      <y>25</y>
+      <width>311</width>
+      <height>251</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -181,8 +181,8 @@ border-color: rgb(211, 215, 207);</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
-      <width>331</width>
+      <y>5</y>
+      <width>291</width>
       <height>25</height>
      </rect>
     </property>
@@ -214,9 +214,9 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QLabel" name="reference_label">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>10</y>
-      <width>331</width>
+      <x>315</x>
+      <y>5</y>
+      <width>291</width>
       <height>25</height>
      </rect>
     </property>
@@ -248,8 +248,8 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QLabel" name="slice_selection_label">
     <property name="geometry">
      <rect>
-      <x>221</x>
-      <y>670</y>
+      <x>230</x>
+      <y>540</y>
       <width>121</width>
       <height>25</height>
      </rect>
@@ -282,8 +282,8 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QLabel" name="opacity_label">
     <property name="geometry">
      <rect>
-      <x>116</x>
-      <y>670</y>
+      <x>120</x>
+      <y>540</y>
       <width>101</width>
       <height>25</height>
      </rect>
@@ -316,22 +316,22 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QSpinBox" name="opacity_sbox">
     <property name="geometry">
      <rect>
-      <x>116</x>
-      <y>700</y>
+      <x>120</x>
+      <y>570</y>
       <width>101</width>
-      <height>30</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
       <width>101</width>
-      <height>30</height>
+      <height>31</height>
      </size>
     </property>
     <property name="maximumSize">
      <size>
       <width>101</width>
-      <height>30</height>
+      <height>31</height>
      </size>
     </property>
     <property name="cursor">
@@ -359,9 +359,9 @@ margin-right: 6px;</string>
    <widget class="QLabel" name="slice_selection_pos">
     <property name="geometry">
      <rect>
-      <x>600</x>
-      <y>670</y>
-      <width>120</width>
+      <x>495</x>
+      <y>540</y>
+      <width>111</width>
       <height>25</height>
      </rect>
     </property>
@@ -396,10 +396,10 @@ margin-right: 6px;</string>
    <widget class="QWidget" name="difference_dose_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>700</x>
-      <y>30</y>
-      <width>351</width>
-      <height>311</height>
+      <x>610</x>
+      <y>25</y>
+      <width>311</width>
+      <height>251</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -434,9 +434,9 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QLabel" name="difference_label">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>10</y>
-      <width>331</width>
+      <x>620</x>
+      <y>5</y>
+      <width>291</width>
       <height>25</height>
      </rect>
     </property>
@@ -469,9 +469,9 @@ border-color: rgb(211, 215, 207);</string>
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>350</y>
-      <width>351</width>
-      <height>311</height>
+      <y>285</y>
+      <width>311</width>
+      <height>251</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -506,10 +506,10 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QWidget" name="reference_dvh_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>350</x>
-      <y>350</y>
-      <width>351</width>
-      <height>311</height>
+      <x>305</x>
+      <y>285</y>
+      <width>311</width>
+      <height>251</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -544,10 +544,10 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QWidget" name="difference_dvh_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>700</x>
-      <y>350</y>
-      <width>351</width>
-      <height>311</height>
+      <x>610</x>
+      <y>285</y>
+      <width>311</width>
+      <height>251</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -583,15 +583,15 @@ border-color: rgb(211, 215, 207);</string>
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>736</y>
-      <width>733</width>
-      <height>60</height>
+      <y>610</y>
+      <width>616</width>
+      <height>61</height>
      </rect>
     </property>
     <property name="maximumSize">
      <size>
       <width>16777215</width>
-      <height>60</height>
+      <height>70</height>
      </size>
     </property>
     <property name="styleSheet">
@@ -614,7 +614,7 @@ border-color: rgb(211, 215, 207);</string>
       <number>4</number>
      </property>
      <property name="verticalSpacing">
-      <number>3</number>
+      <number>14</number>
      </property>
      <item row="1" column="5">
       <widget class="QLineEdit" name="minimum_ledit">
@@ -627,13 +627,13 @@ border-color: rgb(211, 215, 207);</string>
        <property name="minimumSize">
         <size>
          <width>50</width>
-         <height>30</height>
+         <height>31</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>180</width>
-         <height>30</height>
+         <height>31</height>
         </size>
        </property>
        <property name="styleSheet">
@@ -661,13 +661,13 @@ border-color: rgb(186, 189, 182);</string>
        <property name="minimumSize">
         <size>
          <width>50</width>
-         <height>30</height>
+         <height>31</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>180</width>
-         <height>30</height>
+         <height>31</height>
         </size>
        </property>
        <property name="styleSheet">
@@ -695,13 +695,13 @@ border-color: rgb(186, 189, 182);</string>
        <property name="minimumSize">
         <size>
          <width>50</width>
-         <height>30</height>
+         <height>31</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>180</width>
-         <height>30</height>
+         <height>31</height>
         </size>
        </property>
        <property name="styleSheet">
@@ -813,13 +813,13 @@ border-color: rgb(186, 189, 182);</string>
        <property name="minimumSize">
         <size>
          <width>50</width>
-         <height>30</height>
+         <height>31</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>180</width>
-         <height>30</height>
+         <height>31</height>
         </size>
        </property>
        <property name="styleSheet">
@@ -902,14 +902,14 @@ border-color: rgb(186, 189, 182);</string>
        </property>
        <property name="minimumSize">
         <size>
-         <width>210</width>
-         <height>30</height>
+         <width>200</width>
+         <height>31</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>400</width>
-         <height>30</height>
+         <height>31</height>
         </size>
        </property>
        <property name="styleSheet">
@@ -931,10 +931,10 @@ border-color: rgb(186, 189, 182);</string>
    <widget class="QPushButton" name="joint_dvh_pbutton">
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>760</y>
+      <x>620</x>
+      <y>640</y>
       <width>121</width>
-      <height>30</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="cursor">
@@ -953,8 +953,8 @@ border-color: rgb(186, 189, 182);</string>
    <widget class="QCheckBox" name="disCT_cbox">
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>685</y>
+      <x>620</x>
+      <y>556</y>
       <width>100</width>
       <height>30</height>
      </rect>
@@ -971,8 +971,8 @@ border: 0px solid</string>
    <widget class="QCheckBox" name="disSegm_cbox">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>685</y>
+      <x>740</x>
+      <y>556</y>
       <width>181</width>
       <height>30</height>
      </rect>
@@ -989,8 +989,8 @@ border: 0px solid</string>
    <widget class="QCheckBox" name="disDose_cbox">
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>715</y>
+      <x>620</x>
+      <y>584</y>
       <width>110</width>
       <height>30</height>
      </rect>
@@ -1007,8 +1007,8 @@ border: 0px solid</string>
    <widget class="QCheckBox" name="disDoseCon_cbox">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>715</y>
+      <x>740</x>
+      <y>584</y>
       <width>181</width>
       <height>30</height>
      </rect>
@@ -1026,7 +1026,7 @@ border: 0px solid</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>670</y>
+      <y>540</y>
       <width>101</width>
       <height>25</height>
      </rect>
@@ -1060,9 +1060,9 @@ border: 0px solid</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>700</y>
+      <y>570</y>
       <width>96</width>
-      <height>30</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -1074,13 +1074,13 @@ border: 0px solid</string>
     <property name="minimumSize">
      <size>
       <width>96</width>
-      <height>30</height>
+      <height>31</height>
      </size>
     </property>
     <property name="maximumSize">
      <size>
       <width>96</width>
-      <height>30</height>
+      <height>31</height>
      </size>
     </property>
     <property name="cursor">

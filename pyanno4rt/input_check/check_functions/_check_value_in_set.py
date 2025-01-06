@@ -1,6 +1,6 @@
 """Value set checking."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% Function definition
 

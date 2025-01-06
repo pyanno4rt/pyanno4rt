@@ -1,29 +1,8 @@
 """Custom style definitions."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% Style definitions
-
-
-# 
-tab = ('''
-       QTabBar::tab:selected {
-           background-color: rgb(25, 25, 25);
-           }
-       ''')
-
-# Set the stylesheet for the line edit fields
-ledit = ('''
-         QLineEdit {
-             color: rgb(0, 0, 0);
-             background-color: rgb(238, 238, 236);
-             border: 1px solid;
-             border-color: rgb(186, 189, 182);
-             }
-         QLineEdit:disabled {
-             color: rgb(153, 153, 153);
-             }
-         ''')
 
 # Set the stylesheet for the standard combo box fields
 cbox = ('''
@@ -41,6 +20,19 @@ cbox = ('''
             color: rgb(153, 153, 153);
             }
         ''')
+
+# Set the stylesheet for the line edit fields
+ledit = ('''
+         QLineEdit {
+             color: rgb(0, 0, 0);
+             background-color: rgb(238, 238, 236);
+             border: 1px solid;
+             border-color: rgb(186, 189, 182);
+             }
+         QLineEdit:disabled {
+             color: rgb(153, 153, 153);
+             }
+         ''')
 
 # Set the stylesheet for the standard spin box fields
 sbox = ('''
@@ -94,7 +86,7 @@ pbutton_menu = ('''
                     color: rgb(153, 153, 153);
                     }
                 QPushButton:hover {
-                    background-color: rgb(238, 238, 236);
+                    background-color: rgb(246, 246, 244);
                     }
                 ''')
 
@@ -110,9 +102,19 @@ pbutton_composer = ('''
                         color: rgb(153, 153, 153);
                         }
                     QPushButton:hover {
-                        background-color: rgb(246, 246, 245);
+                        background-color: rgb(246, 246, 244);
                         }
                     ''')
+
+# Set the stylesheet for the status bar push buttons
+pbutton_statusbar = ('''
+                     QPushButton {
+                         border: 0px;
+                         }
+                     QPushButton:hover {
+                         background-color: rgb(30, 30, 30);
+                         }
+                     ''')
 
 # Set the stylesheet for the workflow push buttons
 pbutton_workflow = ('''
@@ -126,9 +128,16 @@ pbutton_workflow = ('''
                         color: rgb(153, 153, 153);
                         }
                     QPushButton:hover {
-                        background-color: rgb(238, 238, 236);
+                        background-color: rgb(246, 246, 244);
                         }
                     ''')
+
+# Set the stylesheet for the tab bars
+tab = ('''
+       QTabBar::tab:selected {
+           background-color: rgb(30, 30, 30);
+           }
+       ''')
 
 # Set the stylesheet for the composer tool buttons
 tbutton_composer = ('''
@@ -142,7 +151,7 @@ tbutton_composer = ('''
                         color: rgb(153, 153, 153);
                         }
                     QToolButton:hover {
-                        background-color: rgb(246, 246, 245);
+                        background-color: rgb(246, 246, 244);
                         }
                     QToolButton::menu-indicator {
                         image: none;
@@ -161,6 +170,6 @@ tbutton_workflow = ('''
                         color: rgb(153, 153, 153);
                         }
                     QToolButton:hover {
-                        background-color: rgb(238, 238, 236);
+                        background-color: rgb(246, 246, 244);
                         }
                     ''')

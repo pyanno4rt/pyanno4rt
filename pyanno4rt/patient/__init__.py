@@ -7,7 +7,7 @@ This module aims to provide methods and classes for importing and processing \
 patient data.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from . import import_functions
 

@@ -1,6 +1,6 @@
 """Fluence initialization."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% External package import
 
@@ -244,8 +244,7 @@ class FluenceInitializer():
                 """Compute the squared L2 objective gradient."""
 
                 # Get the feature vector, doses and segments
-                features, doses, segments = precompute(
-                    fluence, factor=1)
+                features, doses, segments = precompute(fluence, factor=1)
 
                 # Get the dose gradient of the features
                 feature_gradient = shstack(
@@ -345,17 +344,38 @@ class FluenceInitializer():
                             target_objective.parameter_category)
                     if category == 'dose')
 
-        # Get the target segments
+        # Get the objective-assigned target segments
         targets = set(
             segment for segment in get_objective_segments(segmentation)
             if segmentation[segment]['type'] == 'TARGET')
 
-        # Get the resized indices of the target segments
-        indices = hstack([segmentation[target]['resized_indices']
-                          for target in targets])
+        # Check if any objective-assigned target segments are present
+        if len(targets) > 0:
 
-        # Get the maximum dose-related parameter value
-        max_dose = max(flatten(map(get_dose_parameters, targets)))
+            # Get the resized indices of the target segments
+            indices = hstack([segmentation[target]['resized_indices']
+                              for target in targets])
+
+            # Get the target dose parameters
+            target_doses = tuple(flatten(map(get_dose_parameters, targets)))
+
+            # Get the maximum target dose parameter
+            max_dose = max(target_doses)
+
+        else:
+
+            # Log a message about non-defined target objectives
+            hub.logger.display_info(
+                "No target objectives defined - falling back to virtual "
+                "target with total dose prescription of 30 Gy ...")
+
+            # Get the resized indices of all target segments
+            indices = hstack([segmentation[segment]['resized_indices']
+                              for segment in segmentation
+                              if segmentation[segment] == 'TARGET'])
+
+            # Set the maximum target dose parameter for a total dose of 30 Gy
+            max_dose = 30/dose_information['number_of_fractions']
 
         # Initialize a vector of ones
         ones_vector = ones((dose_information['degrees_of_freedom'],))

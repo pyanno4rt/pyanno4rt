@@ -1,5 +1,7 @@
 """Optimizable decision tree."""
 
+# Author: Tim Ortkamp
+
 # %% External package import
 
 from operator import gt, itemgetter, le

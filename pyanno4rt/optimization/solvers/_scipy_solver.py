@@ -1,6 +1,6 @@
 """SciPy wrapper."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 # Reference: https://docs.scipy.org/doc/scipy/reference/optimize.html
 
 # %% External package import

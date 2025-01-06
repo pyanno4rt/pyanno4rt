@@ -7,7 +7,7 @@ This module aims to provide classes and functions to perform input parameter \
 checks.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from . import check_functions
 from . import check_maps

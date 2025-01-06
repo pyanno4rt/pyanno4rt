@@ -13,9 +13,9 @@ class Ui_log_window(object):
     def setupUi(self, log_window):
         log_window.setObjectName("log_window")
         log_window.setWindowModality(QtCore.Qt.ApplicationModal)
-        log_window.resize(720, 640)
-        log_window.setMinimumSize(QtCore.QSize(720, 640))
-        log_window.setMaximumSize(QtCore.QSize(720, 640))
+        log_window.resize(920, 680)
+        log_window.setMinimumSize(QtCore.QSize(920, 680))
+        log_window.setMaximumSize(QtCore.QSize(920, 680))
         log_window.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);")
         self.log_widget = QtWidgets.QWidget(log_window)
@@ -25,7 +25,7 @@ class Ui_log_window(object):
 "border-color: rgb(186, 189, 182);")
         self.log_widget.setObjectName("log_widget")
         self.close_log_pbutton = QtWidgets.QPushButton(self.log_widget)
-        self.close_log_pbutton.setGeometry(QtCore.QRect(640, 600, 71, 31))
+        self.close_log_pbutton.setGeometry(QtCore.QRect(840, 640, 71, 31))
         self.close_log_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.close_log_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
@@ -33,7 +33,7 @@ class Ui_log_window(object):
 "border-color: rgb(186, 189, 182);")
         self.close_log_pbutton.setObjectName("close_log_pbutton")
         self.log_tedit = QtWidgets.QTextEdit(self.log_widget)
-        self.log_tedit.setGeometry(QtCore.QRect(10, 10, 701, 581))
+        self.log_tedit.setGeometry(QtCore.QRect(10, 10, 901, 621))
         self.log_tedit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"

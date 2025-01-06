@@ -1,6 +1,6 @@
 """Losses map."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% Internal package import
 

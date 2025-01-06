@@ -7,7 +7,7 @@ This module aims to provide scripts with mappings between the members of \
 different input parameter groups and their validity check functions.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._component_map import component_map
 from ._configuration_map import configuration_map

@@ -9,20 +9,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>640</height>
+    <width>920</width>
+    <height>680</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>720</width>
-    <height>640</height>
+    <width>920</width>
+    <height>680</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>720</width>
-    <height>640</height>
+    <width>920</width>
+    <height>680</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -42,8 +42,8 @@ border-color: rgb(186, 189, 182);</string>
    <widget class="QPushButton" name="close_log_pbutton">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>600</y>
+      <x>840</x>
+      <y>640</y>
       <width>71</width>
       <height>31</height>
      </rect>
@@ -66,8 +66,8 @@ border-color: rgb(186, 189, 182);</string>
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>701</width>
-      <height>581</height>
+      <width>901</width>
+      <height>621</height>
      </rect>
     </property>
     <property name="styleSheet">

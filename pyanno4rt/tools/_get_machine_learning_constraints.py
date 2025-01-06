@@ -1,6 +1,6 @@
 """Machine learning model-based constraint retrieval."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% Internal package import
 

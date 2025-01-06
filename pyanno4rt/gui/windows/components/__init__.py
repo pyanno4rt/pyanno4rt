@@ -6,7 +6,7 @@ GUI component windows module.
 The module aims to provide methods and classes to ...
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._decision_tree_ntcp_window import DecisionTreeNTCPWindow
 from ._decision_tree_tcp_window import DecisionTreeTCPWindow

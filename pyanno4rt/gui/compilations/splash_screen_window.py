@@ -43,6 +43,7 @@ class Ui_splash_window(object):
         self.version_label.setFont(font)
         self.version_label.setStyleSheet("background-color: transparent;\n"
 "color: rgb(254, 144, 41);")
+        self.version_label.setText("")
         self.version_label.setAlignment(QtCore.Qt.AlignCenter)
         self.version_label.setObjectName("version_label")
         self.init_label = QtWidgets.QLabel(self.text_frame)
@@ -74,5 +75,4 @@ class Ui_splash_window(object):
     def retranslateUi(self, splash_window):
         _translate = QtCore.QCoreApplication.translate
         splash_window.setWindowTitle(_translate("splash_window", "MainWindow"))
-        self.version_label.setText(_translate("splash_window", "v0.23.0 \"Amadeus\""))
         self.init_label.setText(_translate("splash_window", "Initializing Graphical User Interface ..."))

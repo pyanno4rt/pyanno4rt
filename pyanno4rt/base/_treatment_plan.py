@@ -1,6 +1,6 @@
 """Base treatment plan."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% Internal package import
 
@@ -660,6 +660,16 @@ class TreatmentPlan():
 
                 # Override the optimization parameter value
                 self.optimization[key] = value
+
+                # Check if the key is 'components'
+                if key == 'components' and self.plan_generator is not None:
+
+                    # Overwrite the components in the plan generator
+                    self.plan_generator.components = value
+
+                    # Reset the components in the datahub
+                    self.plan_generator.set_optimization_components(
+                        verbose=False)
 
             # Else, check if the key is in the evaluation dictionary
             elif key in self.evaluation:

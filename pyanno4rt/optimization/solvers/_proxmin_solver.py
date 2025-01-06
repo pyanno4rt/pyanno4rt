@@ -1,6 +1,6 @@
 """Proxmin wrapper."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 # Reference: https://pypi.org/project/proxmin/
 
 # %% Internal package import

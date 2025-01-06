@@ -6,7 +6,7 @@ Optimization methods module.
 This module aims to provide different types of optimization methods.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._lexicographic_optimization import LexicographicOptimization
 from ._pareto_optimization import ParetoOptimization

@@ -1,6 +1,6 @@
 """Pymoo wrapper."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 # Reference: https://pymoo.org/
 
 # %% External package import

@@ -1,6 +1,6 @@
 """Plan generation."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% Internal package import
 
@@ -70,8 +70,17 @@ class PlanGenerator():
         # Set the optimization components
         self.set_optimization_components()
 
-    def set_optimization_components(self):
-        """Set the components of the optimization problem."""
+    def set_optimization_components(
+            self,
+            verbose=True):
+        """
+        Set the components of the optimization problem.
+
+        Parameters
+        ----------
+        verbose : bool
+            Indicator for logging output messages.
+        """
 
         # Initialize the datahub
         hub = Datahub()
@@ -86,8 +95,11 @@ class PlanGenerator():
             segmentation[segment]['objective'] = None
             segmentation[segment]['constraint'] = None
 
-        # Log a message about the components setting
-        logger.display_info("Setting objectives and constraints ...")
+        # Check if verbose is True
+        if verbose:
+
+            # Log a message about the components setting
+            logger.display_info("Setting objectives and constraints ...")
 
         # Initialize the objective and constraint dictionaries
         objectives, constraints = {}, {}
@@ -102,10 +114,13 @@ class PlanGenerator():
             instance = component_map[component['function']](
                 segment=segment, **component['parameters'])
 
-            # Log a message about setting the instance
-            logger.display_info(
-                f"Setting {category} '{instance.name}' for "
-                f"{[segment]+instance.link} ...")
+            # Check if verbose is True
+            if verbose:
+
+                # Log a message about setting the instance
+                logger.display_info(
+                    f"Setting {category} '{instance.name}' for "
+                    f"{[segment]+instance.link} ...")
 
             # Get the instance key for the base dictionary
             instance_key = '-'.join(filter(

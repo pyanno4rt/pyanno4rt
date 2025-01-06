@@ -9,20 +9,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>640</height>
+    <width>920</width>
+    <height>680</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>720</width>
-    <height>640</height>
+    <width>920</width>
+    <height>680</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>720</width>
-    <height>640</height>
+    <width>920</width>
+    <height>680</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@ border-color: rgb(186, 189, 182);</string>
      <rect>
       <x>10</x>
       <y>50</y>
-      <width>701</width>
+      <width>901</width>
       <height>2</height>
      </rect>
     </property>
@@ -92,8 +92,8 @@ border-color: rgb(186, 189, 182);</string>
      <rect>
       <x>10</x>
       <y>60</y>
-      <width>701</width>
-      <height>301</height>
+      <width>901</width>
+      <height>221</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -109,7 +109,7 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;pyanno4rt&lt;/span&gt; is an open-source Python package for conventional and outcome prediction model-based inverse photon and proton treament plan optimization, including radiobiological and machine learning models for tumor control probability and normal tissue complication probability.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This package has been started in May 2022 by Tim Ortkamp as part of the doctoral project &amp;quot;Inverse Radiotherapy Treatment Planning using Machine Learning Outcome Prediction Models&amp;quot;, which is backed by the Karlsruhe Institute of Technology (KIT), the German Cancer Research Center (DKFZ), and the Helmholtz Information and Data Science School for Health (HIDSS4Health).&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This package has been started in May 2022 by Tim Ortkamp as part of the doctoral project &amp;quot;Inverse Radiotherapy Treatment Planning using Machine Learning Outcome Prediction Models&amp;quot;, backed by the Karlsruhe Institute of Technology (KIT), the German Cancer Research Center (DKFZ), and the Helmholtz Information and Data Science School for Health (HIDSS4Health).&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;pyanno4rt&lt;/span&gt; is under continuous development. Questions or suggestions for improvement can be sent via e-mail to &lt;a href=&quot;mailto:tim.ortkamp@gmx.de?subject=pyanno4rt&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ce5c00;&quot;&gt;tim.ortkamp@gmx.de&lt;/span&gt;&lt;/a&gt; or via &lt;a href=&quot;https://github.com/pyanno4rt/pyanno4rt/discussions&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ce5c00;&quot;&gt;Github Discussions&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
@@ -126,8 +126,8 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>360</y>
-      <width>701</width>
+      <y>340</y>
+      <width>901</width>
       <height>2</height>
      </rect>
     </property>
@@ -151,7 +151,7 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>330</y>
+      <y>310</y>
       <width>181</width>
       <height>31</height>
      </rect>
@@ -174,9 +174,9 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>370</y>
-      <width>701</width>
-      <height>181</height>
+      <y>350</y>
+      <width>901</width>
+      <height>131</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -192,7 +192,7 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The research behind and the development of &lt;span style=&quot; font-weight:600;&quot;&gt;pyanno4rt&lt;/span&gt; has been supported by a number of people: &lt;/p&gt;
 &lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:6px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; color:#0e10a6;&quot;&gt;Prof. Dr. Martin Frank (KIT)&lt;/span&gt;, &lt;span style=&quot; color:#0e10a6;&quot;&gt;Prof. Dr. Oliver Jäkel&lt;/span&gt; and &lt;span style=&quot; color:#0e10a6;&quot;&gt;Dr. Niklas Wahl&lt;/span&gt; (both &lt;span style=&quot; color:#0e10a6;&quot;&gt;DKFZ&lt;/span&gt;), who supervised the research project.&lt;/li&gt;
-&lt;li style=&quot; margin-top:0px; margin-bottom:6px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; color:#0e10a6;&quot;&gt;Many colleagues at KIT, DKFZ and HIDSS4Health&lt;/span&gt;, who helped with valuable discussions, feedbacks and their engagement in software testing.&lt;/li&gt;
+&lt;li style=&quot; margin-top:0px; margin-bottom:6px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; color:#0e10a6;&quot;&gt;Many colleagues at KIT, DKFZ and HIDSS4Health&lt;/span&gt;, who helped with valuable discussions, feedbacks and software testing.&lt;/li&gt;
 &lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;span style=&quot; color:#0e10a6;&quot;&gt;Moritz Müller&lt;/span&gt;, who collaborated as student assistant.&lt;/li&gt;&lt;/ul&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; Many thanks for all your contributions!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
@@ -200,8 +200,8 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="close_info_pbutton">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>600</y>
+      <x>840</x>
+      <y>640</y>
       <width>71</width>
       <height>31</height>
      </rect>

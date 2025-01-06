@@ -6,7 +6,7 @@ Graphical user interface module.
 The module aims to provide methods and classes to ...
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._gui import GraphicalUserInterface
 from . import custom_widgets

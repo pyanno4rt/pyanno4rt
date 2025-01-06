@@ -787,7 +787,7 @@ class Ui_main_window(object):
         self.scroll_configuration.setWidgetResizable(True)
         self.scroll_configuration.setObjectName("scroll_configuration")
         self.scroll_configuration_content = QtWidgets.QWidget()
-        self.scroll_configuration_content.setGeometry(QtCore.QRect(0, 0, 368, 912))
+        self.scroll_configuration_content.setGeometry(QtCore.QRect(0, 0, 369, 912))
         self.scroll_configuration_content.setObjectName("scroll_configuration_content")
         self.scroll_configuration_meta_layout = QtWidgets.QVBoxLayout(self.scroll_configuration_content)
         self.scroll_configuration_meta_layout.setContentsMargins(10, 10, 10, 10)
@@ -1294,7 +1294,7 @@ class Ui_main_window(object):
         self.scroll_optimization.setWidgetResizable(True)
         self.scroll_optimization.setObjectName("scroll_optimization")
         self.scroll_optimization_content = QtWidgets.QWidget()
-        self.scroll_optimization_content.setGeometry(QtCore.QRect(0, 0, 418, 1138))
+        self.scroll_optimization_content.setGeometry(QtCore.QRect(0, -544, 418, 1138))
         self.scroll_optimization_content.setObjectName("scroll_optimization_content")
         self.scroll_optimization_meta_layout = QtWidgets.QVBoxLayout(self.scroll_optimization_content)
         self.scroll_optimization_meta_layout.setContentsMargins(10, 10, 10, 10)
@@ -2817,4 +2817,3 @@ class Ui_main_window(object):
         self.minimum_label.setText(_translate("main_window", "Min"))
         self.viewer_widget.setTabToolTip(self.viewer_widget.indexOf(self.tab_dvh), _translate("main_window", "Dose-volume histogram"))
         self.workflow_header_label.setText(_translate("main_window", "Workflow"))
-

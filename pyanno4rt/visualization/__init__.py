@@ -8,7 +8,7 @@ of the generated treatment plans, with respect to optimization problem \
 analysis, data-driven model review, and treatment plan evaluation.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from pyanno4rt.visualization._visualizer import Visualizer
 from pyanno4rt.visualization import visuals

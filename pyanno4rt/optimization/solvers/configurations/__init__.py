@@ -7,7 +7,7 @@ This module aims to provide functions to configure the solution algorithms \
 for the optimization packages.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._configure_proxmin import configure_proxmin
 from ._configure_pyanno4rt import configure_pyanno4rt

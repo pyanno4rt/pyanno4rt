@@ -1,6 +1,6 @@
 """Dose-volume histogram abscissa feature test."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Authors: Moritz Müller, Tim Ortkamp
 
 # %% External package import
 

@@ -7,7 +7,7 @@ This module aims to provide methods and classes for setting up and solving \
 the inverse planning problem.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from . import components
 from . import initializers

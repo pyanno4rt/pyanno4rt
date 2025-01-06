@@ -7,7 +7,7 @@ This module aims to provide algorithms for solving the inverse planning \
 problem.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # from . import ...
 

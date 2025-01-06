@@ -7,7 +7,7 @@ This module aims to provide methods and classes to generate the plan \
 configuration dictionary.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._plan_generator import PlanGenerator
 

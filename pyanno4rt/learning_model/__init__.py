@@ -7,7 +7,7 @@ The module aims to provide methods and classes for data handling, \
 preprocessing, learning model fitting, inspection & evaluation.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from . import dataset
 from . import evaluation

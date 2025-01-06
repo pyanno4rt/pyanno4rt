@@ -7,7 +7,7 @@ This module aims to provide methods and classes for different types of \
 forward and backward projections between fluence and dose.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._backprojection import BackProjection
 from ._constant_rbe_projection import ConstantRBEProjection

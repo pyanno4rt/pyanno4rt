@@ -13,9 +13,9 @@ class Ui_tree_window(object):
     def setupUi(self, tree_window):
         tree_window.setObjectName("tree_window")
         tree_window.setWindowModality(QtCore.Qt.ApplicationModal)
-        tree_window.resize(720, 640)
-        tree_window.setMinimumSize(QtCore.QSize(720, 640))
-        tree_window.setMaximumSize(QtCore.QSize(720, 640))
+        tree_window.resize(920, 680)
+        tree_window.setMinimumSize(QtCore.QSize(920, 680))
+        tree_window.setMaximumSize(QtCore.QSize(920, 680))
         tree_window.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);")
         self.body_widget = QtWidgets.QWidget(tree_window)
@@ -25,7 +25,7 @@ class Ui_tree_window(object):
 "border-color: rgb(186, 189, 182);")
         self.body_widget.setObjectName("body_widget")
         self.close_tree_pbutton = QtWidgets.QPushButton(self.body_widget)
-        self.close_tree_pbutton.setGeometry(QtCore.QRect(640, 600, 71, 31))
+        self.close_tree_pbutton.setGeometry(QtCore.QRect(840, 640, 71, 31))
         self.close_tree_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.close_tree_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
@@ -33,7 +33,7 @@ class Ui_tree_window(object):
 "border-color: rgb(186, 189, 182);")
         self.close_tree_pbutton.setObjectName("close_tree_pbutton")
         self.tree_widget = QtWidgets.QTreeWidget(self.body_widget)
-        self.tree_widget.setGeometry(QtCore.QRect(10, 10, 701, 581))
+        self.tree_widget.setGeometry(QtCore.QRect(10, 10, 901, 621))
         self.tree_widget.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -45,7 +45,7 @@ class Ui_tree_window(object):
         self.tree_widget.setColumnCount(3)
         self.tree_widget.setObjectName("tree_widget")
         self.collapse_tree_pbutton = QtWidgets.QPushButton(self.body_widget)
-        self.collapse_tree_pbutton.setGeometry(QtCore.QRect(560, 600, 71, 31))
+        self.collapse_tree_pbutton.setGeometry(QtCore.QRect(760, 640, 71, 31))
         self.collapse_tree_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.collapse_tree_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
@@ -53,7 +53,7 @@ class Ui_tree_window(object):
 "border-color: rgb(186, 189, 182);")
         self.collapse_tree_pbutton.setObjectName("collapse_tree_pbutton")
         self.expand_tree_pbutton = QtWidgets.QPushButton(self.body_widget)
-        self.expand_tree_pbutton.setGeometry(QtCore.QRect(480, 600, 71, 31))
+        self.expand_tree_pbutton.setGeometry(QtCore.QRect(680, 640, 71, 31))
         self.expand_tree_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.expand_tree_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"

@@ -7,7 +7,7 @@ The module aims to provide methods and classes for data preprocessing, i.e., \
 data cleaning, reduction, (re-)sampling and transformation.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._data_preprocessor import DataPreprocessor
 

@@ -6,7 +6,7 @@ Data samplers module.
 The module aims to provide methods and classes for data (re-)sampling.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._sampler_map import sampler_map
 

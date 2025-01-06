@@ -6,7 +6,7 @@ Base module.
 This module aims to provide base classes to generate treatment plans.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._treatment_plan import TreatmentPlan
 

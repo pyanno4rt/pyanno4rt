@@ -7,7 +7,7 @@ This module aims to provide methods and classes for wrapping the local and \
 global solution algorithms from the integrated optimization packages.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._proxmin_solver import ProxminSolver
 from ._pyanno4rt_solver import Pyanno4rtSolver

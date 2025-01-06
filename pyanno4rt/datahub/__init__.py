@@ -7,7 +7,7 @@ This module aims to provide methods and classes to centralize and distribute \
 information units within each treatment plan.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._datahub import Datahub
 

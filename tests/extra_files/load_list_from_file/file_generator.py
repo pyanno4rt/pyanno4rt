@@ -1,6 +1,6 @@
 """Generate Python lists in different file formats."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% External package import
 

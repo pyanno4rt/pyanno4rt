@@ -13,9 +13,9 @@ class Ui_compare_window(object):
     def setupUi(self, compare_window):
         compare_window.setObjectName("compare_window")
         compare_window.setWindowModality(QtCore.Qt.WindowModal)
-        compare_window.resize(1051, 801)
-        compare_window.setMinimumSize(QtCore.QSize(1040, 801))
-        compare_window.setMaximumSize(QtCore.QSize(1170, 801))
+        compare_window.resize(920, 680)
+        compare_window.setMinimumSize(QtCore.QSize(920, 680))
+        compare_window.setMaximumSize(QtCore.QSize(920, 680))
         compare_window.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);")
         self.compare_widget = QtWidgets.QWidget(compare_window)
@@ -25,7 +25,7 @@ class Ui_compare_window(object):
 "border-color: rgb(186, 189, 182);")
         self.compare_widget.setObjectName("compare_widget")
         self.close_compare_pbutton = QtWidgets.QPushButton(self.compare_widget)
-        self.close_compare_pbutton.setGeometry(QtCore.QRect(970, 760, 71, 30))
+        self.close_compare_pbutton.setGeometry(QtCore.QRect(840, 640, 71, 31))
         self.close_compare_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.close_compare_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
@@ -33,7 +33,7 @@ class Ui_compare_window(object):
 "border-color: rgb(186, 189, 182);")
         self.close_compare_pbutton.setObjectName("close_compare_pbutton")
         self.baseline_dose_widget = QtWidgets.QWidget(self.compare_widget)
-        self.baseline_dose_widget.setGeometry(QtCore.QRect(0, 30, 351, 311))
+        self.baseline_dose_widget.setGeometry(QtCore.QRect(0, 25, 311, 251))
         self.baseline_dose_widget.setStyleSheet("border: 1px solid;\n"
 "border-color: rgb(211, 215, 207);")
         self.baseline_dose_widget.setObjectName("baseline_dose_widget")
@@ -46,14 +46,14 @@ class Ui_compare_window(object):
         self.baseline_dose_layout.setObjectName("baseline_dose_layout")
         self.baseline_meta_layout.addLayout(self.baseline_dose_layout)
         self.slice_selection_sbar = QtWidgets.QScrollBar(self.compare_widget)
-        self.slice_selection_sbar.setGeometry(QtCore.QRect(221, 700, 501, 30))
+        self.slice_selection_sbar.setGeometry(QtCore.QRect(230, 570, 376, 31))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.slice_selection_sbar.sizePolicy().hasHeightForWidth())
         self.slice_selection_sbar.setSizePolicy(sizePolicy)
-        self.slice_selection_sbar.setMinimumSize(QtCore.QSize(239, 30))
-        self.slice_selection_sbar.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.slice_selection_sbar.setMinimumSize(QtCore.QSize(239, 31))
+        self.slice_selection_sbar.setMaximumSize(QtCore.QSize(16777215, 31))
         self.slice_selection_sbar.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -62,7 +62,7 @@ class Ui_compare_window(object):
         self.slice_selection_sbar.setOrientation(QtCore.Qt.Horizontal)
         self.slice_selection_sbar.setObjectName("slice_selection_sbar")
         self.reference_dose_widget = QtWidgets.QWidget(self.compare_widget)
-        self.reference_dose_widget.setGeometry(QtCore.QRect(350, 30, 351, 311))
+        self.reference_dose_widget.setGeometry(QtCore.QRect(305, 25, 311, 251))
         self.reference_dose_widget.setStyleSheet("border: 1px solid;\n"
 "border-color: rgb(211, 215, 207);")
         self.reference_dose_widget.setObjectName("reference_dose_widget")
@@ -75,7 +75,7 @@ class Ui_compare_window(object):
         self.reference_dose_layout.setObjectName("reference_dose_layout")
         self.reference_meta_layout.addLayout(self.reference_dose_layout)
         self.baseline_label = QtWidgets.QLabel(self.compare_widget)
-        self.baseline_label.setGeometry(QtCore.QRect(10, 10, 331, 25))
+        self.baseline_label.setGeometry(QtCore.QRect(10, 5, 291, 25))
         self.baseline_label.setMinimumSize(QtCore.QSize(0, 25))
         self.baseline_label.setMaximumSize(QtCore.QSize(16777215, 25))
         font = QtGui.QFont()
@@ -86,7 +86,7 @@ class Ui_compare_window(object):
         self.baseline_label.setAlignment(QtCore.Qt.AlignCenter)
         self.baseline_label.setObjectName("baseline_label")
         self.reference_label = QtWidgets.QLabel(self.compare_widget)
-        self.reference_label.setGeometry(QtCore.QRect(360, 10, 331, 25))
+        self.reference_label.setGeometry(QtCore.QRect(315, 5, 291, 25))
         self.reference_label.setMinimumSize(QtCore.QSize(0, 25))
         self.reference_label.setMaximumSize(QtCore.QSize(16777215, 25))
         font = QtGui.QFont()
@@ -97,7 +97,7 @@ class Ui_compare_window(object):
         self.reference_label.setAlignment(QtCore.Qt.AlignCenter)
         self.reference_label.setObjectName("reference_label")
         self.slice_selection_label = QtWidgets.QLabel(self.compare_widget)
-        self.slice_selection_label.setGeometry(QtCore.QRect(221, 670, 121, 25))
+        self.slice_selection_label.setGeometry(QtCore.QRect(230, 540, 121, 25))
         self.slice_selection_label.setMinimumSize(QtCore.QSize(0, 25))
         self.slice_selection_label.setMaximumSize(QtCore.QSize(16777215, 25))
         font = QtGui.QFont()
@@ -107,7 +107,7 @@ class Ui_compare_window(object):
         self.slice_selection_label.setStyleSheet("border: 0px;")
         self.slice_selection_label.setObjectName("slice_selection_label")
         self.opacity_label = QtWidgets.QLabel(self.compare_widget)
-        self.opacity_label.setGeometry(QtCore.QRect(116, 670, 101, 25))
+        self.opacity_label.setGeometry(QtCore.QRect(120, 540, 101, 25))
         self.opacity_label.setMinimumSize(QtCore.QSize(101, 25))
         self.opacity_label.setMaximumSize(QtCore.QSize(101, 25))
         font = QtGui.QFont()
@@ -117,9 +117,9 @@ class Ui_compare_window(object):
         self.opacity_label.setStyleSheet("border: 0px;")
         self.opacity_label.setObjectName("opacity_label")
         self.opacity_sbox = QtWidgets.QSpinBox(self.compare_widget)
-        self.opacity_sbox.setGeometry(QtCore.QRect(116, 700, 101, 30))
-        self.opacity_sbox.setMinimumSize(QtCore.QSize(101, 30))
-        self.opacity_sbox.setMaximumSize(QtCore.QSize(101, 30))
+        self.opacity_sbox.setGeometry(QtCore.QRect(120, 570, 101, 31))
+        self.opacity_sbox.setMinimumSize(QtCore.QSize(101, 31))
+        self.opacity_sbox.setMaximumSize(QtCore.QSize(101, 31))
         self.opacity_sbox.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
         self.opacity_sbox.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -131,7 +131,7 @@ class Ui_compare_window(object):
         self.opacity_sbox.setProperty("value", 70)
         self.opacity_sbox.setObjectName("opacity_sbox")
         self.slice_selection_pos = QtWidgets.QLabel(self.compare_widget)
-        self.slice_selection_pos.setGeometry(QtCore.QRect(600, 670, 120, 25))
+        self.slice_selection_pos.setGeometry(QtCore.QRect(495, 540, 111, 25))
         self.slice_selection_pos.setMinimumSize(QtCore.QSize(0, 25))
         self.slice_selection_pos.setMaximumSize(QtCore.QSize(16777215, 25))
         font = QtGui.QFont()
@@ -143,7 +143,7 @@ class Ui_compare_window(object):
         self.slice_selection_pos.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.slice_selection_pos.setObjectName("slice_selection_pos")
         self.difference_dose_widget = QtWidgets.QWidget(self.compare_widget)
-        self.difference_dose_widget.setGeometry(QtCore.QRect(700, 30, 351, 311))
+        self.difference_dose_widget.setGeometry(QtCore.QRect(610, 25, 311, 251))
         self.difference_dose_widget.setStyleSheet("border: 1px solid;\n"
 "border-color: rgb(211, 215, 207);")
         self.difference_dose_widget.setObjectName("difference_dose_widget")
@@ -156,7 +156,7 @@ class Ui_compare_window(object):
         self.difference_dose_layout.setObjectName("difference_dose_layout")
         self.baseline_meta_layout_2.addLayout(self.difference_dose_layout)
         self.difference_label = QtWidgets.QLabel(self.compare_widget)
-        self.difference_label.setGeometry(QtCore.QRect(710, 10, 331, 25))
+        self.difference_label.setGeometry(QtCore.QRect(620, 5, 291, 25))
         self.difference_label.setMinimumSize(QtCore.QSize(0, 25))
         self.difference_label.setMaximumSize(QtCore.QSize(16777215, 25))
         font = QtGui.QFont()
@@ -167,7 +167,7 @@ class Ui_compare_window(object):
         self.difference_label.setAlignment(QtCore.Qt.AlignCenter)
         self.difference_label.setObjectName("difference_label")
         self.baseline_dvh_widget = QtWidgets.QWidget(self.compare_widget)
-        self.baseline_dvh_widget.setGeometry(QtCore.QRect(0, 350, 351, 311))
+        self.baseline_dvh_widget.setGeometry(QtCore.QRect(0, 285, 311, 251))
         self.baseline_dvh_widget.setStyleSheet("border: 1px solid;\n"
 "border-color: rgb(211, 215, 207);")
         self.baseline_dvh_widget.setObjectName("baseline_dvh_widget")
@@ -180,7 +180,7 @@ class Ui_compare_window(object):
         self.baseline_dvh_layout.setObjectName("baseline_dvh_layout")
         self.dvh_meta_layout.addLayout(self.baseline_dvh_layout)
         self.reference_dvh_widget = QtWidgets.QWidget(self.compare_widget)
-        self.reference_dvh_widget.setGeometry(QtCore.QRect(350, 350, 351, 311))
+        self.reference_dvh_widget.setGeometry(QtCore.QRect(305, 285, 311, 251))
         self.reference_dvh_widget.setStyleSheet("border: 1px solid;\n"
 "border-color: rgb(211, 215, 207);")
         self.reference_dvh_widget.setObjectName("reference_dvh_widget")
@@ -193,7 +193,7 @@ class Ui_compare_window(object):
         self.reference_dvh_layout.setObjectName("reference_dvh_layout")
         self.dvh_meta_layout_2.addLayout(self.reference_dvh_layout)
         self.difference_dvh_widget = QtWidgets.QWidget(self.compare_widget)
-        self.difference_dvh_widget.setGeometry(QtCore.QRect(700, 350, 351, 311))
+        self.difference_dvh_widget.setGeometry(QtCore.QRect(610, 285, 311, 251))
         self.difference_dvh_widget.setStyleSheet("border: 1px solid;\n"
 "border-color: rgb(211, 215, 207);")
         self.difference_dvh_widget.setObjectName("difference_dvh_widget")
@@ -206,14 +206,14 @@ class Ui_compare_window(object):
         self.difference_dvh_layout.setObjectName("difference_dvh_layout")
         self.dvh_meta_layout_3.addLayout(self.difference_dvh_layout)
         self.dvh_options_widget = QtWidgets.QWidget(self.compare_widget)
-        self.dvh_options_widget.setGeometry(QtCore.QRect(0, 736, 733, 60))
-        self.dvh_options_widget.setMaximumSize(QtCore.QSize(16777215, 60))
+        self.dvh_options_widget.setGeometry(QtCore.QRect(0, 610, 616, 61))
+        self.dvh_options_widget.setMaximumSize(QtCore.QSize(16777215, 70))
         self.dvh_options_widget.setStyleSheet("border: 0px solid;")
         self.dvh_options_widget.setObjectName("dvh_options_widget")
         self.dvh_options_layout = QtWidgets.QGridLayout(self.dvh_options_widget)
         self.dvh_options_layout.setContentsMargins(10, 0, 10, 16)
         self.dvh_options_layout.setHorizontalSpacing(4)
-        self.dvh_options_layout.setVerticalSpacing(3)
+        self.dvh_options_layout.setVerticalSpacing(14)
         self.dvh_options_layout.setObjectName("dvh_options_layout")
         self.minimum_ledit = QtWidgets.QLineEdit(self.dvh_options_widget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
@@ -221,8 +221,8 @@ class Ui_compare_window(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.minimum_ledit.sizePolicy().hasHeightForWidth())
         self.minimum_ledit.setSizePolicy(sizePolicy)
-        self.minimum_ledit.setMinimumSize(QtCore.QSize(50, 30))
-        self.minimum_ledit.setMaximumSize(QtCore.QSize(180, 30))
+        self.minimum_ledit.setMinimumSize(QtCore.QSize(50, 31))
+        self.minimum_ledit.setMaximumSize(QtCore.QSize(180, 31))
         self.minimum_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -237,8 +237,8 @@ class Ui_compare_window(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.std_ledit.sizePolicy().hasHeightForWidth())
         self.std_ledit.setSizePolicy(sizePolicy)
-        self.std_ledit.setMinimumSize(QtCore.QSize(50, 30))
-        self.std_ledit.setMaximumSize(QtCore.QSize(180, 30))
+        self.std_ledit.setMinimumSize(QtCore.QSize(50, 31))
+        self.std_ledit.setMaximumSize(QtCore.QSize(180, 31))
         self.std_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -253,8 +253,8 @@ class Ui_compare_window(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.maximum_ledit.sizePolicy().hasHeightForWidth())
         self.maximum_ledit.setSizePolicy(sizePolicy)
-        self.maximum_ledit.setMinimumSize(QtCore.QSize(50, 30))
-        self.maximum_ledit.setMaximumSize(QtCore.QSize(180, 30))
+        self.maximum_ledit.setMinimumSize(QtCore.QSize(50, 31))
+        self.maximum_ledit.setMaximumSize(QtCore.QSize(180, 31))
         self.maximum_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -299,8 +299,8 @@ class Ui_compare_window(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.mean_ledit.sizePolicy().hasHeightForWidth())
         self.mean_ledit.setSizePolicy(sizePolicy)
-        self.mean_ledit.setMinimumSize(QtCore.QSize(50, 30))
-        self.mean_ledit.setMaximumSize(QtCore.QSize(180, 30))
+        self.mean_ledit.setMinimumSize(QtCore.QSize(50, 31))
+        self.mean_ledit.setMaximumSize(QtCore.QSize(180, 31))
         self.mean_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -335,8 +335,8 @@ class Ui_compare_window(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.segment_ledit.sizePolicy().hasHeightForWidth())
         self.segment_ledit.setSizePolicy(sizePolicy)
-        self.segment_ledit.setMinimumSize(QtCore.QSize(210, 30))
-        self.segment_ledit.setMaximumSize(QtCore.QSize(400, 30))
+        self.segment_ledit.setMinimumSize(QtCore.QSize(200, 31))
+        self.segment_ledit.setMaximumSize(QtCore.QSize(400, 31))
         self.segment_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -346,7 +346,7 @@ class Ui_compare_window(object):
         self.segment_ledit.setObjectName("segment_ledit")
         self.dvh_options_layout.addWidget(self.segment_ledit, 1, 1, 1, 1)
         self.joint_dvh_pbutton = QtWidgets.QPushButton(self.compare_widget)
-        self.joint_dvh_pbutton.setGeometry(QtCore.QRect(740, 760, 121, 30))
+        self.joint_dvh_pbutton.setGeometry(QtCore.QRect(620, 640, 121, 31))
         self.joint_dvh_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.joint_dvh_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
@@ -354,31 +354,31 @@ class Ui_compare_window(object):
 "border-color: rgb(186, 189, 182);")
         self.joint_dvh_pbutton.setObjectName("joint_dvh_pbutton")
         self.disCT_cbox = QtWidgets.QCheckBox(self.compare_widget)
-        self.disCT_cbox.setGeometry(QtCore.QRect(740, 685, 100, 30))
+        self.disCT_cbox.setGeometry(QtCore.QRect(620, 556, 100, 30))
         self.disCT_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);\n"
 "border: 0px solid")
         self.disCT_cbox.setObjectName("disCT_cbox")
         self.disSegm_cbox = QtWidgets.QCheckBox(self.compare_widget)
-        self.disSegm_cbox.setGeometry(QtCore.QRect(870, 685, 181, 30))
+        self.disSegm_cbox.setGeometry(QtCore.QRect(740, 556, 181, 30))
         self.disSegm_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);\n"
 "border: 0px solid")
         self.disSegm_cbox.setObjectName("disSegm_cbox")
         self.disDose_cbox = QtWidgets.QCheckBox(self.compare_widget)
-        self.disDose_cbox.setGeometry(QtCore.QRect(740, 715, 110, 30))
+        self.disDose_cbox.setGeometry(QtCore.QRect(620, 584, 110, 30))
         self.disDose_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);\n"
 "border: 0px solid")
         self.disDose_cbox.setObjectName("disDose_cbox")
         self.disDoseCon_cbox = QtWidgets.QCheckBox(self.compare_widget)
-        self.disDoseCon_cbox.setGeometry(QtCore.QRect(870, 715, 181, 30))
+        self.disDoseCon_cbox.setGeometry(QtCore.QRect(740, 584, 181, 30))
         self.disDoseCon_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);\n"
 "border: 0px solid")
         self.disDoseCon_cbox.setObjectName("disDoseCon_cbox")
         self.orient_label = QtWidgets.QLabel(self.compare_widget)
-        self.orient_label.setGeometry(QtCore.QRect(10, 670, 101, 25))
+        self.orient_label.setGeometry(QtCore.QRect(10, 540, 101, 25))
         self.orient_label.setMinimumSize(QtCore.QSize(101, 25))
         self.orient_label.setMaximumSize(QtCore.QSize(101, 25))
         font = QtGui.QFont()
@@ -388,14 +388,14 @@ class Ui_compare_window(object):
         self.orient_label.setStyleSheet("border: 0px;")
         self.orient_label.setObjectName("orient_label")
         self.orient_cbox = QtWidgets.QComboBox(self.compare_widget)
-        self.orient_cbox.setGeometry(QtCore.QRect(10, 700, 96, 30))
+        self.orient_cbox.setGeometry(QtCore.QRect(10, 570, 96, 31))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.orient_cbox.sizePolicy().hasHeightForWidth())
         self.orient_cbox.setSizePolicy(sizePolicy)
-        self.orient_cbox.setMinimumSize(QtCore.QSize(96, 30))
-        self.orient_cbox.setMaximumSize(QtCore.QSize(96, 30))
+        self.orient_cbox.setMinimumSize(QtCore.QSize(96, 31))
+        self.orient_cbox.setMaximumSize(QtCore.QSize(96, 31))
         self.orient_cbox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.orient_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
@@ -432,4 +432,3 @@ class Ui_compare_window(object):
         self.orient_cbox.setItemText(0, _translate("compare_window", "axial"))
         self.orient_cbox.setItemText(1, _translate("compare_window", "coronal"))
         self.orient_cbox.setItemText(2, _translate("compare_window", "sagittal"))
-

@@ -77,9 +77,8 @@
 	<li> <b>Data-driven outcome prediction model handling</b>
 		<br>
 		<ul> 
-			<li> Dataset import and preprocessing </li>
-			<li> Automatic feature map generation </li>
-			<li> 27-type feature catalogue for iterative (re)calculation to support model integration into optimization </li>
+			<li> Dataset import, handling and preprocessing </li>
+			<li> 24-type feature catalogue for iterative (re)calculation to support model integration into optimization </li>
 			<li> 7 customizable internal model classes (decision tree, k-nearest neighbors, logistic regression, naive Bayes, neural network, random forest, support vector machine)
 				<ul> 
 					<li> Individual preprocessing, inspection and evaluation units </li>  

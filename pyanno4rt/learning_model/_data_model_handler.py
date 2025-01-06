@@ -1,5 +1,7 @@
 """Data & learning model handling."""
 
+# Author: Tim Ortkamp
+
 # %% External package import
 
 from os.path import isdir

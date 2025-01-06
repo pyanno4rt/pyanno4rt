@@ -6,7 +6,7 @@ Check functions module.
 This module aims to provide a collection of basic validity check functions.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._check_components import check_components
 from ._check_data_columns import check_data_columns

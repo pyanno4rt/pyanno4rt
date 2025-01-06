@@ -6,7 +6,7 @@ Extensions module.
 The module aims to provide extension files for the frequentist learning models.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._neural_network_architectures import (
     build_vanilla_iocnn, build_vanilla_nn)

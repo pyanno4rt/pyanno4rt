@@ -1,5 +1,7 @@
 """Optimizable random forest."""
 
+# Author: Tim Ortkamp
+
 # %% External package import
 
 from numpy import array, mean

@@ -7,7 +7,7 @@ The module aims to provide methods and classes to be embedded via clickable \
 buttons in the visualization interface.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from pyanno4rt.visualization.visuals._ct_dose_slicing_window_pyqt import (
     CtDoseSlicingWindowPyQt)

@@ -1,6 +1,6 @@
 """Segment minimum eigenvalue feature test."""
 
-# Author: Moritz Müller, Tim Ortkamp <tim.ortkamp@it.edu>
+# Authors: Moritz Müller, Tim Ortkamp
 
 # %% External package import
 

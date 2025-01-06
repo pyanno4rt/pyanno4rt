@@ -1,6 +1,6 @@
 """Minimum dose-volume histogram (Minimum DVH) component."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% External package import
 

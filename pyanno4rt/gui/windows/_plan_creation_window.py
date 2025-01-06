@@ -1,18 +1,26 @@
 """Plan creation window."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% External package import
 
-from os.path import abspath, dirname
+from functools import partial
+from os.path import abspath, dirname, isfile, splitext
 from PyQt5.QtCore import QEvent
-from PyQt5.QtWidgets import QComboBox, QFileDialog, QMainWindow, QSpinBox
+from PyQt5.QtWidgets import (
+    QComboBox, QFileDialog, QListWidget, QMainWindow, QMenu, QSpinBox)
 
 # %% Internal package import
 
 from pyanno4rt.base import TreatmentPlan
 from pyanno4rt.gui.compilations.plan_creation_window import (
     Ui_plan_creation_window)
+from pyanno4rt.gui.styles._custom_styles import (
+    cbox, ledit, pbutton_composer, tbutton_composer)
+from pyanno4rt.gui.windows.components import component_window_map
+from pyanno4rt.optimization.components import component_map
+from pyanno4rt.patient.import_functions import (
+    read_data_from_dcm, read_data_from_mat, read_data_from_p)
 
 # %% Class definition
 
@@ -21,166 +29,246 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
     """
     Plan creation window for the application.
 
-    This class creates a plan creation window for the graphical user \
-    interface, including input fields to declare a plan.
+    This class sets up a plan creation window for the graphical user \
+    interface, including input fields to define a plan.
+
+    Parameters
+    ----------
+    parent : object of class \
+        :class:`~pyanno4rt.gui.windows._main_window.MainWindow`
+        The object representing the parent window for embedding.
     """
 
     def __init__(
             self,
-            parent=None):
-
-        # Get the application from the argument
-        self.parent = parent
+            parent):
 
         # Run the constructor from the superclass
         super().__init__()
 
-        # Build the UI main window
+        # Build the UI plan creation window
         self.setupUi(self)
 
-        # Install the custom event filter in the plan creation window
-        self.new_plan_ref_cbox.installEventFilter(self)
+        # Get the parent window
+        self.parent = parent
 
-        # Loop over the fieldnames with 'clicked' events
-        for key, value in {
-                'new_img_path_tbutton': self.add_imaging_path,
-                'new_dose_path_tbutton': self.add_dose_matrix_path,
-                }.items():
+        # Initialize the segment dictionary
+        self.segments = {}
 
-            # Connect the 'clicked' signal
-            getattr(self, key).clicked.connect(value)
+        # Initialize the current component window
+        self.current_component_window = None
 
-        # 
-        self.new_plan_ledit.textChanged.connect(
-            self.update_create_button)
-        self.new_plan_ref_cbox.currentTextChanged.connect(
-            self.update_create_button)
-        self.new_img_path_ledit.textChanged.connect(
-            self.update_create_button)
-        self.new_dose_path_ledit.textChanged.connect(
-            self.update_create_button)
-        self.new_dose_res_ledit_x.textChanged.connect(
-            self.update_create_button)
-        self.new_dose_res_ledit_y.textChanged.connect(
-            self.update_create_button)
-        self.new_dose_res_ledit_z.textChanged.connect(
-            self.update_create_button)
+        # Initialize the plan component dictionary
+        self.plan_components = {}
 
-        # 
-        self.new_plan_ref_cbox.currentTextChanged.connect(
-            self.update_by_new_plan_reference)
+        # Add the dropdown menu to the components 'plus' button
+        self.add_dropdown_to_components()
 
-        # 
-        self.create_plan_pbutton.clicked.connect(self.create)
+        # Disable specific fields
+        self.set_disabled((
+            'components_plus_tbutton', 'components_minus_tbutton',
+            'components_edit_tbutton'))
 
-        # 
-        self.close_plan_pbutton.clicked.connect(self.close)
+        # Set the stylesheets
+        self.set_styles({
+            'plan_ledit': ledit,
+            'ref_plan_cbox': cbox,
+            'modality_cbox': cbox,
+            'img_path_ledit': ledit,
+            'img_path_tbutton': tbutton_composer,
+            'dose_path_ledit': ledit,
+            'dose_path_tbutton': tbutton_composer,
+            'dose_res_ledit_x': ledit,
+            'dose_res_ledit_y': ledit,
+            'dose_res_ledit_z': ledit,
+            'components_plus_tbutton': tbutton_composer,
+            'components_minus_tbutton': tbutton_composer,
+            'components_edit_tbutton': tbutton_composer,
+            'create_plan_pbutton': pbutton_composer,
+            'close_plan_pbutton': pbutton_composer})
+
+        # Install the custom event filter for the reference combo box
+        self.ref_plan_cbox.installEventFilter(self)
+
+        # Adjust the component list widget spacing
+        self.components_lwidget.setSpacing(4)
+
+        # Connect the fields with the event signals
+        self.connect_signals()
 
     def eventFilter(
             self,
             source,
             event):
         """
-        Customize the event filters.
+        Filter the events (overwrites the default event filter).
 
         Parameters
         ----------
-        source : ...
-            ...
+        source : object of class :class:`~PyQt5.QtWidgets`
+            The object representing the event source.
 
-        event : ...
-            ...
+        event : object of class :class:`~PyQt5.QtCore.QEvent`
+            The object representing the event.
 
         Returns
         -------
-        ...
+        bool or object of class :class:`~PyQt5.QtCore.QEvent`
+            Boolean value or event object depending on the filter.
         """
 
         # Check if a mouse wheel event applies to QComboBox or QSpinBox
         if (event.type() == QEvent.Wheel and
                 isinstance(source, (QComboBox, QSpinBox))):
 
-            # Filter the event
+            # Filter the event by returning True
             return True
 
-        # Else, return the even
+        # Else, return the unfiltered event
         return super().eventFilter(source, event)
 
-    def position(self):
-        """."""
+    def mousePressEvent(
+            self,
+            event):
+        """
+        Set the mouse press event (overwrites the default event).
 
-        # Get the window geometry
-        geometry = self.geometry()
+        Parameters
+        ----------
+        event : object of class :class:`~PyQt5.QtCore.QEvent`
+            The object representing the event.
+        """
 
-        # Move the geometry center towards the parent
-        geometry.moveCenter(self.parent.geometry().center())
+        # Trigger the mouse press event of the superclass
+        super(QListWidget, self.components_lwidget).mousePressEvent(event)
 
-        # Set the shifted geometry
-        self.setGeometry(geometry)
+        # Check if no element of the components list widget has been clicked
+        if not self.components_lwidget.indexAt(event.pos()).isValid():
 
-    def update_create_button(self):
-        """."""
+            # Clear the element selection
+            self.components_lwidget.clearSelection()
 
-        # 
-        if (self.new_plan_ledit.text() in (
-                self.parent.plan_select_cbox.itemText(i)
-                for i in range(self.parent.plan_select_cbox.count()))
-                or any(text == '' for text in (
-                    self.new_plan_ledit.text(),
-                    self.new_img_path_ledit.text(),
-                    self.new_dose_path_ledit.text(),
-                    self.new_dose_res_ledit_x.text(),
-                    self.new_dose_res_ledit_y.text(),
-                    self.new_dose_res_ledit_z.text()))):
+            # Disable the 'minus' and 'edit' buttons
+            self.set_disabled((
+                'components_minus_tbutton', 'components_edit_tbutton'))
 
-            # 
-            self.create_plan_pbutton.setEnabled(False)
+    def add_dropdown_to_components(self):
+        """Add the dropdown menu to the components 'plus' button."""
 
-        else:
+        # Initialize the dropdown menu
+        menu = QMenu()
 
-            # 
-            self.create_plan_pbutton.setEnabled(True)
+        # Loop over the component map keys
+        for key in component_map:
 
-        # 
-        if (self.new_plan_ledit.text() != ''
-                and self.new_plan_ref_cbox.currentText() != 'None'):
+            # Add the key to the dropdown menu
+            menu.addAction(key, partial(self.open_component_window, key))
 
-            # 
-            self.create_plan_pbutton.setEnabled(True)
+        # Connect the menu trigger event
+        menu.triggered.connect(self.update_plan_component_key)
 
-    def update_by_new_plan_reference(self):
-        """."""
+        # Set the popup mode for the component 'plus' button
+        self.components_plus_tbutton.setPopupMode(2)
 
-        # 
-        if self.new_plan_ref_cbox.currentText() != 'None':
+        # Add the dropdown menu to the 'plus' button
+        self.components_plus_tbutton.setMenu(menu)
 
-            # 
-            self.new_modality_cbox.setEnabled(False)
-            self.new_img_path_ledit.setEnabled(False)
-            self.new_img_path_tbutton.setEnabled(False)
-            self.new_img_res_ledit_x.setEnabled(False)
-            self.new_img_res_ledit_y.setEnabled(False)
-            self.new_img_res_ledit_z.setEnabled(False)
-            self.new_dose_path_ledit.setEnabled(False)
-            self.new_dose_path_tbutton.setEnabled(False)
-            self.new_dose_res_ledit_x.setEnabled(False)
-            self.new_dose_res_ledit_y.setEnabled(False)
-            self.new_dose_res_ledit_z.setEnabled(False)
+    def set_enabled(
+            self,
+            field_names):
+        """
+        Enable multiple fields by their names.
 
-        else:
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
 
-            # 
-            self.new_modality_cbox.setEnabled(True)
-            self.new_img_path_ledit.setEnabled(True)
-            self.new_img_path_tbutton.setEnabled(True)
-            self.new_img_res_ledit_x.setEnabled(True)
-            self.new_img_res_ledit_y.setEnabled(True)
-            self.new_img_res_ledit_z.setEnabled(True)
-            self.new_dose_path_ledit.setEnabled(True)
-            self.new_dose_path_tbutton.setEnabled(True)
-            self.new_dose_res_ledit_x.setEnabled(True)
-            self.new_dose_res_ledit_y.setEnabled(True)
-            self.new_dose_res_ledit_z.setEnabled(True)
+        # Loop over the passed field names
+        for name in field_names:
+
+            # Get the attribute and enable the field
+            getattr(self, name).setEnabled(True)
+
+    def set_disabled(
+            self,
+            field_names):
+        """
+        Disable multiple fields by their names.
+
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
+
+        # Loop over the passed field names
+        for name in field_names:
+
+            # Get the attribute and disable the field
+            getattr(self, name).setEnabled(False)
+
+    def set_styles(
+            self,
+            key_value_pairs):
+        """
+        Set the element stylesheets from key-value pairs.
+
+        Parameters
+        ----------
+        key_value_pairs : dict
+            Dictionary with the field names (keys) and style sheets (values).
+        """
+
+        # Loop over the dictionary items
+        for key, value in key_value_pairs.items():
+
+            # Get the attribute and set the stylesheet
+            getattr(self, key).setStyleSheet(value)
+
+    def connect_signals(self):
+        """Connect the fields with the event signals."""
+
+        # Loop over the field names with 'clicked' events
+        for key, value in {
+            'img_path_tbutton': self.add_imaging_path,
+            'dose_path_tbutton': self.add_dose_matrix_path,
+            'components_minus_tbutton': self.remove_component,
+            'components_edit_tbutton': self.edit_component,
+            'create_plan_pbutton': self.create,
+            'close_plan_pbutton': self.close
+                }.items():
+
+            # Connect the 'clicked' events
+            getattr(self, key).clicked.connect(value)
+
+        # Loop over the field names with 'textChanged' events
+        for key in (
+            'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
+            'dose_res_ledit_x', 'dose_res_ledit_y', 'dose_res_ledit_z'
+                ):
+
+            # Connect the 'textChanged' events
+            getattr(self, key).textChanged.connect(self.update_fields)
+
+        # Loop over the field names with 'currentItemChanged' events
+        for key, value in {
+            'components_lwidget': (lambda: self.set_enabled((
+                'components_minus_tbutton', 'components_edit_tbutton')))
+                }.items():
+
+            # Connect the 'currentItemChanged' events
+            getattr(self, key).currentItemChanged.connect(value)
+
+        # Connect the 'currentTextChanged' event with the reference combo box
+        self.ref_plan_cbox.currentTextChanged.connect(self.update_fields)
+
+        # Connect the 'rowsInserted'/'rowsRemoved' events with the list widget
+        self.components_lwidget.model().rowsInserted.connect(
+            self.update_fields)
+        self.components_lwidget.model().rowsRemoved.connect(
+            self.update_fields)
 
     def add_imaging_path(self):
         """Add the CT and segmentation data from a folder."""
@@ -200,10 +288,80 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
                 path = dirname(path)
 
             # Set the imaging path field
-            self.new_img_path_ledit.setText(abspath(path))
+            self.img_path_ledit.setText(abspath(path))
 
             # Set the imaging path field cursor position to zero
-            self.new_img_path_ledit.setCursorPosition(0)
+            self.img_path_ledit.setCursorPosition(0)
+
+    def load_segments_from_data(self):
+        """Load the segment names and types from the imaging data."""
+
+        # Check if the path leads to a DICOM folder
+        if splitext(self.img_path_ledit.text())[1] == '':
+
+            # Get the segmentation data
+            _, segmentation_data = read_data_from_dcm(
+                self.img_path_ledit.text())
+
+            # Initialize the segments dictionary
+            self.segments = {}
+
+            # Loop over the ROI contours
+            for roi_contour in segmentation_data.ROIContourSequence:
+
+                # Find the corresponding segment from the index number
+                roi_structure = next(
+                    sequence
+                    for sequence in segmentation_data.StructureSetROISequence
+                    if roi_contour.ReferencedROINumber == sequence.ROINumber)
+
+                # Check if the segment is a target volume
+                if any(string in roi_structure.lower() for string in (
+                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor'
+                        )):
+
+                    # Set the segment type to 'TARGET'
+                    segment_type = 'TARGET'
+
+                else:
+
+                    # Set the segment type to 'OAR'
+                    segment_type = 'OAR'
+
+                # Append the segment name and type to the dictionary
+                self.segments |= {roi_structure.ROIName: segment_type}
+
+        # Check if the path leads to a MATLAB file
+        elif splitext(self.img_path_ledit.text())[1] == '.mat':
+
+            # Get the segmentation data
+            _, segmentation_data = read_data_from_mat(
+                self.img_path_ledit.text())
+
+            # Get the segment names and types
+            self.segments = {
+                segment_values[1]: ('TARGET' if any(
+                    string in segment_values[1].lower() for string in (
+                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor'))
+                    else 'OAR') for segment_values in segmentation_data}
+
+        # Check if the path leads to a Python file
+        elif splitext(self.img_path_ledit.text())[1] == '.p':
+
+            # Get the segmentation data
+            _, segmentation_data = read_data_from_p(self.img_path_ledit.text())
+
+            # Get the segment names and types
+            self.segments = {
+                segment: ('TARGET' if any(
+                    string in segment.lower() for string in (
+                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor'))
+                    else 'OAR') for segment in segmentation_data}
+
+        else:
+
+            # Set the segment dictionary as empty
+            self.segments = {}
 
     def add_dose_matrix_path(self):
         """Add the dose-influence matrix from a folder."""
@@ -216,20 +374,83 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
         # Check if the file path exists
         if path:
 
-            # Set the dose matrix path field
-            self.new_dose_path_ledit.setText(abspath(path))
+            # Set the dose path field
+            self.dose_path_ledit.setText(abspath(path))
 
-            # Set the dose matrix path field cursor position to zero
-            self.new_dose_path_ledit.setCursorPosition(0)
+            # Set the dose path field cursor position to zero
+            self.dose_path_ledit.setCursorPosition(0)
+
+    def open_component_window(
+            self,
+            name):
+        """
+        Open a component window.
+
+        Parameters
+        ----------
+        name : str
+            Name of the component window.
+        """
+
+        # Get the component window
+        self.current_component_window = component_window_map[name](self)
+
+        # Set the position of the window
+        self.current_component_window.position()
+
+        # Show the window
+        self.current_component_window.show()
+
+    def remove_component(self):
+        """Remove the selected component."""
+
+        # Remove the component from the GUI components dictionary
+        del self.plan_components[next(iter(self.plan_components))][
+            self.components_lwidget.currentItem().text()]
+
+        # Remove the item from the list widget
+        self.components_lwidget.takeItem(self.components_lwidget.currentRow())
+
+        # Clear the selection in the list widget
+        self.components_lwidget.selectionModel().clear()
+
+        # Disable specific fields
+        self.set_disabled((
+            'components_minus_tbutton', 'components_edit_tbutton'))
+
+    def edit_component(self):
+        """Edit the selected component."""
+
+        # Get the selected component
+        component = self.plan_components[next(iter(self.plan_components))][
+            self.components_lwidget.currentItem().text()]
+
+        # Loop over the component values
+        for value in component.values():
+
+            # Get the component window
+            self.current_component_window = component_window_map[
+                value['instance']['function']](self)
+
+        # Set the position of the window
+        self.current_component_window.position()
+
+        # Load the component parameters into the window
+        self.current_component_window.load(component)
+
+        # Show the window
+        self.current_component_window.show()
 
     def create(self):
-        """."""
+        """Create the new treatment plan."""
 
-        # 
-        new_label = self.new_plan_ledit.text()
-        reference = self.new_plan_ref_cbox.currentText()
+        # Get the treatment plan label
+        new_label = self.plan_ledit.text()
 
-        # 
+        # Get the reference plan
+        reference = self.ref_plan_cbox.currentText()
+
+        # Check if a reference plan has been selected
         if reference != 'None':
 
             # Copy the reference input dictionaries
@@ -240,73 +461,172 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             # Change the treatment plan label
             configuration['label'] = new_label
 
-            # Initialize the new treatment plan
+            # Initialize the treatment plan
             new_plan = TreatmentPlan(configuration, optimization, evaluation)
 
-            # Activate the new treatment plan
+            # Activate the new treatment plan in the main window
             self.parent.activate(new_plan)
 
         else:
 
-            # Reset the selector index to the default
+            # Reset the parent selector index to the default
             self.parent.plan_select_cbox.setCurrentIndex(-1)
 
-            # 
+            # Transfer the treatment plan label
             self.parent.plan_ledit.setText(new_label)
 
-            # Set the treatment modality
+            # Transfer the treatment modality
             self.parent.modality_cbox.setCurrentText(
-                self.new_modality_cbox.currentText())
+                self.modality_cbox.currentText())
 
-            # Set the imaging path
-            self.parent.img_path_ledit.setText(abspath(
-                self.new_img_path_ledit.text()))
+            # Transfer the imaging path
+            self.parent.img_path_ledit.setText(
+                abspath(self.img_path_ledit.text()))
 
-            # Set the target imaging resolution
-            if any(resolution == '' for resolution in (
-                    self.new_img_res_ledit_x.text(),
-                    self.new_img_res_ledit_y.text(),
-                    self.new_img_res_ledit_z.text())):
+            # Transfer the dose path
+            self.parent.dose_path_ledit.setText(
+                abspath(self.dose_path_ledit.text()))
 
-                self.parent.img_res_ledit_x.setText('')
-                self.parent.img_res_ledit_y.setText('')
-                self.parent.img_res_ledit_z.setText('')
+            # Transfer the dose resolution
+            self.parent.dose_res_ledit_x.setText(self.dose_res_ledit_x.text())
+            self.parent.dose_res_ledit_y.setText(self.dose_res_ledit_y.text())
+            self.parent.dose_res_ledit_z.setText(self.dose_res_ledit_z.text())
 
-            else:
+            # Transfer the plan components
+            self.parent.plan_components |= self.plan_components
 
-                self.parent.img_res_ledit_x.setText(
-                    self.new_img_res_ledit_x.text())
-                self.parent.img_res_ledit_y.setText(
-                    self.new_img_res_ledit_y.text())
-                self.parent.img_res_ledit_z.setText(
-                    self.new_img_res_ledit_z.text())
+            # Loop over the component list widget items
+            for i in range(self.components_lwidget.count()):
 
-            # Set the dose matrix path
-            self.parent.dose_path_ledit.setText(abspath(
-                self.new_dose_path_ledit.text()))
+                # Get a clone of the item
+                item_clone = self.components_lwidget.item(i).clone()
 
-            # Set the dose resolution
-            self.parent.dose_res_ledit_x.setText(
-                self.new_dose_res_ledit_x.text())
-            self.parent.dose_res_ledit_y.setText(
-                self.new_dose_res_ledit_y.text())
-            self.parent.dose_res_ledit_z.setText(
-                self.new_dose_res_ledit_z.text())
+                # Transfer the item clone
+                self.parent.components_lwidget.addItem(item_clone)
 
-            # 
+            # Initialize the treatment plan from the main window
             self.parent.initialize()
 
-            # 
+            # Load the segment names and types from the imaging path
             self.parent.load_segments_from_data()
 
-        # 
-        self.parent.plan_ledit.setReadOnly(True)
-
-        # 
+        # Close the plan creation window
         self.close()
 
-    def close(self):
-        """."""
+    def update_fields(self):
+        """Update the plan creator fields by condition."""
 
-        # 
+        # Check if a reference plan has been selected
+        if self.ref_plan_cbox.currentText() != 'None':
+
+            # Disable specific fields
+            self.set_disabled((
+                'modality_cbox', 'img_path_ledit', 'img_path_tbutton',
+                'dose_path_ledit', 'dose_path_tbutton', 'dose_res_ledit_x',
+                'dose_res_ledit_y', 'dose_res_ledit_z', 'components_lwidget'))
+
+        else:
+
+            # Enable specific fields
+            self.set_enabled((
+                'modality_cbox', 'img_path_ledit', 'img_path_tbutton',
+                'dose_path_ledit', 'dose_path_tbutton', 'dose_res_ledit_x',
+                'dose_res_ledit_y', 'dose_res_ledit_z', 'components_lwidget'))
+
+        # Check if the imaging path leads to a file
+        if isfile(self.img_path_ledit.text()):
+
+            try:
+
+                # Load the segment names and types
+                self.load_segments_from_data()
+
+                # Set the boolean indicator to True
+                loaded_segments = True
+
+            except Exception:
+
+                # Set the boolean indicator to False
+                loaded_segments = False
+
+        else:
+
+            # Set the boolean indicator to False by default
+            loaded_segments = False
+
+        # Check if any condition blocks the addition of components
+        if (self.plan_ledit.text() == ''
+                or self.ref_plan_cbox.currentText() != 'None'
+                or not loaded_segments):
+
+            # Disable the component 'plus' button
+            self.components_plus_tbutton.setEnabled(False)
+
+        else:
+
+            # Enable the component 'plus' button
+            self.components_plus_tbutton.setEnabled(True)
+
+        # Check if any condition blocks the treatment plan creation
+        if (((any(text == '' for text in (
+                self.plan_ledit.text(), self.img_path_ledit.text(),
+                self.dose_path_ledit.text(), self.dose_res_ledit_x.text(),
+                self.dose_res_ledit_y.text(), self.dose_res_ledit_z.text()))
+                or self.components_lwidget.count() == 0)
+                and self.ref_plan_cbox.currentText() == 'None')
+            or
+            ((self.plan_ledit.text() == ''
+              or self.plan_ledit.text() in (
+                  self.parent.plan_select_cbox.itemText(i)
+                  for i in range(self.parent.plan_select_cbox.count())))
+             and self.ref_plan_cbox.currentText() != 'None')):
+
+            # Disable the plan creation button
+            self.create_plan_pbutton.setEnabled(False)
+
+        else:
+
+            # Enable the plan creation button
+            self.create_plan_pbutton.setEnabled(True)
+
+    def update_plan_component_key(self):
+        """Update the plan component dictionary key."""
+
+        # Check if the dictionary has a single key
+        if len(self.plan_components) == 1:
+
+            # Check if the key is different from the current plan label
+            if next(iter(self.plan_components)) != self.plan_ledit.text():
+
+                # Move the components to the current plan label
+                self.plan_components[self.plan_ledit.text()] = (
+                    self.plan_components[next(iter(self.plan_components))])
+
+                # Delete the previous key
+                del self.plan_components[next(iter(self.plan_components))]
+
+        else:
+
+            # Initialize the component subdictionary for the plan label
+            self.plan_components[self.plan_ledit.text()] = {}
+
+    def position(self):
+        """Set the window position."""
+
+        # Get the window geometry
+        geometry = self.geometry()
+
+        # Move the geometry center according to the parent window
+        geometry.moveCenter(self.parent.geometry().center())
+
+        # Set the window geometry
+        self.setGeometry(geometry)
+
+    def close(self):
+        """Close the plan creation window."""
+
+        # Reset the plan component dictionary
+        self.plan_components = {}
+
+        # Hide the window
         self.hide()

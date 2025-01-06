@@ -1,6 +1,6 @@
 """DICOM folder import."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% Internal package import
 

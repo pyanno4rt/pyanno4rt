@@ -6,7 +6,7 @@ GUI windows module.
 The module aims to provide methods and classes to ...
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._compare_window import CompareWindow
 from ._info_window import InfoWindow

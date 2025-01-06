@@ -7,7 +7,7 @@ The module aims to provide functions to compute different machine learning \
 outcome model losses.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._brier_loss import brier_loss
 from ._log_loss import log_loss

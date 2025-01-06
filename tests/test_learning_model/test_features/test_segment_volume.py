@@ -1,6 +1,6 @@
 """Segment volume feature test."""
 
-# Author: Moritz Müller, Tim Ortkamp <tim.ortkampo@kit.edu>
+# Authors: Moritz Müller, Tim Ortkamp
 
 # %% External package import
 

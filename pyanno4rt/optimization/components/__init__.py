@@ -7,7 +7,7 @@ The module aims to provide methods and classes to handle dose-related and \
 outcome model-based component functions for the optimization problem.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._conventional_component_class import ConventionalComponentClass
 from ._machine_learning_component_class import MachineLearningComponentClass

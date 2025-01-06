@@ -7,7 +7,7 @@ This module aims to provide import functions to extract computed tomography \
 (CT) and segmentation data from the external data file(s).
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._generate_ct_from_dcm import generate_ct_from_dcm
 from ._generate_ct_from_mat import generate_ct_from_mat

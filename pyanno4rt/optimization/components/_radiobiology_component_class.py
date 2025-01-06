@@ -1,6 +1,6 @@
 """Radiobiology component template."""
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # %% External package import
 

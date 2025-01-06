@@ -7,7 +7,7 @@ The module aims to provide methods and classes to handle the features of the \
 base data set, i.e., feature definition and (re-)calculation.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 # Import the abstract feature classes
 from ._feature_class import DosiomicFeature, RadiomicFeature

@@ -1,6 +1,6 @@
 """Copycat function test."""
 
-# Authors: Moritz Müller, Tim Ortkamp <tim.ortkamp@kit.edu>
+# Authors: Moritz Müller, Tim Ortkamp
 
 # %% Internal package import
 

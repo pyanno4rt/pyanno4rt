@@ -1,6 +1,6 @@
 """Dose minimum feature test."""
 
-# Authors: Moritz Müller, Tim Ortkamp <tim.ortkamp@kit.edu>
+# Authors: Moritz Müller, Tim Ortkamp
 
 # %% External package import
 

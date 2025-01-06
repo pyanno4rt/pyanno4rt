@@ -6,7 +6,7 @@ Tools module.
 This module aims to provide helpful functions that improve code readability.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._add_square_brackets import add_square_brackets
 from ._apply import apply
@@ -32,10 +32,11 @@ from ._load_list_from_file import load_list_from_file
 from ._non_decreasing import non_decreasing
 from ._non_increasing import non_increasing
 from ._monotonic import monotonic
-from ._sigmoid import sigmoid
-from ._snapshot import snapshot
 from ._replace_nan import replace_nan
 from ._reset_outputs import reset_outputs
+from ._sigmoid import sigmoid
+from ._snapshot import snapshot
+
 
 __all__ = ['add_square_brackets',
            'apply',
@@ -61,7 +62,7 @@ __all__ = ['add_square_brackets',
            'non_decreasing',
            'non_increasing',
            'monotonic',
-           'sigmoid',
-           'snapshot',
            'replace_nan',
-           'reset_outputs']
+           'reset_outputs',
+           'sigmoid',
+           'snapshot']

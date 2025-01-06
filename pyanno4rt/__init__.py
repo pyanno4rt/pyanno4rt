@@ -17,7 +17,7 @@ data-driven outcome prediction model handling, evaluation, and visualization.
 It also features an easy-to-use and clear graphical user interface.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from pyanno4rt import (
     base, datahub, dose_info, evaluation, gui, input_check, learning_model,

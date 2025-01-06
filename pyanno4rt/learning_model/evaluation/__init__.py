@@ -7,7 +7,7 @@ The module aims to provide methods and classes to evaluate the machine \
 learning outcome models.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._model_evaluator import ModelEvaluator
 

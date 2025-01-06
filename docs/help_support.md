@@ -3,7 +3,7 @@
 <h3>Contact</h3>
 
 <ul>
-	<li> Mail: <a href="mailto:tim.ortkamp@gmx.de?subject=Request on pyanno4rt">tim.ortkamp@gmx.de</a> </li>
+	<li> Mail: <a href="mailto:tim.ortkamp@gmx.de?subject=Request on pyanno4rt">tim.ortkamp(at)gmx.de</a> </li>
 	<li> Github Discussions: <a href="https://github.com/pyanno4rt/pyanno4rt/discussions">https://github.com/pyanno4rt/pyanno4rt/discussions</a> </li>
 	<li> LinkedIn: <a href="https://www.linkedin.com/in/tim-ortkamp">https://www.linkedin.com/in/tim-ortkamp</a>
 	

@@ -6,7 +6,7 @@ Evaluation metrics module.
 The module aims to provide functions to compute different evaluation metrics.
 """
 
-# Author: Tim Ortkamp <tim.ortkamp@kit.edu>
+# Author: Tim Ortkamp
 
 from ._auc_pr import auc_pr
 from ._auc_roc import auc_roc
