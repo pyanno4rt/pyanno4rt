@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QMainWindow
 # %% Internal package import
 
 from pyanno4rt.gui.compilations.log_window import Ui_log_window
+from pyanno4rt.gui.styles._custom_styles import pbutton_composer
 
 # %% Class definition
 
@@ -25,29 +26,45 @@ class LogWindow(QMainWindow, Ui_log_window):
             self,
             parent=None):
 
-        # Get the application from the argument
-        self.parent = parent
-
         # Run the constructor from the superclass
         super().__init__()
 
         # Build the UI main window
         self.setupUi(self)
 
-        # 
+        # Get the application from the argument
+        self.parent = parent
+
+        # Set the stylesheets
+        self.set_styles({
+            'close_log_pbutton': pbutton_composer})
+
+        # Connect the fields with the event signals
         self.close_log_pbutton.clicked.connect(self.close)
 
-    def position(self):
-        """."""
+    def set_styles(
+            self,
+            key_value_pairs):
+        """
+        Set the element stylesheets from key-value pairs.
 
-        # Get the window geometry
-        geometry = self.geometry()
+        Parameters
+        ----------
+        key_value_pairs : dict
+            Dictionary with the field names (keys) and style sheets (values).
+        """
 
-        # Move the geometry center towards the parent
-        geometry.moveCenter(self.parent.geometry().center())
+        # Loop over the dictionary items
+        for key, value in key_value_pairs.items():
 
-        # Set the shifted geometry
-        self.setGeometry(geometry)
+            # Get the attribute and set the stylesheet
+            getattr(self, key).setStyleSheet(value)
+
+    def connect_signals(self):
+        """Connect the fields with the event signals."""
+
+        # Connect the 'clicked' event with the close button
+        self.close_log_pbutton.clicked.connect(self.close)
 
     def update_log_output(self):
         """."""
@@ -67,8 +84,20 @@ class LogWindow(QMainWindow, Ui_log_window):
         # 
         self.log_tedit.setText(stream_value)
 
-    def close(self):
-        """."""
+    def position(self):
+        """Set the window position."""
 
-        # 
+        # Get the window geometry
+        geometry = self.geometry()
+
+        # Move the geometry center according to the parent window
+        geometry.moveCenter(self.parent.geometry().center())
+
+        # Set the window geometry
+        self.setGeometry(geometry)
+
+    def close(self):
+        """Close the log window."""
+
+        # Hide the window
         self.hide()

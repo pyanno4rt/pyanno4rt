@@ -66,8 +66,8 @@ border-color: rgb(186, 189, 182);</string>
      <rect>
       <x>0</x>
       <y>25</y>
-      <width>311</width>
-      <height>251</height>
+      <width>314</width>
+      <height>256</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -79,13 +79,13 @@ border-color: rgb(211, 215, 207);</string>
       <number>0</number>
      </property>
      <property name="leftMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="topMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="bottomMargin">
       <number>0</number>
@@ -93,7 +93,7 @@ border-color: rgb(211, 215, 207);</string>
      <item>
       <layout class="QVBoxLayout" name="baseline_dose_layout">
        <property name="spacing">
-        <number>3</number>
+        <number>0</number>
        </property>
       </layout>
      </item>
@@ -142,10 +142,10 @@ border-color: rgb(186, 189, 182);</string>
    <widget class="QWidget" name="reference_dose_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>305</x>
+      <x>303</x>
       <y>25</y>
-      <width>311</width>
-      <height>251</height>
+      <width>314</width>
+      <height>256</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -157,13 +157,13 @@ border-color: rgb(211, 215, 207);</string>
       <number>0</number>
      </property>
      <property name="leftMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="topMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="bottomMargin">
       <number>0</number>
@@ -171,7 +171,7 @@ border-color: rgb(211, 215, 207);</string>
      <item>
       <layout class="QVBoxLayout" name="reference_dose_layout">
        <property name="spacing">
-        <number>3</number>
+        <number>0</number>
        </property>
       </layout>
      </item>
@@ -318,19 +318,19 @@ border-color: rgb(211, 215, 207);</string>
      <rect>
       <x>120</x>
       <y>570</y>
-      <width>101</width>
+      <width>96</width>
       <height>31</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
-      <width>101</width>
+      <width>96</width>
       <height>31</height>
      </size>
     </property>
     <property name="maximumSize">
      <size>
-      <width>101</width>
+      <width>96</width>
       <height>31</height>
      </size>
     </property>
@@ -396,10 +396,10 @@ margin-right: 6px;</string>
    <widget class="QWidget" name="difference_dose_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>606</x>
       <y>25</y>
-      <width>311</width>
-      <height>251</height>
+      <width>314</width>
+      <height>256</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -411,13 +411,13 @@ border-color: rgb(211, 215, 207);</string>
       <number>0</number>
      </property>
      <property name="leftMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="topMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="bottomMargin">
       <number>0</number>
@@ -425,7 +425,7 @@ border-color: rgb(211, 215, 207);</string>
      <item>
       <layout class="QVBoxLayout" name="difference_dose_layout">
        <property name="spacing">
-        <number>3</number>
+        <number>0</number>
        </property>
       </layout>
      </item>
@@ -469,9 +469,9 @@ border-color: rgb(211, 215, 207);</string>
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>285</y>
-      <width>311</width>
-      <height>251</height>
+      <y>270</y>
+      <width>314</width>
+      <height>256</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -483,13 +483,13 @@ border-color: rgb(211, 215, 207);</string>
       <number>0</number>
      </property>
      <property name="leftMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="topMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="bottomMargin">
       <number>0</number>
@@ -497,7 +497,7 @@ border-color: rgb(211, 215, 207);</string>
      <item>
       <layout class="QVBoxLayout" name="baseline_dvh_layout">
        <property name="spacing">
-        <number>3</number>
+        <number>0</number>
        </property>
       </layout>
      </item>
@@ -506,10 +506,10 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QWidget" name="reference_dvh_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>305</x>
-      <y>285</y>
-      <width>311</width>
-      <height>251</height>
+      <x>303</x>
+      <y>270</y>
+      <width>314</width>
+      <height>256</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -521,13 +521,13 @@ border-color: rgb(211, 215, 207);</string>
       <number>0</number>
      </property>
      <property name="leftMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="topMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="bottomMargin">
       <number>0</number>
@@ -535,7 +535,7 @@ border-color: rgb(211, 215, 207);</string>
      <item>
       <layout class="QVBoxLayout" name="reference_dvh_layout">
        <property name="spacing">
-        <number>3</number>
+        <number>0</number>
        </property>
       </layout>
      </item>
@@ -544,10 +544,10 @@ border-color: rgb(211, 215, 207);</string>
    <widget class="QWidget" name="difference_dvh_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>285</y>
-      <width>311</width>
-      <height>251</height>
+      <x>606</x>
+      <y>270</y>
+      <width>314</width>
+      <height>256</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -559,13 +559,13 @@ border-color: rgb(211, 215, 207);</string>
       <number>0</number>
      </property>
      <property name="leftMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="topMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="bottomMargin">
       <number>0</number>
@@ -573,7 +573,7 @@ border-color: rgb(211, 215, 207);</string>
      <item>
       <layout class="QVBoxLayout" name="difference_dvh_layout">
        <property name="spacing">
-        <number>3</number>
+        <number>0</number>
        </property>
       </layout>
      </item>
@@ -1022,7 +1022,7 @@ border: 0px solid</string>
      <string>Disable dose contours</string>
     </property>
    </widget>
-   <widget class="QLabel" name="orient_label">
+   <widget class="QLabel" name="plane_label">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -1053,10 +1053,10 @@ border: 0px solid</string>
      <string notr="true">border: 0px;</string>
     </property>
     <property name="text">
-     <string>Orientation</string>
+     <string>Plane</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="orient_cbox">
+   <widget class="QComboBox" name="plane_cbox">
     <property name="geometry">
      <rect>
       <x>10</x>

@@ -8,7 +8,7 @@ from functools import partial
 from os.path import abspath, dirname, isfile, splitext
 from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import (
-    QComboBox, QFileDialog, QListWidget, QMainWindow, QMenu, QSpinBox)
+    QComboBox, QFileDialog, QMainWindow, QMenu, QSpinBox)
 
 # %% Internal package import
 
@@ -93,6 +93,9 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
         # Adjust the component list widget spacing
         self.components_lwidget.setSpacing(4)
 
+        # Overwrite the whee event of the component list widget
+        self.components_lwidget.wheelEvent = lambda event: None
+
         # Connect the fields with the event signals
         self.connect_signals()
 
@@ -138,9 +141,6 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
         event : object of class :class:`~PyQt5.QtCore.QEvent`
             The object representing the event.
         """
-
-        # Trigger the mouse press event of the superclass
-        super(QListWidget, self.components_lwidget).mousePressEvent(event)
 
         # Check if no element of the components list widget has been clicked
         if not self.components_lwidget.indexAt(event.pos()).isValid():
@@ -240,7 +240,7 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             'close_plan_pbutton': self.close
                 }.items():
 
-            # Connect the 'clicked' events
+            # Connect the 'clicked' event
             getattr(self, key).clicked.connect(value)
 
         # Loop over the field names with 'textChanged' events
@@ -249,17 +249,17 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             'dose_res_ledit_x', 'dose_res_ledit_y', 'dose_res_ledit_z'
                 ):
 
-            # Connect the 'textChanged' events
+            # Connect the 'textChanged' event
             getattr(self, key).textChanged.connect(self.update_fields)
 
-        # Loop over the field names with 'currentItemChanged' events
+        # Loop over the field names with 'itemClicked' events
         for key, value in {
             'components_lwidget': (lambda: self.set_enabled((
                 'components_minus_tbutton', 'components_edit_tbutton')))
                 }.items():
 
-            # Connect the 'currentItemChanged' events
-            getattr(self, key).currentItemChanged.connect(value)
+            # Connect the 'itemClicked' event
+            getattr(self, key).itemClicked.connect(value)
 
         # Connect the 'currentTextChanged' event with the reference combo box
         self.ref_plan_cbox.currentTextChanged.connect(self.update_fields)

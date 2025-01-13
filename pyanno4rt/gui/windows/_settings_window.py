@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QComboBox, QMainWindow, QSpinBox
 # %% Internal package import
 
 from pyanno4rt.gui.compilations.settings_window import Ui_settings_window
+from pyanno4rt.gui.styles._custom_styles import pbutton_composer
 
 # %% Class definition
 
@@ -27,22 +28,26 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
             self,
             parent=None):
 
-        # Get the application from the argument
-        self.parent = parent
-
         # Run the constructor from the superclass
         super().__init__()
 
         # Build the UI main window
         self.setupUi(self)
 
+        # Get the application from the argument
+        self.parent = parent
+
         # 
         self.default = ('English', 'Dark', (1024, 768), (False, False, False))
         self.current = self.default
 
         # Temporarily disable combo boxes
-        self.language_cbox.setEnabled(False)
-        self.light_mode_cbox.setEnabled(False)
+        self.set_disabled(('language_cbox', 'light_mode_cbox'))
+
+        # Set the stylesheets
+        self.set_styles({
+            'reset_settings_pbutton': pbutton_composer,
+            'save_settings_pbutton': pbutton_composer})
 
         # Loop over the QComboBox elements in the settings window
         for box in ('language_cbox', 'light_mode_cbox', 'resolution_cbox'):
@@ -50,51 +55,105 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
             # Install the custom event filters
             getattr(self, box).installEventFilter(self)
 
-        # 
-        self.reset_settings_pbutton.clicked.connect(self.reset)
-        self.save_settings_pbutton.clicked.connect(self.save_apply_close)
+        # Connect the fields with the event signals
+        self.connect_signals()
 
     def eventFilter(
             self,
             source,
             event):
         """
-        Customize the event filters.
+        Filter the events (overwrites the default event filter).
 
         Parameters
         ----------
-        source : ...
-            ...
+        source : object of class :class:`~PyQt5.QtWidgets`
+            The object representing the event source.
 
-        event : ...
-            ...
+        event : object of class :class:`~PyQt5.QtCore.QEvent`
+            The object representing the event.
 
         Returns
         -------
-        ...
+        bool or object of class :class:`~PyQt5.QtCore.QEvent`
+            Boolean value or event object depending on the filter.
         """
 
         # Check if a mouse wheel event applies to QComboBox or QSpinBox
         if (event.type() == QEvent.Wheel and
                 isinstance(source, (QComboBox, QSpinBox))):
 
-            # Filter the event
+            # Filter the event by returning True
             return True
 
-        # Else, return the even
+        # Else, return the unfiltered event
         return super().eventFilter(source, event)
 
-    def position(self):
-        """."""
+    def set_enabled(
+            self,
+            field_names):
+        """
+        Enable multiple fields by their names.
 
-        # Get the window geometry
-        geometry = self.geometry()
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
 
-        # Move the geometry center towards the parent
-        geometry.moveCenter(self.parent.geometry().center())
+        # Loop over the passed field names
+        for name in field_names:
 
-        # Set the shifted geometry
-        self.setGeometry(geometry)
+            # Get the attribute and enable the field
+            getattr(self, name).setEnabled(True)
+
+    def set_disabled(
+            self,
+            field_names):
+        """
+        Disable multiple fields by their names.
+
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
+
+        # Loop over the passed field names
+        for name in field_names:
+
+            # Get the attribute and disable the field
+            getattr(self, name).setEnabled(False)
+
+    def set_styles(
+            self,
+            key_value_pairs):
+        """
+        Set the element stylesheets from key-value pairs.
+
+        Parameters
+        ----------
+        key_value_pairs : dict
+            Dictionary with the field names (keys) and style sheets (values).
+        """
+
+        # Loop over the dictionary items
+        for key, value in key_value_pairs.items():
+
+            # Get the attribute and set the stylesheet
+            getattr(self, key).setStyleSheet(value)
+
+    def connect_signals(self):
+        """Connect the fields with the event signals."""
+
+        # Loop over the field names with 'clicked' events
+        for key, value in {
+            'reset_settings_pbutton': self.reset,
+            'save_settings_pbutton': self.save_apply_close
+                }.items():
+
+            # Connect the 'clicked' event
+            getattr(self, key).clicked.connect(value)
 
     def get_fields(self):
         """."""
@@ -140,6 +199,18 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         """."""
 
         self.set_fields(self.default)
+
+    def position(self):
+        """Set the window position."""
+
+        # Get the window geometry
+        geometry = self.geometry()
+
+        # Move the geometry center according to the parent window
+        geometry.moveCenter(self.parent.geometry().center())
+
+        # Set the window geometry
+        self.setGeometry(geometry)
 
     def save_apply_close(self):
         """."""

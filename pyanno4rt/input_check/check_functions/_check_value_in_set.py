@@ -70,4 +70,4 @@ def check_value_in_set(label, data, options, value_condition=None):
             raise ValueError(
                 "One or more elements of the treatment plan parameter "
                 f"'{label}' are not in the set "
-                "{set(options[value_condition])} for {value_condition}!")
+                f"{set(options[value_condition])} for {value_condition}!")

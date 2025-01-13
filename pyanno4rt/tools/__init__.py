@@ -36,6 +36,7 @@ from ._replace_nan import replace_nan
 from ._reset_outputs import reset_outputs
 from ._sigmoid import sigmoid
 from ._snapshot import snapshot
+from ._string_to_numeric import string_to_numeric
 
 
 __all__ = ['add_square_brackets',
@@ -65,4 +66,5 @@ __all__ = ['add_square_brackets',
            'replace_nan',
            'reset_outputs',
            'sigmoid',
-           'snapshot']
+           'snapshot',
+           'string_to_numeric']

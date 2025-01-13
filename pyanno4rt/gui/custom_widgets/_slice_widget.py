@@ -30,7 +30,6 @@ class SliceWidget(QWidget):
 
         # Set the vertical layout for the slice widget
         slice_layout = QVBoxLayout(self)
-        slice_layout.setContentsMargins(10, 10, 10, 0)
 
         # Create an image window, set its size, and add it to the slice layout
         self.image_window = GraphicsLayoutWidget()
@@ -76,7 +75,7 @@ class SliceWidget(QWidget):
             'sagittal': ((2, 1, 0), 1, 'y')}
 
         # 
-        self.parent.orient_cbox.currentTextChanged.connect(
+        self.parent.plane_cbox.currentTextChanged.connect(
             self.parent.adjust_slider_by_orientation)
 
     def add_ct(self):
@@ -145,11 +144,8 @@ class SliceWidget(QWidget):
         self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
 
         quantiles = [0.1*factor1 for factor1 in range(1, 10)]
-        quantiles.extend([0.95+0.05*factor2 for factor2 in range(0, 6)])
-
-        reference_dose = self.maximum/1.2
-
-        levels = [reference_dose*level for level in quantiles]
+        quantiles.extend([0.95, 0.975, 0.99, 0.999])
+        levels = [self.maximum*level for level in quantiles]
         norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
         mapper = ScalarMappable(norm=norm, cmap=colormaps[self.cmap])
 
@@ -174,7 +170,7 @@ class SliceWidget(QWidget):
 
         # 
         orientation, rotations, _ = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         # 
         if self.ct_cube is not None:
@@ -191,7 +187,7 @@ class SliceWidget(QWidget):
 
         # 
         orientation, rotations, _ = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if self.dose_cube_with_nan is not None:
 
@@ -214,7 +210,7 @@ class SliceWidget(QWidget):
 
         # 
         orientation, rotations, _ = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if self.dose_cube is not None and self.dose_contours is not None:
 
@@ -233,7 +229,7 @@ class SliceWidget(QWidget):
 
         # 
         orientation, rotations, _ = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if (self.segment_masks is not None
                 and self.segment_contours is not None):
@@ -253,7 +249,7 @@ class SliceWidget(QWidget):
         """."""
 
         # 
-        axis = self.orientations[self.parent.orient_cbox.currentText()][2]
+        axis = self.orientations[self.parent.plane_cbox.currentText()][2]
 
         # 
         if self.positions is not None:
@@ -267,7 +263,7 @@ class SliceWidget(QWidget):
                 f'{axis} = {position} mm')
 
         self.parent.set_enabled((
-            'orient_cbox', 'opacity_sbox', 'slice_selection_sbar'))
+            'plane_cbox', 'opacity_sbox', 'slice_selection_sbar'))
 
     def update_images(self):
         """Update all images."""
@@ -312,7 +308,7 @@ class SliceWidget(QWidget):
 
         # 
         orientation, rotations, axis = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if self.dose_cube is not None and self.dose_contours is not None:
 
@@ -334,7 +330,7 @@ class SliceWidget(QWidget):
 
         # 
         orientation, rotations, axis = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if (self.segment_masks is not None
                 and self.segment_contours is not None):
@@ -356,10 +352,10 @@ class SliceWidget(QWidget):
     def reset_parent(self):
         """."""
 
-        self.parent.orient_cbox.setCurrentText('axial')
+        self.parent.plane_cbox.setCurrentText('axial')
         self.parent.slice_selection_pos.clear()
         self.parent.set_disabled((
-            'orient_cbox', 'opacity_sbox', 'slice_selection_sbar'))
+            'plane_cbox', 'opacity_sbox', 'slice_selection_sbar'))
 
     def reset_images(self):
         """."""

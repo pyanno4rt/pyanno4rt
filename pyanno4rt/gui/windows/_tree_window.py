@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QMainWindow, QTreeWidgetItem
 # %% Internal package import
 
 from pyanno4rt.gui.compilations.tree_window import Ui_tree_window
+from pyanno4rt.gui.styles._custom_styles import pbutton_composer
 from pyanno4rt.gui.windows import TextWindow
 
 # %% Class definition
@@ -27,14 +28,14 @@ class TreeWindow(QMainWindow, Ui_tree_window):
             title,
             parent=None):
 
-        # Get the application from the argument
-        self.parent = parent
-
         # Run the constructor from the superclass
         super().__init__()
 
         # Build the UI main window
         self.setupUi(self)
+
+        # Get the application from the argument
+        self.parent = parent
 
         # 
         self.setWindowTitle(title)
@@ -42,29 +43,48 @@ class TreeWindow(QMainWindow, Ui_tree_window):
         # 
         self.text_window = TextWindow(self)
 
+        # Set the stylesheets
+        self.set_styles({
+            'expand_tree_pbutton': pbutton_composer,
+            'collapse_tree_pbutton': pbutton_composer,
+            'close_tree_pbutton': pbutton_composer})
+
+        # 
+        self.connect_signals()
+
+    def set_styles(
+            self,
+            key_value_pairs):
+        """
+        Set the element stylesheets from key-value pairs.
+
+        Parameters
+        ----------
+        key_value_pairs : dict
+            Dictionary with the field names (keys) and style sheets (values).
+        """
+
+        # Loop over the dictionary items
+        for key, value in key_value_pairs.items():
+
+            # Get the attribute and set the stylesheet
+            getattr(self, key).setStyleSheet(value)
+
+    def connect_signals(self):
+        """Connect the fields with the event signals."""
+
+        # Loop over the field names with 'clicked' events
+        for key, value in {
+            'expand_tree_pbutton': self.expand,
+            'collapse_tree_pbutton': self.collapse,
+            'close_tree_pbutton': self.close
+                }.items():
+
+            # Connect the 'clicked' event
+            getattr(self, key).clicked.connect(value)
+
         # 
         self.tree_widget.itemDoubleClicked.connect(self.show_item_text)
-
-        # 
-        self.expand_tree_pbutton.clicked.connect(self.expand_all)
-
-        # 
-        self.collapse_tree_pbutton.clicked.connect(self.collapse_all)
-
-        # 
-        self.close_tree_pbutton.clicked.connect(self.close)
-
-    def position(self):
-        """."""
-
-        # Get the window geometry
-        geometry = self.geometry()
-
-        # Move the geometry center towards the parent
-        geometry.moveCenter(self.parent.geometry().center())
-
-        # Set the shifted geometry
-        self.setGeometry(geometry)
 
     def create_tree_from_dict(self, data=None, parent=None):
         """."""
@@ -103,20 +123,32 @@ class TreeWindow(QMainWindow, Ui_tree_window):
         # 
         self.text_window.show()
 
-    def expand_all(self):
+    def expand(self):
         """."""
 
         # 
         self.tree_widget.expandAll()
 
-    def collapse_all(self):
+    def collapse(self):
         """."""
 
         # 
         self.tree_widget.collapseAll()
 
-    def close(self):
-        """."""
+    def position(self):
+        """Set the window position."""
 
-        # 
+        # Get the window geometry
+        geometry = self.geometry()
+
+        # Move the geometry center according to the parent window
+        geometry.moveCenter(self.parent.geometry().center())
+
+        # Set the window geometry
+        self.setGeometry(geometry)
+
+    def close(self):
+        """Close the tree window."""
+
+        # Hide the window
         self.hide()

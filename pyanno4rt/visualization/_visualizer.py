@@ -47,9 +47,6 @@ class Visualizer():
 
     def __init__(self, parent=None):
 
-        # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing visualizer ...")
-
         if not parent:
 
             # Initialize the default parent
@@ -75,8 +72,6 @@ class Visualizer():
 
     def launch(self):
         """Launch the visual analysis tool."""
-        # Log a message about launching the visualizer
-        Datahub().logger.display_info("Launching visualizer ...")
 
         if not self.parent:
 
@@ -92,8 +87,7 @@ class Visualizer():
         else:
 
             # Set the window size
-            self.parent.visual_window.resize(
-                int(0.7*self.parent.width()), 300)
+            self.parent.visual_window.resize(920, 320)
 
             # Get the window geometry
             geometry = self.parent.visual_window.geometry()
@@ -187,58 +181,66 @@ class MainWindow(QMainWindow):
             button.clicked.connect(getattr(self, subclass.name).view)
 
             # Check if the iteration plot buttons should be disabled
-            if (('problem' not in hub.optimization or
-                not hasattr(hub.optimization['problem'], 'tracker')
-                 or all(value == [] for value
-                        in hub.optimization['problem'].tracker.values()))
+            if ((hub.state < 3 or
+                (hub.optimization is not None and
+                 ('problem' not in hub.optimization or
+                  not hasattr(hub.optimization['problem'], 'tracker')
+                  or all(value == [] for value
+                         in hub.optimization['problem'].tracker.values()))))
                     and subclass.name in (
                         'iterations_plotter', 'ntcp_plotter')):
                 button.setEnabled(False)
 
             # Check if the iteration values button should be disabled
             if (not any(objective.display for objective in (
-                    *cv_objectives, *ml_objectives, *rb_objectives))
+                    *cv_objectives, *rb_objectives, *ml_objectives))
                     and subclass.name == 'iterations_plotter'):
                 button.setEnabled(False)
 
             # Check if the (N)TCP values button should be disabled
-            if (not (any(objective.display for objective in ml_objectives)
-                     or any(objective.display for objective in rb_objectives
-                            if objective.name in ('Lyman-Kutcher-Burman NTCP',
-                                                  'LQ Poisson TCP')))
+            if (not any(objective.display for objective in (
+                    rb_objectives + ml_objectives))
                     and subclass.name == 'ntcp_plotter'):
                 button.setEnabled(False)
 
             # Check if the feature iterations button should be disabled
-            if (('problem' not in hub.optimization or
-                (not hasattr(hub.optimization['problem'], 'tracker')
-                 or all(value == [] for value
-                        in hub.optimization['problem'].tracker.values()))
-                or all(objective.model_parameters['write_features'] is False
-                       for objective in ml_objectives))
+            if ((hub.state < 3 or
+                (hub.optimization is not None and
+                 ('problem' not in hub.optimization or
+                  (not hasattr(hub.optimization['problem'], 'tracker')
+                   or all(value == [] for value
+                          in hub.optimization['problem'].tracker.values()))))
+                 or all(objective.model_parameters['write_features'] is False
+                        for objective in ml_objectives))
                     and subclass.name == 'features_plotter'):
                 button.setEnabled(False)
 
             # Check if the metrics tables and graphs buttons should be disabled
-            if ((not hub.model_evaluations or len(hub.model_evaluations) == 0)
-                    and subclass.name in ('metrics_graphs_plotter',
-                                          'metrics_tables_plotter')):
+            if ((hub.state < 2 or
+                 (not hub.model_evaluations
+                  or len(hub.model_evaluations) == 0))
+                    and subclass.name in (
+                        'metrics_graphs_plotter', 'metrics_tables_plotter')):
                 button.setEnabled(False)
 
             # Check if the permutation importance button should be disabled
-            if ((not hub.model_inspections or len(hub.model_inspections) == 0)
+            if ((hub.state < 2 or
+                 (not hub.model_inspections
+                  or len(hub.model_inspections) == 0))
                     and subclass.name in ('permutation_importance_plotter',)):
                 button.setEnabled(False)
 
             # Check if the plan evaluation buttons should be disabled
-            if (not hub.dose_histogram and not hub.dosimetrics
-                    and subclass.name in ('dvh_plotter',
-                                          'dosimetrics_plotter')):
+            if ((hub.state < 4 or
+                (not hub.dose_histogram and not hub.dosimetrics))
+                    and subclass.name in (
+                        'dvh_plotter', 'dosimetrics_plotter')):
                 button.setEnabled(False)
 
             # Check if the CT/dose slice button should be disabled
-            if (not hub.computed_tomography or not hub.segmentation
-                    and subclass.name in ('ct_dose_plotter')):
+            if ((hub.state < 1 or
+                 not hub.computed_tomography or not hub.segmentation)
+                    and subclass.name == 'ct_dose_plotter'):
                 button.setEnabled(False)
 
         # Run the constructor from the superclass
@@ -252,7 +254,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon('./logo/logo_white_icon.png'))
 
         # Set the window title
-        self.setWindowTitle("pyanno4rt Visualizer")
+        self.setWindowTitle("Visualizer")
 
         # Set the window style sheet
         self.setStyleSheet('background-color: black;')
@@ -445,8 +447,6 @@ class MainWindow(QMainWindow):
         event : object of class `QCloseEvent`
             Instance of the class `QCloseEvent`.
         """
-        # Log a message about closing the visualizer
-        Datahub().logger.display_info("Closing visualizer ...")
 
         # Check if the visual interface is handled as a standalone
         if self.standalone:

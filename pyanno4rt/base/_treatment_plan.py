@@ -52,6 +52,10 @@ class TreatmentPlan():
                 prevents overwriting processes between different treatment \
                 plan instances by isolating their datahubs, logging channels \
                 and general storage paths.
+            .. note:: Changing the label of a treatment plan instance will \
+                automatically create a new singleton datahub object. To \
+                prevent memory issues, keep the label unchanged if possible, \
+                once set!
 
         - min_log_level : {'debug', 'info', 'warning', 'error, 'critical'}, \
                            default='info'
@@ -68,7 +72,7 @@ class TreatmentPlan():
                 :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`\
                 with constant RBE of 1.1 is used.
 
-        - number_of_fractions : int
+        - number_of_fractions : int, default=30
             Number of fractions according to the treatment scheme.
 
         - imaging_path : str
@@ -481,6 +485,9 @@ class TreatmentPlan():
         # Generate the dose information
         self.dose_info_generator.generate()
 
+        # Increment the state
+        self.datahub.state = 1
+
     def model(self):
         """Set up the machine learning outcome prediction models."""
 
@@ -505,6 +512,9 @@ class TreatmentPlan():
             apply(lambda component: component.add_model(), (
                 get_machine_learning_constraints(segmentation)
                 + get_machine_learning_objectives(segmentation)))
+
+            # Increment the state
+            self.datahub.state = 2
 
     def optimize(self):
         """Solve the inverse planning problem."""
@@ -553,6 +563,9 @@ class TreatmentPlan():
             # Solve the optimization problem
             self.fluence_optimizer.solve()
 
+            # Increment the state
+            self.datahub.state = 3
+
     def evaluate(self):
         """Initialize the evaluation classes and compute the plan metrics."""
 
@@ -589,6 +602,9 @@ class TreatmentPlan():
             # Compute the dosimetrics from the optimized dose
             self.dosimetrics.evaluate(
                 self.datahub.optimization['optimized_dose'])
+
+            # Increment the state
+            self.datahub.state = 4
 
     def visualize(
             self,
@@ -655,6 +671,12 @@ class TreatmentPlan():
                 # Override the configuration parameter value
                 self.configuration[key] = value
 
+                # Check if the key is 'min_log_level'
+                if key == 'min_log_level':
+
+                    # Change the logging levels of all handlers
+                    self.logger.change_log_levels(value)
+
             # Else, check if the key is in the optimization dictionary
             elif key in self.optimization:
 
@@ -667,7 +689,7 @@ class TreatmentPlan():
                     # Overwrite the components in the plan generator
                     self.plan_generator.components = value
 
-                    # Reset the components in the datahub
+                    # Update the components in the datahub
                     self.plan_generator.set_optimization_components(
                         verbose=False)
 

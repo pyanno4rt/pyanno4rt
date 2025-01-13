@@ -1,4 +1,4 @@
-"""Tracker and feature history resetting."""
+"""Optimization and evaluation output resetting."""
 
 # Author: Tim Ortkamp
 
@@ -16,7 +16,7 @@ from pyanno4rt.tools import (
 
 
 def reset_outputs():
-    """Reset the optimization tracker and feature calculation history."""
+    """Reset the optimization and evaluation outputs."""
 
     # Initialize the datahub
     hub = Datahub()

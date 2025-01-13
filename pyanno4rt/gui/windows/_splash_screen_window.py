@@ -8,7 +8,7 @@ from importlib.metadata import version
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QIcon
 from PyQt5.QtWidgets import (
-    QApplication, QGraphicsDropShadowEffect, QMainWindow, QDesktopWidget)
+    QApplication, QGraphicsDropShadowEffect, QMainWindow)
 from time import sleep
 
 # %% Internal package import
@@ -58,13 +58,13 @@ class SplashScreenWindow(QMainWindow, Ui_splash_window):
         for i in range(1, 101):
 
             # 
-            sleep(0.03)
+            sleep(0.02)
 
             # 
             self.progressBar.setValue(i)
 
         # 
-        sleep(0.3)
+        sleep(0.2)
 
     def position(self):
         """."""

@@ -126,6 +126,32 @@ class Logger():
 
         return logger
 
+    def change_log_levels(
+            self,
+            min_log_level):
+        """
+        Change the logging level for all handlers.
+
+        Parameters
+        ----------
+        min_log_level : {'debug', 'info', 'warning', 'error', 'critical'}
+            Minimum logging level for broadcasting messages to the console \
+            and the object streams.
+        """
+
+        # Map the values of 'min_log_level' to the logging levels of the module
+        levels = {'debug': DEBUG,
+                  'info': INFO,
+                  'warning': WARNING,
+                  'error': ERROR,
+                  'critical': CRITICAL}
+
+        # Loop over the handlers
+        for handler in self.logger.handlers:
+
+            # Set the logging level
+            handler.setLevel(level=levels[min_log_level])
+
     def display_to_console(
             self,
             level,

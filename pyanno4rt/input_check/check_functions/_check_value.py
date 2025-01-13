@@ -57,4 +57,4 @@ def check_value(label, data, reference, sign, is_vector=False):
             # Raise an error to indicate an invalid element
             raise ValueError(
                 "One or more elements of the treatment plan parameter "
-                "'{label}' are not {sign} {reference}!")
+                f"'{label}' are not {sign} {reference}!")

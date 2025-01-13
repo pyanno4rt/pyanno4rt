@@ -30,7 +30,6 @@ class SliceCompareWidget(QWidget):
 
         # Set the vertical layout for the slice widget
         slice_layout = QVBoxLayout(self)
-        slice_layout.setContentsMargins(0, 0, 0, 0)
 
         # Create an image window, set its size, and add it to the slice layout
         self.image_window = GraphicsLayoutWidget()
@@ -104,11 +103,16 @@ class SliceCompareWidget(QWidget):
             # 
             self.plan = plan[0]
             self.dose_cube = (
-                plan[1].datahub.optimization['optimized_dose']
-                - plan[0].datahub.optimization['optimized_dose'])
+                plan[0].datahub.optimization['optimized_dose']
+                - plan[1].datahub.optimization['optimized_dose'])
             max_diff = max(
                 abs(self.dose_cube.min()), abs(self.dose_cube.max()))
             self.minimum, self.maximum = -max_diff, max_diff
+
+            quantiles = [0.001, 0.01, 0.025, 0.05]
+            quantiles.extend([0.1*factor1 for factor1 in range(1, 10)])
+            quantiles.extend([0.95, 0.975, 0.99, 0.999])
+            levels = [self.maximum*(2*level - 1) for level in quantiles]
 
         else:
 
@@ -120,6 +124,10 @@ class SliceCompareWidget(QWidget):
             self.plan = plan
             self.dose_cube = self.plan.datahub.optimization['optimized_dose']
             self.minimum, self.maximum = minimum, maximum
+
+            quantiles = [0.1*factor1 for factor1 in range(1, 10)]
+            quantiles.extend([0.95, 0.975, 0.99, 0.999])
+            levels = [self.maximum*level for level in quantiles]
 
         # 
         self.ct_cube = self.plan.datahub.computed_tomography['cubeHU']
@@ -134,12 +142,6 @@ class SliceCompareWidget(QWidget):
         self.dose_cube_with_nan = self.dose_cube.copy()
         self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
 
-        quantiles = [0.1*factor1 for factor1 in range(1, 10)]
-        quantiles.extend([0.95+0.05*factor2 for factor2 in range(0, 6)])
-
-        reference_dose = maximum/1.2
-
-        levels = [reference_dose*level for level in quantiles]
         norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
         mapper = ScalarMappable(norm=norm, cmap=colormaps[self.cmap])
 
@@ -177,7 +179,7 @@ class SliceCompareWidget(QWidget):
 
         # 
         orientation, rotations, _ = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         # 
         if self.ct_cube is not None and not self.parent.disCT_cbox.isChecked():
@@ -194,7 +196,7 @@ class SliceCompareWidget(QWidget):
 
         # 
         orientation, rotations, _ = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if (self.dose_cube_with_nan is not None
                 and not self.parent.disDose_cbox.isChecked()):
@@ -218,7 +220,7 @@ class SliceCompareWidget(QWidget):
 
         # 
         orientation, rotations, _ = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if (self.dose_cube is not None
                 and self.dose_contours is not None
@@ -239,7 +241,7 @@ class SliceCompareWidget(QWidget):
 
         # 
         orientation, rotations, _ = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if (self.segment_masks is not None
                 and self.segment_contours is not None
@@ -260,7 +262,7 @@ class SliceCompareWidget(QWidget):
         """."""
 
         # 
-        axis = self.orientations[self.parent.orient_cbox.currentText()][2]
+        axis = self.orientations[self.parent.plane_cbox.currentText()][2]
 
         # 
         if self.positions is not None:
@@ -306,7 +308,7 @@ class SliceCompareWidget(QWidget):
 
         # 
         orientation, rotations, axis = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if self.dose_cube is not None and self.dose_contours is not None:
 
@@ -325,7 +327,7 @@ class SliceCompareWidget(QWidget):
 
         # 
         orientation, rotations, axis = self.orientations[
-            self.parent.orient_cbox.currentText()]
+            self.parent.plane_cbox.currentText()]
 
         if (self.segment_masks is not None
                 and self.segment_contours is not None):

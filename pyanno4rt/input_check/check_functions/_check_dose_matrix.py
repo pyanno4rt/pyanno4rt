@@ -36,6 +36,6 @@ def check_dose_matrix(dose_shape, dose_matrix_rows):
 
         # Raise an error to indicate a difference in the number of dose voxels
         raise ValueError(
-            "The dose grid resolution passed in the treatment plan implies "
+            "The dose grid resolution from the treatment plan implies "
             f"{prod(dose_shape)} voxels, but the length of the first "
             f"dimension of the dose-influence matrix is {dose_matrix_rows}!")

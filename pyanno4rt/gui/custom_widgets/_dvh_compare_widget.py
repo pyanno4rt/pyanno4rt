@@ -17,15 +17,14 @@ class DVHCompareWidget(QWidget):
 
     def __init__(self, parent=None):
 
-        # 
-        self.parent = parent
-
         # Call the superclass constructor
         super().__init__()
 
+        # 
+        self.parent = parent
+
         # Set the vertical layout for the DVH widget
         dvh_layout = QVBoxLayout(self)
-        dvh_layout.setContentsMargins(0, 0, 0, 0)
 
         # 
         self.plot_graph = PlotWidget()
@@ -55,14 +54,13 @@ class DVHCompareWidget(QWidget):
         self.plot_graph.addItem(self.vertical_line, ignoreBounds=True)
         self.plot_graph.addItem(self.horizontal_line, ignoreBounds=True)
 
-    def add_style_and_data(self, dose_histogram, x_range=None, y_range=None,
+    def add_style_and_data(self, dose_histogram, x_range=None,
                            baseline=None, reference=None):
         """."""
 
         # 
         self.dose_histogram = dose_histogram
         self.x_range = x_range
-        self.y_range = y_range
         self.baseline = baseline
         self.reference = reference
 
@@ -84,28 +82,26 @@ class DVHCompareWidget(QWidget):
         self.segment_styles = dict(
             zip(self.segments, tuple(zip(colors, line_styles))))
 
-        self.plot_graph.getPlotItem().showAxis('bottom')
-        self.plot_graph.getPlotItem().showAxis('top')
-        self.plot_graph.getPlotItem().showAxis('left')
-        self.plot_graph.getPlotItem().showAxis('right')
-
-        self.plot_graph.showGrid(x=True, y=True, alpha=0.2)
-        self.plot_graph.setLabels(
-            left=" ", right=" ", top=" ", bottom=" ")
-
-        # ax_right = self.plot_graph.getAxis('right')
-        # ax_right.setTicks([])
-        # ax_top = self.plot_graph.getAxis('top')
-        # ax_top.setTicks([])
-
         # Set the signal proxy to update the crosshair at mouse moves
         self.crosshair_update = SignalProxy(
             self.plot_graph.scene().sigMouseMoved, rateLimit=60,
             slot=self.update_crosshair)
 
+        # 
+        if all(plan is not None for plan in (baseline, reference)):
+
+            # 
+            self.delta = "Δ"
+
+        else:
+
+            # 
+            self.delta = ""
+
         # Set the graph title
         self.plot_graph.setTitle("<span style='color: #FFAE42; "
-                                 "font-size: 11pt'>dose/fx: %0.2f</span>, "
+                                 f"font-size: 11pt'>{self.delta}"
+                                 "dose/fx: %0.2f</span>, "
                                  "<span style='color: #FFAE42; "
                                  "font-size: 11pt'>vRel: %0.1f</span>"
                                  % (0, 0.0))
@@ -113,14 +109,12 @@ class DVHCompareWidget(QWidget):
         # 
         if x_range is None:
 
-            # 
-            self.x_range = (0, max(self.dose_histogram['evaluation_points']))
+            self.x_range = (
+                min(0, min(self.dose_histogram['evaluation_points'])),
+                max(self.dose_histogram['evaluation_points']))
 
         # 
-        if y_range is None:
-
-            # 
-            self.y_range = (0, 100)
+        self.y_range = (0, 100)
 
         # 
         self.plot_graph.plotItem.vb.setLimits(
@@ -129,6 +123,15 @@ class DVHCompareWidget(QWidget):
 
         # 
         self.plot_graph.plotItem.vb.enableAutoRange()
+
+        self.plot_graph.getPlotItem().showAxis('bottom')
+        self.plot_graph.getPlotItem().showAxis('top')
+        self.plot_graph.getPlotItem().showAxis('left')
+        self.plot_graph.getPlotItem().showAxis('right')
+
+        self.plot_graph.showGrid(x=True, y=True, alpha=0.2)
+        self.plot_graph.setLabels(
+            left=" ", right=" ", top=" ", bottom=" ")
 
     def get_segment_statistics(self, event):
         """."""
@@ -149,18 +152,11 @@ class DVHCompareWidget(QWidget):
         if self.baseline and self.reference:
 
             # 
-            dosimetrics = {
-                segment: {metric: (
-                    self.reference.datahub.dosimetrics[segment][metric]
-                    - self.baseline.datahub.dosimetrics[segment][metric])
-                    for metric in ['mean', 'std', 'max', 'min']}
-                for segment in self.baseline.datahub.dosimetrics
-                if segment not in ('display_segments', 'display_metrics')}
-            dosimetrics |= {
-                'display_segments': (
-                    self.baseline.datahub.dosimetrics['display_segments']),
-                'display_metrics': (
-                    self.baseline.datahub.dosimetrics['display_metrics'])}
+            dosimetrics = self.parent.evaluate_dosimetrics(
+                self.baseline.datahub.optimization['optimized_dose']
+                - self.reference.datahub.optimization['optimized_dose'],
+                self.baseline.datahub.computed_tomography,
+                self.baseline.datahub.segmentation)
 
         # 
         self.parent.segment_ledit.setText(event.name())
@@ -204,6 +200,12 @@ class DVHCompareWidget(QWidget):
         # Get all plot items
         self.parent.select_dvh_curves(event)
 
+    def unselect_dvh_curves_from_parent(self, event):
+        """."""
+
+        # 
+        self.parent.unselect_dvh_curves(event)
+
     def update_crosshair(
             self,
             event):
@@ -225,8 +227,9 @@ class DVHCompareWidget(QWidget):
                 # Update the graph title
                 self.plot_graph.setTitle(
                     "<span style='color: #FFAE42; "
-                    "font-size: 11pt'>dose/fx: "
-                    "%0.2f</span>, <span style='color: #FFAE42; "
+                    f"font-size: 11pt'>{self.delta}"
+                    "dose/fx: %0.2f</span>, "
+                    "<span style='color: #FFAE42; "
                     "font-size: 11pt'>vRel: %0.1f</span>"
                     % (mouse_point.x(), mouse_point.y()))
 
@@ -235,8 +238,9 @@ class DVHCompareWidget(QWidget):
                 # Update the graph title
                 self.plot_graph.setTitle(
                     "<span style='color: #FFAE42; "
-                    "font-size: 11pt'>dose/fx: "
-                    "%0.2f</span>, <span style='color: #FFAE42; "
+                    f"font-size: 11pt'>{self.delta}"
+                    "dose/fx: %0.2f</span>, "
+                    "<span style='color: #FFAE42; "
                     "font-size: 11pt'>vRel: %0.1f</span>"
                     % (0, 0.0))
 
@@ -259,3 +263,5 @@ class DVHCompareWidget(QWidget):
                 pen=pen, name=segment, clickable=True)
             plot.sigClicked.connect(self.get_segment_statistics)
             plot.sigClicked.connect(self.select_dvh_curves_from_parent)
+            self.plot_graph.scene().sigMouseClicked.connect(
+                self.unselect_dvh_curves_from_parent)

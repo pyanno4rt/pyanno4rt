@@ -90,6 +90,10 @@ class Datahub():
     dosimetrics : None or dict
         Dictionary with information on the dosimetrics for each segmented \
         structure.
+
+    state : int
+        A state variable describing the current stage of the plan datahub \
+        (0=initialized, 1=configured, 2=modeled, 3=optimized, 4=evaluated).
     """
 
     # Initialize the datahub instances dictionary
@@ -112,6 +116,7 @@ class Datahub():
     model_outcomes = None
     dose_histogram = None
     dosimetrics = None
+    state = 0
 
     def __new__(
             cls,

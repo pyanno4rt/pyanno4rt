@@ -5,14 +5,18 @@
 # %% External package import
 
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import ceil, linspace
-from PyQt5.QtWidgets import QMainWindow
+from numpy import (
+    array, ceil, floor, linspace, logical_and, mean, sort, unravel_index)
+from PyQt5.QtCore import QEvent
+from PyQt5.QtWidgets import QComboBox, QMainWindow, QSpinBox
 from pyqtgraph import mkPen
+from scipy.interpolate import interp1d
 
 # %% Internal package import
 
 from pyanno4rt.gui.compilations.compare_window import Ui_compare_window
 from pyanno4rt.gui.custom_widgets import DVHCompareWidget, SliceCompareWidget
+from pyanno4rt.gui.styles._custom_styles import cbox, sbox, pbutton_composer
 from pyanno4rt.tools import get_constraint_segments, get_objective_segments
 
 # %% Class definition
@@ -65,6 +69,77 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.reference_dvh_layout.insertWidget(0, self.reference_dvh_widget)
         self.difference_dvh_layout.insertWidget(0, self.difference_dvh_widget)
 
+        # Set the stylesheets
+        self.set_styles({
+            'plane_cbox': cbox,
+            'opacity_sbox': sbox,
+            'joint_dvh_pbutton': pbutton_composer,
+            'close_compare_pbutton': pbutton_composer})
+
+        # Loop over the QComboBox and QSpinBox elements
+        for box in ('plane_cbox', 'opacity_sbox'):
+
+            # Install the custom event filter
+            getattr(self, box).installEventFilter(self)
+
+        # Set the view box links
+        self.set_links()
+
+        # Connect the fields with the event signals
+        self.connect_signals()
+
+    def eventFilter(
+            self,
+            source,
+            event):
+        """
+        Filter the events (overwrites the default event filter).
+
+        Parameters
+        ----------
+        source : object of class :class:`~PyQt5.QtWidgets`
+            The object representing the event source.
+
+        event : object of class :class:`~PyQt5.QtCore.QEvent`
+            The object representing the event.
+
+        Returns
+        -------
+        bool or object of class :class:`~PyQt5.QtCore.QEvent`
+            Boolean value or event object depending on the filter.
+        """
+
+        # Check if a mouse wheel event applies to QComboBox or QSpinBox
+        if (event.type() == QEvent.Wheel and
+                isinstance(source, (QComboBox, QSpinBox))):
+
+            # Filter the event by returning True
+            return True
+
+        # Else, return the unfiltered event
+        return super().eventFilter(source, event)
+
+    def set_styles(
+            self,
+            key_value_pairs):
+        """
+        Set the element stylesheets from key-value pairs.
+
+        Parameters
+        ----------
+        key_value_pairs : dict
+            Dictionary with the field names (keys) and style sheets (values).
+        """
+
+        # Loop over the dictionary items
+        for key, value in key_value_pairs.items():
+
+            # Get the attribute and set the stylesheet
+            getattr(self, key).setStyleSheet(value)
+
+    def set_links(self):
+        """."""
+
         # 
         self.baseline_dose_slice_widget.viewbox.setXLink(
             self.reference_dose_slice_widget.viewbox)
@@ -81,14 +156,17 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.baseline_dvh_widget.plot_graph.getPlotItem().vb.setYLink(
             self.reference_dvh_widget.plot_graph.getPlotItem().vb)
 
+    def connect_signals(self):
+        """Connect the fields with the event signals."""
+
         # 
-        self.orient_cbox.currentTextChanged.connect(
+        self.plane_cbox.currentTextChanged.connect(
             self.adjust_slider_by_orientation)
-        self.orient_cbox.currentTextChanged.connect(
+        self.plane_cbox.currentTextChanged.connect(
             self.baseline_dose_slice_widget.change_orientation)
-        self.orient_cbox.currentTextChanged.connect(
+        self.plane_cbox.currentTextChanged.connect(
             self.reference_dose_slice_widget.change_orientation)
-        self.orient_cbox.currentTextChanged.connect(
+        self.plane_cbox.currentTextChanged.connect(
             self.difference_dose_slice_widget.change_orientation)
 
         # 
@@ -145,7 +223,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         # 
         self.close_compare_pbutton.clicked.connect(self.close)
 
-    def add_plots(self, baseline, reference):
+    def add_plans(self, baseline, reference):
         """."""
 
         # 
@@ -186,89 +264,126 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.difference_dvh_widget.reset_dvh()
 
         # 
-        dvh_diff = {
-            segment: {'dvh_values': (
-                reference.datahub.dose_histogram[segment]['dvh_values']
-                - baseline.datahub.dose_histogram[segment]['dvh_values'])}
-            for segment in baseline.datahub.dose_histogram
-            if segment not in ('evaluation_points', 'display_segments')}
-        dvh_diff |= {
-            'evaluation_points': (
-                baseline.datahub.dose_histogram['evaluation_points']),
-            'display_segments': (
-                baseline.datahub.dose_histogram['display_segments'])}
+        baseline_dvh = self.evaluate_dvh(
+            baseline.datahub.optimization['optimized_dose'],
+            baseline.datahub.computed_tomography,
+            baseline.datahub.segmentation,
+            1000)
+        reference_dvh = self.evaluate_dvh(
+            reference.datahub.optimization['optimized_dose'],
+            baseline.datahub.computed_tomography,
+            baseline.datahub.segmentation,
+            1000)
+        dvh_diff = self.evaluate_dvh(
+            baseline.datahub.optimization['optimized_dose']
+            - reference.datahub.optimization['optimized_dose'],
+            baseline.datahub.computed_tomography,
+            baseline.datahub.segmentation,
+            1000)
 
         # 
         joint_segments = sorted(tuple(
-            set(baseline.datahub.dose_histogram['display_segments'])
-            & set(reference.datahub.dose_histogram['display_segments'])),
+            set(baseline_dvh['display_segments'])
+            & set(reference_dvh['display_segments'])),
             key=lambda t: t[0])
 
         # 
-        if len(joint_segments) == 0:
-
-            joint_segments = None
-
-        # 
-        diff_ranges = {
-            'x': (0,
-                  max(baseline.datahub.dose_histogram['evaluation_points'][-1],
-                      reference.datahub.dose_histogram['evaluation_points'][-1]
-                      )),
-            'y': (
-                min(min(
-                    dvh_diff[segment]['dvh_values'])
-                    for segment in joint_segments
-                    if segment not in ('evaluation_points', 'display_segments')),
-                max(max(
-                    dvh_diff[segment]['dvh_values'])
-                    for segment in joint_segments
-                    if segment not in ('evaluation_points', 'display_segments')))}
+        x_range = (
+            0, max(baseline_dvh['evaluation_points'][-1],
+                   reference_dvh['evaluation_points'][-1]))
 
         # Add the style and input data to the DVH widget
         self.baseline_dvh_widget.add_style_and_data(
-            baseline.datahub.dose_histogram, x_range=diff_ranges['x'],
-            baseline=baseline)
+            baseline_dvh, x_range=x_range, baseline=baseline)
         self.reference_dvh_widget.add_style_and_data(
-            reference.datahub.dose_histogram, x_range=diff_ranges['x'],
-            reference=reference)
+            reference_dvh, x_range=x_range, reference=reference)
         self.difference_dvh_widget.add_style_and_data(
-            dvh_diff, x_range=diff_ranges['x'], y_range=diff_ranges['y'],
-            baseline=baseline, reference=reference)
+            dvh_diff, baseline=baseline, reference=reference)
 
         # Update the plot of the DVH widget
         self.baseline_dvh_widget.update_dvh(joint_segments)
         self.reference_dvh_widget.update_dvh(joint_segments)
         self.difference_dvh_widget.update_dvh(joint_segments)
 
-    def adjust_slider_by_orientation(self):
+    def set_titles(
+            self,
+            baseline_text,
+            reference_text,
+            difference_text):
         """."""
 
         # 
-        if self.orient_cbox.currentText() == 'axial':
+        self.baseline_label.setText(baseline_text)
+        self.reference_label.setText(reference_text)
+        self.difference_label.setText(difference_text)
 
-            # Get the axial dimension of the CT cube
-            axial_length = self.baseline.datahub.computed_tomography[
-                'cube_dimensions'][2]
+    def adjust_slider_by_orientation(self):
+        """Adjust the slider for slice selection by the orientation."""
 
-        # 
-        elif self.orient_cbox.currentText() == 'coronal':
+        # Create a mapping between planes and axes
+        mapping = {'axial': 2, 'coronal': 0, 'sagittal': 1}
 
-            # Get the axial dimension of the CT cube
-            axial_length = self.baseline.datahub.computed_tomography[
-                'cube_dimensions'][0]
-
-        else:
-
-            # Get the axial dimension of the CT cube
-            axial_length = self.baseline.datahub.computed_tomography[
-                'cube_dimensions'][1]
+        # Get the depth of the current plane
+        plane_depth = self.baseline.datahub.computed_tomography[
+            'cube_dimensions'][mapping[self.plane_cbox.currentText()]]
 
         # Set the range of the slice selection scrollbar
-        self.slice_selection_sbar.setRange(0, axial_length-1)
+        self.slice_selection_sbar.setRange(0, plane_depth-1)
 
         # Set the initial scrollbar value
-        self.slice_selection_sbar.setValue(int((axial_length-1)/2))
+        self.slice_selection_sbar.setValue(int((plane_depth-1)/2))
+
+    def evaluate_dvh(
+            self,
+            dose_cube,
+            computed_tomography,
+            segmentation,
+            number_of_points):
+        """
+        Evaluate the DVH for all segments.
+
+        Parameters
+        ----------
+        dose_cube : ndarray
+            Three-dimensional array with the dose values (CT resolution).
+        """
+
+        def evaluate_cumulative_dvh(dose, points):
+            """Evaluate the cumulative DVH points."""
+
+            return array([(dose >= point).sum() for point in points])
+
+        def get_evaluation_points():
+            """Get the points at which to evaluate the DVH."""
+
+            # Get the minimum and the maximum dose from the dose cube
+            minimum_dose, maximum_dose = dose_cube.min(), dose_cube.max()
+
+            return linspace(
+                *(min(0, minimum_dose), 1.05*maximum_dose), number_of_points,
+                endpoint=True)
+
+        def get_segment_dvh(indices, cube_dimensions, points):
+            """Get the DVH for a single segment."""
+
+            return (evaluate_cumulative_dvh(dose_cube[unravel_index(
+                indices, cube_dimensions, order='F')], points)
+                * 100/len(indices))
+
+        # Initialize the dose histogram dictionary with the evaluation points
+        dose_histogram = {'evaluation_points': get_evaluation_points()}
+
+        # Add the segment names with the corresponding DVH values
+        dose_histogram |= {segment: {'dvh_values': get_segment_dvh(
+            segmentation[segment]['raw_indices'],
+            computed_tomography['cube_dimensions'],
+            dose_histogram['evaluation_points'])}
+            for segment in segmentation}
+
+        # Add the segment names to be displayed
+        dose_histogram['display_segments'] = (*segmentation,)
+
+        return dose_histogram
 
     def select_dvh_curves(self, event):
         """."""
@@ -303,6 +418,30 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                         self.std_ledit.clear()
                         self.maximum_ledit.clear()
                         self.minimum_ledit.clear()
+
+    def unselect_dvh_curves(self, event):
+        """."""
+
+        # 
+        if not event.isAccepted():
+
+            for widget in (self.baseline_dvh_widget, self.reference_dvh_widget,
+                           self.difference_dvh_widget):
+
+                # Get all plot items
+                items = widget.plot_graph.getPlotItem().listDataItems()
+
+                for item in items:
+                    pen = item.curve.opts['pen']
+                    item.curve.setPen(mkPen(color=pen.color(),
+                                            style=pen.style(),
+                                            width=1))
+
+                self.segment_ledit.clear()
+                self.mean_ledit.clear()
+                self.std_ledit.clear()
+                self.maximum_ledit.clear()
+                self.minimum_ledit.clear()
 
     def open_joint_dvh(self):
         """."""
@@ -400,20 +539,58 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         # Show the plot in screen size
         figure_manager.window.showMaximized()
 
+    def evaluate_dosimetrics(
+            self,
+            dose_cube,
+            computed_tomography,
+            segmentation):
+        """
+        Evaluate the dosimetrics for all segments.
+
+        Parameters
+        ----------
+        dose_cube : ndarray
+            Three-dimensional array with the dose values (CT resolution).
+        """
+
+        # Initialize the dosimetrics dictionary
+        dosimetrics = {segment: {} for segment in segmentation}
+
+        # Loop over the segments
+        for segment in dosimetrics:
+
+            # Get the sorted dose vector
+            dose = sort(dose_cube[unravel_index(
+                segmentation[segment]['raw_indices'],
+                computed_tomography['cube_dimensions'], order='F')])
+
+            # Get the length of the dose vector
+            dose_length = len(dose)
+
+            # Check if any dose values are present
+            if dose_length > 0:
+
+                # Compute the base statistics from the dose vector
+                dosimetrics[segment] |= {
+                    metric: getattr(dose, metric)()
+                    for metric in ('mean', 'std', 'min', 'max')}
+
+        return dosimetrics
+
     def position(self):
-        """."""
+        """Set the window position."""
 
         # Get the window geometry
         geometry = self.geometry()
 
-        # Move the geometry center towards the parent
+        # Move the geometry center according to the parent window
         geometry.moveCenter(self.parent.geometry().center())
 
-        # Set the shifted geometry
+        # Set the window geometry
         self.setGeometry(geometry)
 
     def close(self):
-        """."""
+        """Close the plan comparison window."""
 
-        # 
+        # Hide the window
         self.hide()

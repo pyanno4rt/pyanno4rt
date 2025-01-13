@@ -426,13 +426,10 @@ class SliceWidget(QWidget):
 
         # Get the dose quantiles
         quantiles = [0.1*factor1 for factor1 in range(1, 10)]
-        quantiles.extend([0.95+0.05*factor2 for factor2 in range(0, 6)])
-
-        # Determine the reference dose value
-        reference_dose = self.dose_cube.max()/1.2
+        quantiles.extend([0.95, 0.975, 0.99, 0.999])
 
         # Compute the dose levels for the contours
-        levels = [reference_dose*level for level in quantiles]
+        levels = [self.dose_cube.max()*level for level in quantiles]
 
         # Normalize the dose levels to the unit interval
         norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
