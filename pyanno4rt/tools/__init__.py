@@ -29,6 +29,7 @@ from ._get_radiobiology_objectives import get_radiobiology_objectives
 from ._identity import identity
 from ._inverse_sigmoid import inverse_sigmoid
 from ._load_list_from_file import load_list_from_file
+from ._load_segments_from_path import load_segments_from_path
 from ._non_decreasing import non_decreasing
 from ._non_increasing import non_increasing
 from ._monotonic import monotonic
@@ -60,6 +61,7 @@ __all__ = ['add_square_brackets',
            'identity',
            'inverse_sigmoid',
            'load_list_from_file',
+           'load_segments_from_path',
            'non_decreasing',
            'non_increasing',
            'monotonic',

@@ -26,8 +26,6 @@ class DoseVx(DosiomicFeature):
     @staticmethod
     def compute(level, dose, *args):
         """Check the jitting status and call the computation function."""
-        # Convert the 'level' argument to integer
-        level = int(level)
 
         # Check if the value function has not yet been jitted
         if not DoseVx.value_is_jitted:
@@ -43,8 +41,6 @@ class DoseVx(DosiomicFeature):
     @staticmethod
     def differentiate(level, dose, *args):
         """Check the jitting status and call the differentiation function."""
-        # Convert the 'level' argument to integer
-        level = int(level)
 
         # Check if the gradient function has not yet been jitted
         if not DoseVx.gradient_is_jitted:

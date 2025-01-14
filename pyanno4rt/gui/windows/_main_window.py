@@ -9,7 +9,7 @@ from webbrowser import open as webopen
 from functools import partial, reduce
 from importlib.metadata import version
 from logging import Handler
-from os.path import abspath, dirname, splitext
+from os.path import abspath, dirname
 from json import dumps, loads
 from numpy import zeros
 from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QThread
@@ -33,12 +33,10 @@ from pyanno4rt.gui.windows import (
     SplashScreenWindow, TreeWindow)
 from pyanno4rt.gui.windows.components import component_window_map
 from pyanno4rt.optimization.components import component_map
-from pyanno4rt.patient.import_functions import (
-    read_data_from_dcm, read_data_from_mat, read_data_from_p)
 from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, get_machine_learning_constraints,
-    get_machine_learning_objectives, load_list_from_file, snapshot,
-    string_to_numeric)
+    get_machine_learning_objectives, load_list_from_file,
+    load_segments_from_path, snapshot, string_to_numeric)
 
 # %% Class definition
 
@@ -1074,76 +1072,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Set the imaging path field cursor position to zero
             self.img_path_ledit.setCursorPosition(0)
 
-    def load_segments_from_data(self):
-        """Load the segment names and types from the imaging data."""
-
-        # Get the imaging path
-        img_path = self.img_path_ledit.text()
-
-        # Set the target flags
-        flags = ('tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor')
-
-        # Check if the path leads to a DICOM folder
-        if splitext(img_path)[1] == '':
-
-            # Read the DICOM segmentation data
-            _, segmentation_data = read_data_from_dcm(img_path)
-
-            # Initialize the segment dictionary
-            self.segments = {}
-
-            # Loop over the ROI contours
-            for roi_contour in segmentation_data.ROIContourSequence:
-
-                # Find the corresponding segment from the index number
-                roi_structure = next(
-                    sequence
-                    for sequence in segmentation_data.StructureSetROISequence
-                    if roi_contour.ReferencedROINumber == sequence.ROINumber)
-
-                # Check if the segment is a target volume
-                if any(string in roi_structure.lower() for string in flags):
-
-                    # Set the segment type to 'TARGET'
-                    segment_type = 'TARGET'
-
-                else:
-
-                    # Set the segment type to 'OAR'
-                    segment_type = 'OAR'
-
-                # Add segment name and type to the dictionary
-                self.segments |= {roi_structure.ROIName: segment_type}
-
-        # Check if the path leads to a MATLAB file
-        elif splitext(img_path)[1] == '.mat':
-
-            # Read the MATLAB segmentation data
-            _, segmentation_data = read_data_from_mat(img_path)
-
-            # Generate the segment dictionary
-            self.segments = {
-                segment_values[1]: ('TARGET' if any(
-                    string in segment_values[1].lower() for string in flags)
-                    else 'OAR') for segment_values in segmentation_data}
-
-        # Check if the path leads to a Python file
-        elif splitext(img_path)[1] == '.p':
-
-            # Get the segmentation data
-            _, segmentation_data = read_data_from_p(img_path)
-
-            # Get the segments
-            self.segments = {
-                segment: ('TARGET' if any(
-                    string in segment.lower() for string in flags)
-                    else 'OAR') for segment in segmentation_data}
-
-        else:
-
-            # Set the segment dictionary empty
-            self.segments = {}
-
     def add_dose_matrix_path(self):
         """Add the dose-influence matrix from a folder."""
 
@@ -1173,7 +1101,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             instance.update(self.transform_configuration_to_dict())
 
             # Load the segment names and types
-            self.load_segments_from_data()
+            self.segments = load_segments_from_path(self.img_path_ledit.text())
 
         except Exception as exception:
 
@@ -1254,7 +1182,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.img_path_ledit.setText(abspath(configuration['imaging_path']))
 
         # Load the segment names and types
-        self.load_segments_from_data()
+        self.segments = load_segments_from_path(self.img_path_ledit.text())
 
         # Check if no target imaging resolution has been passed
         if configuration['target_imaging_resolution'] is None:

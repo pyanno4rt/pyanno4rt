@@ -6,12 +6,14 @@
 
 from warnings import warn
 
+from pandas import read_csv
+
 # %% Internal package import
 
 from pyanno4rt.input_check.check_maps import (
     component_map, configuration_map, evaluation_map, model_display_map,
     model_map, optimization_map, top_level_map, tune_space_map)
-from pyanno4rt.tools import flatten
+from pyanno4rt.tools import flatten, load_segments_from_path
 
 # %% Class definition
 
@@ -30,6 +32,12 @@ class InputChecker():
     check_map : dict
         Dictionary with all mappings between parameter names and validity \
         check functions.
+
+    imaging_path : str
+        
+
+    data_path : str
+        Path to the data set used for fitting the machine learning model.
 
     Raises
     ------
@@ -68,6 +76,10 @@ class InputChecker():
                           for dictionary in check_maps
                           for key, value in dictionary.items()}
 
+        # Initialize the external data paths
+        self.imaging_path = None
+        self.data_path = None
+
     def approve(
             self,
             input_dictionary):
@@ -92,20 +104,25 @@ class InputChecker():
                 'initial_fluence_vector': {
                     'type_condition': input_dictionary.get(
                         'initial_strategy')},
-                'time_variable_name': {
-                    'type_condition': input_dictionary.get('label_viewpoint')},
                 'data_path': {
-                    'type_condition': type(
-                        input_dictionary.get('model_folder_path')) == str},
-                'label_name': {
-                    'type_condition': type(
-                        input_dictionary.get('model_folder_path')) == str}}
+                    'type_condition': isinstance(
+                        input_dictionary.get('model_folder_path'), str)},
+                'data_columns': {
+                    'type_condition': isinstance(
+                        input_dictionary.get('model_folder_path'), str)}}
 
         # Check if the type condition on the data path is fulfilled
         if args['data_path']['type_condition']:
 
             # Reduce the check map for the data path
             self.check_map['data_path'] = (self.check_map['data_path'][0],)
+
+        # Check if the type condition on the data columns is fulfilled
+        if args['data_columns']['type_condition']:
+
+            # Reduce the check map for the data path
+            self.check_map['data_columns'] = (
+                self.check_map['data_columns'][0],)
 
         # Loop over the dictionary keys
         for key, value in input_dictionary.items():
@@ -133,8 +150,37 @@ class InputChecker():
                     filter_args = {arg: key_args[arg] for arg in func_args
                                    if arg in key_args}
 
+                    # Check if the function is 'check_components'
+                    if function.func.__name__ == 'check_components':
+
+                        # Extend the arguments by the segments
+                        filter_args |= {
+                            'segments': load_segments_from_path(
+                                self.imaging_path)}
+
+                    # Else, check if the function is 'check_data_columns'
+                    elif function.func.__name__ == 'check_data_columns':
+
+                        # Extend the arguments by the data column names
+                        filter_args |= {
+                            'columns': tuple(read_csv(self.data_path)),
+                            'segments': load_segments_from_path(
+                                self.imaging_path)}
+
                     # Run the check function
                     function(key, value, **filter_args)
+
+                    # Check if the key is 'imaging_path'
+                    if key == 'imaging_path':
+
+                        # Update the imaging path
+                        self.imaging_path = value
+
+                    # Check if the key is 'data_path'
+                    if key == 'data_path':
+
+                        # Update the data path
+                        self.data_path = value
 
             else:
 

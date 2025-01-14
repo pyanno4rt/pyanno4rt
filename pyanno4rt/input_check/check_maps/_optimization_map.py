@@ -21,6 +21,7 @@ optimization_map = {
     'components': (
         partial(check_type, types=dict),
         partial(check_components, check_functions=(
+            check_value_in_set,
             partial(check_key_in_dict, keys=('type', 'instance')),
             partial(check_value_in_set, options=('objective', 'constraint')),
             partial(check_type, types=(dict, list)),

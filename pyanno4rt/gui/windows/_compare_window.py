@@ -5,12 +5,10 @@
 # %% External package import
 
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import (
-    array, ceil, floor, linspace, logical_and, mean, sort, unravel_index)
+from numpy import array, ceil, linspace, sort, unravel_index
 from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import QComboBox, QMainWindow, QSpinBox
 from pyqtgraph import mkPen
-from scipy.interpolate import interp1d
 
 # %% Internal package import
 

@@ -40,8 +40,6 @@ class DoseDx(DosiomicFeature):
     @staticmethod
     def compute(level, dose, *args):
         """Check the jitting status and call the computation function."""
-        # Convert the 'level' argument to integer
-        level = int(level)
 
         # Set the calculation mode, either 'python' or 'matlab'
         source = 'matlab'
@@ -62,8 +60,6 @@ class DoseDx(DosiomicFeature):
     @staticmethod
     def differentiate(level, dose, *args):
         """Check the jitting status and call the differentiation function."""
-        # Convert the 'level' argument to integer
-        level = int(level)
 
         # Set the calculation mode, either 'python' or 'matlab'
         source = 'matlab'

@@ -8,6 +8,7 @@
 from pyanno4rt.logging import Logger
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.input_check import InputChecker
+from pyanno4rt.input_check.check_functions import check_value_in_set
 
 # Treatment plan configuration
 from pyanno4rt.patient import PatientLoader
@@ -26,7 +27,8 @@ from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
 from pyanno4rt.tools import (
-    apply, get_machine_learning_constraints, get_machine_learning_objectives)
+    apply, get_machine_learning_constraints, get_machine_learning_objectives,
+    load_segments_from_path)
 
 # %% Class definition
 

@@ -5,10 +5,10 @@
 # %% External package import
 
 from functools import partial
-from os.path import abspath, dirname, isfile, splitext
+from os.path import abspath, dirname, isfile
 from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import (
-    QComboBox, QFileDialog, QMainWindow, QMenu, QSpinBox)
+    QComboBox, QFileDialog, QMainWindow, QMenu, QMessageBox, QSpinBox)
 
 # %% Internal package import
 
@@ -19,8 +19,7 @@ from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, tbutton_composer)
 from pyanno4rt.gui.windows.components import component_window_map
 from pyanno4rt.optimization.components import component_map
-from pyanno4rt.patient.import_functions import (
-    read_data_from_dcm, read_data_from_mat, read_data_from_p)
+from pyanno4rt.tools import load_segments_from_path
 
 # %% Class definition
 
@@ -293,76 +292,6 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             # Set the imaging path field cursor position to zero
             self.img_path_ledit.setCursorPosition(0)
 
-    def load_segments_from_data(self):
-        """Load the segment names and types from the imaging data."""
-
-        # Check if the path leads to a DICOM folder
-        if splitext(self.img_path_ledit.text())[1] == '':
-
-            # Get the segmentation data
-            _, segmentation_data = read_data_from_dcm(
-                self.img_path_ledit.text())
-
-            # Initialize the segments dictionary
-            self.segments = {}
-
-            # Loop over the ROI contours
-            for roi_contour in segmentation_data.ROIContourSequence:
-
-                # Find the corresponding segment from the index number
-                roi_structure = next(
-                    sequence
-                    for sequence in segmentation_data.StructureSetROISequence
-                    if roi_contour.ReferencedROINumber == sequence.ROINumber)
-
-                # Check if the segment is a target volume
-                if any(string in roi_structure.lower() for string in (
-                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor'
-                        )):
-
-                    # Set the segment type to 'TARGET'
-                    segment_type = 'TARGET'
-
-                else:
-
-                    # Set the segment type to 'OAR'
-                    segment_type = 'OAR'
-
-                # Append the segment name and type to the dictionary
-                self.segments |= {roi_structure.ROIName: segment_type}
-
-        # Check if the path leads to a MATLAB file
-        elif splitext(self.img_path_ledit.text())[1] == '.mat':
-
-            # Get the segmentation data
-            _, segmentation_data = read_data_from_mat(
-                self.img_path_ledit.text())
-
-            # Get the segment names and types
-            self.segments = {
-                segment_values[1]: ('TARGET' if any(
-                    string in segment_values[1].lower() for string in (
-                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor'))
-                    else 'OAR') for segment_values in segmentation_data}
-
-        # Check if the path leads to a Python file
-        elif splitext(self.img_path_ledit.text())[1] == '.p':
-
-            # Get the segmentation data
-            _, segmentation_data = read_data_from_p(self.img_path_ledit.text())
-
-            # Get the segment names and types
-            self.segments = {
-                segment: ('TARGET' if any(
-                    string in segment.lower() for string in (
-                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor'))
-                    else 'OAR') for segment in segmentation_data}
-
-        else:
-
-            # Set the segment dictionary as empty
-            self.segments = {}
-
     def add_dose_matrix_path(self):
         """Add the dose-influence matrix from a folder."""
 
@@ -508,7 +437,7 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             self.parent.initialize()
 
             # Load the segment names and types from the imaging path
-            self.parent.load_segments_from_data()
+            self.segments = load_segments_from_path(self.img_path_ledit.text())
 
         # Close the plan creation window
         self.close()
@@ -539,12 +468,19 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             try:
 
                 # Load the segment names and types
-                self.load_segments_from_data()
+                self.segments = load_segments_from_path(
+                    self.img_path_ledit.text())
 
                 # Set the boolean indicator to True
                 loaded_segments = True
 
-            except Exception:
+            except Exception as exception:
+
+                # Reset the imaging path field
+                self.img_path_ledit.setText('')
+
+                # Show a warning message box
+                QMessageBox.warning(self, "pyanno4rt", str(exception))
 
                 # Set the boolean indicator to False
                 loaded_segments = False
