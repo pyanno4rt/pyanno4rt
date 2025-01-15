@@ -29,6 +29,9 @@ class DoseMoment(DosiomicFeature):
         # Get the dose cube from the argument
         dose_cube = args[0]
 
+        # Get the coefficients of the moment function from the argument
+        coeff_1, coeff_2, coeff_3 = tuple(map(jnp.int32, coefficients))
+
         # Determine the axis points from a meshed grid
         points_x, points_y, points_z = jnp.meshgrid(
             jnp.array(range(dose_cube.shape[0])),
@@ -40,13 +43,13 @@ class DoseMoment(DosiomicFeature):
             map(compute_scaled_cube, (points_x, points_y, points_z)))
 
         # Compute the moment function numerator
-        numerator = jnp.sum((points_x-mean_x)**coefficients[0]
-                            * (points_y-mean_y)**coefficients[1]
-                            * (points_z-mean_z)**coefficients[2]
+        numerator = jnp.sum((points_x-mean_x)**coeff_1
+                            * (points_y-mean_y)**coeff_2
+                            * (points_z-mean_z)**coeff_3
                             * dose_cube)
 
         # Compute the moment function denominator
-        denominator = jnp.sum(dose_cube)**((jnp.sum(coefficients))/3 + 1)
+        denominator = jnp.sum(dose_cube)**((coeff_1+coeff_2+coeff_3)/3 + 1)
 
         return numerator/denominator
 

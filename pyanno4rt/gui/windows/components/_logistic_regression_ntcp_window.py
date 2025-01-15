@@ -5,20 +5,21 @@
 # %% External package import
 
 from json import loads
-from os.path import abspath, isfile
+from os.path import abspath
 from pandas import read_csv
 from PyQt5.QtCore import QDir, QEvent
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
-    QComboBox, QFileDialog, QInputDialog, QListWidget, QListWidgetItem,
-    QMainWindow, QMessageBox, QSpinBox)
+    QComboBox, QFileDialog, QListWidget, QListWidgetItem, QMainWindow,
+    QSpinBox)
 
 # %% Internal package import
 
 from pyanno4rt.gui.compilations.components.logistic_regression_ntcp_window import (
     Ui_logistic_regression_ntcp_window)
 from pyanno4rt.gui.styles._custom_styles import (
-    ledit, pbutton_composer, tbutton_composer)
+    ledit, pbutton_composer, tbutton_composer, tbutton_data_window)
+from pyanno4rt.gui.windows import DataColumnsWindow
 
 # %% Class definition
 
@@ -37,18 +38,26 @@ class LogisticRegressionNTCPWindow(
             self,
             parent=None):
 
-        # Get the application from the argument
-        self.parent = parent
-
         # Run the constructor from the superclass
         super().__init__()
 
         # Build the UI main window
         self.setupUi(self)
 
+        # Get the application from the argument
+        self.parent = parent
+
+        # Initialize the data columns window
+        self.data_columns_window = DataColumnsWindow(self)
+
+        # Initialize the data columns dictionary
+        self.data_columns = {}
+
+        # Initialize the data column names
+        self.column_names = None
+
         # Loop over the QComboBox and QSpinBox elements
         for box in ('type_cbox', 'embedding_cbox', 'rank_sbox',
-                    'filter_mode_cbox', 'label_viewpoint_cbox',
                     'tune_eval_sbox', 'tune_score_cbox', 'tune_splits_sbox',
                     'oof_splits_sbox'):
 
@@ -56,8 +65,7 @@ class LogisticRegressionNTCPWindow(
             getattr(self, box).installEventFilter(self)
 
         # 
-        self.set_disabled(('features_minus_tbutton', 'features_load_tbutton',
-                           'save_component_pbutton'))
+        self.save_component_pbutton.setEnabled(False)
 
         # 
         self.set_styles({'link_ledit': ledit,
@@ -65,9 +73,7 @@ class LogisticRegressionNTCPWindow(
                          'model_label_ledit': ledit,
                          'model_path_tbutton': tbutton_composer,
                          'data_path_tbutton': tbutton_composer,
-                         'features_plus_tbutton': tbutton_composer,
-                         'features_minus_tbutton': tbutton_composer,
-                         'features_load_tbutton': tbutton_composer,
+                         'data_columns_tbutton': tbutton_data_window,
                          'save_component_pbutton': pbutton_composer,
                          'close_component_pbutton': pbutton_composer})
 
@@ -95,7 +101,6 @@ class LogisticRegressionNTCPWindow(
             self.kpi_lwidget.item(index).setCheckState(2)
 
         # 
-        self.features_lwidget.setSpacing(4)
         self.penalty_lwidget.setSpacing(4)
         self.class_weight_lwidget.setSpacing(4)
         self.graphs_lwidget.setSpacing(4)
@@ -110,42 +115,17 @@ class LogisticRegressionNTCPWindow(
 
         # 
         self.data_path_ledit.textChanged.connect(self.update_save_button)
-        self.data_path_ledit.textChanged.connect(self.update_by_data_path)
         self.data_path_tbutton.clicked.connect(self.add_data_path)
 
         # 
-        self.features_plus_tbutton.clicked.connect(self.open_input_dialog)
-
-        # 
-        self.features_minus_tbutton.clicked.connect(self.remove_feature)
-
-        # 
-        self.features_lwidget.currentItemChanged.connect(
-            lambda: self.set_enabled(('features_minus_tbutton',)))
-
-        # 
-        self.features_load_tbutton.clicked.connect(self.open_question_dialog)
-
-        # 
-        self.label_name_ledit.textChanged.connect(self.update_save_button)
+        self.data_columns_tbutton.clicked.connect(
+            self.open_data_columns_window)
 
         # 
         self.save_component_pbutton.clicked.connect(self.save)
 
         # 
         self.close_component_pbutton.clicked.connect(self.close)
-
-    def position(self):
-        """."""
-
-        # Get the window geometry
-        geometry = self.geometry()
-
-        # Move the geometry center towards the parent
-        geometry.moveCenter(self.parent.geometry().center())
-
-        # Set the shifted geometry
-        self.setGeometry(geometry)
 
     def load(self, component):
         """."""
@@ -192,35 +172,8 @@ class LogisticRegressionNTCPWindow(
             '' if not model_params.get('data_path')
             else abspath(model_params['data_path']))
 
-        # Outcome model - DATA FILTER
-        feature_filter = model_params.get(
-            'feature_filter', {'features': [], 'filter_mode': 'remove'})
-
-        self.features_lwidget.addItems(feature_filter.get('features', []))
-        for index in range(self.features_lwidget.count()):
-            self.features_lwidget.item(index).setCheckState(2)
-
-        self.filter_mode_cbox.setCurrentText(
-            feature_filter.get('filter_mode', 'remove'))
-
-        self.label_name_ledit.setText(model_params['label_name'])
-        self.label_lower_bound_ledit.setText(
-            '' if not model_params.get('label_bounds')
-            or model_params['label_bounds'][0] == 1.0
-            else str(model_params['label_bounds'][0]))
-        self.label_upper_bound_ledit.setText(
-            '' if not model_params.get('label_bounds')
-            or model_params['label_bounds'][1] == 1.0
-            else str(model_params['label_bounds'][1]))
-        self.time_variable_ledit.setText(
-            '' if not model_params.get('time_variable_name')
-            else model_params['time_variable_name'])
-        self.label_viewpoint_cbox.setCurrentText(
-            model_params.get('label_viewpoint', 'longitudinal'))
-
-        # Outcome model - FEATURE MAP
-        self.fuzzy_matching_check.setCheckState(
-            2 if model_params.get('fuzzy_matching', True) else 0)
+        # Outcome model - DATA HANDLING
+        self.data_columns = model_params['data_columns']
 
         # Outcome model - MODEL FITTING, INSPECTION & EVALUATION
         self.prep_steps_ledit.setText(
@@ -325,9 +278,7 @@ class LogisticRegressionNTCPWindow(
         self.set_zero_line_cursor((
             'link_ledit', 'weight_ledit', 'lower_bound_ledit',
             'upper_bound_ledit', 'model_label_ledit', 'model_path_ledit',
-            'data_path_ledit', 'label_name_ledit', 'label_lower_bound_ledit',
-            'label_upper_bound_ledit', 'time_variable_ledit',
-            'prep_steps_ledit', 'identifier_ledit'))
+            'data_path_ledit', 'prep_steps_ledit', 'identifier_ledit'))
         self.set_zero_line_cursor((
             'C_lower_bound_ledit', 'C_upper_bound_ledit', 'tol_ledit'))
 
@@ -343,23 +294,7 @@ class LogisticRegressionNTCPWindow(
             'data_path': (
                 '' if self.data_path_ledit.text() == ''
                 else abspath(self.data_path_ledit.text())),
-            'feature_filter': {
-                'features': [
-                    self.features_lwidget.item(index).text()
-                    for index in range(self.features_lwidget.count())
-                    if self.features_lwidget.item(index).checkState()],
-                'filter_mode': self.filter_mode_cbox.currentText()},
-            'label_name': self.label_name_ledit.text(),
-            'label_bounds': [
-                1.0 if bound == '' else None if bound == 'None'
-                else float(bound) for bound in (
-                    self.label_lower_bound_ledit.text(),
-                    self.label_upper_bound_ledit.text())],
-            'time_variable_name': (
-                None if self.time_variable_ledit.text() == ''
-                else self.time_variable_ledit.text()),
-            'label_viewpoint': self.label_viewpoint_cbox.currentText(),
-            'fuzzy_matching': self.fuzzy_matching_check.isChecked(),
+            'data_columns': self.data_columns,
             'preprocessing_steps': (
                 ['Identity'] if self.prep_steps_ledit.text() == ''
                 else self.prep_steps_ledit.text().strip('][').split(', ')),
@@ -546,15 +481,12 @@ class LogisticRegressionNTCPWindow(
         return super().eventFilter(source, event)
 
     def mousePressEvent(self, event):
+        """."""
 
-        super(QListWidget, self.features_lwidget).mousePressEvent(event)
         super(QListWidget, self.penalty_lwidget).mousePressEvent(event)
         super(QListWidget, self.class_weight_lwidget).mousePressEvent(event)
         super(QListWidget, self.graphs_lwidget).mousePressEvent(event)
         super(QListWidget, self.kpi_lwidget).mousePressEvent(event)
-
-        if not self.features_lwidget.indexAt(event.pos()).isValid():
-            self.features_lwidget.clearSelection()
 
         if not self.penalty_lwidget.indexAt(event.pos()).isValid():
             self.penalty_lwidget.clearSelection()
@@ -592,36 +524,6 @@ class LogisticRegressionNTCPWindow(
         # Set the model path field cursor position to zero
         self.data_path_ledit.setCursorPosition(0)
 
-    def remove_feature(self):
-        """Remove the selected feature from the model."""
-
-        # Remove the item from the list widget
-        self.features_lwidget.takeItem(self.features_lwidget.currentRow())
-
-        # Clear the selection in the list widget
-        self.features_lwidget.selectionModel().clear()
-
-        # Disable specific fields
-        self.set_disabled(('features_minus_tbutton',))
-
-    def update_by_data_path(self):
-        """."""
-
-        # 
-        data_path = self.data_path_ledit.text()
-
-        # 
-        if (data_path != '' and data_path.endswith('.csv')
-                and isfile(data_path)):
-
-            # 
-            self.features_load_tbutton.setEnabled(True)
-
-        else:
-
-            # 
-            self.features_load_tbutton.setEnabled(False)
-
     def update_save_button(self):
         """."""
 
@@ -633,9 +535,8 @@ class LogisticRegressionNTCPWindow(
             # 
             self.save_component_pbutton.setEnabled(False)
 
-        elif self.model_path_ledit.text() == '' and (
-                self.data_path_ledit.text() == ''
-                or self.label_name_ledit.text() == ''):
+        elif (self.model_path_ledit.text() == '' and
+              self.data_path_ledit.text() == ''):
 
             # 
             self.save_component_pbutton.setEnabled(False)
@@ -645,63 +546,18 @@ class LogisticRegressionNTCPWindow(
             # 
             self.save_component_pbutton.setEnabled(True)
 
-    def open_input_dialog(self):
-        """Open an input dialog."""
-
-        self.setStyleSheet(
-            "QInputDialog {background-color: rgb(238, 238, 236);}")
-
-        # 
-        text, accepted = QInputDialog.getText(
-            self, 'pyanno4rt', 'Enter the feature name:')
-
-        # 
-        if (accepted and text and text not in [
-                self.features_lwidget.item(index)
-                for index in range(self.features_lwidget.count())]):
-
-            # 
-            item = QListWidgetItem(text)
-            item.setCheckState(2)
-            self.features_lwidget.addItem(item)
-
-    def open_question_dialog(self):
-        """Open a question dialog."""
-
-        # Initialize the dictionary with the messages and function calls
-        sources = {
-            'features_load_tbutton': (
-                "Loading the features from the data path will override the "
-                "current feature set. Are you sure you want to proceed?",
-                self.load_features_from_data)
-            }
-
-        # Get the message and function call by the attribute argument
-        message, call = sources[self.sender().objectName()]
-
-        # Check if the question dialog is confirmed
-        if (QMessageBox.question(self, 'pyanno4rt', message)
-                == QMessageBox.Yes):
-
-            # Call the function
-            call()
-
     def load_features_from_data(self):
         """."""
 
-        # 
-        feature_names = list(read_csv(self.data_path_ledit.text()).columns)
+        try:
 
-        # 
-        self.features_lwidget.clear()
+            # 
+            return list(read_csv(self.data_path_ledit.text()).columns)
 
-        # 
-        self.features_lwidget.addItems(feature_names)
-        for index in range(self.features_lwidget.count()):
-            self.features_lwidget.item(index).setCheckState(2)
+        except Exception:
 
-        # 
-        self.filter_mode_cbox.setCurrentText('retain')
+            # 
+            return []
 
     def set_enabled(
             self,
@@ -774,6 +630,33 @@ class LogisticRegressionNTCPWindow(
 
             # Get the attribute and set the stylesheet
             getattr(self, key).setStyleSheet(value)
+
+    def open_data_columns_window(self):
+        """Open the data columns window."""
+
+        # 
+        self.column_names = self.load_features_from_data()
+
+        # 
+        self.data_columns_window.load(self.data_columns)
+
+        # Set the position of the window
+        self.data_columns_window.position()
+
+        # Show the window
+        self.data_columns_window.show()
+
+    def position(self):
+        """."""
+
+        # Get the window geometry
+        geometry = self.geometry()
+
+        # Move the geometry center towards the parent
+        geometry.moveCenter(self.parent.geometry().center())
+
+        # Set the shifted geometry
+        self.setGeometry(geometry)
 
     def close(self):
         """."""

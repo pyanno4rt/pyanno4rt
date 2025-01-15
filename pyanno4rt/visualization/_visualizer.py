@@ -47,13 +47,13 @@ class Visualizer():
 
     def __init__(self, parent=None):
 
+        # 
+        self.parent = parent
+
         if not parent:
 
-            # Initialize the default parent
-            self.parent = None
-
             # Initialize the application
-            self.application = mkQApp("Visualizer")
+            self.application = mkQApp("pyanno4rt")
 
             # Set the application style
             self.application.setStyle('Fusion')
@@ -62,9 +62,6 @@ class Visualizer():
             self.main_window = MainWindow(self.application)
 
         else:
-
-            # Initialize the parent
-            self.parent = parent
 
             # Initialize the main window for the GUI from the parent
             self.parent.visual_window = MainWindow(
@@ -100,6 +97,22 @@ class Visualizer():
 
             # Show the visualization window
             self.parent.visual_window.show()
+
+    def closeEvent(
+            self,
+            event):
+        """
+        Close the application.
+
+        Parameters
+        ----------
+        event : object of class `QCloseEvent`
+            Instance of the class `QCloseEvent` to be triggered at window \
+            closing.
+        """
+
+        # Close the application
+        self.application.quit()
 
 
 class MainWindow(QMainWindow):

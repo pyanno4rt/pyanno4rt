@@ -37,7 +37,7 @@ def check_value(label, data, reference, sign, is_vector=False):
     """
 
     # Check if an input is passed
-    if data:
+    if data is not None:
 
         # Create the operator dictionary
         operator_dict = {'==': eq, '>=': ge, '>': gt, '<=': le, '<': lt}

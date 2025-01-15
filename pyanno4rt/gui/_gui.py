@@ -31,7 +31,7 @@ class GraphicalUserInterface():
     def __init__(self):
 
         # Initialize the application
-        self.application = mkQApp("Graphical User Interface")
+        self.application = mkQApp("pyanno4rt")
 
         # Set the application style
         self.application.setStyle('Fusion')
@@ -46,6 +46,11 @@ class GraphicalUserInterface():
 
         # Run the application
         self.main_window.application.exec_()
+
+    def fetch(self):
+        """Get the treatment plan dictionary of the GUI."""
+
+        return self.main_window.plans
 
     def closeEvent(
             self,

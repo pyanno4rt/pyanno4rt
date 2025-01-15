@@ -71,8 +71,8 @@ class SliceWidget(QWidget):
         # 
         self.orientations = {
             'axial': ((0, 1, 2), 3, 'z'),
-            'coronal': ((0, 2, 1), 0, 'x'),
-            'sagittal': ((2, 1, 0), 1, 'y')}
+            'coronal': ((2, 1, 0), 1, 'y'),
+            'sagittal': ((0, 2, 1), 0, 'x')}
 
         # 
         self.parent.plane_cbox.currentTextChanged.connect(

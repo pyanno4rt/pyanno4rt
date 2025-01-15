@@ -158,6 +158,19 @@ tbutton_composer = ('''
                         }
                     ''')
 
+# Set the stylesheet for the data columns window tool button
+tbutton_data_window = ('''
+                     QToolButton {
+                         background-color: rgb(0, 0, 0);
+                         border: 1px solid;
+                         border-color: rgb(46, 52, 54);
+                         color: rgb(238, 238, 236);
+                         }
+                     QToolButton:hover {
+                         background-color: rgb(30, 30, 30);
+                         }
+                     ''')
+
 # Set the stylesheet for the workflow tool buttons
 tbutton_workflow = ('''
                     QToolButton {

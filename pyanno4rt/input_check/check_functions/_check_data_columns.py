@@ -112,64 +112,72 @@ def check_data_columns(label, data, columns, segments, check_functions):
                 # Check if the column function is 'Dose Moment'
                 if value['function'] == 'Dose Moment':
 
-                    # Check if the column argument is not a list
+                    # Check if the column argument is not a string
                     check_functions[20](
                         f"{path}['argument']", value['argument'])
 
-                    # Check if any column argument element is not numeric
+                    # Check if the length of the column argument is invalid
                     check_functions[21](
                         f"{path}['argument']", value['argument'])
 
-                    # Check if the column argument is >= 1
+                    # Check if the column argument holds an invalid literal
                     check_functions[22](
                         f"{path}['argument']", value['argument'])
+
+                    # Check if the column argument checksum is < 1
+                    check_functions[23](
+                        f"{path}['argument']",
+                        sum(map(int, value['argument'])))
 
                 # Check if the column function is 'Dose Subvolume'
                 if value['function'] == 'Dose Subvolume':
 
                     # Check if the column argument is not a string
-                    check_functions[23](
-                        f"{path}['argument']", value['argument'])
-
-                    # Check if the column argument is invalid
                     check_functions[24](
                         f"{path}['argument']", value['argument'])
 
+                    # Check if the column argument is invalid
+                    check_functions[25](
+                        f"{path}['argument']", value['argument'])
+
             # Check if the column segment is not a string
-            check_functions[25](f"{path}['segment']", value['segment'])
+            check_functions[26](f"{path}['segment']", value['segment'])
 
             # Check if the column segment is invalid
-            check_functions[26](
+            check_functions[27](
                 f"{path}['segment']", value['segment'], segments)
 
         else:
 
             # Check if any required key is unavailable
-            check_functions[27](path, value)
+            check_functions[28](path, value)
 
             # Check if the column viewpoint is not a string
-            check_functions[28](f"{path}['viewpoint']", value['viewpoint'])
-
-            # Check if the column viewpoint is invalid
             check_functions[29](f"{path}['viewpoint']", value['viewpoint'])
 
+            # Check if the column viewpoint is invalid
+            check_functions[30](f"{path}['viewpoint']", value['viewpoint'])
+
             # Check if the column time variable is not a string or None
-            check_functions[30](
+            check_functions[31](
                 f"{path}['time_variable']", value['time_variable'])
 
             # Check if the column time variable is not None
             if value['time_variable'] is not None:
 
                 # Check if the column time variable is invalid
-                check_functions[31](
+                check_functions[32](
                     f"{path}['time_variable']", value['time_variable'],
                     columns)
 
             # Check if the column bounds are not a list
-            check_functions[32](f"{path}['bounds']", value['bounds'])
+            check_functions[33](f"{path}['bounds']", value['bounds'])
+
+            # Check if the length of the column bounds is invalid
+            check_functions[34](f"{path}['bounds']", value['bounds'])
 
             # Check if any column bounds element is numeric or None
-            check_functions[33](f"{path}['bounds']", value['bounds'])
+            check_functions[35](f"{path}['bounds']", value['bounds'])
 
     # Get the data column types
     column_types = tuple(map(lambda value: value['type'], data.values()))

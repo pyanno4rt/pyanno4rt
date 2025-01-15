@@ -19,6 +19,7 @@ from ._check_regular_extension_directory import (
     check_regular_extension_directory)
 from ._check_subtype import check_subtype
 from ._check_type import check_type
+from ._check_string_is_number import check_string_is_number
 from ._check_value import check_value
 from ._check_value_in_set import check_value_in_set
 
@@ -32,5 +33,6 @@ __all__ = ['check_components',
            'check_regular_extension_directory',
            'check_subtype',
            'check_type',
+           'check_string_is_number',
            'check_value',
            'check_value_in_set']

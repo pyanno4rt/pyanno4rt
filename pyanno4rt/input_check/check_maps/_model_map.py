@@ -9,9 +9,9 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.input_check.check_functions import (
-    check_data_columns, check_key_in_dict, check_path, check_regular_extension,
-    check_regular_extension_directory, check_subtype, check_type, check_value,
-    check_value_in_set)
+    check_data_columns, check_key_in_dict, check_length, check_path,
+    check_regular_extension, check_regular_extension_directory, check_subtype,
+    check_type, check_string_is_number, check_value, check_value_in_set)
 from pyanno4rt.learning_model.features import feature_map
 from pyanno4rt.learning_model.losses import loss_map
 from pyanno4rt.learning_model.preprocessing.cleaners import cleaner_map
@@ -61,9 +61,10 @@ model_map = {
             partial(check_value, reference=100, sign='<'),
             partial(check_type, types=str),
             partial(check_value_in_set, options=('x', 'y', 'z')),
-            partial(check_type, types=list),
-            partial(check_subtype, types=(int, float)),
-            partial(check_value, reference=1, sign='>=', is_vector=True),
+            partial(check_type, types=str),
+            partial(check_length, reference=3, sign='=='),
+            check_string_is_number,
+            partial(check_value, reference=0, sign='>'),
             partial(check_type, types=str),
             partial(check_value_in_set, options=(
                 'x1of2', 'x2of2', 'x1of3', 'x2of3', 'x3of3', 'y1of2', 'y2of2',
@@ -79,6 +80,7 @@ model_map = {
             partial(check_type, types=(type(None), str)),
             check_value_in_set,
             partial(check_type, types=list),
+            partial(check_length, reference=2, sign='=='),
             partial(check_subtype, types=(type(None), int, float)))),
         ),
     'preprocessing_steps': (

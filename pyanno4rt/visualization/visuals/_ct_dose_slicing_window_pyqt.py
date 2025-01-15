@@ -702,8 +702,8 @@ class CtDoseSlicingWindowPyQt(QMainWindow):
 
         # Create the slicing widgets and add them to the layout
         generate_view(view_layout, "Axial", (0, 1, 2), segment_masks, 3)
-        generate_view(view_layout, "Sagittal", (0, 2, 1), segment_masks, 0)
         generate_view(view_layout, "Coronal", (2, 1, 0), segment_masks, 1)
+        generate_view(view_layout, "Sagittal", (0, 2, 1), segment_masks, 0)
 
         # Add the axes views to the central layout
         central_layout.addLayout(view_layout)
