@@ -26,7 +26,7 @@ from pyanno4rt.tools import load_segments_from_path
 
 class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
     """
-    Plan creation window for the application.
+    Plan creation window for the GUI.
 
     This class sets up a plan creation window for the graphical user \
     interface, including input fields to define a plan.

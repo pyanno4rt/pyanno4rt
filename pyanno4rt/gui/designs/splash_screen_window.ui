@@ -9,27 +9,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>423</width>
-    <height>360</height>
+    <width>410</width>
+    <height>320</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>pyanno4rt</string>
   </property>
   <property name="windowOpacity">
    <double>1.000000000000000</double>
-  </property>
-  <property name="styleSheet">
-   <string notr="true">b</string>
   </property>
   <widget class="QWidget" name="splash_widget">
    <widget class="QFrame" name="image_frame">
     <property name="geometry">
      <rect>
-      <x>1</x>
-      <y>-80</y>
-      <width>421</width>
-      <height>381</height>
+      <x>0</x>
+      <y>-90</y>
+      <width>410</width>
+      <height>421</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -50,9 +47,9 @@ border-radius: 15px;</string>
     <property name="geometry">
      <rect>
       <x>1</x>
-      <y>210</y>
-      <width>421</width>
-      <height>111</height>
+      <y>202</y>
+      <width>411</width>
+      <height>140</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -68,9 +65,9 @@ border-radius: 15px;</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>0</y>
-       <width>420</width>
-       <height>30</height>
+       <y>20</y>
+       <width>411</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="font">
@@ -85,7 +82,7 @@ border-radius: 15px;</string>
 color: rgb(254, 144, 41);</string>
      </property>
      <property name="text">
-      <string/>
+      <string>&quot;Amadeus&quot; v1.0.0</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -95,8 +92,8 @@ color: rgb(254, 144, 41);</string>
      <property name="geometry">
       <rect>
        <x>-1</x>
-       <y>40</y>
-       <width>421</width>
+       <y>50</y>
+       <width>411</width>
        <height>25</height>
       </rect>
      </property>
@@ -110,7 +107,7 @@ color: rgb(254, 144, 41);</string>
 color: rgb(211, 215, 207);</string>
      </property>
      <property name="text">
-      <string>Initializing Graphical User Interface ...</string>
+      <string>Launching Graphical User Interface ...</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -119,9 +116,9 @@ color: rgb(211, 215, 207);</string>
     <widget class="QProgressBar" name="progressBar">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>70</y>
-       <width>341</width>
+       <x>16</x>
+       <y>80</y>
+       <width>379</width>
        <height>30</height>
       </rect>
      </property>
@@ -137,7 +134,7 @@ QProgressBar::chunk{
       <number>0</number>
      </property>
      <property name="value">
-      <number>0</number>
+      <number>100</number>
      </property>
      <property name="textVisible">
       <bool>false</bool>

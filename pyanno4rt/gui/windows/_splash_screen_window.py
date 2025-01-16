@@ -45,7 +45,7 @@ class SplashScreenWindow(QMainWindow, Ui_splash_window):
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.shadow = QGraphicsDropShadowEffect(self)
-        self.shadow.setBlurRadius(70)
+        self.shadow.setBlurRadius(0)
         self.shadow.setXOffset(0)
         self.shadow.setYOffset(0)
         self.shadow.setColor(QColor(0, 0, 0, 100))

@@ -58,7 +58,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>-524</y>
+       <y>-33</y>
        <width>690</width>
        <height>1469</height>
       </rect>
@@ -322,25 +322,6 @@ border-color: rgb(186, 189, 182);</string>
       </property>
       <property name="text">
        <string>Identifier</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="link_ledit">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>230</y>
-        <width>494</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="placeholderText">
-       <string>None</string>
       </property>
      </widget>
      <widget class="QLabel" name="link_label">
@@ -1685,6 +1666,17 @@ color: rgb(0, 0, 0);</string>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
       </property>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>229</y>
+        <width>431</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="checkableComboLayout"/>
      </widget>
     </widget>
    </widget>

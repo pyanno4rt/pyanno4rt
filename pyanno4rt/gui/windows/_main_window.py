@@ -8,11 +8,11 @@ from webbrowser import open as webopen
 
 from functools import partial, reduce
 from importlib.metadata import version
+from json import dumps, loads
 from logging import Handler
 from os.path import abspath, dirname
-from json import dumps, loads
 from numpy import zeros
-from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QThread
+from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QSize, QThread
 from PyQt5.QtGui import QCursor, QIcon, QMovie, QPixmap
 from PyQt5.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QFrame, QHeaderView, QLabel,
@@ -24,7 +24,8 @@ from pyanno4rt.base import TreatmentPlan
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.main_window import Ui_main_window
-from pyanno4rt.gui.custom_widgets import DVHWidget, SliceWidget
+from pyanno4rt.gui.custom_widgets import (
+    CheckableComboBox, DVHWidget, SliceWidget)
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_menu, pbutton_composer, pbutton_statusbar,
     pbutton_workflow, sbox, selector, tab, tbutton_composer, tbutton_workflow)
@@ -106,6 +107,22 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Insert the custom widgets into the viewer layouts
         self.tab_slices_layout.insertWidget(0, self.slice_widget)
         self.tab_dvh_layout.insertWidget(0, self.dvh_widget)
+
+        # Initialize the custom combo box for the display segments
+        self.display_segments_cbox = CheckableComboBox()
+        self.display_segments_cbox.setMinimumSize(QSize(163, 30))
+        self.display_segments_cbox.setMaximumSize(QSize(16777215, 30))
+        self.horizontal_layout.addWidget(self.display_segments_cbox)
+
+        # Initialize the custom combo box for the display metrics
+        self.display_metrics_cbox = CheckableComboBox()
+        self.display_metrics_cbox.setMinimumSize(QSize(163, 30))
+        self.display_metrics_cbox.setMaximumSize(QSize(16777215, 30))
+        self.horizontal_layout.addWidget(self.display_metrics_cbox)
+
+        # Add the display metrics items
+        self.display_metrics_cbox.addItems(
+            ['mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI'])
 
         # Initialize the plan dictionary
         self.plans = {}
@@ -189,6 +206,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             'n_points_sbox': sbox,
             'ref_vol_ledit': ledit,
             'ref_dose_ledit': ledit,
+            'display_segments_cbox': cbox,
+            'display_metrics_cbox': cbox,
             'update_evaluation_pbutton': pbutton_composer,
             'reset_evaluation_pbutton': pbutton_composer,
             'clear_evaluation_pbutton': pbutton_composer,
@@ -240,16 +259,11 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Disable the subwidget
             self.composer_widget.widget(i).setEnabled(False)
 
-        # Loop over the list widgets
-        for widget in (
-                'components_lwidget', 'display_segments_lwidget',
-                'display_metrics_lwidget'):
+        # Adjust the spacing
+        self.components_lwidget.setSpacing(4)
 
-            # Adjust the spacing
-            getattr(self, widget).setSpacing(4)
-
-            # Overwrite the wheel event
-            getattr(self, widget).wheelEvent = lambda event: None
+        # Overwrite the wheel event
+        self.components_lwidget.wheelEvent = lambda event: None
 
         # Disable some fields
         self.set_disabled((
@@ -1119,15 +1133,15 @@ class MainWindow(QMainWindow, Ui_main_window):
         instance.datahub.state = 0
 
         # Clear the display segments
-        self.display_segments_lwidget.clear()
+        self.display_segments_cbox.clear()
 
         # Add the segment items to the display segments
-        self.display_segments_lwidget.addItems(list(self.segments.keys()))
+        self.display_segments_cbox.addItems(list(self.segments.keys()))
 
         # Loop over the display segment items
         for item in (
-                self.display_segments_lwidget.item(index)
-                for index in range(self.display_segments_lwidget.count())):
+                self.display_segments_cbox.model().item(index)
+                for index in range(self.display_segments_cbox.count())):
 
             # Check if the evaluation dictionary includes the item text
             if (item.text() in instance.evaluation['display_segments'] or
@@ -1656,10 +1670,16 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Enable the modeling button
                 self.model_pbutton.setEnabled(True)
 
+                # Disable the optimization button
+                self.optimize_pbutton.setEnabled(False)
+
                 # Set the status bar to modeling-ready
                 self.status_bar.showMessage("Ready for modeling ...")
 
             else:
+
+                # Disable the modeling button
+                self.model_pbutton.setEnabled(False)
 
                 # Enable the optimization button
                 self.optimize_pbutton.setEnabled(True)
@@ -2032,15 +2052,15 @@ class MainWindow(QMainWindow, Ui_main_window):
             else str(evaluation['reference_dose'])[1:-1])
 
         # Clear the display segments
-        self.display_segments_lwidget.clear()
+        self.display_segments_cbox.clear()
 
         # Add the segment items to the display segments
-        self.display_segments_lwidget.addItems(list(self.segments.keys()))
+        self.display_segments_cbox.addItems(list(self.segments.keys()))
 
         # Loop over the display segment items
         for item in (
-                self.display_segments_lwidget.item(index)
-                for index in range(self.display_segments_lwidget.count())):
+                self.display_segments_cbox.model().item(index)
+                for index in range(self.display_segments_cbox.count())):
 
             # Check if the evaluation dictionary includes the item text
             if (item.text() in evaluation['display_segments'] or
@@ -2056,8 +2076,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Loop over the display metrics items
         for item in (
-                self.display_metrics_lwidget.item(index)
-                for index in range(self.display_metrics_lwidget.count())):
+                self.display_metrics_cbox.model().item(index)
+                for index in range(self.display_metrics_cbox.count())):
 
             # Check if the evaluation dictionary includes the item text
             if (item.text() in evaluation['display_metrics'] or
@@ -2092,16 +2112,16 @@ class MainWindow(QMainWindow, Ui_main_window):
             str(self.base_evaluation['reference_dose'])[1:-1])
 
         # Loop over the display segments
-        for index in range(self.display_segments_lwidget.count()):
+        for index in range(self.display_segments_cbox.count()):
 
             # Reset the display segments to checked
-            self.display_segments_lwidget.item(index).setCheckState(2)
+            self.display_segments_cbox.model().item(index).setCheckState(2)
 
         # Loop over the display metrics
-        for index in range(self.display_metrics_lwidget.count()):
+        for index in range(self.display_metrics_cbox.count()):
 
             # Reset the display metric to checked
-            self.display_metrics_lwidget.item(index).setCheckState(2)
+            self.display_metrics_cbox.model().item(index).setCheckState(2)
 
     def transform_evaluation_to_dict(self):
         """
@@ -2129,14 +2149,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             'reference_dose': (
                 [] if reference_dose == ''
                 else loads(reference_dose)),
-            'display_segments': [
-                self.display_segments_lwidget.item(index).text()
-                for index in range(self.display_segments_lwidget.count())
-                if self.display_segments_lwidget.item(index).checkState()],
-            'display_metrics': [
-                self.display_metrics_lwidget.item(index).text()
-                for index in range(self.display_metrics_lwidget.count())
-                if self.display_metrics_lwidget.item(index).checkState()]
+            'display_segments': self.display_segments_cbox.currentData(),
+            'display_metrics': self.display_metrics_cbox.currentData()
             }
 
         return evaluation
@@ -2970,7 +2984,7 @@ class ConsoleWindowLogHandler(Handler, QObject):
 
 class Worker(QThread):
     """
-    .
+    Worker thread class for running tasks.
 
     Parameters
     ----------

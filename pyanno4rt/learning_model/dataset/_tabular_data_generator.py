@@ -4,10 +4,11 @@
 
 # %% External package import
 
+from math import inf
+
 from functools import partial
 from itertools import compress, tee
 from numpy import array, logical_and, seterr, vstack, where, zeros
-from math import inf
 from pandas import read_csv
 from sklearn.model_selection import StratifiedKFold
 
@@ -127,12 +128,13 @@ class TabularDataGenerator():
         hub.datasets |= {self.model_label: data_information}
 
         # Generate the feature map
-        feature_map = self.create_map(data_information['feature_definitions'])
+        feature_map_dict = self.create_map(
+            data_information['feature_definitions'])
 
         # Enter the feature map into the datahub
-        hub.feature_maps |= {self.model_label: feature_map}
+        hub.feature_maps |= {self.model_label: feature_map_dict}
 
-        return data_information, feature_map
+        return data_information, feature_map_dict
 
     def decompose(
             self,

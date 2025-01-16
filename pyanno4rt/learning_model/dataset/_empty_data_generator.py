@@ -4,11 +4,14 @@
 
 # %% External package import
 
+from functools import partial
 from json import load as jload
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.learning_model.features import feature_map
+from pyanno4rt.tools import identity
 
 # %% Class definition
 
@@ -50,9 +53,7 @@ class EmptyDataGenerator():
         self.model_label = model_label
         self.model_folder_path = model_folder_path
 
-    def generate(
-            self,
-            *args):
+    def generate(self):
         """
         Generate the data information.
 
@@ -67,18 +68,85 @@ class EmptyDataGenerator():
             Dictionary with the default data information.
         """
 
+        # Initialize the datahub
+        hub = Datahub()
+
         # Get the configuration file path
         configuration_path = ''.join(
             (self.model_folder_path, '/configuration.json'))
 
+        # Open a file stream
+        with open(configuration_path, 'r', encoding='utf-8') as file:
+
+            # Load the configuration
+            configuration = jload(file)
+
         # Generate the data information dictionary
         data_information = {
-            'feature_names': jload(open(
-                configuration_path, 'r', encoding='utf-8'))['feature_names'],
-            'label_name': jload(open(
-                configuration_path, 'r', encoding='utf-8'))['label_name']}
+            'feature_names': configuration['feature_names'],
+            'feature_scales': configuration['feature_scales'],
+            'label_name': configuration['label_name'],
+            'label_viewpoint': configuration['label_viewpoint'],
+            'label_bounds': configuration['label_bounds'],
+            'time_variable_name': configuration['time_variable_name'],
+            'feature_statics': configuration['feature_statics'],
+            'feature_definitions': configuration['feature_definitions'],
+            'tune_folds': configuration['tune_folds'],
+            'oof_folds': configuration['oof_folds']
+            }
 
         # Enter the data information dictionary into the datahub
-        Datahub().datasets |= {self.model_label: data_information}
+        hub.datasets |= {self.model_label: data_information}
 
-        return data_information
+        # Generate the feature map dictionary
+        feature_map_dict = self.create_map(
+            data_information['feature_definitions'])
+
+        # Enter the feature map into the datahub
+        hub.feature_maps |= {self.model_label: feature_map_dict}
+
+        return data_information, feature_map_dict
+
+    def create_map(
+            self,
+            definitions):
+        """
+        Create the feature map.
+
+        Parameters
+        ----------
+        definitions : dict
+            Dictionary with the mappings of feature names, segments and \
+            string functions.
+
+        Returns
+        -------
+        dict
+            Dictionary with the mappings of feature names, segments and \
+            computation/differentiation functions.
+        """
+
+        def get_single_definition(key):
+            """Get the mapping for a single definition."""
+
+            # Get the feature definition as string
+            definition = feature_map[definitions[key]['function']]
+
+            # Get the argument of the feature definition
+            args = definitions[key].get('argument')
+
+            # Return the single feature map
+            return {key: {
+                'segment': definitions[key]['segment'],
+                'class': definition.feature_class,
+                'computation': methods[args is None](definition.compute, args),
+                'differentiation': (
+                    methods[args is None](definition.differentiate, args)
+                    if definition.feature_class == 'Dosiomics' else None)}}
+
+        # Create a boolean mapping to the internal functions
+        methods = {True: identity, False: partial}
+
+        return {key: value
+                for item in map(get_single_definition, definitions.keys())
+                for key, value in item.items()}

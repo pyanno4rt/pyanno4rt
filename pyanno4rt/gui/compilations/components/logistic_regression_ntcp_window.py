@@ -30,7 +30,7 @@ class Ui_logistic_regression_ntcp_window(object):
         self.scroll_area.setWidgetResizable(False)
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, -524, 690, 1469))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, -33, 690, 1469))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 90, 111, 31))
@@ -124,13 +124,6 @@ class Ui_logistic_regression_ntcp_window(object):
         self.identifier_label.setFont(font)
         self.identifier_label.setStyleSheet("border: 0px solid;")
         self.identifier_label.setObjectName("identifier_label")
-        self.link_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.link_ledit.setGeometry(QtCore.QRect(0, 230, 494, 31))
-        self.link_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
-"background-color: rgb(238, 238, 236);\n"
-"border: 1px solid;\n"
-"border-color: rgb(186, 189, 182);")
-        self.link_ledit.setObjectName("link_ledit")
         self.link_label = QtWidgets.QLabel(self.scroll_contents)
         self.link_label.setGeometry(QtCore.QRect(0, 200, 494, 25))
         font = QtGui.QFont()
@@ -601,6 +594,12 @@ class Ui_logistic_regression_ntcp_window(object):
 "color: rgb(0, 0, 0);")
         self.data_columns_label.setAlignment(QtCore.Qt.AlignCenter)
         self.data_columns_label.setObjectName("data_columns_label")
+        self.horizontalLayoutWidget = QtWidgets.QWidget(self.scroll_contents)
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(0, 229, 431, 31))
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.checkableComboLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
+        self.checkableComboLayout.setContentsMargins(0, 0, 0, 0)
+        self.checkableComboLayout.setObjectName("checkableComboLayout")
         self.scroll_area.setWidget(self.scroll_contents)
         logistic_regression_ntcp_window.setCentralWidget(self.body_widget)
 
@@ -625,7 +624,6 @@ class Ui_logistic_regression_ntcp_window(object):
         self.close_component_pbutton.setText(_translate("logistic_regression_ntcp_window", "Close"))
         self.identifier_ledit.setPlaceholderText(_translate("logistic_regression_ntcp_window", "None"))
         self.identifier_label.setText(_translate("logistic_regression_ntcp_window", "Identifier"))
-        self.link_ledit.setPlaceholderText(_translate("logistic_regression_ntcp_window", "None"))
         self.link_label.setText(_translate("logistic_regression_ntcp_window", "Link"))
         self.function_label.setText(_translate("logistic_regression_ntcp_window", "Function"))
         self.bounds_label.setText(_translate("logistic_regression_ntcp_window", "Bounds"))

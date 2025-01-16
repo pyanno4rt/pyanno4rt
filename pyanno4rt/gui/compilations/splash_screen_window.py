@@ -13,13 +13,12 @@ class Ui_splash_window(object):
     def setupUi(self, splash_window):
         splash_window.setObjectName("splash_window")
         splash_window.setWindowModality(QtCore.Qt.ApplicationModal)
-        splash_window.resize(423, 360)
+        splash_window.resize(410, 320)
         splash_window.setWindowOpacity(1.0)
-        splash_window.setStyleSheet("b")
         self.splash_widget = QtWidgets.QWidget(splash_window)
         self.splash_widget.setObjectName("splash_widget")
         self.image_frame = QtWidgets.QFrame(self.splash_widget)
-        self.image_frame.setGeometry(QtCore.QRect(1, -80, 421, 381))
+        self.image_frame.setGeometry(QtCore.QRect(0, -90, 410, 421))
         self.image_frame.setStyleSheet("image: url(:/Logo/logo_white_square.png);\n"
 "background-color: transparent;\n"
 "border: 0px solid;\n"
@@ -29,13 +28,13 @@ class Ui_splash_window(object):
         self.image_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.image_frame.setObjectName("image_frame")
         self.text_frame = QtWidgets.QFrame(self.splash_widget)
-        self.text_frame.setGeometry(QtCore.QRect(1, 210, 421, 111))
+        self.text_frame.setGeometry(QtCore.QRect(1, 202, 411, 140))
         self.text_frame.setStyleSheet("border: 0px solid; background-color: transparent")
         self.text_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.text_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.text_frame.setObjectName("text_frame")
         self.version_label = QtWidgets.QLabel(self.text_frame)
-        self.version_label.setGeometry(QtCore.QRect(0, 0, 420, 30))
+        self.version_label.setGeometry(QtCore.QRect(0, 20, 411, 31))
         font = QtGui.QFont()
         font.setPointSize(15)
         font.setBold(False)
@@ -43,11 +42,10 @@ class Ui_splash_window(object):
         self.version_label.setFont(font)
         self.version_label.setStyleSheet("background-color: transparent;\n"
 "color: rgb(254, 144, 41);")
-        self.version_label.setText("")
         self.version_label.setAlignment(QtCore.Qt.AlignCenter)
         self.version_label.setObjectName("version_label")
         self.init_label = QtWidgets.QLabel(self.text_frame)
-        self.init_label.setGeometry(QtCore.QRect(-1, 40, 421, 25))
+        self.init_label.setGeometry(QtCore.QRect(-1, 50, 411, 25))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.init_label.setFont(font)
@@ -56,7 +54,7 @@ class Ui_splash_window(object):
         self.init_label.setAlignment(QtCore.Qt.AlignCenter)
         self.init_label.setObjectName("init_label")
         self.progressBar = QtWidgets.QProgressBar(self.text_frame)
-        self.progressBar.setGeometry(QtCore.QRect(40, 70, 341, 30))
+        self.progressBar.setGeometry(QtCore.QRect(16, 80, 379, 30))
         self.progressBar.setStyleSheet("QProgressBar{\n"
 "        background-color: transparent;\n"
 "}\n"
@@ -64,7 +62,7 @@ class Ui_splash_window(object):
 "       background-color: qlineargradient(x0: 0, x2: 1,  stop: 0 #4664aa, stop: 0.11765 #009682, stop: 0.2353 #8cb63c, stop: 0.3529 #a7822e, stop: 0.4706 #df9b1b, stop: 0.588 #a22223);\n"
 "}")
         self.progressBar.setMinimum(0)
-        self.progressBar.setProperty("value", 0)
+        self.progressBar.setProperty("value", 100)
         self.progressBar.setTextVisible(False)
         self.progressBar.setObjectName("progressBar")
         splash_window.setCentralWidget(self.splash_widget)
@@ -74,5 +72,6 @@ class Ui_splash_window(object):
 
     def retranslateUi(self, splash_window):
         _translate = QtCore.QCoreApplication.translate
-        splash_window.setWindowTitle(_translate("splash_window", "MainWindow"))
-        self.init_label.setText(_translate("splash_window", "Initializing Graphical User Interface ..."))
+        splash_window.setWindowTitle(_translate("splash_window", "pyanno4rt"))
+        self.version_label.setText(_translate("splash_window", "\"Amadeus\" v1.0.0"))
+        self.init_label.setText(_translate("splash_window", "Launching Graphical User Interface ..."))
