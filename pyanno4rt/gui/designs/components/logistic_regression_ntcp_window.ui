@@ -58,7 +58,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>-33</y>
+       <y>-1040</y>
        <width>690</width>
        <height>1469</height>
       </rect>
@@ -227,7 +227,7 @@ border-color: rgb(186, 189, 182);</string>
        <string>Type</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="close_component_pbutton">
+     <widget class="QPushButton" name="close_pbutton">
       <property name="geometry">
        <rect>
         <x>614</x>
@@ -432,7 +432,7 @@ border-color: rgb(186, 189, 182);</string>
        <string>Weight</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="save_component_pbutton">
+     <widget class="QPushButton" name="save_pbutton">
       <property name="geometry">
        <rect>
         <x>534</x>
@@ -1035,23 +1035,8 @@ border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>-1</number>
       </property>
-      <item>
-       <property name="text">
-        <string>AUC</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Brier score</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Logloss</string>
-       </property>
-      </item>
      </widget>
      <widget class="QLabel" name="tune_score_label">
       <property name="geometry">

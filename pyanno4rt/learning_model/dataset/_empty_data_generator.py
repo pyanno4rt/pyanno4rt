@@ -133,16 +133,29 @@ class EmptyDataGenerator():
             definition = feature_map[definitions[key]['function']]
 
             # Get the argument of the feature definition
-            args = definitions[key].get('argument')
+            args = definitions[key]['argument']
 
-            # Return the single feature map
-            return {key: {
-                'segment': definitions[key]['segment'],
-                'class': definition.feature_class,
-                'computation': methods[args is None](definition.compute, args),
-                'differentiation': (
-                    methods[args is None](definition.differentiate, args)
-                    if definition.feature_class == 'Dosiomics' else None)}}
+            # Check if a definition and no value have been passed
+            if definition and not definitions[key]['value']:
+
+                # Return the dosiomic/radiomic feature map
+                return {key: {
+                    'segment': definitions[key]['segment'],
+                    'class': definition.feature_class,
+                    'computation': (
+                        methods[args is None](definition.compute, args)),
+                    'differentiation': (
+                        methods[args is None](definition.differentiate, args)
+                        if definition.feature_class == 'Dosiomics' else None)}}
+
+            else:
+
+                # Return the static feature map
+                return {key: {
+                    'segment': None,
+                    'class': 'Statics',
+                    'computation': None,
+                    'differentiation': None}}
 
         # Create a boolean mapping to the internal functions
         methods = {True: identity, False: partial}

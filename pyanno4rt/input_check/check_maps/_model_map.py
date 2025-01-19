@@ -50,7 +50,7 @@ model_map = {
             partial(check_value_in_set, options=(
                 'metric', 'nominal', 'ordinal')),
             partial(check_type, types=(type(None), int, float, str)),
-            partial(check_type, types=str),
+            partial(check_type, types=(type(None), str)),
             partial(check_value_in_set, options=tuple(feature_map)),
             partial(check_key_in_dict, keys=('argument',)),
             partial(check_type, types=(int, float)),
@@ -70,7 +70,7 @@ model_map = {
                 'x1of2', 'x2of2', 'x1of3', 'x2of3', 'x3of3', 'y1of2', 'y2of2',
                 'y1of3', 'y2of3', 'y3of3', 'z1of2', 'z2of2', 'z1of3', 'z2of3',
                 'z3of3')),
-            partial(check_type, types=str),
+            partial(check_type, types=(type(None), str)),
             check_value_in_set,
             partial(check_key_in_dict, keys=(
                 'viewpoint', 'time_variable', 'bounds')),

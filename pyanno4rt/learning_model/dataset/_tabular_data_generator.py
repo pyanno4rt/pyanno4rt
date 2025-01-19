@@ -173,7 +173,7 @@ class TabularDataGenerator():
         # Get the variable names
         feature_names = list(feature_meta.keys())
         label_name = next(iter(label_meta))
-        time_variable_name = label_meta[label_name].get('time_variable')
+        time_variable_name = label_meta[label_name]['time_variable']
 
         # Get the features from the dataframe
         features = data_frame.drop(
@@ -189,19 +189,19 @@ class TabularDataGenerator():
              'label_name': label_name,
              'label_values': data_frame[label_name].values,
              'label_bounds': label_meta[label_name].get('bounds', [1, 1]),
-             'label_viewpoint': label_meta[label_name].get(
-                 'viewpoint', 'longitudinal'),
+             'label_viewpoint': label_meta[label_name]['viewpoint'],
              'time_variable_name': time_variable_name,
              'time_variable_values': (
                  data_frame[filter(None, [time_variable_name])].values)}
             | {'feature_statics': {
                 key: feature_meta[key]['value']
                 for key in list(features.columns)
-                if feature_meta[key].get('value')}}
+                if feature_meta[key]['value']}}
             | {'feature_definitions': {
-                key: {'segment': feature_meta[key].get('segment'),
-                      'function': feature_meta[key].get('function'),
-                      'argument': feature_meta[key].get('argument')}
+                key: {'segment': feature_meta[key]['segment'],
+                      'function': feature_meta[key]['function'],
+                      'argument': feature_meta[key]['argument'],
+                      'value': feature_meta[key]['value']}
                 for key in list(features.columns)}})
 
     def modulate(
@@ -422,16 +422,29 @@ class TabularDataGenerator():
             definition = feature_map[definitions[key]['function']]
 
             # Get the argument of the feature definition
-            args = definitions[key].get('argument')
+            args = definitions[key]['argument']
 
-            # Return the single feature map
-            return {key: {
-                'segment': definitions[key]['segment'],
-                'class': definition.feature_class,
-                'computation': methods[args is None](definition.compute, args),
-                'differentiation': (
-                    methods[args is None](definition.differentiate, args)
-                    if definition.feature_class == 'Dosiomics' else None)}}
+            # Check if a definition and no value have been passed
+            if definition and not definitions[key]['value']:
+
+                # Return the dosiomic/radiomic feature map
+                return {key: {
+                    'segment': definitions[key]['segment'],
+                    'class': definition.feature_class,
+                    'computation': (
+                        methods[args is None](definition.compute, args)),
+                    'differentiation': (
+                        methods[args is None](definition.differentiate, args)
+                        if definition.feature_class == 'Dosiomics' else None)}}
+
+            else:
+
+                # Return the static feature map
+                return {key: {
+                    'segment': None,
+                    'class': 'Statics',
+                    'computation': None,
+                    'differentiation': None}}
 
         # Create a boolean mapping to the internal functions
         methods = {True: identity, False: partial}

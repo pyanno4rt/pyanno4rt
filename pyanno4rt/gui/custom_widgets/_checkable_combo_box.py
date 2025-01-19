@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtCore import QEvent, QSize, Qt
 from PyQt5.QtGui import QFontMetrics, QPalette, QStandardItem
 from PyQt5.QtWidgets import qApp, QComboBox, QStyledItemDelegate
 
@@ -22,6 +22,10 @@ class CheckableComboBox(QComboBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.setGeometry(0, 0, 381, 30)
+        self.setMinimumSize(QSize(163, 30))
+        self.setMaximumSize(QSize(16777215, 30))
 
         # Make the combo editable to set a custom text, but readonly
         self.setEditable(True)
@@ -102,6 +106,7 @@ class CheckableComboBox(QComboBox):
         elidedText = metrics.elidedText(
             text, Qt.ElideRight, self.lineEdit().width())
         self.lineEdit().setText(elidedText)
+        self.lineEdit().setCursorPosition(0)
 
     def addItem(self, text, checked):
         item = QStandardItem()

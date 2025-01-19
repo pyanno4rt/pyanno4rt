@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>768</height>
+    <width>1920</width>
+    <height>1080</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -1905,7 +1905,7 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <property name="iconSize">
            <size>
@@ -1956,8 +1956,8 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-249</y>
-                 <width>369</width>
+                 <y>0</y>
+                 <width>368</width>
                  <height>906</height>
                 </rect>
                </property>
@@ -3653,8 +3653,8 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-489</y>
-                 <width>418</width>
+                 <y>0</y>
+                 <width>817</width>
                  <height>1132</height>
                 </rect>
                </property>
@@ -4137,26 +4137,11 @@ border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="currentText">
-                       <string>weighted-sum</string>
+                       <string/>
                       </property>
                       <property name="currentIndex">
-                       <number>2</number>
+                       <number>-1</number>
                       </property>
-                      <item>
-                       <property name="text">
-                        <string>lexicographic</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>pareto</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>weighted-sum</string>
-                       </property>
-                      </item>
                      </widget>
                     </item>
                     <item>
@@ -5655,8 +5640,8 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>369</width>
-                 <height>634</height>
+                 <width>817</width>
+                 <height>695</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_evaluation_meta_layout">

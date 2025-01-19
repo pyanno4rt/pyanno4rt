@@ -30,7 +30,7 @@ class Ui_logistic_regression_ntcp_window(object):
         self.scroll_area.setWidgetResizable(False)
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, -33, 690, 1469))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, -1040, 690, 1469))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 90, 111, 31))
@@ -88,14 +88,14 @@ class Ui_logistic_regression_ntcp_window(object):
         self.type_label.setFont(font)
         self.type_label.setStyleSheet("border: 0px solid;")
         self.type_label.setObjectName("type_label")
-        self.close_component_pbutton = QtWidgets.QPushButton(self.scroll_contents)
-        self.close_component_pbutton.setGeometry(QtCore.QRect(614, 1430, 71, 31))
-        self.close_component_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.close_component_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.close_pbutton = QtWidgets.QPushButton(self.scroll_contents)
+        self.close_pbutton.setGeometry(QtCore.QRect(614, 1430, 71, 31))
+        self.close_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.close_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.close_component_pbutton.setObjectName("close_component_pbutton")
+        self.close_pbutton.setObjectName("close_pbutton")
         self.identifier_ledit = QtWidgets.QLineEdit(self.scroll_contents)
         self.identifier_ledit.setGeometry(QtCore.QRect(0, 1340, 381, 31))
         self.identifier_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
@@ -162,14 +162,14 @@ class Ui_logistic_regression_ntcp_window(object):
         self.weight_label.setFont(font)
         self.weight_label.setStyleSheet("border: 0px solid;")
         self.weight_label.setObjectName("weight_label")
-        self.save_component_pbutton = QtWidgets.QPushButton(self.scroll_contents)
-        self.save_component_pbutton.setGeometry(QtCore.QRect(534, 1430, 71, 31))
-        self.save_component_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.save_component_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.save_pbutton = QtWidgets.QPushButton(self.scroll_contents)
+        self.save_pbutton.setGeometry(QtCore.QRect(534, 1430, 71, 31))
+        self.save_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.save_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.save_component_pbutton.setObjectName("save_component_pbutton")
+        self.save_pbutton.setObjectName("save_pbutton")
         self.function_line = QtWidgets.QFrame(self.scroll_contents)
         self.function_line.setGeometry(QtCore.QRect(0, 190, 684, 2))
         self.function_line.setStyleSheet("border-color: rgb(46, 52, 54);")
@@ -379,9 +379,6 @@ class Ui_logistic_regression_ntcp_window(object):
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.tune_score_cbox.setObjectName("tune_score_cbox")
-        self.tune_score_cbox.addItem("")
-        self.tune_score_cbox.addItem("")
-        self.tune_score_cbox.addItem("")
         self.tune_score_label = QtWidgets.QLabel(self.scroll_contents)
         self.tune_score_label.setGeometry(QtCore.QRect(150, 980, 151, 25))
         font = QtGui.QFont()
@@ -606,7 +603,7 @@ class Ui_logistic_regression_ntcp_window(object):
         self.retranslateUi(logistic_regression_ntcp_window)
         self.embedding_cbox.setCurrentIndex(0)
         self.type_cbox.setCurrentIndex(0)
-        self.tune_score_cbox.setCurrentIndex(2)
+        self.tune_score_cbox.setCurrentIndex(-1)
         self.segment_cbox.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(logistic_regression_ntcp_window)
 
@@ -621,7 +618,7 @@ class Ui_logistic_regression_ntcp_window(object):
         self.type_cbox.setItemText(0, _translate("logistic_regression_ntcp_window", "objective"))
         self.type_cbox.setItemText(1, _translate("logistic_regression_ntcp_window", "constraint"))
         self.type_label.setText(_translate("logistic_regression_ntcp_window", "Type"))
-        self.close_component_pbutton.setText(_translate("logistic_regression_ntcp_window", "Close"))
+        self.close_pbutton.setText(_translate("logistic_regression_ntcp_window", "Close"))
         self.identifier_ledit.setPlaceholderText(_translate("logistic_regression_ntcp_window", "None"))
         self.identifier_label.setText(_translate("logistic_regression_ntcp_window", "Identifier"))
         self.link_label.setText(_translate("logistic_regression_ntcp_window", "Link"))
@@ -629,7 +626,7 @@ class Ui_logistic_regression_ntcp_window(object):
         self.bounds_label.setText(_translate("logistic_regression_ntcp_window", "Bounds"))
         self.handling_viz_label.setText(_translate("logistic_regression_ntcp_window", "Handling & Visualization"))
         self.weight_label.setText(_translate("logistic_regression_ntcp_window", "Weight"))
-        self.save_component_pbutton.setText(_translate("logistic_regression_ntcp_window", "Save"))
+        self.save_pbutton.setText(_translate("logistic_regression_ntcp_window", "Save"))
         self.opt_bounds_conjunction.setText(_translate("logistic_regression_ntcp_window", "-"))
         self.optimization_label.setText(_translate("logistic_regression_ntcp_window", "Optimization"))
         self.rank_label.setText(_translate("logistic_regression_ntcp_window", "Rank"))
@@ -650,9 +647,6 @@ class Ui_logistic_regression_ntcp_window(object):
         self.prep_steps_ledit.setPlaceholderText(_translate("logistic_regression_ntcp_window", "[Identity]"))
         self.tune_space_label.setText(_translate("logistic_regression_ntcp_window", "Tune space"))
         self.tune_eval_label.setText(_translate("logistic_regression_ntcp_window", "Tune evaluations"))
-        self.tune_score_cbox.setItemText(0, _translate("logistic_regression_ntcp_window", "AUC"))
-        self.tune_score_cbox.setItemText(1, _translate("logistic_regression_ntcp_window", "Brier score"))
-        self.tune_score_cbox.setItemText(2, _translate("logistic_regression_ntcp_window", "Logloss"))
         self.tune_score_label.setText(_translate("logistic_regression_ntcp_window", "Tune score"))
         self.tune_splits_label.setText(_translate("logistic_regression_ntcp_window", "Tune splits"))
         self.C_lower_bound_ledit.setPlaceholderText(_translate("logistic_regression_ntcp_window", "0.03125"))

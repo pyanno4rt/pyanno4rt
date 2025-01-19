@@ -32,6 +32,9 @@ class LQPoissonTCPWindow(QMainWindow, Ui_lq_poisson_tcp_window):
         # Get the application from the argument
         self.parent = parent
 
+        # Initialize the edit boolean
+        self.edit = False
+
         # Run the constructor from the superclass
         super().__init__()
 
@@ -84,8 +87,24 @@ class LQPoissonTCPWindow(QMainWindow, Ui_lq_poisson_tcp_window):
         # Set the shifted geometry
         self.setGeometry(geometry)
 
-    def load(self, component):
-        """."""
+    def load(
+            self,
+            component,
+            edit=False):
+        """
+        Load a component into the window.
+
+        Parameters
+        ----------
+        component : dict
+            Dictionary with the information on the optimization component.
+
+        edit : bool
+            Indicator for the editing of the component.
+        """
+
+        # Get the edit attribute from the argument
+        self.edit = edit
 
         # Get the component parameters
         key = list(component.keys())[0]
@@ -238,7 +257,7 @@ class LQPoissonTCPWindow(QMainWindow, Ui_lq_poisson_tcp_window):
             identifier, embedding, weight) if substring))
 
         # 
-        if self.parent.components_lwidget.currentItem():
+        if self.edit:
 
             #
             del self.parent.plan_components[self.parent.plan_ledit.text()][
@@ -386,6 +405,9 @@ class LQPoissonTCPWindow(QMainWindow, Ui_lq_poisson_tcp_window):
 
     def close(self):
         """."""
+
+        # Reset the edit boolean
+        self.edit = False
 
         # 
         self.hide()

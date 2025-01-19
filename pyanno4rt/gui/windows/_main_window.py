@@ -12,7 +12,7 @@ from json import dumps, loads
 from logging import Handler
 from os.path import abspath, dirname
 from numpy import zeros
-from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QSize, QThread
+from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QThread
 from PyQt5.QtGui import QCursor, QIcon, QMovie, QPixmap
 from PyQt5.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QFrame, QHeaderView, QLabel,
@@ -21,7 +21,6 @@ from PyQt5.QtWidgets import (
 # %% Internal package import
 
 from pyanno4rt.base import TreatmentPlan
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.main_window import Ui_main_window
 from pyanno4rt.gui.custom_widgets import (
@@ -34,6 +33,7 @@ from pyanno4rt.gui.windows import (
     SplashScreenWindow, TreeWindow)
 from pyanno4rt.gui.windows.components import component_window_map
 from pyanno4rt.optimization.components import component_map
+from pyanno4rt.optimization.methods import method_map
 from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, get_machine_learning_constraints,
     get_machine_learning_objectives, load_list_from_file,
@@ -84,6 +84,25 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Get the application
         self.application = application
 
+        # Initialize the plan dictionary
+        self.plans = {}
+
+        # Initialize the last selected plan
+        self.last_selection = ''
+
+        # Initialize the current component window
+        self.current_component_window = None
+
+        # Initialize the plan component dictionary
+        self.plan_components = {}
+
+        # Initialize the segment dictionary
+        self.segments = {}
+
+        # Initialize the thread and the worker
+        self.thread = None
+        self.worker = None
+
         # Create a event process loop to run the splash screen
         for i in range(10000):
             self.application.processEvents()
@@ -108,45 +127,27 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.tab_slices_layout.insertWidget(0, self.slice_widget)
         self.tab_dvh_layout.insertWidget(0, self.dvh_widget)
 
+        # Add the optimization methods to the method combo box
+        self.method_cbox.addItems(list(method_map.keys()))
+        self.method_cbox.model().sort(0)
+        self.method_cbox.setCurrentText('weighted-sum')
+
         # Initialize the custom combo box for the display segments
         self.display_segments_cbox = CheckableComboBox()
-        self.display_segments_cbox.setMinimumSize(QSize(163, 30))
-        self.display_segments_cbox.setMaximumSize(QSize(16777215, 30))
         self.horizontal_layout.addWidget(self.display_segments_cbox)
 
         # Initialize the custom combo box for the display metrics
         self.display_metrics_cbox = CheckableComboBox()
-        self.display_metrics_cbox.setMinimumSize(QSize(163, 30))
-        self.display_metrics_cbox.setMaximumSize(QSize(16777215, 30))
         self.horizontal_layout.addWidget(self.display_metrics_cbox)
 
         # Add the display metrics items
         self.display_metrics_cbox.addItems(
             ['mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI'])
 
-        # Initialize the plan dictionary
-        self.plans = {}
-
-        # Initialize the last selected plan
-        self.last_selection = ''
-
-        # Initialize the current component window
-        self.current_component_window = None
-
-        # Initialize the plan component dictionary
-        self.plan_components = {}
-
         # Get the base input dictionaries
         self.base_configuration = self.transform_configuration_to_dict()
         self.base_optimization = self.transform_optimization_to_dict()
         self.base_evaluation = self.transform_evaluation_to_dict()
-
-        # Initialize the segment dictionary
-        self.segments = {}
-
-        # Initialize the thread and the worker
-        self.thread = None
-        self.worker = None
 
         # Add the dropdown menu to the components 'plus' button
         self.add_dropdown_to_components()
@@ -235,7 +236,8 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'log_level_cbox', 'modality_cbox', 'nfx_sbox', 'method_cbox',
                 'solver_cbox', 'algorithm_cbox', 'init_strat_cbox',
                 'ref_plan_cbox', 'max_iter_sbox', 'dvh_type_cbox',
-                'n_points_sbox', 'reference_cbox', 'plane_cbox',
+                'n_points_sbox', 'display_segments_cbox',
+                'display_metrics_cbox', 'reference_cbox', 'plane_cbox',
                 'opacity_sbox'):
 
             # Install the custom event filter
@@ -245,7 +247,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_zero_line_cursor((
             'img_path_ledit', 'dose_path_ledit', 'init_fluence_ledit',
             'lower_var_ledit', 'upper_var_ledit', 'ref_vol_ledit',
-            'ref_dose_ledit'))
+            'ref_dose_ledit', 'baseline_ledit'))
 
         # Loop over the tab widgets
         for widget in ('composer_widget', 'tab_workflow', 'viewer_widget'):
@@ -289,9 +291,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Set the initial treatment plan
             self.set_initial_plan(treatment_plan)
-
-        # Set the initial window size
-        self.resize(1920, 1080)
 
         # Show the window
         self.show()
@@ -633,8 +632,19 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Check if a path has been selected
         if path:
 
-            # Activate the treatment plan
-            self.activate(copycat(TreatmentPlan, path))
+            try:
+
+                # Activate the treatment plan
+                self.activate(copycat(TreatmentPlan, path))
+
+            except FileNotFoundError as exception:
+
+                # Show a warning message box
+                QMessageBox.warning(
+                    self, "pyanno4rt",
+                    "Exception occurred during treatment plan loading - "
+                    "please check that the path leads to a snapshot! \n\n"
+                    f"{type(exception).__name__}: {str(exception)}")
 
     def save_tpi(self):
         """Save a treatment plan."""
@@ -663,9 +673,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Delete label and treatment plan from the plan dictionary
             del self.plans[label]
-
-            # Delete label and corresponding datahub
-            del Datahub.instances[label]
 
             # Reset the selector
             self.plan_select_cbox.setCurrentIndex(-1)
@@ -708,16 +715,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Check if 'Create new plan' has been selected
         if selection == 'Create new plan':
 
-            # Check if the last selection is the empty item
-            if self.last_selection == '':
-
-                # Reset the selector
-                self.plan_select_cbox.setCurrentIndex(-1)
-
-            else:
-
-                # Set the selector to the last selection
-                self.plan_select_cbox.setCurrentText(self.last_selection)
+            # Set the selector to the last selection
+            self.plan_select_cbox.setCurrentText(self.last_selection)
 
             # Open the plan creation window
             self.open_plan_creation_window()
@@ -758,7 +757,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.set_zero_line_cursor((
                 'plan_ledit', 'img_path_ledit', 'dose_path_ledit',
                 'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit',
-                'ref_vol_ledit', 'ref_dose_ledit'))
+                'ref_vol_ledit', 'ref_dose_ledit', 'baseline_ledit'))
 
             # Loop over the composer subwidgets
             for i in range(3):
@@ -1143,17 +1142,10 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.display_segments_cbox.model().item(index)
                 for index in range(self.display_segments_cbox.count())):
 
-            # Check if the evaluation dictionary includes the item text
-            if (item.text() in instance.evaluation['display_segments'] or
-                    instance.evaluation['display_segments'] == []):
-
-                # Set the item to checked
-                item.setCheckState(2)
-
-            else:
-
-                # Set the item to unchecked
-                item.setCheckState(0)
+            # Set the item to checked or unchecked
+            item.setCheckState(2*(
+                item.text() in instance.evaluation['display_segments'] or
+                instance.evaluation['display_segments'] == []))
 
         # Reset the slice widget
         self.slice_widget.reset_images()
@@ -1383,7 +1375,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             component[next(iter(component))]['instance']['function']](self)
 
         # Load the component into the window
-        self.current_component_window.load(component)
+        self.current_component_window.load(component, edit=True)
 
         # Set the position of the window
         self.current_component_window.position()
@@ -1693,40 +1685,24 @@ class MainWindow(QMainWindow, Ui_main_window):
         def set_single_component(segment, component):
             """Set a single component."""
 
-            # Check if the component is an objective
-            if component['type'] == 'objective':
+            # Map the component and segment type to the icon paths
+            paths = {
+                'objective_TARGET': (
+                    ":/special_icons/icons_special/"
+                    "target-red-svgrepo-com.svg"),
+                'objective_OAR': (
+                    ":/special_icons/icons_special/"
+                    "target-green-svgrepo-com.svg"),
+                'constraint_TARGET': (
+                    ":/special_icons/icons_special/"
+                    "frame-red-svgrepo-com.svg"),
+                'constraint_OAR': (
+                    ":/special_icons/icons_special/"
+                    "frame-green-svgrepo-com.svg")
+                }
 
-                # Check if the segment is a target
-                if self.segments[segment] == 'TARGET':
-
-                    # Set the icon path to the red target
-                    icon_path = (
-                        ":/special_icons/icons_special/"
-                        "target-red-svgrepo-com.svg")
-
-                else:
-
-                    # Set the icon path to the green target
-                    icon_path = (
-                        ":/special_icons/icons_special/"
-                        "target-green-svgrepo-com.svg")
-
-            else:
-
-                # Check if the segment is a target
-                if self.segments[segment] == 'TARGET':
-
-                    # Set the icon path to the red frame
-                    icon_path = (
-                        ":/special_icons/icons_special/"
-                        "frame-red-svgrepo-com.svg")
-
-                else:
-
-                    # Set the icon path to the green frame
-                    icon_path = (
-                        ":/special_icons/icons_special/"
-                        "frame-green-svgrepo-com.svg")
+            # Get the icon path
+            icon_path = paths[f'{component["type"]}_{self.segments[segment]}']
 
             # Initialize the icon object
             icon = QIcon()
@@ -2062,34 +2038,20 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.display_segments_cbox.model().item(index)
                 for index in range(self.display_segments_cbox.count())):
 
-            # Check if the evaluation dictionary includes the item text
-            if (item.text() in evaluation['display_segments'] or
-                    evaluation['display_segments'] == []):
-
-                # Set the item to checked
-                item.setCheckState(2)
-
-            else:
-
-                # Set the item to unchecked
-                item.setCheckState(0)
+            # Set the item to checked or unchecked
+            item.setCheckState(2*(
+                item.text() in evaluation['display_segments'] or
+                evaluation['display_segments'] == []))
 
         # Loop over the display metrics items
         for item in (
                 self.display_metrics_cbox.model().item(index)
                 for index in range(self.display_metrics_cbox.count())):
 
-            # Check if the evaluation dictionary includes the item text
-            if (item.text() in evaluation['display_metrics'] or
-                    evaluation['display_metrics'] == []):
-
-                # Set the item to checked
-                item.setCheckState(2)
-
-            else:
-
-                # Set the item to unchecked
-                item.setCheckState(0)
+            # Set the item to checked or unchecked
+            item.setCheckState(2*(
+                item.text() in evaluation['display_metrics'] or
+                evaluation['display_metrics'] == []))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))

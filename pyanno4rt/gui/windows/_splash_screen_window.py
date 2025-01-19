@@ -58,13 +58,13 @@ class SplashScreenWindow(QMainWindow, Ui_splash_window):
         for i in range(1, 101):
 
             # 
-            sleep(0.02)
+            sleep(0.03)
 
             # 
             self.progressBar.setValue(i)
 
         # 
-        sleep(0.2)
+        sleep(1)
 
     def position(self):
         """."""

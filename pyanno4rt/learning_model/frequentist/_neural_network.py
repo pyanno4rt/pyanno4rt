@@ -84,8 +84,9 @@ class NeuralNetworkModel(MachineLearningModel):
                 'input_dropout_rate', [0.0, 0.1, 0.25, 0.5, 0.75]),
             'batch_size': tune_space.get('batch_size', [4, 8, 16, 32]),
             'learning_rate': tune_space.get('learning_rate', [1e-5, 1e-2]),
-            'optimizer': tune_space.get('optimizer', ['Adam', 'Ftrl', 'SGD']),
-            'loss': tune_space.get('loss', ['BCE', 'FocalBCE', 'KLD'])}
+            'optimizer': tune_space.get(
+                'optimizer', list(optimizer_map.keys())),
+            'loss': tune_space.get('loss', list(loss_map.keys()))}
 
         # Configure the hyperopt search space
         hp_space = {

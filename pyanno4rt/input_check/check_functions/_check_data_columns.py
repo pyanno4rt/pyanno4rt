@@ -42,6 +42,15 @@ def check_data_columns(label, data, columns, segments, check_functions):
         # Check if the column type is 'feature'
         if value['type'] == 'feature':
 
+            # Check if neither segment, function nor value have been passed
+            if all(parameter is None for parameter in (
+                    value['segment'], value['function'], value['value'])):
+
+                # Raise an error to indicate missing features
+                raise ValueError(
+                    f"The treatment plan parameter {path} does not contain "
+                    "either segment and function or a value!")
+
             # Check if any required key is unavailable
             check_functions[5](path, value)
 
@@ -57,8 +66,11 @@ def check_data_columns(label, data, columns, segments, check_functions):
             # Check if the column function is not a string
             check_functions[9](f"{path}['function']", value['function'])
 
-            # Check if the column function is invalid
-            check_functions[10](f"{path}['function']", value['function'])
+            # Check if the column function is not None
+            if value['function']:
+
+                # Check if the column function is invalid
+                check_functions[10](f"{path}['function']", value['function'])
 
             # Check if the column function has an argument
             if value['function'] in (
@@ -143,9 +155,12 @@ def check_data_columns(label, data, columns, segments, check_functions):
             # Check if the column segment is not a string
             check_functions[26](f"{path}['segment']", value['segment'])
 
-            # Check if the column segment is invalid
-            check_functions[27](
-                f"{path}['segment']", value['segment'], segments)
+            # Check if the column segment is not None
+            if value['segment']:
+
+                # Check if the column segment is invalid
+                check_functions[27](
+                    f"{path}['segment']", value['segment'], segments)
 
         else:
 
