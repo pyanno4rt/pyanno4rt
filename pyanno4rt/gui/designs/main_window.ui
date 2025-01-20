@@ -1956,9 +1956,9 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>0</y>
+                 <y>-201</y>
                  <width>817</width>
-                 <height>906</height>
+                 <height>896</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_configuration_meta_layout">
@@ -1975,7 +1975,7 @@ background-color: rgb(211, 215, 207);</string>
                  <number>10</number>
                 </property>
                 <property name="bottomMargin">
-                 <number>10</number>
+                 <number>0</number>
                 </property>
                 <item>
                  <layout class="QVBoxLayout" name="configuration_content_layout">
@@ -3653,9 +3653,9 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>0</y>
+                 <y>-427</y>
                  <width>817</width>
-                 <height>1132</height>
+                 <height>1122</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_optimization_meta_layout">
@@ -3672,7 +3672,7 @@ background-color: rgb(211, 215, 207);</string>
                  <number>10</number>
                 </property>
                 <property name="bottomMargin">
-                 <number>10</number>
+                 <number>0</number>
                 </property>
                 <item>
                  <layout class="QVBoxLayout" name="optimization_content_layout">
@@ -5667,7 +5667,7 @@ background-color: rgb(211, 215, 207);</string>
                  <number>10</number>
                 </property>
                 <property name="bottomMargin">
-                 <number>10</number>
+                 <number>0</number>
                 </property>
                 <item>
                  <layout class="QVBoxLayout" name="evaluation_content_layout">

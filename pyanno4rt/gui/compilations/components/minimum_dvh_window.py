@@ -27,10 +27,9 @@ class Ui_minimum_dvh_window(object):
         self.scroll_area = QtWidgets.QScrollArea(self.body_widget)
         self.scroll_area.setGeometry(QtCore.QRect(10, 0, 711, 431))
         self.scroll_area.setStyleSheet("border-color: transparent;")
-        self.scroll_area.setWidgetResizable(False)
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, 0, 690, 681))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, 0, 690, 679))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 100, 111, 31))
@@ -43,7 +42,7 @@ class Ui_minimum_dvh_window(object):
         self.embedding_cbox.addItem("")
         self.embedding_cbox.addItem("")
         self.segment_label = QtWidgets.QLabel(self.scroll_contents)
-        self.segment_label.setGeometry(QtCore.QRect(0, 60, 431, 31))
+        self.segment_label.setGeometry(QtCore.QRect(0, 60, 421, 31))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -88,16 +87,16 @@ class Ui_minimum_dvh_window(object):
         self.type_label.setFont(font)
         self.type_label.setStyleSheet("border: 0px solid;")
         self.type_label.setObjectName("type_label")
-        self.close_component_pbutton = QtWidgets.QPushButton(self.scroll_contents)
-        self.close_component_pbutton.setGeometry(QtCore.QRect(614, 640, 71, 31))
-        self.close_component_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.close_component_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.close_pbutton = QtWidgets.QPushButton(self.scroll_contents)
+        self.close_pbutton.setGeometry(QtCore.QRect(614, 640, 71, 31))
+        self.close_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.close_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.close_component_pbutton.setObjectName("close_component_pbutton")
+        self.close_pbutton.setObjectName("close_pbutton")
         self.target_dose_label = QtWidgets.QLabel(self.scroll_contents)
-        self.target_dose_label.setGeometry(QtCore.QRect(0, 210, 131, 31))
+        self.target_dose_label.setGeometry(QtCore.QRect(0, 210, 121, 31))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -132,15 +131,8 @@ class Ui_minimum_dvh_window(object):
         self.identifier_label.setFont(font)
         self.identifier_label.setStyleSheet("border: 0px solid;")
         self.identifier_label.setObjectName("identifier_label")
-        self.link_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.link_ledit.setGeometry(QtCore.QRect(290, 250, 394, 31))
-        self.link_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
-"background-color: rgb(238, 238, 236);\n"
-"border: 1px solid;\n"
-"border-color: rgb(186, 189, 182);")
-        self.link_ledit.setObjectName("link_ledit")
         self.link_label = QtWidgets.QLabel(self.scroll_contents)
-        self.link_label.setGeometry(QtCore.QRect(290, 210, 394, 31))
+        self.link_label.setGeometry(QtCore.QRect(280, 210, 401, 31))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -170,7 +162,7 @@ class Ui_minimum_dvh_window(object):
         self.handling_viz_label.setStyleSheet("border: 0px solid;")
         self.handling_viz_label.setObjectName("handling_viz_label")
         self.target_dose_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.target_dose_ledit.setGeometry(QtCore.QRect(0, 250, 131, 30))
+        self.target_dose_ledit.setGeometry(QtCore.QRect(0, 250, 121, 30))
         self.target_dose_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -185,21 +177,21 @@ class Ui_minimum_dvh_window(object):
         self.weight_label.setFont(font)
         self.weight_label.setStyleSheet("border: 0px solid;")
         self.weight_label.setObjectName("weight_label")
-        self.save_component_pbutton = QtWidgets.QPushButton(self.scroll_contents)
-        self.save_component_pbutton.setGeometry(QtCore.QRect(534, 640, 71, 31))
-        self.save_component_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.save_component_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.save_pbutton = QtWidgets.QPushButton(self.scroll_contents)
+        self.save_pbutton.setGeometry(QtCore.QRect(534, 640, 71, 31))
+        self.save_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.save_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.save_component_pbutton.setObjectName("save_component_pbutton")
+        self.save_pbutton.setObjectName("save_pbutton")
         self.function_line = QtWidgets.QFrame(self.scroll_contents)
         self.function_line.setGeometry(QtCore.QRect(0, 200, 684, 2))
         self.function_line.setStyleSheet("border-color: rgb(46, 52, 54);")
         self.function_line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.function_line.setObjectName("function_line")
         self.conjunction = QtWidgets.QLabel(self.scroll_contents)
-        self.conjunction.setGeometry(QtCore.QRect(494, 405, 16, 17))
+        self.conjunction.setGeometry(QtCore.QRect(494, 406, 16, 17))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -264,7 +256,7 @@ class Ui_minimum_dvh_window(object):
         self.lower_bound_ledit.setAlignment(QtCore.Qt.AlignCenter)
         self.lower_bound_ledit.setObjectName("lower_bound_ledit")
         self.volume_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.volume_ledit.setGeometry(QtCore.QRect(150, 250, 123, 30))
+        self.volume_ledit.setGeometry(QtCore.QRect(140, 250, 121, 30))
         self.volume_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -272,7 +264,7 @@ class Ui_minimum_dvh_window(object):
         self.volume_ledit.setAlignment(QtCore.Qt.AlignCenter)
         self.volume_ledit.setObjectName("volume_ledit")
         self.volume_label = QtWidgets.QLabel(self.scroll_contents)
-        self.volume_label.setGeometry(QtCore.QRect(150, 210, 123, 31))
+        self.volume_label.setGeometry(QtCore.QRect(140, 210, 121, 31))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -287,13 +279,18 @@ class Ui_minimum_dvh_window(object):
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.segment_cbox.setObjectName("segment_cbox")
+        self.horizontalLayoutWidget = QtWidgets.QWidget(self.scroll_contents)
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(280, 250, 401, 31))
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.segment_link_layout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
+        self.segment_link_layout.setContentsMargins(0, 0, 0, 0)
+        self.segment_link_layout.setObjectName("segment_link_layout")
         self.scroll_area.setWidget(self.scroll_contents)
         minimum_dvh_window.setCentralWidget(self.body_widget)
 
         self.retranslateUi(minimum_dvh_window)
         self.embedding_cbox.setCurrentIndex(0)
         self.type_cbox.setCurrentIndex(0)
-        self.segment_cbox.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(minimum_dvh_window)
 
     def retranslateUi(self, minimum_dvh_window):
@@ -307,17 +304,16 @@ class Ui_minimum_dvh_window(object):
         self.type_cbox.setItemText(0, _translate("minimum_dvh_window", "objective"))
         self.type_cbox.setItemText(1, _translate("minimum_dvh_window", "constraint"))
         self.type_label.setText(_translate("minimum_dvh_window", "Type"))
-        self.close_component_pbutton.setText(_translate("minimum_dvh_window", "Close"))
+        self.close_pbutton.setText(_translate("minimum_dvh_window", "Close"))
         self.target_dose_label.setText(_translate("minimum_dvh_window", "Target dose [Gy]"))
         self.identifier_ledit.setPlaceholderText(_translate("minimum_dvh_window", "None"))
         self.identifier_label.setText(_translate("minimum_dvh_window", "Identifier"))
-        self.link_ledit.setPlaceholderText(_translate("minimum_dvh_window", "None"))
         self.link_label.setText(_translate("minimum_dvh_window", "Link"))
         self.function_label.setText(_translate("minimum_dvh_window", "Function"))
         self.bounds_label.setText(_translate("minimum_dvh_window", "Bounds"))
         self.handling_viz_label.setText(_translate("minimum_dvh_window", "Handling & Visualization"))
         self.weight_label.setText(_translate("minimum_dvh_window", "Weight"))
-        self.save_component_pbutton.setText(_translate("minimum_dvh_window", "Save"))
+        self.save_pbutton.setText(_translate("minimum_dvh_window", "Save"))
         self.conjunction.setText(_translate("minimum_dvh_window", "-"))
         self.optimization_label.setText(_translate("minimum_dvh_window", "Optimization"))
         self.rank_label.setText(_translate("minimum_dvh_window", "Rank"))
@@ -326,3 +322,6 @@ class Ui_minimum_dvh_window(object):
         self.disp_component_check.setText(_translate("minimum_dvh_window", "Display component"))
         self.lower_bound_ledit.setPlaceholderText(_translate("minimum_dvh_window", "0.0"))
         self.volume_label.setText(_translate("minimum_dvh_window", "Volume [%]"))
+
+
+import resources_rc

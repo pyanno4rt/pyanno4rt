@@ -417,7 +417,7 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         # Log a message about the hyperparameter tuning
         hub.logger.display_info(
-            'Performing Bayesian hyperparameter search for '
+            'Starting Bayesian hyperparameter search for '
             f'"{self.model_label}" ...')
 
         def objective(proposal, trials, space):

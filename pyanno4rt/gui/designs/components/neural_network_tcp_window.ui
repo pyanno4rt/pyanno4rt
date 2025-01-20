@@ -51,23 +51,20 @@ border-color: rgb(186, 189, 182);</string>
     <property name="styleSheet">
      <string notr="true">border-color: transparent;</string>
     </property>
-    <property name="widgetResizable">
-     <bool>false</bool>
-    </property>
     <widget class="QWidget" name="scroll_contents">
      <property name="geometry">
       <rect>
        <x>0</x>
        <y>0</y>
        <width>690</width>
-       <height>2191</height>
+       <height>1669</height>
       </rect>
      </property>
      <widget class="QComboBox" name="embedding_cbox">
       <property name="geometry">
        <rect>
         <x>574</x>
-        <y>100</y>
+        <y>90</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -100,8 +97,8 @@ border-color: rgb(186, 189, 182);</string>
        <rect>
         <x>0</x>
         <y>60</y>
-        <width>431</width>
-        <height>31</height>
+        <width>421</width>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -123,7 +120,7 @@ border-color: rgb(186, 189, 182);</string>
         <x>575</x>
         <y>60</y>
         <width>109</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -164,7 +161,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>445</x>
-        <y>100</y>
+        <y>90</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -211,7 +208,7 @@ border-color: rgb(186, 189, 182);</string>
         <x>445</x>
         <y>60</y>
         <width>111</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -227,11 +224,11 @@ border-color: rgb(186, 189, 182);</string>
        <string>Type</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="close_component_pbutton">
+     <widget class="QPushButton" name="close_pbutton">
       <property name="geometry">
        <rect>
         <x>614</x>
-        <y>2150</y>
+        <y>1630</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -253,7 +250,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>2060</y>
+        <y>1540</y>
         <width>381</width>
         <height>31</height>
        </rect>
@@ -272,7 +269,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>190</x>
-        <y>400</y>
+        <y>370</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -306,9 +303,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>2020</y>
+        <y>1510</y>
         <width>381</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -324,32 +321,13 @@ border-color: rgb(186, 189, 182);</string>
        <string>Identifier</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="link_ledit">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>250</y>
-        <width>494</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="placeholderText">
-       <string>None</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="link_label">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>210</y>
-        <width>494</width>
-        <height>31</height>
+        <y>200</y>
+        <width>431</width>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -369,7 +347,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>160</y>
+        <y>150</y>
         <width>684</width>
         <height>31</height>
        </rect>
@@ -390,9 +368,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>323</x>
-        <y>360</y>
+        <y>340</y>
         <width>364</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -412,7 +390,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1970</y>
+        <y>1460</y>
         <width>684</width>
         <height>31</height>
        </rect>
@@ -433,9 +411,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>360</y>
+        <y>340</y>
         <width>171</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -451,11 +429,11 @@ border-color: rgb(186, 189, 182);</string>
        <string>Weight</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="save_component_pbutton">
+     <widget class="QPushButton" name="save_pbutton">
       <property name="geometry">
        <rect>
         <x>534</x>
-        <y>2150</y>
+        <y>1630</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -477,7 +455,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>200</y>
+        <y>190</y>
         <width>684</width>
         <height>2</height>
        </rect>
@@ -490,7 +468,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>494</x>
-        <y>405</y>
+        <y>376</y>
         <width>16</width>
         <height>17</height>
        </rect>
@@ -515,7 +493,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>310</y>
+        <y>290</y>
         <width>684</width>
         <height>31</height>
        </rect>
@@ -536,9 +514,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>190</x>
-        <y>360</y>
+        <y>340</y>
         <width>111</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -558,7 +536,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>515</x>
-        <y>400</y>
+        <y>370</y>
         <width>170</width>
         <height>31</height>
        </rect>
@@ -580,7 +558,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>400</y>
+        <y>370</y>
         <width>171</width>
         <height>31</height>
        </rect>
@@ -602,7 +580,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>2110</y>
+        <y>1590</y>
         <width>231</width>
         <height>23</height>
        </rect>
@@ -625,7 +603,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>2010</y>
+        <y>1500</y>
         <width>684</width>
         <height>2</height>
        </rect>
@@ -638,7 +616,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>350</y>
+        <y>330</y>
         <width>684</width>
         <height>2</height>
        </rect>
@@ -651,7 +629,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>320</x>
-        <y>400</y>
+        <y>370</y>
         <width>170</width>
         <height>31</height>
        </rect>
@@ -673,7 +651,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>500</y>
+        <y>470</y>
         <width>684</width>
         <height>2</height>
        </rect>
@@ -686,7 +664,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>460</y>
+        <y>430</y>
         <width>684</width>
         <height>31</height>
        </rect>
@@ -707,7 +685,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>550</y>
+        <y>510</y>
         <width>381</width>
         <height>31</height>
        </rect>
@@ -723,9 +701,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>510</y>
+        <y>480</y>
         <width>381</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -745,9 +723,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>400</x>
-        <y>510</y>
+        <y>480</y>
         <width>281</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -767,9 +745,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>650</x>
-        <y>550</y>
-        <width>30</width>
-        <height>30</height>
+        <y>510</y>
+        <width>31</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="cursor">
@@ -798,9 +776,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>400</x>
-        <y>550</y>
+        <y>510</y>
         <width>241</width>
-        <height>30</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -817,9 +795,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>650</x>
-        <y>630</y>
-        <width>30</width>
-        <height>30</height>
+        <y>580</y>
+        <width>31</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="cursor">
@@ -848,9 +826,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>590</y>
+        <y>550</y>
         <width>681</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -870,9 +848,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>630</y>
+        <y>580</y>
         <width>641</width>
-        <height>30</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -882,33 +860,11 @@ border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
      </widget>
-     <widget class="QLabel" name="features_label">
+     <widget class="QLabel" name="data_handling_label">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>720</y>
-        <width>551</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>Features</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="data_filter_label">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>680</y>
+        <y>630</y>
         <width>681</width>
         <height>31</height>
        </rect>
@@ -918,347 +874,14 @@ border-color: rgb(186, 189, 182);</string>
 color: rgb(85, 87, 83);</string>
       </property>
       <property name="text">
-       <string>DATA FILTER</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="filter_mode_cbox">
-      <property name="geometry">
-       <rect>
-        <x>570</x>
-        <y>760</y>
-        <width>111</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="cursor">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <item>
-       <property name="text">
-        <string>remove</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>retain</string>
-       </property>
-      </item>
-     </widget>
-     <widget class="QLabel" name="filter_mode_label">
-      <property name="geometry">
-       <rect>
-        <x>570</x>
-        <y>720</y>
-        <width>111</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>Filter mode</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_name_label">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>840</y>
-        <width>301</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>Label name</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="label_name_ledit">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>880</y>
-        <width>301</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="label_lower_bound_ledit">
-      <property name="geometry">
-       <rect>
-        <x>315</x>
-        <y>880</y>
-        <width>170</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="placeholderText">
-       <string>1.0</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_bounds_conjunction">
-      <property name="geometry">
-       <rect>
-        <x>489</x>
-        <y>885</y>
-        <width>16</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: none;</string>
-      </property>
-      <property name="text">
-       <string>-</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_bounds_label">
-      <property name="geometry">
-       <rect>
-        <x>318</x>
-        <y>840</y>
-        <width>364</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>Label bounds</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="label_upper_bound_ledit">
-      <property name="geometry">
-       <rect>
-        <x>510</x>
-        <y>880</y>
-        <width>170</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="placeholderText">
-       <string>1.0</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="time_variable_label">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>920</y>
-        <width>301</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>Time variable name</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="time_variable_ledit">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>960</y>
-        <width>301</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="placeholderText">
-       <string>None</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="label_viewpoint_cbox">
-      <property name="geometry">
-       <rect>
-        <x>320</x>
-        <y>960</y>
-        <width>131</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="cursor">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="currentIndex">
-       <number>3</number>
-      </property>
-      <item>
-       <property name="text">
-        <string>early</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>late</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>long-term</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>longitudinal</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>profile</string>
-       </property>
-      </item>
-     </widget>
-     <widget class="QLabel" name="label_viewpoint_label">
-      <property name="geometry">
-       <rect>
-        <x>320</x>
-        <y>920</y>
-        <width>131</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>Label viewpoint</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="fuzzy_matching_check">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>1050</y>
-        <width>231</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="cursor">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px;
-color: rgb(0, 0, 0);</string>
-      </property>
-      <property name="text">
-       <string>Fuzzy string matching</string>
-      </property>
-      <property name="checked">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="feature_map_label">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>1010</y>
-        <width>681</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;
-color: rgb(85, 87, 83);</string>
-      </property>
-      <property name="text">
-       <string>FEATURE MAP</string>
+       <string>DATA HANDLING</string>
       </property>
      </widget>
      <widget class="QLabel" name="modeling_label">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1090</y>
+        <y>750</y>
         <width>681</width>
         <height>31</height>
        </rect>
@@ -1275,9 +898,9 @@ color: rgb(85, 87, 83);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1130</y>
+        <y>790</y>
         <width>681</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -1297,7 +920,7 @@ color: rgb(85, 87, 83);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1170</y>
+        <y>820</y>
         <width>681</width>
         <height>31</height>
        </rect>
@@ -1312,33 +935,11 @@ border-color: rgb(186, 189, 182);</string>
        <string>[Identity]</string>
       </property>
      </widget>
-     <widget class="QLabel" name="tune_space_label">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>1290</y>
-        <width>681</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>Tune space</string>
-      </property>
-     </widget>
      <widget class="QSpinBox" name="tune_eval_sbox">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1710</y>
+        <y>1250</y>
         <width>131</width>
         <height>31</height>
        </rect>
@@ -1372,9 +973,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1670</y>
-        <width>141</width>
-        <height>31</height>
+        <y>1220</y>
+        <width>131</width>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -1394,7 +995,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>150</x>
-        <y>1710</y>
+        <y>1250</y>
         <width>141</width>
         <height>31</height>
        </rect>
@@ -1408,32 +1009,14 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
-      <property name="currentIndex">
-       <number>2</number>
-      </property>
-      <item>
-       <property name="text">
-        <string>AUC</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Brier score</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Logloss</string>
-       </property>
-      </item>
      </widget>
      <widget class="QLabel" name="tune_score_label">
       <property name="geometry">
        <rect>
         <x>150</x>
-        <y>1670</y>
-        <width>151</width>
-        <height>31</height>
+        <y>1220</y>
+        <width>141</width>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -1453,7 +1036,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>310</x>
-        <y>1710</y>
+        <y>1250</y>
         <width>91</width>
         <height>31</height>
        </rect>
@@ -1487,9 +1070,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>310</x>
-        <y>1670</y>
-        <width>101</width>
-        <height>31</height>
+        <y>1220</y>
+        <width>91</width>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -1509,7 +1092,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1790</y>
+        <y>1330</y>
         <width>681</width>
         <height>31</height>
        </rect>
@@ -1526,9 +1109,9 @@ color: rgb(85, 87, 83);</string>
       <property name="geometry">
        <rect>
         <x>420</x>
-        <y>1670</y>
-        <width>101</width>
-        <height>31</height>
+        <y>1220</y>
+        <width>91</width>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -1548,7 +1131,7 @@ color: rgb(85, 87, 83);</string>
       <property name="geometry">
        <rect>
         <x>420</x>
-        <y>1710</y>
+        <y>1250</y>
         <width>91</width>
         <height>31</height>
        </rect>
@@ -1582,7 +1165,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1750</y>
+        <y>1290</y>
         <width>141</width>
         <height>23</height>
        </rect>
@@ -1601,38 +1184,13 @@ color: rgb(0, 0, 0);</string>
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QListWidget" name="graphs_lwidget">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>1870</y>
-        <width>261</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="cursor" stdset="0">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="flow">
-       <enum>QListView::LeftToRight</enum>
-      </property>
-      <property name="spacing">
-       <number>5</number>
-      </property>
-     </widget>
      <widget class="QLabel" name="graphs_label">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1830</y>
-        <width>241</width>
-        <height>31</height>
+        <y>1370</y>
+        <width>261</width>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -1652,9 +1210,9 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>1830</y>
+        <y>1370</y>
         <width>401</width>
-        <height>31</height>
+        <height>25</height>
        </rect>
       </property>
       <property name="font">
@@ -1670,42 +1228,11 @@ border-color: rgb(186, 189, 182);</string>
        <string>KPIs</string>
       </property>
      </widget>
-     <widget class="QListWidget" name="kpi_lwidget">
-      <property name="geometry">
-       <rect>
-        <x>280</x>
-        <y>1870</y>
-        <width>401</width>
-        <height>71</height>
-       </rect>
-      </property>
-      <property name="cursor" stdset="0">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="flow">
-       <enum>QListView::LeftToRight</enum>
-      </property>
-      <property name="spacing">
-       <number>12</number>
-      </property>
-      <property name="viewMode">
-       <enum>QListView::IconMode</enum>
-      </property>
-      <property name="itemAlignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
      <widget class="QCheckBox" name="inspect_model_check">
       <property name="geometry">
        <rect>
         <x>150</x>
-        <y>1750</y>
+        <y>1290</y>
         <width>141</width>
         <height>23</height>
        </rect>
@@ -1728,7 +1255,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>300</x>
-        <y>1750</y>
+        <y>1290</y>
         <width>141</width>
         <height>23</height>
        </rect>
@@ -1747,16 +1274,16 @@ color: rgb(0, 0, 0);</string>
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QListWidget" name="features_lwidget">
+     <widget class="QComboBox" name="segment_cbox">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>760</y>
-        <width>561</width>
-        <height>71</height>
+        <y>90</y>
+        <width>426</width>
+        <height>31</height>
        </rect>
       </property>
-      <property name="cursor" stdset="0">
+      <property name="cursor">
        <cursorShape>PointingHandCursor</cursorShape>
       </property>
       <property name="styleSheet">
@@ -1765,117 +1292,103 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
-      <property name="flow">
-       <enum>QListView::LeftToRight</enum>
+     </widget>
+     <widget class="QToolButton" name="data_columns_tbutton">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>670</y>
+        <width>51</width>
+        <height>51</height>
+       </rect>
       </property>
-      <property name="spacing">
-       <number>12</number>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
       </property>
-      <property name="viewMode">
-       <enum>QListView::IconMode</enum>
+      <property name="toolTip">
+       <string>Open the data columns window</string>
       </property>
-      <property name="itemAlignment">
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(0, 0, 0);
+border: 1px solid;
+border-color: rgb(46, 52, 54);
+color: rgb(238, 238, 236);</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../../assets/resources.qrc">
+        <normaloff>:/special_icons/icons_special/data-spreadsheet-svgrepo-com.svg</normaloff>:/special_icons/icons_special/data-spreadsheet-svgrepo-com.svg</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>31</width>
+        <height>31</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QLabel" name="data_columns_label">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>720</y>
+        <width>71</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 0px solid;
+background: transparent;
+color: rgb(0, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>Data columns</string>
+      </property>
+      <property name="alignment">
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QToolButton" name="features_plus_tbutton">
+     <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>570</x>
-        <y>800</y>
-        <width>30</width>
-        <height>30</height>
+        <x>0</x>
+        <y>229</y>
+        <width>431</width>
+        <height>31</height>
        </rect>
       </property>
-      <property name="cursor">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="toolTip">
-       <string>Add feature</string>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="icon">
-       <iconset resource="../../assets/resources.qrc">
-        <normaloff>:/black_icons/icons_black/plus.svg</normaloff>:/black_icons/icons_black/plus.svg</iconset>
-      </property>
-      <property name="iconSize">
-       <size>
-        <width>18</width>
-        <height>18</height>
-       </size>
-      </property>
+      <layout class="QHBoxLayout" name="segment_link_layout"/>
      </widget>
-     <widget class="QToolButton" name="features_minus_tbutton">
+     <widget class="QWidget" name="horizontalLayoutWidget_4">
       <property name="geometry">
        <rect>
-        <x>610</x>
-        <y>800</y>
-        <width>30</width>
-        <height>30</height>
+        <x>0</x>
+        <y>1400</y>
+        <width>261</width>
+        <height>31</height>
        </rect>
       </property>
-      <property name="cursor">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="toolTip">
-       <string>Remove feature</string>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="icon">
-       <iconset resource="../../assets/resources.qrc">
-        <normaloff>:/black_icons/icons_black/minus.svg</normaloff>:/black_icons/icons_black/minus.svg</iconset>
-      </property>
-      <property name="iconSize">
-       <size>
-        <width>18</width>
-        <height>18</height>
-       </size>
-      </property>
+      <layout class="QHBoxLayout" name="graphs_layout"/>
      </widget>
-     <widget class="QToolButton" name="features_load_tbutton">
+     <widget class="QWidget" name="horizontalLayoutWidget_5">
       <property name="geometry">
        <rect>
-        <x>650</x>
-        <y>800</y>
-        <width>30</width>
-        <height>30</height>
+        <x>280</x>
+        <y>1400</y>
+        <width>401</width>
+        <height>31</height>
        </rect>
       </property>
-      <property name="cursor">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="toolTip">
-       <string>Load features from data</string>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="icon">
-       <iconset resource="../../assets/resources.qrc">
-        <normaloff>:/black_icons/icons_black/download.svg</normaloff>:/black_icons/icons_black/download.svg</iconset>
-      </property>
-      <property name="iconSize">
-       <size>
-        <width>18</width>
-        <height>18</height>
-       </size>
-      </property>
+      <layout class="QHBoxLayout" name="kpi_layout"/>
      </widget>
      <widget class="QLabel" name="input_activation_label">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1380</y>
+        <y>1030</y>
         <width>131</width>
         <height>31</height>
        </rect>
@@ -1890,13 +1403,54 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
+     <widget class="QLineEdit" name="input_dropout_ledit">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>1080</y>
+        <width>191</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+      </property>
+      <property name="placeholderText">
+       <string>[0.0, 0.1, 0.25, 0.5, 0.75]</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="architecture_label">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>860</y>
+        <width>131</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 0px solid;</string>
+      </property>
+      <property name="text">
+       <string>Architecture</string>
+      </property>
+     </widget>
      <widget class="QLabel" name="learning_rate_conjunction">
       <property name="geometry">
        <rect>
         <x>578</x>
-        <y>1545</y>
+        <y>1134</y>
         <width>16</width>
-        <height>17</height>
+        <height>20</height>
        </rect>
       </property>
       <property name="font">
@@ -1915,33 +1469,11 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLineEdit" name="learning_rate_lower_bound_ledit">
-      <property name="geometry">
-       <rect>
-        <x>492</x>
-        <y>1540</y>
-        <width>86</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="placeholderText">
-       <string>0.00001</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="input_neurons_label">
       <property name="geometry">
        <rect>
         <x>15</x>
-        <y>1330</y>
+        <y>980</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -1956,12 +1488,12 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="learning_rate_label">
+     <widget class="QLabel" name="optimizer_label">
       <property name="geometry">
        <rect>
-        <x>387</x>
-        <y>1540</y>
-        <width>101</width>
+        <x>45</x>
+        <y>1180</y>
+        <width>81</width>
         <height>31</height>
        </rect>
       </property>
@@ -1969,118 +1501,17 @@ border-color: rgb(186, 189, 182);</string>
        <string notr="true">border: 0px solid;</string>
       </property>
       <property name="text">
-       <string>learning rate</string>
+       <string>optimizer</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="learning_rate_upper_bound_ledit">
-      <property name="geometry">
-       <rect>
-        <x>595</x>
-        <y>1540</y>
-        <width>86</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="placeholderText">
-       <string>0.01</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="architecture_label">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>1210</y>
-        <width>131</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>Architecture</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="architecture_cbox">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>1250</y>
-        <width>131</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="cursor">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <item>
-       <property name="text">
-        <string>input-convex</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>standard</string>
-       </property>
-      </item>
-     </widget>
-     <widget class="QLabel" name="max_hidden_layers_label">
-      <property name="geometry">
-       <rect>
-        <x>150</x>
-        <y>1210</y>
-        <width>181</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>Maximum hidden layers</string>
       </property>
      </widget>
      <widget class="QSpinBox" name="max_hidden_layers_sbox">
       <property name="geometry">
        <rect>
         <x>150</x>
-        <y>1250</y>
+        <y>900</y>
         <width>171</width>
         <height>31</height>
        </rect>
@@ -2110,133 +1541,11 @@ border-color: rgb(186, 189, 182);</string>
        <number>2</number>
       </property>
      </widget>
-     <widget class="QLineEdit" name="input_neurons_ledit">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>1330</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="placeholderText">
-       <string>[2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]]</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="hidden_neurons_label">
-      <property name="geometry">
-       <rect>
-        <x>365</x>
-        <y>1330</y>
-        <width>121</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>hidden neurons</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="hidden_neurons_ledit">
-      <property name="geometry">
-       <rect>
-        <x>490</x>
-        <y>1330</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="placeholderText">
-       <string>[2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]]</string>
-      </property>
-     </widget>
-     <widget class="QListWidget" name="input_activation_lwidget">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>1380</y>
-        <width>191</width>
-        <height>91</height>
-       </rect>
-      </property>
-      <property name="cursor" stdset="0">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="flow">
-       <enum>QListView::LeftToRight</enum>
-      </property>
-      <property name="spacing">
-       <number>4</number>
-      </property>
-      <property name="viewMode">
-       <enum>QListView::IconMode</enum>
-      </property>
-      <property name="itemAlignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QListWidget" name="hidden_activation_lwidget">
-      <property name="geometry">
-       <rect>
-        <x>490</x>
-        <y>1380</y>
-        <width>191</width>
-        <height>91</height>
-       </rect>
-      </property>
-      <property name="cursor" stdset="0">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="flow">
-       <enum>QListView::LeftToRight</enum>
-      </property>
-      <property name="spacing">
-       <number>4</number>
-      </property>
-      <property name="viewMode">
-       <enum>QListView::IconMode</enum>
-      </property>
-      <property name="itemAlignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
      <widget class="QLabel" name="hidden_activation_label">
       <property name="geometry">
        <rect>
         <x>350</x>
-        <y>1380</y>
+        <y>1030</y>
         <width>141</width>
         <height>31</height>
        </rect>
@@ -2251,11 +1560,96 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget_9">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>1180</y>
+        <width>191</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="optimizer_layout"/>
+     </widget>
+     <widget class="QLineEdit" name="learning_rate_lower_bound_ledit">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>1130</y>
+        <width>87</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="placeholderText">
+       <string>0.00001</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget_8">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>1030</y>
+        <width>191</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="hidden_activation_layout"/>
+     </widget>
+     <widget class="QLabel" name="tune_space_label">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>940</y>
+        <width>681</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 0px solid;</string>
+      </property>
+      <property name="text">
+       <string>Tune space</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="hidden_neurons_label">
+      <property name="geometry">
+       <rect>
+        <x>365</x>
+        <y>980</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 0px solid;</string>
+      </property>
+      <property name="text">
+       <string>hidden neurons</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
      <widget class="QLabel" name="input_dropout_label">
       <property name="geometry">
        <rect>
         <x>15</x>
-        <y>1490</y>
+        <y>1080</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -2270,11 +1664,11 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLineEdit" name="input_dropout_ledit">
+     <widget class="QLineEdit" name="hidden_dropout_ledit">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>1490</y>
+        <x>490</x>
+        <y>1080</y>
         <width>191</width>
         <height>31</height>
        </rect>
@@ -2293,7 +1687,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>370</x>
-        <y>1490</y>
+        <y>1080</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -2308,30 +1702,22 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLineEdit" name="hidden_dropout_ledit">
+     <widget class="QWidget" name="horizontalLayoutWidget_7">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>1490</y>
+        <x>130</x>
+        <y>1030</y>
         <width>191</width>
         <height>31</height>
        </rect>
       </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="placeholderText">
-       <string>[0.0, 0.1, 0.25, 0.5, 0.75]</string>
-      </property>
+      <layout class="QHBoxLayout" name="input_activation_layout"/>
      </widget>
      <widget class="QLabel" name="batch_size_label">
       <property name="geometry">
        <rect>
         <x>45</x>
-        <y>1540</y>
+        <y>1130</y>
         <width>81</width>
         <height>31</height>
        </rect>
@@ -2346,35 +1732,16 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLineEdit" name="batch_size_ledit">
+     <widget class="QComboBox" name="architecture_cbox">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>1540</y>
-        <width>191</width>
+        <x>0</x>
+        <y>900</y>
+        <width>131</width>
         <height>31</height>
        </rect>
       </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="placeholderText">
-       <string>[4, 8, 16, 32]</string>
-      </property>
-     </widget>
-     <widget class="QListWidget" name="optimizer_lwidget">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>1590</y>
-        <width>231</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="cursor" stdset="0">
+      <property name="cursor">
        <cursorShape>PointingHandCursor</cursorShape>
       </property>
       <property name="styleSheet">
@@ -2383,62 +1750,47 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
-      <property name="flow">
-       <enum>QListView::LeftToRight</enum>
+      <property name="currentIndex">
+       <number>0</number>
       </property>
-      <property name="spacing">
-       <number>4</number>
-      </property>
+      <item>
+       <property name="text">
+        <string>vanilla</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>vanilla input-convex</string>
+       </property>
+      </item>
      </widget>
-     <widget class="QListWidget" name="loss_lwidget">
+     <widget class="QLineEdit" name="learning_rate_upper_bound_ledit">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>1630</y>
-        <width>231</width>
+        <x>594</x>
+        <y>1130</y>
+        <width>87</width>
         <height>31</height>
        </rect>
-      </property>
-      <property name="cursor" stdset="0">
-       <cursorShape>PointingHandCursor</cursorShape>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="flow">
-       <enum>QListView::LeftToRight</enum>
-      </property>
-      <property name="spacing">
-       <number>5</number>
-      </property>
-     </widget>
-     <widget class="QLabel" name="optimizer_label">
-      <property name="geometry">
-       <rect>
-        <x>45</x>
-        <y>1590</y>
-        <width>81</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>optimizer</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
+      </property>
+      <property name="placeholderText">
+       <string>0.01</string>
       </property>
      </widget>
      <widget class="QLabel" name="loss_label">
       <property name="geometry">
        <rect>
-        <x>90</x>
-        <y>1630</y>
+        <x>453</x>
+        <y>1180</y>
         <width>31</width>
         <height>31</height>
        </rect>
@@ -2453,17 +1805,14 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QComboBox" name="segment_cbox">
+     <widget class="QLineEdit" name="hidden_neurons_ledit">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>100</y>
-        <width>426</width>
+        <x>490</x>
+        <y>980</y>
+        <width>191</width>
         <height>31</height>
        </rect>
-      </property>
-      <property name="cursor">
-       <cursorShape>PointingHandCursor</cursorShape>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(0, 0, 0);
@@ -2471,8 +1820,98 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
-      <property name="currentIndex">
-       <number>-1</number>
+      <property name="placeholderText">
+       <string>[2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]]</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="learning_rate_label">
+      <property name="geometry">
+       <rect>
+        <x>387</x>
+        <y>1130</y>
+        <width>101</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 0px solid;</string>
+      </property>
+      <property name="text">
+       <string>learning rate</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget_10">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>1180</y>
+        <width>191</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="loss_layout"/>
+     </widget>
+     <widget class="QLabel" name="max_hidden_layers_label">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>860</y>
+        <width>181</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 0px solid;</string>
+      </property>
+      <property name="text">
+       <string>Maximum hidden layers</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="input_neurons_ledit">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>980</y>
+        <width>191</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+      </property>
+      <property name="placeholderText">
+       <string>[2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]]</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="batch_size_ledit">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>1130</y>
+        <width>191</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+      </property>
+      <property name="placeholderText">
+       <string>[4, 8, 16, 32]</string>
       </property>
      </widget>
     </widget>

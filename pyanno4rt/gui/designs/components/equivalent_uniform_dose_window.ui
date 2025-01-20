@@ -346,31 +346,12 @@ border-color: rgb(186, 189, 182);</string>
        <string>Identifier</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="link_ledit">
-      <property name="geometry">
-       <rect>
-        <x>290</x>
-        <y>250</y>
-        <width>394</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="placeholderText">
-       <string>None</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="link_label">
       <property name="geometry">
        <rect>
         <x>290</x>
         <y>210</y>
-        <width>394</width>
+        <width>391</width>
         <height>31</height>
        </rect>
       </property>
@@ -531,7 +512,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>494</x>
-        <y>405</y>
+        <y>406</y>
         <width>16</width>
         <height>17</height>
        </rect>
@@ -769,9 +750,17 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
-      <property name="currentIndex">
-       <number>-1</number>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>250</y>
+        <width>391</width>
+        <height>31</height>
+       </rect>
       </property>
+      <layout class="QHBoxLayout" name="segment_link_layout"/>
      </widget>
     </widget>
    </widget>

@@ -33,7 +33,7 @@ class LogisticRegressionNTCPWindow(
     Parameters
     ----------
     parent : object of class \
-        :class:`~pyanno4rt.gui.windows._main_window.MainWindow`
+        :class:`~pyanno4rt.gui.windows._main_window.MainWindow`, default=None
         The object representing the parent window for embedding.
     """
 
@@ -59,30 +59,50 @@ class LogisticRegressionNTCPWindow(
         # Initialize the data columns window
         self.data_columns_window = DataColumnsWindow(self)
 
+        # Initialize the checkable combo boxes
+        self.segment_link_cbox = CheckableComboBox()
+        self.penalty_cbox = CheckableComboBox()
+        self.class_weight_cbox = CheckableComboBox()
+        self.graphs_cbox = CheckableComboBox()
+        self.kpi_cbox = CheckableComboBox()
+
+        # Loop over the checkable combo boxes with their parameters
+        for box, parameters in {
+                'segment_link_cbox': (
+                    426, list(self.parent.segments.keys()), False,
+                    'segment_link_layout'),
+                'penalty_cbox': (
+                    211, ['l1', 'l2', 'elasticnet'], True, 'penalty_layout'),
+                'class_weight_cbox': (
+                    211, ['None', 'balanced'], True, 'class_weight_layout'),
+                'graphs_cbox': (
+                    261, ['AUC-ROC', 'AUC-PR', 'F1'], True, 'graphs_layout'),
+                'kpi_cbox': (
+                    401, ['Logloss', 'Brier score', 'Subset accuracy',
+                          'Cohen Kappa', 'Hamming loss', 'Jaccard score',
+                          'Precision', 'Recall', 'F1 score', 'MCC', 'AUC'],
+                    True, 'kpi_layout')}.items():
+
+            # Get the combo box
+            combo_box = getattr(self, box)
+
+            # Set a fixed size
+            combo_box.setFixedSize(parameters[0], 31)
+
+            # Add the items
+            combo_box.addItems(parameters[1], parameters[2])
+
+            # Add the combo box to the layout
+            getattr(self, parameters[3]).addWidget(combo_box)
+
         # Add the segment items to the segment combo box
         self.segment_cbox.addItems(list(self.parent.segments.keys()))
         self.segment_cbox.setCurrentIndex(-1)
-
-        # Initialize the custom combo box for the segment link
-        self.segment_link_cbox = CheckableComboBox()
-        self.segment_link_cbox.setFixedSize(426, 31)
-        self.segment_link_cbox.addItems(
-            list(self.parent.segments.keys()), False)
-        self.checkableComboLayout.addWidget(self.segment_link_cbox)
 
         # Add the losses to the tune score combo box
         self.tune_score_cbox.addItems(['AUC'] + list(loss_map.keys()))
         self.tune_score_cbox.model().sort(0)
         self.tune_score_cbox.setCurrentText('Logloss')
-
-        # Add the items to the list widgets
-        self.penalty_lwidget.addItems(['l1', 'l2', 'elasticnet'])
-        self.class_weight_lwidget.addItems(['None', 'balanced'])
-        self.graphs_lwidget.addItems(['AUC-ROC', 'AUC-PR', 'F1'])
-        self.kpi_lwidget.addItems([
-            'Logloss', 'Brier score', 'Subset accuracy', 'Cohen Kappa',
-            'Hamming loss', 'Jaccard score', 'Precision', 'Recall', 'F1 score',
-            'MCC', 'AUC'])
 
         # Set the stylesheets
         self.set_styles({
@@ -101,11 +121,15 @@ class LogisticRegressionNTCPWindow(
             'prep_steps_ledit': ledit,
             'C_lower_bound_ledit': ledit,
             'C_upper_bound_ledit': ledit,
+            'penalty_cbox': cbox,
             'tol_ledit': ledit,
+            'class_weight_cbox': cbox,
             'tune_eval_sbox': sbox,
             'tune_score_cbox': cbox,
             'tune_splits_sbox': sbox,
             'oof_splits_sbox': sbox,
+            'graphs_cbox': cbox,
+            'kpi_cbox': cbox,
             'identifier_ledit': ledit,
             'save_pbutton': pbutton_composer,
             'close_pbutton': pbutton_composer})
@@ -113,8 +137,10 @@ class LogisticRegressionNTCPWindow(
         # Loop over the QComboBox and QSpinBox elements
         for box in (
                 'segment_cbox', 'segment_link_cbox', 'type_cbox',
-                'embedding_cbox', 'rank_sbox', 'tune_eval_sbox',
-                'tune_score_cbox', 'tune_splits_sbox', 'oof_splits_sbox'):
+                'embedding_cbox', 'rank_sbox', 'penalty_cbox',
+                'class_weight_cbox', 'graphs_cbox', 'kpi_cbox',
+                'tune_eval_sbox', 'tune_score_cbox', 'tune_splits_sbox',
+                'oof_splits_sbox'):
 
             # Install the custom event filter
             getattr(self, box).installEventFilter(parent)
@@ -126,48 +152,11 @@ class LogisticRegressionNTCPWindow(
             'prep_steps_ledit', 'C_lower_bound_ledit', 'C_upper_bound_ledit',
             'tol_ledit', 'identifier_ledit'))
 
-        # Loop over the list widgets
-        for widget in (
-                self.penalty_lwidget, self.class_weight_lwidget,
-                self.graphs_lwidget, self.kpi_lwidget):
-
-            # Adjust the spacing
-            widget.setSpacing(4)
-
-            # Loop over the widget items
-            for index in range(widget.count()):
-
-                # Set the item to checked
-                widget.item(index).setCheckState(2)
-
         # Disable some fields
         self.set_disabled(('data_columns_tbutton', 'save_pbutton'))
 
         # Connect the event signals
         self.connect_signals()
-
-    def mousePressEvent(
-            self,
-            event):
-        """
-        Set the mouse press event (overwrites the default event).
-
-        Parameters
-        ----------
-        event : object of class :class:`~PyQt5.QtCore.QEvent`
-            The object representing the event.
-        """
-
-        # Loop over the list widgets
-        for widget in (
-                self.penalty_lwidget, self.class_weight_lwidget,
-                self.graphs_lwidget, self.kpi_lwidget):
-
-            # Check if no item of the widget has been clicked
-            if not widget.indexAt(event.pos()).isValid():
-
-                # Clear the item selection
-                widget.clearSelection()
 
     def set_styles(
             self,
@@ -403,53 +392,24 @@ class LogisticRegressionNTCPWindow(
             # Set the field text
             getattr(self, key).setCheckState(value)
 
-        # Loop over the segment link items
-        for item in (
-                self.segment_link_cbox.model().item(index)
-                for index in range(self.segment_link_cbox.count())):
+        # Loop over the checkable combo boxes with their selections
+        for box, selection in {
+                'segment_link_cbox': link,
+                'penalty_cbox': tune_space['penalty'],
+                'class_weight_cbox': map(str, tune_space['class_weight']),
+                'graphs_cbox': display_options['graphs'],
+                'kpi_cbox': display_options['kpis']}.items():
 
-            # Set the item text to checked or unchecked
-            item.setCheckState(2*(item.text() in link))
+            # Get the combo box
+            combo_box = getattr(self, box)
 
-        # Loop over the penalty list widget items
-        for item in (
-                self.penalty_lwidget.item(index)
-                for index in range(self.penalty_lwidget.count())):
+            # Loop over the combo box items
+            for item in (
+                    combo_box.model().item(index)
+                    for index in range(combo_box.count())):
 
-            # Set the item to checked or unchecked
-            item.setCheckState(2*(
-                not tune_space.get('penalty')
-                or item.text() in tune_space['penalty']))
-
-        # Loop over the class weight list widget items
-        for item in (
-                self.class_weight_lwidget.item(index)
-                for index in range(self.class_weight_lwidget.count())):
-
-            # Set the item to checked or unchecked
-            item.setCheckState(2*(
-                not tune_space.get('class_weight')
-                or item.text() in map(str, tune_space['class_weight'])))
-
-        # Loop over the graphs list widget items
-        for item in (
-                self.graphs_lwidget.item(index)
-                for index in range(self.graphs_lwidget.count())):
-
-            # Set the item to checked or unchecked
-            item.setCheckState(2*(
-                not display_options.get('graphs')
-                or item.text() in display_options['graphs']))
-
-        # Loop over the KPI list widget items
-        for item in (
-                self.kpi_lwidget.item(index)
-                for index in range(self.kpi_lwidget.count())):
-
-            # Set the item to checked or unchecked
-            item.setCheckState(2*(
-                not display_options.get('kpis')
-                or item.text() in display_options['kpis']))
+                # Set the item text to checked or unchecked
+                item.setCheckState(2*(item.text() in selection))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -481,19 +441,13 @@ class LogisticRegressionNTCPWindow(
                         self.C_upper_bound_ledit.text()))
                     else [float(self.C_lower_bound_ledit.text()),
                           float(self.C_upper_bound_ledit.text())]),
-                'penalty': [
-                    self.penalty_lwidget.item(index).text()
-                    for index in range(self.penalty_lwidget.count())
-                    if self.penalty_lwidget.item(index).checkState()],
+                'penalty': self.penalty_cbox.currentData(),
                 'tol': (
                     [1e-4, 1e-5, 1e-6] if self.tol_ledit.text() == ''
                     else loads(self.tol_ledit.text())),
                 'class_weight': [
-                    None
-                    if self.class_weight_lwidget.item(index).text() == 'None'
-                    else self.class_weight_lwidget.item(index).text()
-                    for index in range(self.class_weight_lwidget.count())
-                    if self.class_weight_lwidget.item(index).checkState()]},
+                    None if value == 'None' else value
+                    for value in self.class_weight_cbox.currentData()]},
             'tune_evaluations': self.tune_eval_sbox.value(),
             'tune_score': self.tune_score_cbox.currentText(),
             'tune_splits': self.tune_splits_sbox.value(),
@@ -502,14 +456,8 @@ class LogisticRegressionNTCPWindow(
             'oof_splits': self.oof_splits_sbox.value(),
             'write_features': self.write_features_check.isChecked(),
             'display_options': {
-                'graphs': [
-                    self.graphs_lwidget.item(index).text()
-                    for index in range(self.graphs_lwidget.count())
-                    if self.graphs_lwidget.item(index).checkState()],
-                'kpis': [
-                    self.kpi_lwidget.item(index).text()
-                    for index in range(self.kpi_lwidget.count())
-                    if self.kpi_lwidget.item(index).checkState()]}}
+                'graphs': self.graphs_cbox.currentData(),
+                'kpis': self.kpi_cbox.currentData()}}
 
         # Configure the component dictionary
         component = {

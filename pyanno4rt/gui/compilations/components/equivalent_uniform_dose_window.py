@@ -132,15 +132,8 @@ class Ui_equivalent_uniform_dose_window(object):
         self.identifier_label.setFont(font)
         self.identifier_label.setStyleSheet("border: 0px solid;")
         self.identifier_label.setObjectName("identifier_label")
-        self.link_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.link_ledit.setGeometry(QtCore.QRect(290, 250, 394, 31))
-        self.link_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
-"background-color: rgb(238, 238, 236);\n"
-"border: 1px solid;\n"
-"border-color: rgb(186, 189, 182);")
-        self.link_ledit.setObjectName("link_ledit")
         self.link_label = QtWidgets.QLabel(self.scroll_contents)
-        self.link_label.setGeometry(QtCore.QRect(290, 210, 394, 31))
+        self.link_label.setGeometry(QtCore.QRect(290, 210, 391, 31))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -199,7 +192,7 @@ class Ui_equivalent_uniform_dose_window(object):
         self.function_line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.function_line.setObjectName("function_line")
         self.conjunction = QtWidgets.QLabel(self.scroll_contents)
-        self.conjunction.setGeometry(QtCore.QRect(494, 405, 16, 17))
+        self.conjunction.setGeometry(QtCore.QRect(494, 406, 16, 17))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -287,13 +280,18 @@ class Ui_equivalent_uniform_dose_window(object):
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.segment_cbox.setObjectName("segment_cbox")
+        self.horizontalLayoutWidget = QtWidgets.QWidget(self.scroll_contents)
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(290, 250, 391, 31))
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.segment_link_layout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
+        self.segment_link_layout.setContentsMargins(0, 0, 0, 0)
+        self.segment_link_layout.setObjectName("segment_link_layout")
         self.scroll_area.setWidget(self.scroll_contents)
         equivalent_uniform_dose_window.setCentralWidget(self.body_widget)
 
         self.retranslateUi(equivalent_uniform_dose_window)
         self.embedding_cbox.setCurrentIndex(0)
         self.type_cbox.setCurrentIndex(0)
-        self.segment_cbox.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(equivalent_uniform_dose_window)
 
     def retranslateUi(self, equivalent_uniform_dose_window):
@@ -311,7 +309,6 @@ class Ui_equivalent_uniform_dose_window(object):
         self.target_eud_label.setText(_translate("equivalent_uniform_dose_window", "Target EUD [Gy]"))
         self.identifier_ledit.setPlaceholderText(_translate("equivalent_uniform_dose_window", "None"))
         self.identifier_label.setText(_translate("equivalent_uniform_dose_window", "Identifier"))
-        self.link_ledit.setPlaceholderText(_translate("equivalent_uniform_dose_window", "None"))
         self.link_label.setText(_translate("equivalent_uniform_dose_window", "Link"))
         self.function_label.setText(_translate("equivalent_uniform_dose_window", "Function"))
         self.bounds_label.setText(_translate("equivalent_uniform_dose_window", "Bounds"))
@@ -326,3 +323,6 @@ class Ui_equivalent_uniform_dose_window(object):
         self.disp_component_check.setText(_translate("equivalent_uniform_dose_window", "Display component"))
         self.lower_bound_ledit.setPlaceholderText(_translate("equivalent_uniform_dose_window", "0.0"))
         self.vol_eff_label.setText(_translate("equivalent_uniform_dose_window", "Volume effect"))
+
+
+import resources_rc

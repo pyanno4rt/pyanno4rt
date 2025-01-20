@@ -56,6 +56,8 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             'column_cbox': cbox,
             'viewpoint_cbox': cbox,
             'time_variable_cbox': cbox,
+            'lower_bound_ledit': ledit,
+            'upper_bound_ledit': ledit,
             'save_pbutton': pbutton_composer,
             'close_pbutton': pbutton_composer})
 
@@ -108,24 +110,6 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
             # Get the attribute and set the stylesheet
             getattr(self, key).setStyleSheet(value)
-
-    def set_zero_line_cursor(
-            self,
-            field_names):
-        """
-        Set the line edit cursor positions to zero.
-
-        Parameters
-        ----------
-        field_names : tuple
-            Tuple with the field names.
-        """
-
-        # Loop over the passed field names
-        for name in field_names:
-
-            # Get the attribute and set the cursor position to zero
-            getattr(self, name).setCursorPosition(0)
 
     def set_enabled(
             self,
@@ -199,7 +183,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         Parameters
         ----------
         index : int
-            Row index of the clicked vertical header.
+            Row index of the selected vertical header.
         """
 
         # Set the selection mode to 'single selection'
@@ -269,10 +253,6 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         self.column_cbox.addItems([''] + column_names)
         self.time_variable_cbox.addItems([''] + column_names)
 
-        # Sort the label combo boxes alphabetically
-        self.column_cbox.model().sort(0)
-        self.time_variable_cbox.model().sort(0)
-
         # Insert the feature values
         apply(self.insert_feature, {
             key: value for key, value in data_columns.items()
@@ -282,6 +262,9 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         apply(self.insert_label, {
             key: value for key, value in data_columns.items()
             if value['type'] == 'label'}.items())
+
+        # Update the time variable combo box
+        self.update_by_viewpoint()
 
     def load_names_from_data(self):
         """Load the column names from the data."""
@@ -326,15 +309,17 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             self.from_model = True
 
             # Return the sorted model column names
-            return sorted(model_columns)
+            return model_columns
 
         # Set the model load indicator to False
         self.from_model = False
 
         # Return the sorted tabular data column names
-        return sorted(tab_data_columns)
+        return tab_data_columns
 
-    def add_dropdown_to_features(self, column_names):
+    def add_dropdown_to_features(
+            self,
+            column_names):
         """
         Add the dropdown menu to the feature 'plus' button.
 
@@ -361,7 +346,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             for i, chunk in enumerate(chunks):
 
                 # Add a submenu for the chunk
-                submenu = menu.addMenu(f'Column {25*i+1}-{25*(i+1)}')
+                submenu = menu.addMenu(f'Columns {25*i+1}-{25*(i+1)}')
 
                 # Loop over the column names in the chunk
                 for column in chunk:
@@ -385,7 +370,9 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         # Add the dropdown menu to the 'plus' button
         self.feature_plus_tbutton.setMenu(menu)
 
-    def add_default_feature(self, label):
+    def add_default_feature(
+            self,
+            label):
         """
         Add a new (default) row to the feature table.
 
@@ -404,6 +391,9 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         self.feature_table.verticalScrollBar().setSliderPosition(
             self.feature_table.verticalScrollBar().maximum())
 
+        # Update the save button
+        self.update_save_button()
+
     def insert_feature(
             self,
             item):
@@ -415,24 +405,6 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         item : tuple
             Tuple with the feature label and parameter dictionary.
         """
-
-        # Get the label and the parameters
-        label, parameters = item
-
-        # Get the index as the current row count
-        index = self.feature_table.rowCount()
-
-        # Insert a row at the index
-        self.feature_table.insertRow(index)
-
-        # Initialize the vertical header
-        header = QTableWidgetItem()
-
-        # Set the header text to the label
-        header.setText(label)
-
-        # Set the vertical header in the feature table
-        self.feature_table.setVerticalHeaderItem(index, header)
 
         def add_combo_box(items, current_text, row, column, action=None):
             """Add a combo box with given properties to the table."""
@@ -469,6 +441,24 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
             # Set the cell widget in the feature table
             self.feature_table.setCellWidget(row, column, combo_box)
+
+        # Get the label and the parameters
+        label, parameters = item
+
+        # Get the index as the current row count
+        index = self.feature_table.rowCount()
+
+        # Insert a row at the index
+        self.feature_table.insertRow(index)
+
+        # Initialize the vertical header
+        header = QTableWidgetItem()
+
+        # Set the header text to the label
+        header.setText(label)
+
+        # Set the vertical header in the feature table
+        self.feature_table.setVerticalHeaderItem(index, header)
 
         # Add the combo box for the feature scale
         add_combo_box(
@@ -572,8 +562,11 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         # Remove the component item from the list widget
         self.feature_table.removeRow(self.feature_table.currentRow())
 
-        # Disable some fields
-        self.set_disabled(('feature_minus_tbutton',))
+        # Disable the 'minus' button
+        self.feature_minus_tbutton.setEnabled(False)
+
+        # Update the save button
+        self.update_save_button()
 
     def update_by_function(
             self,
@@ -585,7 +578,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         Parameters
         ----------
         index : int
-            Index of the row to be updated.
+            Row index of the argument field to be updated.
 
         value : int or str, default=None
             Value of the argument.
@@ -597,102 +590,102 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         # Check if the function is 'Dx' or 'Vx'
         if function in ('Dx', 'Vx'):
 
-            # 
+            # Initialize the spin box
             widget = QSpinBox()
 
-            # 
+            # Filter the wheel event
             widget.wheelEvent = lambda event: None
 
-            # 
+            # Set the stylesheet
             widget.setStyleSheet(sbox)
 
-            # 
+            # Set the button symbol to plus/minus
             widget.setButtonSymbols(1)
 
-            # 
+            # Set the value range
             widget.setRange(1, 99)
 
-            # 
+            # Set the initial value
             widget.setValue(value if value else 1)
 
         # Else, check if the function is 'Dose Gradient'
         elif function == 'Dose Gradient':
 
-            # 
+            # Initialize the combo box
             widget = QComboBox()
 
-            # 
+            # Filter the wheel event
             widget.wheelEvent = lambda event: None
 
-            # 
+            # Set the stylesheet
             widget.setStyleSheet(cbox)
 
-            # 
+            # Add the items
             widget.addItems(['x', 'y', 'z'])
 
-            # 
+            # Set the initial text
             widget.setCurrentText(value if value else 'x')
 
         # Else, check if the function is 'Dose Moment'
         elif function == 'Dose Moment':
 
-            # 
+            # Initialize the line edit
             widget = QLineEdit()
 
-            # 
+            # Set the stylesheet
             widget.setStyleSheet(ledit)
 
-            # 
+            # Set the initial text
             widget.setText(value if value else '')
 
         # Else, check if the function is 'Dose Subvolume'
         elif function == 'Dose Subvolume':
 
-            # 
+            # Initialize the combo box
             widget = QComboBox()
 
-            # 
+            # Filter the wheel event
             widget.wheelEvent = lambda event: None
 
-            # 
+            # Set the stylesheet
             widget.setStyleSheet(cbox)
 
-            # 
+            # Add the items
             widget.addItems([
                 'x1of2', 'x2of2', 'x1of3', 'x2of3', 'x3of3',
                 'y1of2', 'y2of2', 'y1of3', 'y2of3', 'y3of3',
                 'y1of2', 'y2of2', 'y1of3', 'y2of3', 'y3of3'])
 
-            # 
+            # Set the initial text
             widget.setCurrentText(value if value else 'x1of2')
 
         else:
 
-            # 
+            # Initialize the line edit
             widget = QLineEdit()
 
-            # 
+            # Set the stylesheet
             widget.setStyleSheet(ledit)
 
-            # 
+            # Set the default empty text
             widget.setText('')
 
-            # 
+            # Disable the line edit
             widget.setEnabled(False)
 
-        # 
+        # Check if the columns are loaded from a model folder
         if self.from_model:
 
-            # 
+            # Disable the widget
             widget.setEnabled(False)
 
-        # 
+        # Set the cell widget in the feature table
         self.feature_table.setCellWidget(index, 3, widget)
 
     def update_by_viewpoint(self):
-        """Update the time variable combo box by the viewpoint."""
+        """Update the time variable by the viewpoint."""
 
-        # Check if the viewpoint needs a time variable
+        # Check if the viewpoint requires a time variable
         if self.viewpoint_cbox.currentText() in (
                 'early', 'late', 'long-term', 'profile'):
 
@@ -793,7 +786,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         self.close()
 
     def update_save_button(self):
-        """."""
+        """Update the save button by the conditions."""
 
         # Check if any condition blocks the save button
         if (self.column_cbox.currentText() == '' or
