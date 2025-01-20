@@ -15,7 +15,7 @@ from pyanno4rt.gui.compilations.components.logistic_regression_ntcp_window impor
     Ui_logistic_regression_ntcp_window)
 from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.styles._custom_styles import (
-    cbox, ledit, pbutton_composer, tbutton_composer, tbutton_data_window)
+    cbox, ledit, pbutton_composer, sbox, tbutton_composer, tbutton_data_window)
 from pyanno4rt.gui.windows import DataColumnsWindow
 from pyanno4rt.learning_model.losses import loss_map
 
@@ -87,12 +87,26 @@ class LogisticRegressionNTCPWindow(
         # Set the stylesheets
         self.set_styles({
             'segment_cbox': cbox,
+            'type_cbox': cbox,
+            'embedding_cbox': cbox,
             'segment_link_cbox': cbox,
-            'identifier_ledit': ledit,
+            'weight_ledit': ledit,
+            'rank_sbox': sbox,
+            'lower_bound_ledit': ledit,
+            'upper_bound_ledit': ledit,
             'model_label_ledit': ledit,
             'model_path_tbutton': tbutton_composer,
             'data_path_tbutton': tbutton_composer,
             'data_columns_tbutton': tbutton_data_window,
+            'prep_steps_ledit': ledit,
+            'C_lower_bound_ledit': ledit,
+            'C_upper_bound_ledit': ledit,
+            'tol_ledit': ledit,
+            'tune_eval_sbox': sbox,
+            'tune_score_cbox': cbox,
+            'tune_splits_sbox': sbox,
+            'oof_splits_sbox': sbox,
+            'identifier_ledit': ledit,
             'save_pbutton': pbutton_composer,
             'close_pbutton': pbutton_composer})
 

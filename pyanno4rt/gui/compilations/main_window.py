@@ -791,7 +791,7 @@ class Ui_main_window(object):
         self.scroll_configuration.setWidgetResizable(True)
         self.scroll_configuration.setObjectName("scroll_configuration")
         self.scroll_configuration_content = QtWidgets.QWidget()
-        self.scroll_configuration_content.setGeometry(QtCore.QRect(0, 0, 368, 906))
+        self.scroll_configuration_content.setGeometry(QtCore.QRect(0, 0, 817, 906))
         self.scroll_configuration_content.setObjectName("scroll_configuration_content")
         self.scroll_configuration_meta_layout = QtWidgets.QVBoxLayout(self.scroll_configuration_content)
         self.scroll_configuration_meta_layout.setContentsMargins(10, 10, 10, 10)
@@ -1462,6 +1462,7 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.solver_cbox.setMaxVisibleItems(25)
         self.solver_cbox.setObjectName("solver_cbox")
         self.solver_cbox.addItem("")
         self.solver_cbox.addItem("")
@@ -1524,6 +1525,7 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.algorithm_cbox.setMaxVisibleItems(25)
         self.algorithm_cbox.setObjectName("algorithm_cbox")
         self.algorithm_cbox.addItem("")
         self.algorithm_cbox.addItem("")
@@ -1544,6 +1546,7 @@ class Ui_main_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.init_strat_cbox.setMaxVisibleItems(25)
         self.init_strat_cbox.setObjectName("init_strat_cbox")
         self.init_strat_cbox.addItem("")
         self.init_strat_cbox.addItem("")
@@ -2574,7 +2577,7 @@ class Ui_main_window(object):
 
         self.retranslateUi(main_window)
         self.tab_workflow.setCurrentIndex(0)
-        self.composer_widget.setCurrentIndex(1)
+        self.composer_widget.setCurrentIndex(0)
         self.log_level_cbox.setCurrentIndex(1)
         self.method_cbox.setCurrentIndex(-1)
         self.solver_cbox.setCurrentIndex(2)

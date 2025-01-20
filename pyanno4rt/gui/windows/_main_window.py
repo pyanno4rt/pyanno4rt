@@ -32,7 +32,9 @@ from pyanno4rt.gui.windows import (
     CompareWindow, InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow,
     SplashScreenWindow, TreeWindow)
 from pyanno4rt.gui.windows.components import component_window_map
-from pyanno4rt.optimization.components import component_map
+from pyanno4rt.optimization.components import (
+    ConventionalComponentClass, component_map, MachineLearningComponentClass,
+    RadiobiologyComponentClass)
 from pyanno4rt.optimization.methods import method_map
 from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, get_machine_learning_constraints,
@@ -1313,11 +1315,34 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Initialize the dropdown menu
         menu = QMenu()
 
-        # Loop over the component map keys
-        for key in component_map:
+        # Add submenus for the different component types
+        conv_menu = menu.addMenu('Conventional')
+        rb_menu = menu.addMenu('Radiobiological')
+        ml_menu = menu.addMenu('Machine Learning')
 
-            # Add the key to the dropdown menu
-            menu.addAction(key, partial(self.open_component_window, key))
+        # Loop over the component map items
+        for label, component in component_map.items():
+
+            # Check if the component is of conventional type
+            if issubclass(component, ConventionalComponentClass):
+
+                # Add the action to the conventional submenu
+                conv_menu.addAction(
+                    label, partial(self.open_component_window, label))
+
+            # Check if the component is of machine learning type
+            elif issubclass(component, MachineLearningComponentClass):
+
+                # Add the action to the machine learning menu
+                ml_menu.addAction(
+                    label, partial(self.open_component_window, label))
+
+            # Check if the component is of radiobiological type
+            elif issubclass(component, RadiobiologyComponentClass):
+
+                # Add the action to the radiobiological menu
+                rb_menu.addAction(
+                    label, partial(self.open_component_window, label))
 
         # Set the popup mode for the component 'plus' button
         self.components_plus_tbutton.setPopupMode(2)

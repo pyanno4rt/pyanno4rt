@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
 from pyanno4rt.gui.compilations.data_columns_window import (
     Ui_data_columns_window)
 from pyanno4rt.gui.styles._custom_styles import (
-    cbox, pbutton_composer, tbutton_composer)
+    cbox, ledit, pbutton_composer, sbox, tbutton_composer)
 from pyanno4rt.learning_model.features import feature_map
 from pyanno4rt.tools import apply, string_to_numeric
 
@@ -30,7 +30,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
     This class sets up the data columns window for the machine learning \
     model-based components in the graphical user interface, including the \
-    features table and label fields.
+    feature table and label fields.
     """
 
     def __init__(
@@ -46,10 +46,13 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         # Get the parent window
         self.parent = parent
 
+        # Initialize the model load indicator
+        self.from_model = False
+
         # Set the stylesheets
         self.set_styles({
-            'features_plus_tbutton': tbutton_composer,
-            'features_minus_tbutton': tbutton_composer,
+            'feature_plus_tbutton': tbutton_composer,
+            'feature_minus_tbutton': tbutton_composer,
             'column_cbox': cbox,
             'viewpoint_cbox': cbox,
             'time_variable_cbox': cbox,
@@ -64,7 +67,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
         # Disable some fields
         self.set_disabled((
-            'features_minus_tbutton', 'time_variable_cbox', 'save_pbutton'))
+            'feature_minus_tbutton', 'time_variable_cbox', 'save_pbutton'))
 
         # Connect the event signals
         self.connect_signals()
@@ -82,11 +85,11 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         """
 
         # Reset the table selection when clicking outside
-        self.features_table.setCurrentIndex(QModelIndex())
-        self.features_table.clearSelection()
+        self.feature_table.setCurrentIndex(QModelIndex())
+        self.feature_table.clearSelection()
 
         # Disable the 'minus' button
-        self.features_minus_tbutton.setEnabled(False)
+        self.feature_minus_tbutton.setEnabled(False)
 
     def set_styles(
             self,
@@ -165,7 +168,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
         # Loop over the field names with 'clicked' events
         for key, value in {
-                'features_minus_tbutton': self.remove_feature,
+                'feature_minus_tbutton': self.remove_feature,
                 'save_pbutton': self.save,
                 'close_pbutton': self.close
                 }.items():
@@ -184,7 +187,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             getattr(self, key).currentTextChanged.connect(value)
 
         # Connect the vertical table header with the row selection
-        self.features_table.verticalHeader().sectionClicked.connect(
+        self.feature_table.verticalHeader().sectionClicked.connect(
             self.select_row)
 
     def select_row(
@@ -200,19 +203,22 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         """
 
         # Set the selection mode to 'single selection'
-        self.features_table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.feature_table.setSelectionMode(QAbstractItemView.SingleSelection)
 
         # Set the selection behavior
-        self.features_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.feature_table.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         # Select the row
-        self.features_table.selectRow(index)
+        self.feature_table.selectRow(index)
 
         # Reset the selection mode to 'no selection'
-        self.features_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.feature_table.setSelectionMode(QAbstractItemView.NoSelection)
 
-        # Enable the 'minus' button
-        self.features_minus_tbutton.setEnabled(True)
+        # Check if the columns are not loaded from a model folder
+        if not self.from_model:
+
+            # Enable the 'minus' button
+            self.feature_minus_tbutton.setEnabled(True)
 
     def load(
             self,
@@ -226,133 +232,56 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             Dictionary with the column information on features and label.
         """
 
+        # Set the initial number of rows and columns
+        self.feature_table.setRowCount(0)
+        self.feature_table.setColumnCount(5)
+
+        # Add the horizontal header labels
+        self.feature_table.setHorizontalHeaderLabels(
+            ['Scale', 'Segment', 'Function', 'Argument', 'Value'])
+
+        # Set the resize mode for the horizontal section
+        self.feature_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch)
+
         # Load the data column names from the data
         column_names = self.load_names_from_data()
 
-        # Set the initial number of rows and columns
-        self.features_table.setRowCount(0)
-        self.features_table.setColumnCount(5)
+        # Check if the columns are not loaded from a model folder
+        if not self.from_model:
 
-        # Add the horizontal header labels
-        self.features_table.setHorizontalHeaderLabels(
-            ['Scale', 'Segment', 'Function', 'Argument', 'Value'])
+            # Add the dropdown menu to the 'plus' button
+            self.add_dropdown_to_features(column_names)
 
-        # 
-        self.features_table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.Stretch)
+            # Enable the 'plus' button
+            self.feature_plus_tbutton.setEnabled(True)
 
-        # Add the dropdown menu to the features 'plus' button
-        self.add_dropdown_to_features(column_names)
+        else:
 
-        # Get the features
-        features = {
-            key: value for key, value in data_columns.items()
-            if value['type'] == 'feature'}
+            # Disable the 'plus' button
+            self.feature_plus_tbutton.setEnabled(False)
 
-        # Get the label
-        label = {
-            key: value for key, value in data_columns.items()
-            if value['type'] == 'label'}
-
-        # 
+        # Clear the variable label combo boxes
         self.column_cbox.clear()
         self.time_variable_cbox.clear()
 
-        # 
+        # Add the column names to the label combo boxes
         self.column_cbox.addItems([''] + column_names)
         self.time_variable_cbox.addItems([''] + column_names)
 
-        # 
+        # Sort the label combo boxes alphabetically
         self.column_cbox.model().sort(0)
         self.time_variable_cbox.model().sort(0)
 
-        # Set the feature values
-        apply(self.set_feature, features.items())
+        # Insert the feature values
+        apply(self.insert_feature, {
+            key: value for key, value in data_columns.items()
+            if value['type'] == 'feature'}.items())
 
-        # Set the label values
-        apply(self.set_label, label.items())
-
-    def set_feature(
-            self,
-            item):
-        """."""
-
-        # 
-        key, values = item
-
-        # 
-        nrow = self.features_table.rowCount()
-
-        # 
-        self.features_table.insertRow(nrow)
-
-        # 
-        header = QTableWidgetItem()
-        header.setText(key)
-        self.features_table.setVerticalHeaderItem(nrow, header)
-
-        # 
-        widget = QComboBox()
-        widget.wheelEvent = lambda event: None
-        widget.addItems(['metric', 'nominal', 'ordinal'])
-        widget.setCurrentText(values['scale'])
-        self.features_table.setCellWidget(nrow, 0, widget)
-
-        # 
-        widget = QComboBox()
-        widget.wheelEvent = lambda event: None
-        widget.addItems(
-            ['', self.parent.segment_cbox.currentText()]
-            + self.parent.segment_link_cbox.currentData())
-        widget.adjustSize()
-        widget.setCurrentText(
-            '' if not values['segment'] else values['segment'])
-        self.features_table.setCellWidget(nrow, 1, widget)
-
-        # 
-        widget = QComboBox()
-        widget.wheelEvent = lambda event: None
-        widget.addItems([''] + list(feature_map.keys()))
-        widget.adjustSize()
-        widget.setCurrentText(
-            '' if not values['function'] else values['function'])
-        widget.currentTextChanged.connect(
-            partial(self.update_by_function, row=nrow))
-        self.features_table.setCellWidget(nrow, 2, widget)
-
-        # 
-        self.update_by_function(nrow, values['argument'])
-
-        # 
-        widget = QLineEdit()
-        widget.setText(values['value'])
-        self.features_table.setCellWidget(nrow, 4, widget)
-
-    def set_label(
-            self,
-            item):
-        """."""
-
-        # 
-        key, values = item
-
-        # 
-        self.column_cbox.setCurrentText(key)
-
-        # 
-        self.viewpoint_cbox.setCurrentText(values['viewpoint'])
-
-        # 
-        self.time_variable_cbox.setCurrentText(
-            '' if not values['time_variable'] else values['time_variable'])
-
-        # 
-        self.lower_bound_ledit.setText(
-            '' if not values['bounds'] or values['bounds'][0] == 1.0
-            else str(values['bounds'][0]))
-        self.upper_bound_ledit.setText(
-            '' if not values['bounds'] or values['bounds'][1] == 1.0
-            else str(values['bounds'][1]))
+        # Insert the label values
+        apply(self.insert_label, {
+            key: value for key, value in data_columns.items()
+            if value['type'] == 'label'}.items())
 
     def load_names_from_data(self):
         """Load the column names from the data."""
@@ -374,9 +303,9 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
                 None, [configuration['label_name'],
                        configuration['time_variable_name']])))
 
-        except Exception:
+        except FileNotFoundError:
 
-            # Set the model column names to empty
+            # Set the model column names to the empty list
             model_columns = []
 
         try:
@@ -385,197 +314,462 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             tab_data_columns = list(
                 read_csv(self.parent.data_path_ledit.text()).columns)
 
-        except Exception:
+        except FileNotFoundError:
 
-            # Set the dataset column names to empty
+            # Set the dataset column names to the empty list
             tab_data_columns = []
 
-        # Check if model column names (feature and label) have been passed
-        if len(model_columns) >= 2:
+        # Check if model column names have been passed
+        if len(model_columns) >= 2 and not len(tab_data_columns) >= 2:
+
+            # Set the model load indicator to True
+            self.from_model = True
 
             # Return the sorted model column names
             return sorted(model_columns)
 
-        # Else, return the sorted tabular data column names
+        # Set the model load indicator to False
+        self.from_model = False
+
+        # Return the sorted tabular data column names
         return sorted(tab_data_columns)
 
     def add_dropdown_to_features(self, column_names):
-        """Add the dropdown menu to the features 'plus' button."""
+        """
+        Add the dropdown menu to the feature 'plus' button.
+
+        Parameters
+        ----------
+        column_names : list
+            The column names read from the model folder or data file path.
+        """
 
         # Reset the dropdown menu
-        self.features_plus_tbutton.setMenu(None)
+        self.feature_plus_tbutton.setMenu(None)
 
         # Initialize the dropdown menu
         menu = QMenu()
 
-        # Loop over the column names
-        for column in column_names:
+        # Check if the number of columns is greater than 25
+        if len(column_names) > 25:
 
-            # Add the column to the dropdown menu
-            menu.addAction(column, partial(self.add_default_feature, column))
+            # Group the column names into chunks of max. 25 elements
+            chunks = [
+                column_names[i:i+25] for i in range(0, len(column_names), 25)]
 
-        # Set the popup mode for the features 'plus' button
-        self.features_plus_tbutton.setPopupMode(2)
+            # Loop over the chunks
+            for i, chunk in enumerate(chunks):
+
+                # Add a submenu for the chunk
+                submenu = menu.addMenu(f'Column {25*i+1}-{25*(i+1)}')
+
+                # Loop over the column names in the chunk
+                for column in chunk:
+
+                    # Add the action to the submenu
+                    submenu.addAction(
+                        column, partial(self.add_default_feature, column))
+
+        else:
+
+            # Loop over the column names
+            for column in column_names:
+
+                # Add the column to the dropdown menu
+                menu.addAction(
+                    column, partial(self.add_default_feature, column))
+
+        # Set the popup mode for the 'plus' button
+        self.feature_plus_tbutton.setPopupMode(2)
 
         # Add the dropdown menu to the 'plus' button
-        self.features_plus_tbutton.setMenu(menu)
+        self.feature_plus_tbutton.setMenu(menu)
 
     def add_default_feature(self, label):
-        """."""
+        """
+        Add a new (default) row to the feature table.
 
-        # 
-        self.set_feature((
-            label,
-            {'type': 'feature',
-             'scale': 'metric',
-             'segment': self.parent.segment_cbox.itemText(0),
-             'function': next(iter(feature_map)),
-             'argument': '',
-             'value': ''}))
+        Parameters
+        ----------
+        label : str
+            Name of the feature to be added.
+        """
+
+        # Insert the feature
+        self.insert_feature((label, {
+            'type': 'feature', 'scale': 'metric', 'segment': '',
+            'function': '', 'argument': '', 'value': ''}))
+
+        # Move the feature table slider to the bottom
+        self.feature_table.verticalScrollBar().setSliderPosition(
+            self.feature_table.verticalScrollBar().maximum())
+
+    def insert_feature(
+            self,
+            item):
+        """
+        Insert the feature information.
+
+        Parameters
+        ----------
+        item : tuple
+            Tuple with the feature label and parameter dictionary.
+        """
+
+        # Get the label and the parameters
+        label, parameters = item
+
+        # Get the index as the current row count
+        index = self.feature_table.rowCount()
+
+        # Insert a row at the index
+        self.feature_table.insertRow(index)
+
+        # Initialize the vertical header
+        header = QTableWidgetItem()
+
+        # Set the header text to the label
+        header.setText(label)
+
+        # Set the vertical header in the feature table
+        self.feature_table.setVerticalHeaderItem(index, header)
+
+        def add_combo_box(items, current_text, row, column, action=None):
+            """Add a combo box with given properties to the table."""
+
+            # Initialize the combo box
+            combo_box = QComboBox()
+
+            # Filter the wheel event
+            combo_box.wheelEvent = lambda event: None
+
+            # Set the stylesheet
+            combo_box.setStyleSheet(cbox)
+
+            # Add the items
+            combo_box.addItems(items)
+
+            # Adjust the size
+            combo_box.adjustSize()
+
+            # Set the current text
+            combo_box.setCurrentText(current_text)
+
+            # Check if the columns are loaded from a model folder
+            if self.from_model:
+
+                # Disable the combo box
+                combo_box.setEnabled(False)
+
+            # Check if an action has been passed
+            if action is not None:
+
+                # Connect the action with the signal
+                combo_box.currentTextChanged.connect(action)
+
+            # Set the cell widget in the feature table
+            self.feature_table.setCellWidget(row, column, combo_box)
+
+        # Add the combo box for the feature scale
+        add_combo_box(
+            items=['metric', 'nominal', 'ordinal'],
+            current_text=parameters['scale'],
+            row=index,
+            column=0)
+
+        # Add the combo box for the feature segment
+        add_combo_box(
+            items=(['', self.parent.segment_cbox.currentText()]
+                   + self.parent.segment_link_cbox.currentData()),
+            current_text=(
+                '' if not parameters['segment'] else parameters['segment']),
+            row=index,
+            column=1)
+
+        # Add the combo box for the feature function
+        add_combo_box(
+            items=[''] + list(feature_map.keys()),
+            current_text=(
+                '' if not parameters['function'] else parameters['function']),
+            row=index,
+            column=2,
+            action=partial(self.update_by_function, index=index))
+
+        # Add the feature argument field depending on the function
+        self.update_by_function(index, parameters['argument'])
+
+        # Initialize a line edit for the feature value
+        line_edit = QLineEdit()
+
+        # Set the stylesheet
+        line_edit.setStyleSheet(ledit)
+
+        # Set the text to the current value
+        line_edit.setText(parameters['value'])
+
+        # Check if the columns are loaded from a model folder
+        if self.from_model:
+
+            # Disable the line edit
+            line_edit.setEnabled(False)
+
+        # Set the cell widget in the feature table
+        self.feature_table.setCellWidget(index, 4, line_edit)
+
+    def insert_label(
+            self,
+            item):
+        """
+        Insert the label information.
+
+        Parameters
+        ----------
+        item : tuple
+            Tuple with the label name and parameter dictionary.
+        """
+
+        # Get the name and the parameters
+        label, parameters = item
+
+        # Set the label name
+        self.column_cbox.setCurrentText(label)
+
+        # Set the label viewpoint
+        self.viewpoint_cbox.setCurrentText(parameters['viewpoint'])
+
+        # Set the time variable
+        self.time_variable_cbox.setCurrentText(
+            '' if not parameters['time_variable']
+            else parameters['time_variable'])
+
+        # Loop over the lower and upper label bound fields
+        for i, field in enumerate(('lower_bound_ledit', 'upper_bound_ledit')):
+
+            # Set the field text
+            getattr(self, field).setText(
+                ''
+                if not parameters['bounds'] or parameters['bounds'][i] == 1.0
+                else str(parameters['bounds'][i]))
+
+        # Check if the columns are loaded from a model folder
+        if self.from_model:
+
+            # Disable some fields
+            self.set_disabled((
+                'column_cbox', 'viewpoint_cbox', 'time_variable_cbox',
+                'lower_bound_ledit', 'upper_bound_ledit'))
+
+        else:
+
+            # Enable some fields
+            self.set_enabled((
+                'column_cbox', 'viewpoint_cbox', 'time_variable_cbox',
+                'lower_bound_ledit', 'upper_bound_ledit'))
 
     def remove_feature(self):
         """Remove the selected feature."""
 
         # Remove the component item from the list widget
-        self.features_table.removeRow(self.features_table.currentRow())
+        self.feature_table.removeRow(self.feature_table.currentRow())
 
         # Disable some fields
-        self.set_disabled(('features_minus_tbutton',))
+        self.set_disabled(('feature_minus_tbutton',))
 
     def update_by_function(
             self,
-            row,
+            index,
             value=None):
-        """."""
+        """
+        Update the argument in the feature table by the function.
 
-        # 
-        function = self.features_table.cellWidget(row, 2).currentText()
+        Parameters
+        ----------
+        index : int
+            Index of the row to be updated.
 
-        # 
+        value : int or str, default=None
+            Value of the argument.
+        """
+
+        # Get the feature function
+        function = self.feature_table.cellWidget(index, 2).currentText()
+
+        # Check if the function is 'Dx' or 'Vx'
         if function in ('Dx', 'Vx'):
 
             # 
             widget = QSpinBox()
+
+            # 
             widget.wheelEvent = lambda event: None
+
+            # 
+            widget.setStyleSheet(sbox)
+
+            # 
+            widget.setButtonSymbols(1)
+
+            # 
             widget.setRange(1, 99)
+
+            # 
             widget.setValue(value if value else 1)
 
-        # 
+        # Else, check if the function is 'Dose Gradient'
         elif function == 'Dose Gradient':
 
             # 
             widget = QComboBox()
+
+            # 
             widget.wheelEvent = lambda event: None
+
+            # 
+            widget.setStyleSheet(cbox)
+
+            # 
             widget.addItems(['x', 'y', 'z'])
+
+            # 
             widget.setCurrentText(value if value else 'x')
 
-        # 
+        # Else, check if the function is 'Dose Moment'
         elif function == 'Dose Moment':
 
             # 
             widget = QLineEdit()
+
+            # 
+            widget.setStyleSheet(ledit)
+
+            # 
             widget.setText(value if value else '')
 
-        # 
+        # Else, check if the function is 'Dose Subvolume'
         elif function == 'Dose Subvolume':
 
             # 
             widget = QComboBox()
+
+            # 
             widget.wheelEvent = lambda event: None
+
+            # 
+            widget.setStyleSheet(cbox)
+
+            # 
             widget.addItems([
                 'x1of2', 'x2of2', 'x1of3', 'x2of3', 'x3of3',
                 'y1of2', 'y2of2', 'y1of3', 'y2of3', 'y3of3',
                 'y1of2', 'y2of2', 'y1of3', 'y2of3', 'y3of3'])
+
+            # 
             widget.setCurrentText(value if value else 'x1of2')
 
         else:
 
             # 
             widget = QLineEdit()
+
+            # 
+            widget.setStyleSheet(ledit)
+
+            # 
             widget.setText('')
+
+            # 
             widget.setEnabled(False)
 
         # 
-        self.features_table.setCellWidget(row, 3, widget)
+        if self.from_model:
 
-    def update_by_viewpoint(self):
-        """."""
+            # 
+            widget.setEnabled(False)
 
         # 
+        self.feature_table.setCellWidget(index, 3, widget)
+
+    def update_by_viewpoint(self):
+        """Update the time variable combo box by the viewpoint."""
+
+        # Check if the viewpoint needs a time variable
         if self.viewpoint_cbox.currentText() in (
                 'early', 'late', 'long-term', 'profile'):
 
-            # 
+            # Enable the time variable combo box
             self.time_variable_cbox.setEnabled(True)
 
         else:
 
-            # 
+            # Disable the time variable combo box
             self.time_variable_cbox.setEnabled(False)
 
-            # 
+            # Reset the current index
             self.time_variable_cbox.setCurrentIndex(0)
 
     def save(self):
-        """."""
+        """Save the data columns."""
 
-        def read_cells(row):
-            """."""
+        def read_cells(index):
+            """Read the cells for a row index."""
 
-            # 
-            scale = self.features_table.cellWidget(row, 0).currentText()
+            # Get the feature scale
+            scale = self.feature_table.cellWidget(index, 0).currentText()
 
-            # 
-            segment = self.features_table.cellWidget(row, 1).currentText()
+            # Get the feature segment
+            segment = self.feature_table.cellWidget(index, 1).currentText()
 
-            # 
-            function = self.features_table.cellWidget(row, 2).currentText()
+            # Get the feature function
+            function = self.feature_table.cellWidget(index, 2).currentText()
 
-            # 
+            # Check if the function is 'Dx' or 'Vx'
             if function in ('Dx', 'Vx'):
 
-                # 
-                argument = self.features_table.cellWidget(row, 3).value()
+                # Get the argument from the spin box
+                argument = self.feature_table.cellWidget(index, 3).value()
 
-            # 
+            # Else, check if the feature is 'Dose Gradient' or 'Dose Subvolume'
             elif function in ('Dose Gradient', 'Dose Subvolume'):
 
-                # 
-                argument = self.features_table.cellWidget(row, 3).currentText()
+                # Get the argument from the combo box
+                argument = (
+                    self.feature_table.cellWidget(index, 3).currentText())
 
-            # 
+            # Else, check if the feature is 'Dose Moment'
             elif function == 'Dose Moment':
 
-                # 
-                argument = self.features_table.cellWidget(row, 3).text()
+                # Get the argument from the line edit
+                argument = self.feature_table.cellWidget(index, 3).text()
 
             else:
 
-                # 
+                # Set the argument to None
                 argument = None
 
             try:
 
-                # 
+                # Convert the value from string to numeric
                 value = string_to_numeric(
-                    self.features_table.cellWidget(row, 4).text())
+                    self.feature_table.cellWidget(index, 4).text())
 
             except ValueError:
 
+                # Get the value from the default or as string
                 value = (
-                    None if self.features_table.cellWidget(row, 4).text() == ''
-                    else self.features_table.cellWidget(row, 4).text())
+                    None
+                    if self.feature_table.cellWidget(index, 4).text() == ''
+                    else self.feature_table.cellWidget(index, 4).text())
 
             return {
                 'type': 'feature', 'scale': scale, 'segment': segment,
                 'function': function, 'argument': argument, 'value': value}
 
-        # 
+        # Set up the feature dictionary
         features = {
-            self.features_table.verticalHeaderItem(row).text(): read_cells(row)
-            for row in range(self.features_table.rowCount())}
+            self.feature_table.verticalHeaderItem(row).text(): read_cells(row)
+            for row in range(self.feature_table.rowCount())}
 
-        # 
+        # Set up the label dictionary
         label = {
             self.column_cbox.currentText(): {
                 'type': 'label',
@@ -589,30 +783,30 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
                         self.lower_bound_ledit.text(),
                         self.upper_bound_ledit.text())]}}
 
-        # 
+        # Overwrite the parent data columns dictionary
         self.parent.data_columns = features | label
 
-        # 
+        # Update the parent button status
         self.parent.update_buttons()
 
-        # 
+        # Close the window
         self.close()
 
     def update_save_button(self):
         """."""
 
-        # 
+        # Check if any condition blocks the save button
         if (self.column_cbox.currentText() == '' or
             (self.viewpoint_cbox.currentText() != 'longitudinal' and
              self.time_variable_cbox.currentText() == '') or
-                self.features_table.rowCount() == 0):
+                self.feature_table.rowCount() == 0):
 
-            # 
+            # Disable the save button
             self.save_pbutton.setEnabled(False)
 
         else:
 
-            # 
+            # Enable the save button
             self.save_pbutton.setEnabled(True)
 
     def position(self):

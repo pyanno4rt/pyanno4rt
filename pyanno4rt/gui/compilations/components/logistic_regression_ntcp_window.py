@@ -378,6 +378,7 @@ class Ui_logistic_regression_ntcp_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.tune_score_cbox.setMaxVisibleItems(25)
         self.tune_score_cbox.setObjectName("tune_score_cbox")
         self.tune_score_label = QtWidgets.QLabel(self.scroll_contents)
         self.tune_score_label.setGeometry(QtCore.QRect(150, 980, 151, 25))
@@ -568,6 +569,7 @@ class Ui_logistic_regression_ntcp_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.segment_cbox.setMaxVisibleItems(25)
         self.segment_cbox.setObjectName("segment_cbox")
         self.data_columns_tbutton = QtWidgets.QToolButton(self.scroll_contents)
         self.data_columns_tbutton.setGeometry(QtCore.QRect(10, 670, 51, 51))
