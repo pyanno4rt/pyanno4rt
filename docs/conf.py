@@ -92,7 +92,14 @@ autoapi_options = [
 ]
 
 autoapi_ignore = [
-    '*/resources_rc.py', '*/compare_window.py', '*/info_window.py',
+    '*/_component_map.py', '*/_component_window_map.py',
+    '*/_configuration_map.py', '*/_evaluation_map.py', '*/_feature_map.py',
+    '*/_model_display_map.py', '*/_model_map.py', '*/_optimization_map.py',
+    '*/_top_level_map.py', '*/_tune_space_map.py', '*/_neural_network_maps.py',
+    '*/_loss_map.py', '*/_cleaner_map.py', '*/_reducer_map.py',
+    '*/_sampler_map.py', '*/_transformer_map.py', '*/_method_map.py',
+    '*/_projection_map.py', '*/_solver_map.py', '*/_custom_styles.py',
+    '*/compare_window.py', '*/data_columns_window.py', '*/info_window.py',
     '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py',
     '*/settings_window.py', '*/splash_screen_window.py', '*/text_window.py',
     '*/tree_window.py', '*/decision_tree_ntcp_window.py',

@@ -10,12 +10,12 @@ from numpy import concatenate, logical_or, quantile, sort, zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components import ConventionalComponentClass
+from pyanno4rt.optimization.components import ConventionalComponent
 
 # %% Class definition
 
 
-class MinimumDVH(ConventionalComponentClass):
+class MinimumDVH(ConventionalComponent):
     """
     Minimum dose-volume histogram (Minimum DVH) component class.
 

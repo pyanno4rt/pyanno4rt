@@ -5,8 +5,7 @@
 # %% External package import
 
 from json import loads
-from PyQt5.QtCore import QEvent
-from PyQt5.QtWidgets import QComboBox, QMainWindow, QSpinBox
+from PyQt5.QtWidgets import QMainWindow
 
 # %% Internal package import
 
@@ -54,41 +53,10 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         for box in ('language_cbox', 'light_mode_cbox', 'resolution_cbox'):
 
             # Install the custom event filters
-            getattr(self, box).installEventFilter(self)
+            getattr(self, box).installEventFilter(parent)
 
         # Connect the fields with the event signals
         self.connect_signals()
-
-    def eventFilter(
-            self,
-            source,
-            event):
-        """
-        Filter the events (overwrites the default event filter).
-
-        Parameters
-        ----------
-        source : object of class :class:`~PyQt5.QtWidgets`
-            The object representing the event source.
-
-        event : object of class :class:`~PyQt5.QtCore.QEvent`
-            The object representing the event.
-
-        Returns
-        -------
-        bool or object of class :class:`~PyQt5.QtCore.QEvent`
-            Boolean value or event object depending on the filter.
-        """
-
-        # Check if a mouse wheel event applies to QComboBox or QSpinBox
-        if (event.type() == QEvent.Wheel and
-                isinstance(source, (QComboBox, QSpinBox))):
-
-            # Filter the event by returning True
-            return True
-
-        # Else, return the unfiltered event
-        return super().eventFilter(source, event)
 
     def set_enabled(
             self,
@@ -238,6 +206,9 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
             # Resize the main window
             self.parent.resize(*self.current[2])
+
+        # 
+        self.parent.position()
 
         # 
         self.hide()

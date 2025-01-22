@@ -11,13 +11,13 @@ from numpy import array, dot
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import LogisticRegressionModel
-from pyanno4rt.optimization.components import MachineLearningComponentClass
+from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import inverse_sigmoid
 
 # %% Class definition
 
 
-class LogisticRegressionTCP(MachineLearningComponentClass):
+class LogisticRegressionTCP(MachineLearningComponent):
     """
     Logistic regression TCP component class.
 

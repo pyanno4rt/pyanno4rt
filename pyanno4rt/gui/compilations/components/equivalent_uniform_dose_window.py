@@ -163,7 +163,7 @@ class Ui_equivalent_uniform_dose_window(object):
         self.handling_viz_label.setStyleSheet("border: 0px solid;")
         self.handling_viz_label.setObjectName("handling_viz_label")
         self.target_eud_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.target_eud_ledit.setGeometry(QtCore.QRect(0, 250, 131, 31))
+        self.target_eud_ledit.setGeometry(QtCore.QRect(0, 250, 127, 31))
         self.target_eud_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -257,7 +257,7 @@ class Ui_equivalent_uniform_dose_window(object):
         self.lower_bound_ledit.setAlignment(QtCore.Qt.AlignCenter)
         self.lower_bound_ledit.setObjectName("lower_bound_ledit")
         self.vol_eff_ledit = QtWidgets.QLineEdit(self.scroll_contents)
-        self.vol_eff_ledit.setGeometry(QtCore.QRect(150, 250, 123, 31))
+        self.vol_eff_ledit.setGeometry(QtCore.QRect(146, 250, 127, 31))
         self.vol_eff_ledit.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
@@ -265,7 +265,7 @@ class Ui_equivalent_uniform_dose_window(object):
         self.vol_eff_ledit.setAlignment(QtCore.Qt.AlignCenter)
         self.vol_eff_ledit.setObjectName("vol_eff_ledit")
         self.vol_eff_label = QtWidgets.QLabel(self.scroll_contents)
-        self.vol_eff_label.setGeometry(QtCore.QRect(150, 210, 123, 31))
+        self.vol_eff_label.setGeometry(QtCore.QRect(146, 210, 127, 31))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -323,6 +323,3 @@ class Ui_equivalent_uniform_dose_window(object):
         self.disp_component_check.setText(_translate("equivalent_uniform_dose_window", "Display component"))
         self.lower_bound_ledit.setPlaceholderText(_translate("equivalent_uniform_dose_window", "0.0"))
         self.vol_eff_label.setText(_translate("equivalent_uniform_dose_window", "Volume effect"))
-
-
-import resources_rc

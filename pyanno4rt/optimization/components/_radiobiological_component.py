@@ -1,4 +1,4 @@
-"""Conventional component template."""
+"""Radiobiological component template."""
 
 # Author: Tim Ortkamp
 
@@ -14,9 +14,9 @@ from pyanno4rt.tools import compare_dictionaries
 # %% Class definition
 
 
-class ConventionalComponentClass(metaclass=ABCMeta):
+class RadiobiologicalComponent(metaclass=ABCMeta):
     """
-    Conventional component template class.
+    Radiobiological component template class.
 
     Parameters
     ----------
@@ -43,7 +43,7 @@ class ConventionalComponentClass(metaclass=ABCMeta):
     weight : int or float
         Weight of the component function.
 
-    rank : int
+    rank : int, default=1
         Rank of the component in the lexicographic order.
 
     bounds : None or list
@@ -98,12 +98,6 @@ class ConventionalComponentClass(metaclass=ABCMeta):
 
     adjusted_parameters : bool
         Indicator for the adjustment of the parameters due to fractionation.
-
-    RETURNS_OUTCOME : bool
-        Indicator for the outcome focus of the component.
-
-    DEPENDS_ON_MODEL : bool
-        Indicator for the model dependency of the component.
     """
 
     def __init__(
@@ -136,7 +130,7 @@ class ConventionalComponentClass(metaclass=ABCMeta):
         # Check the class attributes
         hub.input_checker.approve(class_arguments)
 
-        # Check the component parameter value(s)
+        # Check the component parameters
         hub.input_checker.approve(dict(zip(parameter_name, parameter_value)))
 
         # Set the instance attributes from the class arguments
@@ -148,17 +142,13 @@ class ConventionalComponentClass(metaclass=ABCMeta):
         self.embedding = embedding
         self.weight = float(weight)
         self.rank = rank
-        self.bounds = [None, None] if bounds is None else bounds
+        self.bounds = [0.0, 1.0] if bounds is None else bounds
         self.link = [] if link is None else link
         self.identifier = identifier
         self.display = display
 
         # Initialize the adjustment indicator
         self.adjusted_parameters = False
-
-        # Set the component flags
-        self.RETURNS_OUTCOME = False
-        self.DEPENDS_ON_DATA = False
 
     def __eq__(self, other):
         """Compare an instance with another object."""
@@ -168,6 +158,18 @@ class ConventionalComponentClass(metaclass=ABCMeta):
                 and compare_dictionaries(
                     self.__dict__.get('model_parameters', {}),
                     other.__dict__.get('model_parameters', {})))
+
+    def get_class(self):
+        """
+        Get the name of the component class.
+
+        Returns
+        -------
+        str
+            Name of the component class.
+        """
+
+        return 'RadiobiologicalComponent'
 
     def get_parameter_value(self):
         """

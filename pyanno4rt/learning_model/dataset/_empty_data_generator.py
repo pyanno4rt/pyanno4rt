@@ -92,7 +92,8 @@ class EmptyDataGenerator():
             'feature_statics': configuration['feature_statics'],
             'feature_definitions': configuration['feature_definitions'],
             'tune_folds': configuration['tune_folds'],
-            'oof_folds': configuration['oof_folds']
+            'oof_folds': configuration['oof_folds'],
+            'number_of_samples': configuration['number_of_samples']
             }
 
         # Enter the data information dictionary into the datahub

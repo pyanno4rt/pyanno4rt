@@ -29,7 +29,7 @@ class Ui_naive_bayes_tcp_window(object):
         self.scroll_area.setStyleSheet("border-color: transparent;")
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, 0, 690, 1429))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, -947, 690, 1429))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 90, 111, 31))
@@ -430,7 +430,6 @@ class Ui_naive_bayes_tcp_window(object):
         self.write_features_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.write_features_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
-        self.write_features_check.setChecked(True)
         self.write_features_check.setObjectName("write_features_check")
         self.graphs_label = QtWidgets.QLabel(self.scroll_contents)
         self.graphs_label.setGeometry(QtCore.QRect(0, 1130, 261, 25))
@@ -453,14 +452,12 @@ class Ui_naive_bayes_tcp_window(object):
         self.inspect_model_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.inspect_model_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
-        self.inspect_model_check.setChecked(True)
         self.inspect_model_check.setObjectName("inspect_model_check")
         self.evaluate_model_check = QtWidgets.QCheckBox(self.scroll_contents)
         self.evaluate_model_check.setGeometry(QtCore.QRect(300, 1050, 141, 23))
         self.evaluate_model_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.evaluate_model_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
-        self.evaluate_model_check.setChecked(True)
         self.evaluate_model_check.setObjectName("evaluate_model_check")
         self.segment_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.segment_cbox.setGeometry(QtCore.QRect(0, 90, 426, 31))
@@ -564,9 +561,9 @@ class Ui_naive_bayes_tcp_window(object):
         self.horizontalLayoutWidget_6 = QtWidgets.QWidget(self.scroll_contents)
         self.horizontalLayoutWidget_6.setGeometry(QtCore.QRect(300, 890, 121, 31))
         self.horizontalLayoutWidget_6.setObjectName("horizontalLayoutWidget_6")
-        self.priors_none_layout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_6)
-        self.priors_none_layout.setContentsMargins(0, 0, 0, 0)
-        self.priors_none_layout.setObjectName("priors_none_layout")
+        self.priors_layout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_6)
+        self.priors_layout.setContentsMargins(0, 0, 0, 0)
+        self.priors_layout.setObjectName("priors_layout")
         self.scroll_area.setWidget(self.scroll_contents)
         naive_bayes_tcp_window.setCentralWidget(self.body_widget)
 
@@ -632,6 +629,3 @@ class Ui_naive_bayes_tcp_window(object):
         self.var_smoothing_label.setText(_translate("naive_bayes_tcp_window", "variance smoothing"))
         self.tune_space_label.setText(_translate("naive_bayes_tcp_window", "Tune space"))
         self.var_smoothing_conjunction.setText(_translate("naive_bayes_tcp_window", "-"))
-
-
-import resources_rc

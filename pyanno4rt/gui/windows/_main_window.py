@@ -33,8 +33,8 @@ from pyanno4rt.gui.windows import (
     SplashScreenWindow, TreeWindow)
 from pyanno4rt.gui.windows.components import component_window_map
 from pyanno4rt.optimization.components import (
-    ConventionalComponentClass, component_map, MachineLearningComponentClass,
-    RadiobiologyComponentClass)
+    ConventionalComponent, component_map, MachineLearningComponent,
+    RadiobiologicalComponent)
 from pyanno4rt.optimization.methods import method_map
 from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, get_machine_learning_constraints,
@@ -1324,21 +1324,21 @@ class MainWindow(QMainWindow, Ui_main_window):
         for label, component in component_map.items():
 
             # Check if the component is of conventional type
-            if issubclass(component, ConventionalComponentClass):
+            if issubclass(component, ConventionalComponent):
 
                 # Add the action to the conventional submenu
                 conv_menu.addAction(
                     label, partial(self.open_component_window, label))
 
             # Check if the component is of machine learning type
-            elif issubclass(component, MachineLearningComponentClass):
+            elif issubclass(component, MachineLearningComponent):
 
                 # Add the action to the machine learning menu
                 ml_menu.addAction(
                     label, partial(self.open_component_window, label))
 
             # Check if the component is of radiobiological type
-            elif issubclass(component, RadiobiologyComponentClass):
+            elif issubclass(component, RadiobiologicalComponent):
 
                 # Add the action to the radiobiological menu
                 rb_menu.addAction(

@@ -73,7 +73,7 @@ class DecisionTreeModel(MachineLearningModel):
             'min_weight_fraction_leaf': tune_space.get(
                 'min_weight_fraction_leaf', [0.0, 0.5]),
             'max_features': tune_space.get('max_features', list(range(
-                    1, dataset['feature_values'].shape[1]+1))),
+                    1, len(dataset['feature_names'])+1))),
             'class_weight': tune_space.get('class_weight', [None, 'balanced']),
             'ccp_alpha': tune_space.get('ccp_alpha', [0.0, 1.0])}
 

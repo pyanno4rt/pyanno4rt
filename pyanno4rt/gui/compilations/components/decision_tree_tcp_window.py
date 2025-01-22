@@ -29,7 +29,7 @@ class Ui_decision_tree_tcp_window(object):
         self.scroll_area.setStyleSheet("border-color: transparent;")
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, 0, 690, 1589))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, -1033, 690, 1589))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 90, 111, 31))
@@ -430,7 +430,6 @@ class Ui_decision_tree_tcp_window(object):
         self.write_features_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.write_features_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
-        self.write_features_check.setChecked(True)
         self.write_features_check.setObjectName("write_features_check")
         self.graphs_label = QtWidgets.QLabel(self.scroll_contents)
         self.graphs_label.setGeometry(QtCore.QRect(0, 1290, 241, 25))
@@ -453,14 +452,12 @@ class Ui_decision_tree_tcp_window(object):
         self.inspect_model_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.inspect_model_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
-        self.inspect_model_check.setChecked(True)
         self.inspect_model_check.setObjectName("inspect_model_check")
         self.evaluate_model_check = QtWidgets.QCheckBox(self.scroll_contents)
         self.evaluate_model_check.setGeometry(QtCore.QRect(300, 1210, 141, 23))
         self.evaluate_model_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.evaluate_model_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
-        self.evaluate_model_check.setChecked(True)
         self.evaluate_model_check.setObjectName("evaluate_model_check")
         self.segment_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.segment_cbox.setGeometry(QtCore.QRect(0, 90, 426, 31))
@@ -817,6 +814,3 @@ class Ui_decision_tree_tcp_window(object):
         self.min_samples_leaf_upper_bound_ledit.setPlaceholderText(_translate("decision_tree_tcp_window", "0.5"))
         self.min_samples_split_label.setText(_translate("decision_tree_tcp_window", "min samples split"))
         self.min_samples_leaf_lower_bound_ledit.setPlaceholderText(_translate("decision_tree_tcp_window", "0.0"))
-
-
-import resources_rc

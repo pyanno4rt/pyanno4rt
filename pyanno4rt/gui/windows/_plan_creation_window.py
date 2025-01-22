@@ -6,9 +6,7 @@
 
 from functools import partial
 from os.path import abspath, dirname, isfile
-from PyQt5.QtCore import QEvent
-from PyQt5.QtWidgets import (
-    QComboBox, QFileDialog, QMainWindow, QMenu, QMessageBox, QSpinBox)
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMenu, QMessageBox
 
 # %% Internal package import
 
@@ -87,7 +85,7 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             'close_plan_pbutton': pbutton_composer})
 
         # Install the custom event filter for the reference combo box
-        self.ref_plan_cbox.installEventFilter(self)
+        self.ref_plan_cbox.installEventFilter(parent)
 
         # Adjust the component list widget spacing
         self.components_lwidget.setSpacing(4)
@@ -97,37 +95,6 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
 
         # Connect the fields with the event signals
         self.connect_signals()
-
-    def eventFilter(
-            self,
-            source,
-            event):
-        """
-        Filter the events (overwrites the default event filter).
-
-        Parameters
-        ----------
-        source : object of class :class:`~PyQt5.QtWidgets`
-            The object representing the event source.
-
-        event : object of class :class:`~PyQt5.QtCore.QEvent`
-            The object representing the event.
-
-        Returns
-        -------
-        bool or object of class :class:`~PyQt5.QtCore.QEvent`
-            Boolean value or event object depending on the filter.
-        """
-
-        # Check if a mouse wheel event applies to QComboBox or QSpinBox
-        if (event.type() == QEvent.Wheel and
-                isinstance(source, (QComboBox, QSpinBox))):
-
-            # Filter the event by returning True
-            return True
-
-        # Else, return the unfiltered event
-        return super().eventFilter(source, event)
 
     def mousePressEvent(
             self,

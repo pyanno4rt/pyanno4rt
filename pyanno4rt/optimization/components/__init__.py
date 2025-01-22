@@ -9,9 +9,9 @@ outcome model-based component functions for the optimization problem.
 
 # Author: Tim Ortkamp
 
-from ._conventional_component_class import ConventionalComponentClass
-from ._machine_learning_component_class import MachineLearningComponentClass
-from ._radiobiology_component_class import RadiobiologyComponentClass
+from ._conventional_component import ConventionalComponent
+from ._machine_learning_component import MachineLearningComponent
+from ._radiobiological_component import RadiobiologicalComponent
 
 from ._decision_tree_ntcp import DecisionTreeNTCP
 from ._decision_tree_tcp import DecisionTreeTCP
@@ -40,7 +40,7 @@ from ._support_vector_machine_tcp import SupportVectorMachineTCP
 
 from ._component_map import component_map
 
-__all__ = ['ConventionalComponentClass',
+__all__ = ['ConventionalComponent',
            'DecisionTreeNTCP',
            'DecisionTreeTCP',
            'DoseUniformity',
@@ -51,7 +51,7 @@ __all__ = ['ConventionalComponentClass',
            'LogisticRegressionTCP',
            'LQPoissonTCP',
            'LymanKutcherBurmanNTCP',
-           'MachineLearningComponentClass',
+           'MachineLearningComponent',
            'MaximumDVH',
            'MeanDose',
            'MinimumDVH',
@@ -59,7 +59,7 @@ __all__ = ['ConventionalComponentClass',
            'NaiveBayesTCP',
            'NeuralNetworkNTCP',
            'NeuralNetworkTCP',
-           'RadiobiologyComponentClass',
+           'RadiobiologicalComponent',
            'RandomForestNTCP',
            'RandomForestTCP',
            'SquaredDeviation',

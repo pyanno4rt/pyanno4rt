@@ -437,7 +437,7 @@ border-color: rgb(186, 189, 182);</string>
        <rect>
         <x>0</x>
         <y>250</y>
-        <width>131</width>
+        <width>127</width>
         <height>31</height>
        </rect>
       </property>
@@ -694,9 +694,9 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLineEdit" name="vol_eff_ledit">
       <property name="geometry">
        <rect>
-        <x>150</x>
+        <x>146</x>
         <y>250</y>
-        <width>123</width>
+        <width>127</width>
         <height>31</height>
        </rect>
       </property>
@@ -713,9 +713,9 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLabel" name="vol_eff_label">
       <property name="geometry">
        <rect>
-        <x>150</x>
+        <x>146</x>
         <y>210</y>
-        <width>123</width>
+        <width>127</width>
         <height>31</height>
        </rect>
       </property>

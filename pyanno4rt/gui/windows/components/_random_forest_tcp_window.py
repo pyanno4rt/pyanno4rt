@@ -4,40 +4,41 @@
 
 # %% External package import
 
-from os.path import abspath, isfile
-from pandas import read_csv
-from PyQt5.QtCore import QDir, QEvent
+from os.path import abspath
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import (
-    QComboBox, QFileDialog, QInputDialog, QListWidget, QListWidgetItem,
-    QMainWindow, QMessageBox, QSpinBox)
+from PyQt5.QtWidgets import QFileDialog, QListWidgetItem, QMainWindow
 
 # %% Internal package import
 
+from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.components.random_forest_tcp_window import (
     Ui_random_forest_tcp_window)
+from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.styles._custom_styles import (
-    ledit, pbutton_composer, tbutton_composer)
+    cbox, ledit, pbutton_composer, sbox, tbutton_composer, tbutton_data_window)
+from pyanno4rt.gui.windows import DataColumnsWindow
+from pyanno4rt.learning_model.losses import loss_map
 
 # %% Class definition
 
 
-class RandomForestTCPWindow(
-        QMainWindow, Ui_random_forest_tcp_window):
+class RandomForestTCPWindow(QMainWindow, Ui_random_forest_tcp_window):
     """
-    Random forest TCP component window for the application.
+    Random forest TCP component window for the GUI.
 
-    This class creates a random forest TCP component window for the \
-    graphical user interface, including input fields to parametrize the \
-    component.
+    This class sets up the random forest TCP component window for the \
+    graphical user interface, including input fields for parameterization.
+
+    Parameters
+    ----------
+    parent : object of class \
+        :class:`~pyanno4rt.gui.windows._main_window.MainWindow`, default=None
+        The object representing the parent window for embedding.
     """
 
     def __init__(
             self,
             parent=None):
-
-        # Get the application from the argument
-        self.parent = parent
 
         # Run the constructor from the superclass
         super().__init__()
@@ -45,193 +46,293 @@ class RandomForestTCPWindow(
         # Build the UI main window
         self.setupUi(self)
 
-        # Loop over the QComboBox and QSpinBox elements
-        for box in ('type_cbox', 'embedding_cbox', 'rank_sbox',
-                    'filter_mode_cbox', 'label_viewpoint_cbox',
-                    'tune_eval_sbox', 'tune_score_cbox', 'tune_splits_sbox',
-                    'oof_splits_sbox'):
+        # Get the parent window
+        self.parent = parent
 
-            # Install the custom event filters
-            getattr(self, box).installEventFilter(self)
+        # Initialize the data columns dictionary
+        self.data_columns = {}
 
-        # 
-        self.set_disabled(('features_minus_tbutton', 'features_load_tbutton',
-                           'save_component_pbutton'))
+        # Initialize the edit boolean
+        self.edit = False
 
-        # 
-        self.set_styles({'link_ledit': ledit,
-                         'identifier_ledit': ledit,
-                         'model_label_ledit': ledit,
-                         'model_path_tbutton': tbutton_composer,
-                         'data_path_tbutton': tbutton_composer,
-                         'features_plus_tbutton': tbutton_composer,
-                         'features_minus_tbutton': tbutton_composer,
-                         'features_load_tbutton': tbutton_composer,
-                         'save_component_pbutton': pbutton_composer,
-                         'close_component_pbutton': pbutton_composer})
+        # Initialize the data columns window
+        self.data_columns_window = DataColumnsWindow(self)
 
-        # 
+        # Initialize the checkable combo boxes
+        self.segment_link_cbox = CheckableComboBox()
+        self.criterion_cbox = CheckableComboBox()
+        self.bootstrap_cbox = CheckableComboBox()
+        self.class_weight_cbox = CheckableComboBox()
+        self.graphs_cbox = CheckableComboBox()
+        self.kpi_cbox = CheckableComboBox()
+
+        # Loop over the checkable combo boxes with their parameters
+        for box, parameters in {
+                'segment_link_cbox': (
+                    426, list(self.parent.segments.keys()), False,
+                    'segment_link_layout'),
+                'criterion_cbox': (
+                    181, ['gini', 'entropy'], True, 'criterion_layout'),
+                'bootstrap_cbox': (
+                    181, ['False', 'True'], True, 'bootstrap_layout'),
+                'class_weight_cbox': (
+                    181, ['None', 'balanced'], True, 'class_weight_layout'),
+                'graphs_cbox': (
+                    261, ['AUC-ROC', 'AUC-PR', 'F1'], True, 'graphs_layout'),
+                'kpi_cbox': (
+                    401, ['Logloss', 'Brier score', 'Subset accuracy',
+                          'Cohen Kappa', 'Hamming loss', 'Jaccard score',
+                          'Precision', 'Recall', 'F1 score', 'MCC', 'AUC'],
+                    True, 'kpi_layout')}.items():
+
+            # Get the combo box
+            combo_box = getattr(self, box)
+
+            # Set a fixed size
+            combo_box.setFixedSize(parameters[0], 31)
+
+            # Add the items
+            combo_box.addItems(parameters[1], parameters[2])
+
+            # Add the combo box to the layout
+            getattr(self, parameters[3]).addWidget(combo_box)
+
+        # Add the segment items to the segment combo box
         self.segment_cbox.addItems(list(self.parent.segments.keys()))
         self.segment_cbox.setCurrentIndex(-1)
 
-        # 
-        self.criterion_lwidget.addItems(['gini', 'entropy'])
-        self.bootstrap_lwidget.addItems(['False', 'True'])
-        self.class_weight_lwidget.addItems(['None', 'balanced'])
-        self.graphs_lwidget.addItems(['AUC-ROC', 'AUC-PR', 'F1'])
-        self.kpi_lwidget.addItems(['Logloss', 'Brier score', 'Subset accuracy',
-                                   'Cohen Kappa', 'Hamming loss',
-                                   'Jaccard score', 'Precision', 'Recall',
-                                   'F1 score', 'MCC', 'AUC'])
+        # Add the losses to the tune score combo box
+        self.tune_score_cbox.addItems(['AUC'] + list(loss_map.keys()))
+        self.tune_score_cbox.model().sort(0)
+        self.tune_score_cbox.setCurrentText('Logloss')
 
-        # 
-        for index in range(self.criterion_lwidget.count()):
-            self.criterion_lwidget.item(index).setCheckState(2)
-        for index in range(self.bootstrap_lwidget.count()):
-            self.bootstrap_lwidget.item(index).setCheckState(2)
-        for index in range(self.class_weight_lwidget.count()):
-            self.class_weight_lwidget.item(index).setCheckState(2)
-        for index in range(self.graphs_lwidget.count()):
-            self.graphs_lwidget.item(index).setCheckState(2)
-        for index in range(self.kpi_lwidget.count()):
-            self.kpi_lwidget.item(index).setCheckState(2)
+        # Set the stylesheets
+        self.set_styles({
+            'segment_cbox': cbox,
+            'type_cbox': cbox,
+            'embedding_cbox': cbox,
+            'segment_link_cbox': cbox,
+            'weight_ledit': ledit,
+            'rank_sbox': sbox,
+            'lower_bound_ledit': ledit,
+            'upper_bound_ledit': ledit,
+            'model_label_ledit': ledit,
+            'model_path_ledit': ledit,
+            'model_path_tbutton': tbutton_composer,
+            'data_path_ledit': ledit,
+            'data_path_tbutton': tbutton_composer,
+            'data_columns_tbutton': tbutton_data_window,
+            'prep_steps_ledit': ledit,
+            'criterion_cbox': cbox,
+            'max_depth_lower_bound_ledit': ledit,
+            'max_depth_upper_bound_ledit': ledit,
+            'estimators_lower_bound_ledit': ledit,
+            'estimators_upper_bound_ledit': ledit,
+            'min_samples_split_lower_bound_ledit': ledit,
+            'min_samples_split_upper_bound_ledit': ledit,
+            'min_samples_leaf_lower_bound_ledit': ledit,
+            'min_samples_leaf_upper_bound_ledit': ledit,
+            'min_weight_frac_leaf_lower_bound_ledit': ledit,
+            'min_weight_frac_leaf_upper_bound_ledit': ledit,
+            'max_features_lower_bound_ledit': ledit,
+            'max_features_upper_bound_ledit': ledit,
+            'bootstrap_cbox': cbox,
+            'class_weight_cbox': cbox,
+            'ccp_alpha_lower_bound_ledit': ledit,
+            'ccp_alpha_upper_bound_ledit': ledit,
+            'tune_eval_sbox': sbox,
+            'tune_score_cbox': cbox,
+            'tune_splits_sbox': sbox,
+            'oof_splits_sbox': sbox,
+            'graphs_cbox': cbox,
+            'kpi_cbox': cbox,
+            'identifier_ledit': ledit,
+            'save_pbutton': pbutton_composer,
+            'close_pbutton': pbutton_composer})
 
-        # 
-        self.features_lwidget.setSpacing(4)
-        self.criterion_lwidget.setSpacing(4)
-        self.bootstrap_lwidget.setSpacing(4)
-        self.class_weight_lwidget.setSpacing(4)
-        self.graphs_lwidget.setSpacing(4)
-        self.kpi_lwidget.setSpacing(4)
+        # Loop over the QComboBox and QSpinBox elements
+        for box in (
+                'segment_cbox', 'type_cbox', 'embedding_cbox',
+                'segment_link_cbox', 'rank_sbox', 'criterion_cbox',
+                'bootstrap_cbox', 'class_weight_cbox', 'tune_eval_sbox',
+                'tune_score_cbox', 'tune_splits_sbox', 'oof_splits_sbox',
+                'graphs_cbox', 'kpi_cbox'):
 
-        # 
-        self.segment_cbox.currentTextChanged.connect(self.update_save_button)
+            # Install the custom event filters
+            getattr(self, box).installEventFilter(parent)
 
-        # 
-        self.model_path_ledit.textChanged.connect(self.update_save_button)
-        self.model_path_tbutton.clicked.connect(self.add_model_path)
+        # Set the line edit cursor positions to zero
+        self.set_zero_line_cursor((
+            'weight_ledit', 'lower_bound_ledit', 'upper_bound_ledit',
+            'model_label_ledit', 'model_path_ledit', 'data_path_ledit',
+            'prep_steps_ledit', 'max_depth_lower_bound_ledit',
+            'max_depth_upper_bound_ledit', 'estimators_lower_bound_ledit',
+            'estimators_upper_bound_ledit',
+            'min_samples_split_lower_bound_ledit',
+            'min_samples_split_upper_bound_ledit',
+            'min_samples_leaf_lower_bound_ledit',
+            'min_samples_leaf_upper_bound_ledit',
+            'min_weight_frac_leaf_lower_bound_ledit',
+            'min_weight_frac_leaf_upper_bound_ledit',
+            'max_features_lower_bound_ledit', 'max_features_upper_bound_ledit',
+            'ccp_alpha_lower_bound_ledit', 'ccp_alpha_upper_bound_ledit',
+            'identifier_ledit'))
 
-        # 
-        self.data_path_ledit.textChanged.connect(self.update_save_button)
-        self.data_path_ledit.textChanged.connect(self.update_by_data_path)
-        self.data_path_tbutton.clicked.connect(self.add_data_path)
+        # Disable some fields
+        self.set_disabled(('data_columns_tbutton', 'save_pbutton'))
 
-        # 
-        self.features_plus_tbutton.clicked.connect(self.open_input_dialog)
+        # Connect the event signals
+        self.connect_signals()
 
-        # 
-        self.features_minus_tbutton.clicked.connect(self.remove_feature)
+    def set_styles(
+            self,
+            key_value_pairs):
+        """
+        Set the element stylesheets from key-value pairs.
 
-        # 
-        self.features_lwidget.currentItemChanged.connect(
-            lambda: self.set_enabled(('features_minus_tbutton',)))
+        Parameters
+        ----------
+        key_value_pairs : dict
+            Dictionary with the field names (keys) and style sheets (values).
+        """
 
-        # 
-        self.features_load_tbutton.clicked.connect(self.open_question_dialog)
+        # Loop over the dictionary items
+        for key, value in key_value_pairs.items():
 
-        # 
-        self.label_name_ledit.textChanged.connect(self.update_save_button)
+            # Get the attribute and set the stylesheet
+            getattr(self, key).setStyleSheet(value)
 
-        # 
-        self.save_component_pbutton.clicked.connect(self.save)
+    def set_zero_line_cursor(
+            self,
+            field_names):
+        """
+        Set the line edit cursor positions to zero.
 
-        # 
-        self.close_component_pbutton.clicked.connect(self.close)
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
 
-    def position(self):
-        """."""
+        # Loop over the passed field names
+        for name in field_names:
 
-        # Get the window geometry
-        geometry = self.geometry()
+            # Get the attribute and set the cursor position to zero
+            getattr(self, name).setCursorPosition(0)
 
-        # Move the geometry center towards the parent
-        geometry.moveCenter(self.parent.geometry().center())
+    def set_enabled(
+            self,
+            field_names):
+        """
+        Enable multiple fields by their names.
 
-        # Set the shifted geometry
-        self.setGeometry(geometry)
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
 
-    def load(self, component):
-        """."""
+        # Loop over the passed field names
+        for name in field_names:
+
+            # Get the attribute and enable the field
+            getattr(self, name).setEnabled(True)
+
+    def set_disabled(
+            self,
+            field_names):
+        """
+        Disable multiple fields by their names.
+
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
+
+        # Loop over the passed field names
+        for name in field_names:
+
+            # Get the attribute and disable the field
+            getattr(self, name).setEnabled(False)
+
+    def connect_signals(self):
+        """Connect the fields with the event signals."""
+
+        # Loop over the field names with 'clicked' events
+        for key, value in {
+                'model_path_tbutton': self.add_model_path,
+                'data_path_tbutton': self.add_data_path,
+                'data_columns_tbutton': self.open_data_columns_window,
+                'save_pbutton': self.save,
+                'close_pbutton': self.close
+                }.items():
+
+            # Connect the 'clicked' event
+            getattr(self, key).clicked.connect(value)
+
+        # Loop over the field names with 'currentTextChanged' events
+        for key, value in {
+                'segment_cbox': self.update_buttons
+                }.items():
+
+            # Connect the 'currentTextChanged' event
+            getattr(self, key).currentTextChanged.connect(value)
+
+        # Loop over the field names with 'textChanged' events
+        for key, value in {
+                'model_label_ledit': self.update_buttons,
+                'model_path_ledit': self.update_buttons,
+                'data_path_ledit': self.update_buttons
+                }.items():
+
+            # Connect the 'textChanged' event
+            getattr(self, key).textChanged.connect(value)
+
+    def load(
+            self,
+            component,
+            edit=False):
+        """
+        Load a component into the window.
+
+        Parameters
+        ----------
+        component : dict
+            Dictionary with the information on the optimization component.
+
+        edit : bool
+            Indicator for the editing of the component.
+        """
+
+        # Get the edit attribute from the argument
+        self.edit = edit
+
+        # Get the segment associated with the component
+        segment = next(iter(component))
 
         # Get the component parameters
-        key = list(component.keys())[0]
-        ctype = component[key]['type']
-        model_params = component[key]['instance']['parameters'][
+        ctype = component[segment]['type']
+        model_parameters = component[segment]['instance']['parameters'][
             'model_parameters']
-        embedding = component[key]['instance']['parameters'].get(
+        embedding = component[segment]['instance']['parameters'].get(
             'embedding', 'active')
-        weight = component[key]['instance']['parameters'].get('weight', 1)
-        rank = component[key]['instance']['parameters'].get('rank', 1)
-        lower, upper = component[key]['instance']['parameters'].get(
+        weight = component[segment]['instance']['parameters'].get(
+            'weight', 1.0)
+        rank = component[segment]['instance']['parameters'].get('rank', 1)
+        lower, upper = component[segment]['instance']['parameters'].get(
             'bounds', (0.0, 1.0))
-        link = component[key]['instance']['parameters'].get('link')
-        identifier = component[key]['instance']['parameters'].get('identifier')
-        display = component[key]['instance']['parameters'].get('display', True)
+        link = component[segment]['instance']['parameters'].get('link')
+        identifier = component[segment]['instance']['parameters'].get(
+            'identifier')
+        display = component[segment]['instance']['parameters'].get(
+            'display', True)
 
-        # Base
-        self.segment_cbox.setCurrentText(key)
-        self.type_cbox.setCurrentText(ctype)
-        self.embedding_cbox.setCurrentText(embedding)
+        # Get the data columns dictionary
+        self.data_columns = model_parameters['data_columns']
 
-        # Function
-        self.link_ledit.setText(
-            '' if not link else str(link).replace("\'", ''))
-
-        # Optimization
-        self.weight_ledit.setText(
-            '' if weight == 1 else str(float(weight)))
-        self.rank_sbox.setValue(rank)
-        self.lower_bound_ledit.setText(
-            '' if lower == 0.0 else str(float(lower)))
-        self.upper_bound_ledit.setText(
-            '' if upper == 1.0 else str(float(upper)))
-
-        # Outcome model - BASE
-        self.model_label_ledit.setText(model_params['model_label'])
-        self.model_path_ledit.setText(
-            '' if not model_params.get('model_folder_path')
-            else abspath(model_params['model_folder_path']))
-        self.data_path_ledit.setText(
-            '' if not model_params.get('data_path')
-            else abspath(model_params['data_path']))
-
-        # Outcome model - DATA FILTER
-        feature_filter = model_params.get(
-            'feature_filter', {'features': [], 'filter_mode': 'remove'})
-
-        self.features_lwidget.addItems(feature_filter.get('features', []))
-        for index in range(self.features_lwidget.count()):
-            self.features_lwidget.item(index).setCheckState(2)
-
-        self.filter_mode_cbox.setCurrentText(
-            feature_filter.get('filter_mode', 'remove'))
-
-        self.label_name_ledit.setText(model_params['label_name'])
-        self.label_lower_bound_ledit.setText(
-            '' if not model_params.get('label_bounds')
-            or model_params['label_bounds'][0] == 1.0
-            else str(model_params['label_bounds'][0]))
-        self.label_upper_bound_ledit.setText(
-            '' if not model_params.get('label_bounds')
-            or model_params['label_bounds'][1] == 1.0
-            else str(model_params['label_bounds'][1]))
-        self.time_variable_ledit.setText(
-            '' if not model_params.get('time_variable_name')
-            else model_params['time_variable_name'])
-        self.label_viewpoint_cbox.setCurrentText(
-            model_params.get('label_viewpoint', 'longitudinal'))
-
-        # Outcome model - FEATURE MAP
-        self.fuzzy_matching_check.setCheckState(
-            2 if model_params.get('fuzzy_matching', True) else 0)
-
-        # Outcome model - MODEL FITTING, INSPECTION & EVALUATION
-        self.prep_steps_ledit.setText(
-            '' if not model_params.get('preprocessing_steps')
-            or model_params['preprocessing_steps'] == ['Identity']
-            else str(model_params['preprocessing_steps']).replace("\'", ''))
-
-        tune_space = model_params.get(
+        # Get the tune space
+        tune_space = model_parameters.get(
             'tune_space', {
                 'n_estimators': list(range(1, 51)),
                 'criterion': ['gini', 'entropy'],
@@ -239,264 +340,240 @@ class RandomForestTCPWindow(
                 'min_samples_split': [0.0, 1.0],
                 'min_samples_leaf': [0.0, 0.5],
                 'min_weight_fraction_leaf': [0.0, 0.5],
+                'max_features': list(range(1, len(self.data_columns))),
                 'bootstrap': [False, True],
                 'class_weight': [None, 'balanced'],
                 'ccp_alpha': [0.0, 1.0]})
 
-        self.estimators_lower_bound_ledit.setText(
-            '' if not tune_space.get('n_estimators')
-            or tune_space['n_estimators'][0] == 1
-            else str(tune_space['n_estimators'][0]))
-        self.estimators_upper_bound_ledit.setText(
-            '' if not tune_space.get('n_estimators')
-            or tune_space['n_estimators'][-1] == 50
-            else str(tune_space['n_estimators'][-1]))
-
-        for index in range(self.criterion_lwidget.count()):
-
-            if (not tune_space.get('criterion')
-                or self.criterion_lwidget.item(index).text()
-                    in tune_space['criterion']):
-
-                self.criterion_lwidget.item(index).setCheckState(2)
-
-            else:
-
-                self.criterion_lwidget.item(index).setCheckState(0)
-
-        self.max_depth_lower_bound_ledit.setText(
-            '' if not tune_space.get('max_depth')
-            or tune_space['max_depth'][0] == 1
-            else str(tune_space['max_depth'][0]))
-        self.max_depth_upper_bound_ledit.setText(
-            '' if not tune_space.get('max_depth')
-            or tune_space['max_depth'][-1] == 20
-            else str(tune_space['max_depth'][-1]))
-
-        self.min_samples_split_lower_bound_ledit.setText(
-            '' if not tune_space.get('min_samples_split')
-            or tune_space['min_samples_split'][0] == 0.0
-            else str(tune_space['min_samples_split'][0]))
-        self.min_samples_split_upper_bound_ledit.setText(
-            '' if not tune_space.get('min_samples_split')
-            or tune_space['min_samples_split'][1] == 1.0
-            else str(tune_space['min_samples_split'][1]))
-
-        self.min_samples_leaf_lower_bound_ledit.setText(
-            '' if not tune_space.get('min_samples_leaf')
-            or tune_space['min_samples_leaf'][0] == 0.0
-            else str(tune_space['min_samples_leaf'][0]))
-        self.min_samples_split_upper_bound_ledit.setText(
-            '' if not tune_space.get('min_samples_leaf')
-            or tune_space['min_samples_leaf'][1] == 0.5
-            else str(tune_space['min_samples_leaf'][1]))
-
-        self.min_weight_frac_leaf_lower_bound_ledit.setText(
-            '' if not tune_space.get('min_weight_fraction_leaf')
-            or tune_space['min_weight_fraction_leaf'][0] == 0.0
-            else str(tune_space['min_weight_fraction_leaf'][0]))
-        self.min_weight_frac_leaf_upper_bound_ledit.setText(
-            '' if not tune_space.get('min_weight_fraction_leaf')
-            or tune_space['min_weight_fraction_leaf'][1] == 0.5
-            else str(tune_space['min_weight_fraction_leaf'][1]))
-
-        self.max_features_lower_bound_ledit.setText(
-            '' if not tune_space.get('max_features')
-            else str(tune_space['max_features'][0]))
-        self.max_features_upper_bound_ledit.setText(
-            '' if not tune_space.get('max_features')
-            else str(tune_space['max_features'][-1]))
-
-        for index in range(self.bootstrap_lwidget.count()):
-
-            if (not tune_space.get('bootstrap')
-                or self.bootstrap_lwidget.item(index).text() == 'True'
-                    in tune_space['bootstrap']):
-
-                self.bootstrap_lwidget.item(index).setCheckState(2)
-
-            else:
-
-                self.bootstrap_lwidget.item(index).setCheckState(0)
-
-        for index in range(self.class_weight_lwidget.count()):
-
-            if (not tune_space.get('class_weight')
-                or self.class_weight_lwidget.item(index).text()
-                    in map(str, tune_space['class_weight'])):
-
-                self.class_weight_lwidget.item(index).setCheckState(2)
-
-            else:
-
-                self.class_weight_lwidget.item(index).setCheckState(0)
-
-        self.ccp_alpha_lower_bound_ledit.setText(
-            '' if not tune_space.get('ccp_alpha')
-            or tune_space['ccp_alpha'][0] == 0.0
-            else str(tune_space['ccp_alpha'][0]))
-        self.ccp_alpha_upper_bound_ledit.setText(
-            '' if not tune_space.get('ccp_alpha')
-            or tune_space['ccp_alpha'][1] == 1.0
-            else str(tune_space['ccp_alpha'][1]))
-
-        self.tune_eval_sbox.setValue(model_params.get('tune_evaluations', 50))
-        self.tune_score_cbox.setCurrentText(
-            model_params.get('tune_score', 'Logloss'))
-        self.tune_splits_sbox.setValue(model_params.get('tune_splits', 5))
-        self.oof_splits_sbox.setValue(model_params.get('oof_splits', 5))
-        self.write_features_check.setCheckState(
-            2 if model_params.get('write_features', True) else 0)
-        self.inspect_model_check.setCheckState(
-            2 if model_params.get('inspect_model', True) else 0)
-        self.evaluate_model_check.setCheckState(
-            2 if model_params.get('evaluate_model', True) else 0)
-
-        # Outcome model - VISUALIZATION
-        display_options = model_params.get(
+        # Get the display options
+        display_options = model_parameters.get(
             'display_options', {
                 'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
                 'kpis': ['Logloss', 'Brier score', 'Subset accuracy',
                          'Cohen Kappa', 'Hamming loss', 'Jaccard score',
                          'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']})
 
-        for index in range(self.graphs_lwidget.count()):
+        # Loop over the fields with 'setText' method
+        for key, value in {
+                'weight_ledit': '' if weight == 1.0 else str(float(weight)),
+                'lower_bound_ledit': '' if lower == 0.0 else str(float(lower)),
+                'upper_bound_ledit': '' if upper == 1.0 else str(float(upper)),
+                'model_label_ledit': model_parameters['model_label'],
+                'model_path_ledit': (
+                    '' if not model_parameters.get('model_folder_path')
+                    else abspath(model_parameters['model_folder_path'])),
+                'data_path_ledit': (
+                    '' if not model_parameters.get('data_path')
+                    else abspath(model_parameters['data_path'])),
+                'prep_steps_ledit': (
+                    '' if not model_parameters.get('preprocessing_steps')
+                    or model_parameters['preprocessing_steps'] == ['Identity']
+                    else str(model_parameters['preprocessing_steps']).replace(
+                        "\'", '')),
+                'max_depth_lower_bound_ledit': (
+                    '' if not tune_space.get('max_depth')
+                    or tune_space['max_depth'][0] == 1
+                    else str(tune_space['max_depth'][0])),
+                'max_depth_upper_bound_ledit': (
+                    '' if not tune_space.get('max_depth')
+                    or tune_space['max_depth'][-1] == 20
+                    else str(tune_space['max_depth'][-1])),
+                'estimators_lower_bound_ledit': (
+                    '' if not tune_space.get('n_estimators')
+                    or tune_space['n_estimators'][0] == 1
+                    else str(tune_space['n_estimators'][0])),
+                'estimators_upper_bound_ledit': (
+                    '' if not tune_space.get('n_estimators')
+                    or tune_space['n_estimators'][-1] == 50
+                    else str(tune_space['n_estimators'][-1])),
+                'min_samples_split_lower_bound_ledit': (
+                    '' if not tune_space.get('min_samples_split')
+                    or tune_space['min_samples_split'][0] == 0.0
+                    else str(tune_space['min_samples_split'][0])),
+                'min_samples_split_upper_bound_ledit': (
+                    '' if not tune_space.get('min_samples_split')
+                    or tune_space['min_samples_split'][1] == 1.0
+                    else str(tune_space['min_samples_split'][1])),
+                'min_samples_leaf_lower_bound_ledit': (
+                    '' if not tune_space.get('min_samples_leaf')
+                    or tune_space['min_samples_leaf'][0] == 0.0
+                    else str(tune_space['min_samples_leaf'][0])),
+                'min_samples_leaf_upper_bound_ledit': (
+                    '' if not tune_space.get('min_samples_leaf')
+                    or tune_space['min_samples_leaf'][1] == 0.5
+                    else str(tune_space['min_samples_leaf'][1])),
+                'min_weight_frac_leaf_lower_bound_ledit': (
+                    '' if not tune_space.get('min_weight_fraction_leaf')
+                    or tune_space['min_weight_fraction_leaf'][0] == 0.0
+                    else str(tune_space['min_weight_fraction_leaf'][0])),
+                'min_weight_frac_leaf_upper_bound_ledit': (
+                    '' if not tune_space.get('min_weight_fraction_leaf')
+                    or tune_space['min_weight_fraction_leaf'][1] == 0.5
+                    else str(tune_space['min_weight_fraction_leaf'][1])),
+                'max_features_lower_bound_ledit': (
+                    '' if not tune_space.get('max_features')
+                    else str(tune_space['max_features'][0])),
+                'max_features_upper_bound_ledit': (
+                    '' if not tune_space.get('max_features')
+                    else str(tune_space['max_features'][-1])),
+                'ccp_alpha_lower_bound_ledit': (
+                    '' if not tune_space.get('ccp_alpha')
+                    or tune_space['ccp_alpha'][0] == 0.0
+                    else str(tune_space['ccp_alpha'][0])),
+                'ccp_alpha_upper_bound_ledit': (
+                    '' if not tune_space.get('ccp_alpha')
+                    or tune_space['ccp_alpha'][1] == 1.0
+                    else str(tune_space['ccp_alpha'][1])),
+                'identifier_ledit': '' if not identifier else identifier
+                }.items():
 
-            if (not display_options.get('graphs')
-                or self.graphs_lwidget.item(index).text()
-                    in display_options['graphs']):
+            # Set the text
+            getattr(self, key).setText(value)
 
-                self.graphs_lwidget.item(index).setCheckState(2)
+        # Loop over the fields with 'setCurrentText' method
+        for key, value in {
+                'segment_cbox': segment,
+                'type_cbox': ctype,
+                'embedding_cbox': embedding,
+                'tune_score_cbox': model_parameters.get(
+                    'tune_score', 'Logloss')
+                }.items():
 
-            else:
+            # Set the text
+            getattr(self, key).setCurrentText(value)
 
-                self.graphs_lwidget.item(index).setCheckState(0)
+        # Loop over the fields with 'setValue' method
+        for key, value in {
+                'rank_sbox': rank,
+                'tune_eval_sbox': model_parameters.get('tune_evaluations', 50),
+                'tune_splits_sbox': model_parameters.get('tune_splits', 5),
+                'oof_splits_sbox': model_parameters.get('oof_splits', 5)
+                }.items():
 
-        for index in range(self.kpi_lwidget.count()):
+            # Set the value
+            getattr(self, key).setValue(value)
 
-            if (not display_options.get('kpis')
-                or self.kpi_lwidget.item(index).text()
-                    in display_options['kpis']):
+        # Loop over the fields with 'setCheckState' method
+        for key, value in {
+                'write_features_check': (
+                    2*model_parameters.get('write_features', False)),
+                'inspect_model_check': (
+                    2*model_parameters.get('inspect_model', False)),
+                'evaluate_model_check': (
+                    2*model_parameters.get('evaluate_model', False)),
+                'disp_component_check': 2*display
+                }.items():
 
-                self.kpi_lwidget.item(index).setCheckState(2)
+            # Set the check state
+            getattr(self, key).setCheckState(value)
 
-            else:
+        # Loop over the checkable combo boxes with their selections
+        for box, selection in {
+                'segment_link_cbox': [] if not link else link,
+                'criterion_cbox': tune_space['criterion'],
+                'bootstrap_cbox': map(str, tune_space['bootstrap']),
+                'class_weight_cbox': map(str, tune_space['class_weight']),
+                'graphs_cbox': display_options['graphs'],
+                'kpi_cbox': display_options['kpis']}.items():
 
-                self.kpi_lwidget.item(index).setCheckState(0)
+            # Get the combo box
+            combo_box = getattr(self, box)
 
-        # Handling & Visualization
-        self.identifier_ledit.setText('' if not identifier else identifier)
-        self.disp_component_check.setCheckState(2 if display else 0)
+            # Loop over the combo box items
+            for item in (
+                    combo_box.model().item(index)
+                    for index in range(combo_box.count())):
+
+                # Set the item text to checked or unchecked
+                item.setCheckState(2*(item.text() in selection))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
-            'link_ledit', 'weight_ledit', 'lower_bound_ledit',
-            'upper_bound_ledit', 'model_label_ledit', 'model_path_ledit',
-            'data_path_ledit', 'label_name_ledit', 'label_lower_bound_ledit',
-            'label_upper_bound_ledit', 'time_variable_ledit',
-            'prep_steps_ledit', 'identifier_ledit'))
-        self.set_zero_line_cursor((
-            'estimators_lower_bound_ledit', 'estimators_upper_bound_ledit',
-            'max_depth_lower_bound_ledit', 'max_depth_upper_bound_ledit',
+            'weight_ledit', 'lower_bound_ledit', 'upper_bound_ledit',
+            'model_label_ledit', 'model_path_ledit', 'data_path_ledit',
+            'prep_steps_ledit', 'max_depth_lower_bound_ledit',
+            'max_depth_upper_bound_ledit', 'estimators_lower_bound_ledit',
+            'estimators_upper_bound_ledit',
             'min_samples_split_lower_bound_ledit',
             'min_samples_split_upper_bound_ledit',
             'min_samples_leaf_lower_bound_ledit',
-            'min_samples_split_upper_bound_ledit',
+            'min_samples_leaf_upper_bound_ledit',
             'min_weight_frac_leaf_lower_bound_ledit',
             'min_weight_frac_leaf_upper_bound_ledit',
             'max_features_lower_bound_ledit', 'max_features_upper_bound_ledit',
-            'ccp_alpha_lower_bound_ledit', 'ccp_alpha_upper_bound_ledit'))
+            'ccp_alpha_lower_bound_ledit', 'ccp_alpha_upper_bound_ledit',
+            'identifier_ledit'))
 
     def save(self):
-        """."""
+        """Save the fields to a component."""
 
-        # 
+        # Get the model parameters
         model_parameters = {
             'model_label': self.model_label_ledit.text(),
             'model_folder_path': (
                 None if self.model_path_ledit.text() == ''
                 else abspath(self.model_path_ledit.text())),
             'data_path': (
-                '' if self.data_path_ledit.text() == ''
+                None if self.data_path_ledit.text() == ''
                 else abspath(self.data_path_ledit.text())),
-            'feature_filter': {
-                'features': [
-                    self.features_lwidget.item(index).text()
-                    for index in range(self.features_lwidget.count())
-                    if self.features_lwidget.item(index).checkState()],
-                'filter_mode': self.filter_mode_cbox.currentText()},
-            'label_name': self.label_name_ledit.text(),
-            'label_bounds': [
-                1.0 if bound == '' else None if bound == 'None'
-                else float(bound) for bound in (
-                    self.label_lower_bound_ledit.text(),
-                    self.label_upper_bound_ledit.text())],
-            'time_variable_name': (
-                None if self.time_variable_ledit.text() == ''
-                else self.time_variable_ledit.text()),
-            'label_viewpoint': self.label_viewpoint_cbox.currentText(),
-            'fuzzy_matching': self.fuzzy_matching_check.isChecked(),
+            'data_columns': self.data_columns,
             'preprocessing_steps': (
                 ['Identity'] if self.prep_steps_ledit.text() == ''
                 else self.prep_steps_ledit.text().strip('][').split(', ')),
             'tune_space': {
-                'n_estimators': (
-                    list(range(1, 51)) if any(bound == '' for bound in (
-                        self.estimators_lower_bound_ledit.text(),
-                        self.estimators_upper_bound_ledit.text()))
-                    else list(range(
-                        float(self.estimators_lower_bound_ledit.text()),
-                        float(self.estimators_upper_bound_ledit.text())+1))),
-                'criterion': [
-                    self.criterion_lwidget.item(index).text()
-                    for index in range(self.criterion_lwidget.count())
-                    if self.criterion_lwidget.item(index).checkState()],
-                'max_depth': (
-                    list(range(1, 21)) if any(bound == '' for bound in (
-                        self.max_depth_lower_bound_ledit.text(),
-                        self.max_depth_upper_bound_ledit.text()))
-                    else list(range(
-                        float(self.max_depth_lower_bound_ledit.text()),
-                        float(self.max_depth_upper_bound_ledit.text())+1))),
-                'min_samples_split': (
-                    [0.0, 1.0] if any(bound == '' for bound in (
-                        self.min_samples_split_lower_bound_ledit.text(),
-                        self.min_samples_split_upper_bound_ledit.text()))
-                    else
-                    [float(self.min_samples_split_lower_bound_ledit.text()),
-                     float(self.min_samples_split_upper_bound_ledit.text())]),
-                'min_samples_leaf': (
-                    [0.0, 0.5] if any(bound == '' for bound in (
-                        self.min_samples_leaf_lower_bound_ledit.text(),
-                        self.min_samples_leaf_upper_bound_ledit.text()))
-                    else
-                    [float(self.min_samples_leaf_lower_bound_ledit.text()),
-                     float(self.min_samples_leaf_upper_bound_ledit.text())]),
-                'min_weight_fraction_leaf': (
-                    [0.0, 0.5] if any(bound == '' for bound in (
-                        self.min_weight_frac_leaf_lower_bound_ledit.text(),
-                        self.min_weight_frac_leaf_upper_bound_ledit.text()))
-                    else
-                    [float(self.min_weight_frac_leaf_lower_bound_ledit.text()),
-                     float(self.min_weight_frac_leaf_upper_bound_ledit.text())]
-                    ),
-                'bootstrap': [
-                    self.bootstrap_lwidget.item(index).text() == 'True'
-                    for index in range(self.bootstrap_lwidget.count())
-                    if self.bootstrap_lwidget.item(index).checkState()],
+                'n_estimators': list(range(
+                    1 if self.estimators_lower_bound_ledit.text() == ''
+                    else int(self.estimators_lower_bound_ledit.text()),
+                    51 if self.estimators_upper_bound_ledit.text() == ''
+                    else int(self.estimators_upper_bound_ledit.text())+1)),
+                'criterion': self.criterion_cbox.currentData(),
+                'max_depth': list(range(
+                    1 if self.max_depth_lower_bound_ledit.text() == ''
+                    else int(self.max_depth_lower_bound_ledit.text()),
+                    21 if self.max_depth_upper_bound_ledit.text() == ''
+                    else int(self.max_depth_upper_bound_ledit.text())+1)),
+                'min_samples_split': [
+                    0.0
+                    if self.min_samples_split_lower_bound_ledit.text() == ''
+                    else float(
+                        self.min_samples_split_lower_bound_ledit.text()),
+                    1.0
+                    if self.min_samples_split_upper_bound_ledit.text() == ''
+                    else float(
+                        self.min_samples_split_upper_bound_ledit.text())],
+                'min_samples_leaf': [
+                    0.0
+                    if self.min_samples_leaf_lower_bound_ledit.text() == ''
+                    else float(
+                        self.min_samples_leaf_lower_bound_ledit.text()),
+                    0.5
+                    if self.min_samples_leaf_upper_bound_ledit.text() == ''
+                    else float(
+                        self.min_samples_leaf_upper_bound_ledit.text())],
+                'min_weight_fraction_leaf': [
+                    0.0
+                    if self.min_weight_frac_leaf_lower_bound_ledit.text() == ''
+                    else float(
+                        self.min_weight_frac_leaf_lower_bound_ledit.text()),
+                    0.5
+                    if self.min_weight_frac_leaf_upper_bound_ledit.text() == ''
+                    else float(
+                        self.min_weight_frac_leaf_upper_bound_ledit.text())],
+                'max_features': list(range(
+                    1 if self.max_features_lower_bound_ledit.text() == ''
+                    else int(self.max_features_lower_bound_ledit.text()),
+                    len(self.data_columns)+1
+                    if self.max_features_upper_bound_ledit.text() == ''
+                    else int(self.max_features_upper_bound_ledit.text())+1)),
+                'bootstrap': self.bootstrap_cbox.currentData(),
                 'class_weight': [
-                    None
-                    if self.class_weight_lwidget.item(index).text() == 'None'
-                    else self.class_weight_lwidget.item(index).text()
-                    for index in range(self.class_weight_lwidget.count())
-                    if self.class_weight_lwidget.item(index).checkState()],
-                'ccp_alpha': (
-                    [0.0, 1.0] if any(bound == '' for bound in (
-                        self.ccp_alpha_lower_bound_ledit.text(),
-                        self.ccp_alpha_upper_bound_ledit.text()))
-                    else
-                    [float(self.ccp_alpha_lower_bound_ledit.text()),
-                     float(self.ccp_alpha_upper_bound_ledit.text())])},
+                    None if value == 'None' else value
+                    for value in self.class_weight_cbox.currentData()],
+                'ccp_alpha': [
+                    0.0 if self.ccp_alpha_lower_bound_ledit.text() == ''
+                    else float(self.ccp_alpha_lower_bound_ledit.text()),
+                    0.5 if self.ccp_alpha_upper_bound_ledit.text() == ''
+                    else float(self.ccp_alpha_upper_bound_ledit.text())]},
             'tune_evaluations': self.tune_eval_sbox.value(),
             'tune_score': self.tune_score_cbox.currentText(),
             'tune_splits': self.tune_splits_sbox.value(),
@@ -505,25 +582,10 @@ class RandomForestTCPWindow(
             'oof_splits': self.oof_splits_sbox.value(),
             'write_features': self.write_features_check.isChecked(),
             'display_options': {
-                'graphs': [
-                    self.graphs_lwidget.item(index).text()
-                    for index in range(self.graphs_lwidget.count())
-                    if self.graphs_lwidget.item(index).checkState()],
-                'kpis': [
-                    self.kpi_lwidget.item(index).text()
-                    for index in range(self.kpi_lwidget.count())
-                    if self.kpi_lwidget.item(index).checkState()]}}
+                'graphs': self.graphs_cbox.currentData(),
+                'kpis': self.kpi_cbox.currentData()}}
 
-        # 
-        if all(bound != '' for bound in (
-                self.max_features_lower_bound_ledit.text(),
-                self.max_features_upper_bound_ledit.text())):
-
-            model_parameters['tune_space']['max_features'] = list(range(
-                float(self.max_features_lower_bound_ledit.text()),
-                float(self.max_features_upper_bound_ledit.text())+1))
-
-        # 
+        # Configure the component dictionary
         component = {
             self.segment_cbox.currentText(): {
                 'type': self.type_cbox.currentText(),
@@ -542,50 +604,38 @@ class RandomForestTCPWindow(
                             1.0 if self.upper_bound_ledit.text() == ''
                             else float(self.upper_bound_ledit.text())],
                         'link': (
-                            None if self.link_ledit.text() == ''
-                            else self.link_ledit.text().strip('][').split(', ')
-                            ),
+                            None
+                            if len(self.segment_link_cbox.currentData()) == 0
+                            else self.segment_link_cbox.currentData()),
                         'identifier': (
                             None if self.identifier_ledit.text() == ''
                             else self.identifier_ledit.text()),
                         'display': self.disp_component_check.isChecked()}}}}
 
-        # 
-        value = component[self.segment_cbox.currentText()]
+        # Get the component and function parameters
+        cparams = component[self.segment_cbox.currentText()]
+        fparams = cparams['instance']['parameters']
 
-        # 
-        segment = self.segment_cbox.currentText()
+        # Get the required parameter values
+        ctype = cparams['type']
+        identifier = fparams['identifier']
+        embedding = f'embedding: {str(fparams["embedding"])}'
+        weight = f'weight: {str(fparams["weight"])}'
 
-        # Check if the component is an objective
-        if value['type'] == 'objective':
+        # Map the component and segment type to the icon paths
+        paths = {
+            'objective_TARGET': (
+                ":/special_icons/icons_special/target-red-svgrepo-com.svg"),
+            'objective_OAR': (
+                ":/special_icons/icons_special/target-green-svgrepo-com.svg"),
+            'constraint_TARGET': (
+                ":/special_icons/icons_special/frame-red-svgrepo-com.svg"),
+            'constraint_OAR': (
+                ":/special_icons/icons_special/frame-green-svgrepo-com.svg")}
 
-            # 
-            if self.parent.segments[segment] == 'TARGET':
-
-                # Set the icon path on the red target
-                icon_path = (":/special_icons/icons_special/"
-                             "target-red-svgrepo-com.svg")
-
-            else:
-
-                # Set the icon path on the green target
-                icon_path = (":/special_icons/icons_special/"
-                             "target-green-svgrepo-com.svg")
-
-        else:
-
-            # 
-            if self.parent.segments[segment] == 'TARGET':
-
-                # Set the icon path on the red target
-                icon_path = (":/special_icons/icons_special/"
-                             "frame-red-svgrepo-com.svg")
-
-            else:
-
-                # Set the icon path on the green target
-                icon_path = (":/special_icons/icons_special/"
-                             "frame-green-svgrepo-com.svg")
+        # Get the icon path
+        icon_path = paths[
+            f'{ctype}_{self.parent.segments[self.segment_cbox.currentText()]}']
 
         # Initialize the icon object
         icon = QIcon()
@@ -593,112 +643,47 @@ class RandomForestTCPWindow(
         # Add the pixmap to the icon
         icon.addPixmap(QPixmap(icon_path), QIcon.Normal, QIcon.Off)
 
-        # Get the identifier string
-        identifier = value['instance']['parameters']['identifier']
-
-        # Get the embedding string
-        embedding = ''.join(
-            ('embedding: ', str(value['instance']['parameters']['embedding'])))
-
-        # Get the weight string
-        weight = ''.join(
-            ('weight: ', str(value['instance']['parameters']['weight'])))
-
-        # Join the segment and function name
+        # Get the component string
         component_string = ' - '.join((substring for substring in (
-            self.segment_cbox.currentText(), value['instance']['function'],
-            identifier, embedding, weight) if substring))
+            self.segment_cbox.currentText(), 'Random Forest TCP', identifier,
+            embedding, weight) if substring))
 
-        # 
-        if self.parent.components_lwidget.currentItem():
+        # Check if the component item is edited
+        if self.edit:
 
-            #
+            # Remove the item from the plan components
             del self.parent.plan_components[self.parent.plan_ledit.text()][
                 self.parent.components_lwidget.currentItem().text()]
 
-            # Remove the item from the list widget
+            # Remove the item from the component list widget
             self.parent.components_lwidget.takeItem(
                 self.parent.components_lwidget.currentRow())
 
-            # Clear the selection in the list widget
+            # Clear the selection in the component list widget
             self.parent.components_lwidget.selectionModel().clear()
 
-            # 
+            # Disable some fields
             self.parent.set_disabled(
                 ('components_minus_tbutton', 'components_edit_tbutton'))
 
-        # Add the icon with the component string to the list
-        self.parent.components_lwidget.addItem(
-            QListWidgetItem(icon, component_string))
-
-        # 
+        # Add the component to the plan components
         self.parent.plan_components[self.parent.plan_ledit.text()][
             component_string] = component
 
-        # 
+        # Add the icon with the component string to the component list widget
+        self.parent.components_lwidget.addItem(
+            QListWidgetItem(icon, component_string))
+
+        # Clear the selection in the component list widget
+        self.parent.components_lwidget.selectionModel().clear()
+
+        # Close the window
         self.close()
-
-    def eventFilter(
-            self,
-            source,
-            event):
-        """
-        Customize the event filters.
-
-        Parameters
-        ----------
-        source : ...
-            ...
-
-        event : ...
-            ...
-
-        Returns
-        -------
-        ...
-        """
-
-        # Check if a mouse wheel event applies to QComboBox or QSpinBox
-        if (event.type() == QEvent.Wheel and
-                isinstance(source, (QComboBox, QSpinBox))):
-
-            # Filter the event
-            return True
-
-        # Else, return the event
-        return super().eventFilter(source, event)
-
-    def mousePressEvent(self, event):
-
-        super(QListWidget, self.features_lwidget).mousePressEvent(event)
-        super(QListWidget, self.criterion_lwidget).mousePressEvent(event)
-        super(QListWidget, self.bootstrap_lwidget).mousePressEvent(event)
-        super(QListWidget, self.class_weight_lwidget).mousePressEvent(event)
-        super(QListWidget, self.graphs_lwidget).mousePressEvent(event)
-        super(QListWidget, self.kpi_lwidget).mousePressEvent(event)
-
-        if not self.features_lwidget.indexAt(event.pos()).isValid():
-            self.features_lwidget.clearSelection()
-
-        if not self.criterion_lwidget.indexAt(event.pos()).isValid():
-            self.criterion_lwidget.clearSelection()
-
-        if not self.bootstrap_lwidget.indexAt(event.pos()).isValid():
-            self.bootstrap_lwidget.clearSelection()
-
-        if not self.class_weight_lwidget.indexAt(event.pos()).isValid():
-            self.class_weight_lwidget.clearSelection()
-
-        if not self.graphs_lwidget.indexAt(event.pos()).isValid():
-            self.graphs_lwidget.clearSelection()
-
-        if not self.kpi_lwidget.indexAt(event.pos()).isValid():
-            self.kpi_lwidget.clearSelection()
 
     def add_model_path(self):
         """Add the model path from a snapshot folder."""
 
-        # Get the loading folder path
+        # Set the model folder path
         self.model_path_ledit.setText(QFileDialog.getExistingDirectory(
             self, 'Select a directory for loading'))
 
@@ -708,202 +693,63 @@ class RandomForestTCPWindow(
     def add_data_path(self):
         """Add the data path."""
 
-        # Get the loading folder path
+        # Get the data file path
         path, _ = QFileDialog.getOpenFileName(
-            self, 'Select an outcome data file', QDir.rootPath(),
-            'Outcome data (*.csv)')
+            self, 'Select an outcome data file', '', 'Outcome data (*.csv)')
 
-        # 
+        # Set the data path field
         self.data_path_ledit.setText(abspath(path))
 
-        # Set the model path field cursor position to zero
+        # Set the data path field cursor position to zero
         self.data_path_ledit.setCursorPosition(0)
 
-    def remove_feature(self):
-        """Remove the selected feature from the model."""
+    def open_data_columns_window(self):
+        """Open the data columns window."""
 
-        # Remove the item from the list widget
-        self.features_lwidget.takeItem(self.features_lwidget.currentRow())
+        # Load the data columns into the window
+        self.data_columns_window.load(self.data_columns)
 
-        # Clear the selection in the list widget
-        self.features_lwidget.selectionModel().clear()
+        # Set the position of the window
+        self.data_columns_window.position()
 
-        # Disable specific fields
-        self.set_disabled(('features_minus_tbutton',))
+        # Show the window
+        self.data_columns_window.show()
 
-    def update_by_data_path(self):
-        """."""
+    def update_buttons(self):
+        """Update the conditional buttons."""
 
-        # 
-        data_path = self.data_path_ledit.text()
+        # Enable or disable the data columns button
+        self.data_columns_tbutton.setEnabled(
+            self.segment_cbox.currentText() != '' and
+            any(text != '' for text in (
+                self.model_path_ledit.text(), self.data_path_ledit.text())))
 
-        # 
-        if (data_path != '' and data_path.endswith('.csv')
-                and isfile(data_path)):
+        # Enable or disable the save button
+        self.save_pbutton.setEnabled(
+            all(text != '' for text in (
+                self.segment_cbox.currentText(),
+                self.model_label_ledit.text()))
+            and any(text != '' for text in (
+                self.model_path_ledit.text(), self.data_path_ledit.text()))
+            and len(self.data_columns) >= 2)
 
-            # 
-            self.features_load_tbutton.setEnabled(True)
+    def position(self):
+        """Set the window position."""
 
-        else:
+        # Get the window geometry
+        geometry = self.geometry()
 
-            # 
-            self.features_load_tbutton.setEnabled(False)
+        # Move the geometry center according to the parent window
+        geometry.moveCenter(self.parent.geometry().center())
 
-    def update_save_button(self):
-        """."""
-
-        # 
-        if any(text == '' for text in (
-                self.segment_cbox.currentText(), self.model_label_ledit.text()
-                )):
-
-            # 
-            self.save_component_pbutton.setEnabled(False)
-
-        elif self.model_path_ledit.text() == '' and (
-                self.data_path_ledit.text() == ''
-                or self.label_name_ledit.text() == ''):
-
-            # 
-            self.save_component_pbutton.setEnabled(False)
-
-        else:
-
-            # 
-            self.save_component_pbutton.setEnabled(True)
-
-    def open_input_dialog(self):
-        """Open an input dialog."""
-
-        self.setStyleSheet(
-            "QInputDialog {background-color: rgb(238, 238, 236);}")
-
-        # 
-        text, accepted = QInputDialog.getText(
-            self, 'pyanno4rt', 'Enter the feature name:')
-
-        # 
-        if (accepted and text and text not in [
-                self.features_lwidget.item(index)
-                for index in range(self.features_lwidget.count())]):
-
-            # 
-            item = QListWidgetItem(text)
-            item.setCheckState(2)
-            self.features_lwidget.addItem(item)
-
-    def open_question_dialog(self):
-        """Open a question dialog."""
-
-        # Initialize the dictionary with the messages and function calls
-        sources = {
-            'features_load_tbutton': (
-                "Loading the features from the data path will override the "
-                "current feature set. Are you sure you want to proceed?",
-                self.load_features_from_data)
-            }
-
-        # Get the message and function call by the attribute argument
-        message, call = sources[self.sender().objectName()]
-
-        # Check if the question dialog is confirmed
-        if (QMessageBox.question(self, 'pyanno4rt', message)
-                == QMessageBox.Yes):
-
-            # Call the function
-            call()
-
-    def load_features_from_data(self):
-        """."""
-
-        # 
-        feature_names = list(read_csv(self.data_path_ledit.text()).columns)
-
-        # 
-        self.features_lwidget.clear()
-
-        # 
-        self.features_lwidget.addItems(feature_names)
-        for index in range(self.features_lwidget.count()):
-            self.features_lwidget.item(index).setCheckState(2)
-
-        # 
-        self.filter_mode_cbox.setCurrentText('retain')
-
-    def set_enabled(
-            self,
-            fieldnames):
-        """
-        Enable multiple fields by their names.
-
-        Parameters
-        ----------
-        fieldnames : ...
-            ...
-        """
-
-        # Loop over the passed fieldnames
-        for name in fieldnames:
-
-            # Get the attribute and set it enabled
-            getattr(self, name).setEnabled(True)
-
-    def set_disabled(
-            self,
-            fieldnames):
-        """
-        Disable multiple fields by their names.
-
-        Parameters
-        ----------
-        fieldnames : ...
-            ...
-        """
-
-        # Loop over the passed fieldnames
-        for name in fieldnames:
-
-            # Get the attribute and set it disabled
-            getattr(self, name).setEnabled(False)
-
-    def set_zero_line_cursor(
-            self,
-            fieldnames):
-        """
-        Set the line edit cursor positions to zero.
-
-        Parameters
-        ----------
-        fieldnames : ...
-            ...
-        """
-
-        # Loop over the passed fieldnames
-        for name in fieldnames:
-
-            # Get the attribute and set the cursor position to zero
-            getattr(self, name).setCursorPosition(0)
-
-    def set_styles(
-            self,
-            key_value_pairs):
-        """
-        Set the element stylesheets from key-value pairs.
-
-        Parameters
-        ----------
-        key_value_pairs : ...
-            ...
-        """
-
-        # Loop over the dictionary items
-        for key, value in key_value_pairs.items():
-
-            # Get the attribute and set the stylesheet
-            getattr(self, key).setStyleSheet(value)
+        # Set the window geometry
+        self.setGeometry(geometry)
 
     def close(self):
-        """."""
+        """Close the random forest TCP window."""
 
-        # 
+        # Reset the edit boolean
+        self.edit = False
+
+        # Hide the window
         self.hide()

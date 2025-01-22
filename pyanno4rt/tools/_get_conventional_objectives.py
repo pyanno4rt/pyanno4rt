@@ -27,4 +27,4 @@ def get_conventional_objectives(segmentation):
     return tuple(objective for objective in flatten(
         segmentation[segment]['objective'] for segment in segmentation
         if segmentation[segment]['objective'])
-        if not objective.RETURNS_OUTCOME and not objective.DEPENDS_ON_DATA)
+        if objective.get_class() == 'ConventionalComponent')

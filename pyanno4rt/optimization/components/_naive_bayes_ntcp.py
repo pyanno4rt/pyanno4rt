@@ -13,12 +13,12 @@ from scipy.special import logsumexp
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import NaiveBayesModel
-from pyanno4rt.optimization.components import MachineLearningComponentClass
+from pyanno4rt.optimization.components import MachineLearningComponent
 
 # %% Class definition
 
 
-class NaiveBayesNTCP(MachineLearningComponentClass):
+class NaiveBayesNTCP(MachineLearningComponent):
     """
     Naive Bayes NTCP component class.
 

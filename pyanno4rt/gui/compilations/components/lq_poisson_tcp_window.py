@@ -339,6 +339,3 @@ class Ui_lq_poisson_tcp_window(object):
         self.beta_label.setText(_translate("lq_poisson_tcp_window", "Beta"))
         self.alpha_label.setText(_translate("lq_poisson_tcp_window", "Alpha"))
         self.vol_eff_label.setText(_translate("lq_poisson_tcp_window", "Volume effect"))
-
-
-import resources_rc

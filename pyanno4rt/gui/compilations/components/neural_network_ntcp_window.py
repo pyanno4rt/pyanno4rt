@@ -29,7 +29,7 @@ class Ui_neural_network_ntcp_window(object):
         self.scroll_area.setStyleSheet("border-color: transparent;")
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, 0, 690, 1669))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, -1240, 690, 1669))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 90, 111, 31))
@@ -430,7 +430,6 @@ class Ui_neural_network_ntcp_window(object):
         self.write_features_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.write_features_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
-        self.write_features_check.setChecked(True)
         self.write_features_check.setObjectName("write_features_check")
         self.graphs_label = QtWidgets.QLabel(self.scroll_contents)
         self.graphs_label.setGeometry(QtCore.QRect(0, 1370, 261, 25))
@@ -453,14 +452,12 @@ class Ui_neural_network_ntcp_window(object):
         self.inspect_model_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.inspect_model_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
-        self.inspect_model_check.setChecked(True)
         self.inspect_model_check.setObjectName("inspect_model_check")
         self.evaluate_model_check = QtWidgets.QCheckBox(self.scroll_contents)
         self.evaluate_model_check.setGeometry(QtCore.QRect(300, 1290, 141, 23))
         self.evaluate_model_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.evaluate_model_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
-        self.evaluate_model_check.setChecked(True)
         self.evaluate_model_check.setObjectName("evaluate_model_check")
         self.segment_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.segment_cbox.setGeometry(QtCore.QRect(0, 90, 426, 31))
@@ -773,6 +770,3 @@ class Ui_neural_network_ntcp_window(object):
         self.max_hidden_layers_label.setText(_translate("neural_network_ntcp_window", "Maximum hidden layers"))
         self.input_neurons_ledit.setPlaceholderText(_translate("neural_network_ntcp_window", "[2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]]"))
         self.batch_size_ledit.setPlaceholderText(_translate("neural_network_ntcp_window", "[4, 8, 16, 32]"))
-
-
-import resources_rc

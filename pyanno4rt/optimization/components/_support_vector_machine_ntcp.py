@@ -11,13 +11,13 @@ from pyanno4rt.learning_model.frequentist.extensions import (
     linear_decision_function, poly_decision_function, rbf_decision_function,
     sigmoid_decision_function, linear_decision_gradient,
     poly_decision_gradient, rbf_decision_gradient, sigmoid_decision_gradient)
-from pyanno4rt.optimization.components import MachineLearningComponentClass
+from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import inverse_sigmoid
 
 # %% Class definition
 
 
-class SupportVectorMachineNTCP(MachineLearningComponentClass):
+class SupportVectorMachineNTCP(MachineLearningComponent):
     """
     Support vector machine NTCP component class.
 

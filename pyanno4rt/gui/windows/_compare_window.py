@@ -6,8 +6,7 @@
 
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
 from numpy import array, ceil, linspace, sort, unravel_index
-from PyQt5.QtCore import QEvent
-from PyQt5.QtWidgets import QComboBox, QMainWindow, QSpinBox
+from PyQt5.QtWidgets import QMainWindow
 from pyqtgraph import mkPen
 
 # %% Internal package import
@@ -78,44 +77,13 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         for box in ('plane_cbox', 'opacity_sbox'):
 
             # Install the custom event filter
-            getattr(self, box).installEventFilter(self)
+            getattr(self, box).installEventFilter(parent)
 
         # Set the view box links
         self.set_links()
 
         # Connect the fields with the event signals
         self.connect_signals()
-
-    def eventFilter(
-            self,
-            source,
-            event):
-        """
-        Filter the events (overwrites the default event filter).
-
-        Parameters
-        ----------
-        source : object of class :class:`~PyQt5.QtWidgets`
-            The object representing the event source.
-
-        event : object of class :class:`~PyQt5.QtCore.QEvent`
-            The object representing the event.
-
-        Returns
-        -------
-        bool or object of class :class:`~PyQt5.QtCore.QEvent`
-            Boolean value or event object depending on the filter.
-        """
-
-        # Check if a mouse wheel event applies to QComboBox or QSpinBox
-        if (event.type() == QEvent.Wheel and
-                isinstance(source, (QComboBox, QSpinBox))):
-
-            # Filter the event by returning True
-            return True
-
-        # Else, return the unfiltered event
-        return super().eventFilter(source, event)
 
     def set_styles(
             self,
@@ -491,18 +459,15 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         x_step = min(
             (0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100),
             key=lambda x: abs(ceil(max(
-                max(
-                    self.baseline.datahub.dose_histogram['evaluation_points']),
-                max(self.reference.datahub.dose_histogram['evaluation_points'])
+                self.baseline.datahub.dose_histogram['evaluation_points'],
+                self.reference.datahub.dose_histogram['evaluation_points']
                 )/x)-20))
 
         # Set x- and y-ticks
         axis.set_xticks(tuple(i*x_step for i in range(
             int(ceil(max(
-                max(
-                    self.baseline.datahub.dose_histogram['evaluation_points']),
-                max(
-                    self.reference.datahub.dose_histogram['evaluation_points'])
+                self.baseline.datahub.dose_histogram['evaluation_points'],
+                self.reference.datahub.dose_histogram['evaluation_points']
                 ))/x_step)+1)))
         axis.set_yticks(tuple(i*5 for i in range(21)))
 

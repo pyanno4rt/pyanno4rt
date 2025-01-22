@@ -14,7 +14,7 @@ from pyanno4rt.tools import compare_dictionaries
 # %% Class definition
 
 
-class MachineLearningComponentClass(metaclass=ABCMeta):
+class MachineLearningComponent(metaclass=ABCMeta):
     """
     Machine learning component template class.
 
@@ -60,8 +60,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             - 'Whitening' \
                 :class:`~pyanno4rt.learning_model.preprocessing.transformers._whitening.Whitening`
 
-        - architecture : {'vanilla-input-convex', 'vanilla'}, \
-            default='vanilla-input-convex'
+        - architecture : {'vanilla-input-convex', 'vanilla'}, default='vanilla'
             Type of architecture for the neural network model.
 
         - max_hidden_layers : int, default=2
@@ -92,7 +91,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             Number of splits for the stratified cross-validation within the \
             out-of-folds evaluation step.
 
-        - write_features : bool, default=True
+        - write_features : bool, default=False
             Indicator for writing the iteratively calculated feature vectors \
             into a feature history.
 
@@ -177,12 +176,6 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
 
     adjusted_parameters : bool
         Indicator for the adjustment of the parameters due to fractionation.
-
-    RETURNS_OUTCOME : bool
-        Indicator for the outcome focus of the component.
-
-    DEPENDS_ON_MODEL : bool
-        Indicator for the model dependency of the component.
     """
 
     def __init__(
@@ -234,8 +227,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             'data_columns': model_parameters.get('data_columns'),
             'preprocessing_steps': model_parameters.get(
                 'preprocessing_steps', ['Identity']),
-            'architecture': model_parameters.get(
-                'architecture', 'vanilla-input-convex'),
+            'architecture': model_parameters.get('architecture', 'vanilla'),
             'max_hidden_layers': model_parameters.get('max_hidden_layers', 2),
             'tune_space': model_parameters.get('tune_space', {}),
             'tune_evaluations': model_parameters.get('tune_evaluations', 50),
@@ -244,7 +236,7 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
             'inspect_model': model_parameters.get('inspect_model', False),
             'evaluate_model': model_parameters.get('evaluate_model', False),
             'oof_splits': model_parameters.get('oof_splits', 5),
-            'write_features': model_parameters.get('write_features', True),
+            'write_features': model_parameters.get('write_features', False),
             'display_options': model_parameters.get(
                 'display_options', {
                     'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
@@ -269,10 +261,6 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
         # Initialize the adjustment indicator
         self.adjusted_parameters = False
 
-        # Set the component flags
-        self.RETURNS_OUTCOME = True
-        self.DEPENDS_ON_DATA = True
-
     def __eq__(self, other):
         """Compare an instance with another object."""
 
@@ -281,6 +269,18 @@ class MachineLearningComponentClass(metaclass=ABCMeta):
                 and compare_dictionaries(
                     self.__dict__.get('model_parameters', {}),
                     other.__dict__.get('model_parameters', {})))
+
+    def get_class(self):
+        """
+        Get the name of the component class.
+
+        Returns
+        -------
+        str
+            Name of the component class.
+        """
+
+        return 'MachineLearningComponent'
 
     def get_parameter_value(self):
         """

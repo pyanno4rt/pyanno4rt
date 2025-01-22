@@ -374,6 +374,3 @@ class Ui_lkb_ntcp_window(object):
         self.slope_label.setText(_translate("lkb_ntcp_window", "Slope"))
         self.td50_label.setText(_translate("lkb_ntcp_window", "TD50 [Gy]"))
         self.vol_eff_label.setText(_translate("lkb_ntcp_window", "Volume effect"))
-
-
-import resources_rc

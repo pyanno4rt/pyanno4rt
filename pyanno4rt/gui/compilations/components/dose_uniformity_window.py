@@ -288,6 +288,3 @@ class Ui_dose_uniformity_window(object):
         self.weight_ledit.setPlaceholderText(_translate("dose_uniformity_window", "1.0"))
         self.disp_component_check.setText(_translate("dose_uniformity_window", "Display component"))
         self.lower_bound_ledit.setPlaceholderText(_translate("dose_uniformity_window", "0.0"))
-
-
-import resources_rc

@@ -4,36 +4,38 @@
 
 # %% External package import
 
-from PyQt5.QtCore import QEvent
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import QComboBox, QListWidgetItem, QMainWindow, QSpinBox
+from PyQt5.QtWidgets import QListWidgetItem, QMainWindow
 
 # %% Internal package import
 
+from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.components.squared_deviation_window import (
     Ui_squared_deviation_window)
-from pyanno4rt.gui.styles._custom_styles import ledit, pbutton_composer
+from pyanno4rt.gui.custom_widgets import CheckableComboBox
+from pyanno4rt.gui.styles._custom_styles import (
+    cbox, ledit, pbutton_composer, sbox)
 
 # %% Class definition
 
 
 class SquaredDeviationWindow(QMainWindow, Ui_squared_deviation_window):
     """
-    Squared deviation component window for the application.
+    Squared deviation component window for the GUI.
 
-    This class creates a squared deviation component window for the graphical \
-    user interface, including input fields to parametrize the component.
+    This class sets up the squared deviation component window for the \
+    graphical user interface, including input fields for parameterization.
+
+    Parameters
+    ----------
+    parent : object of class \
+        :class:`~pyanno4rt.gui.windows._main_window.MainWindow`, default=None
+        The object representing the parent window for embedding.
     """
 
     def __init__(
             self,
             parent=None):
-
-        # Get the application from the argument
-        self.parent = parent
-
-        # Initialize the edit boolean
-        self.edit = False
 
         # Run the constructor from the superclass
         super().__init__()
@@ -41,49 +43,162 @@ class SquaredDeviationWindow(QMainWindow, Ui_squared_deviation_window):
         # Build the UI main window
         self.setupUi(self)
 
-        # Loop over the QComboBox and QSpinBox elements
-        for box in ('type_cbox', 'embedding_cbox', 'rank_sbox'):
+        # Get the parent window
+        self.parent = parent
 
-            # Install the custom event filters
-            getattr(self, box).installEventFilter(self)
+        # Initialize the edit boolean
+        self.edit = False
 
-        # Set the line edit cursor positions to zero
-        self.set_zero_line_cursor(('link_ledit', 'identifier_ledit'))
+        # Initialize the checkable segment link combo box
+        self.segment_link_cbox = CheckableComboBox()
 
-        # 
-        self.save_component_pbutton.setEnabled(False)
+        # Set a fixed size
+        self.segment_link_cbox.setFixedSize(491, 31)
 
-        # 
-        self.set_styles({'link_ledit': ledit,
-                         'identifier_ledit': ledit,
-                         'save_component_pbutton': pbutton_composer,
-                         'close_component_pbutton': pbutton_composer})
+        # Add the items
+        self.segment_link_cbox.addItems(
+            list(self.parent.segments.keys()), False)
 
-        # 
+        # Add the combo box to the layout
+        self.segment_link_layout.addWidget(self.segment_link_cbox)
+
+        # Add the segment items to the segment combo box
         self.segment_cbox.addItems(list(self.parent.segments.keys()))
         self.segment_cbox.setCurrentIndex(-1)
 
-        # 
-        self.segment_cbox.currentTextChanged.connect(self.update_save_button)
-        self.target_dose_ledit.textChanged.connect(self.update_save_button)
+        # Set the stylesheets
+        self.set_styles({
+            'segment_cbox': cbox,
+            'type_cbox': cbox,
+            'embedding_cbox': cbox,
+            'target_dose_ledit': ledit,
+            'segment_link_cbox': cbox,
+            'weight_ledit': ledit,
+            'rank_sbox': sbox,
+            'lower_bound_ledit': ledit,
+            'upper_bound_ledit': ledit,
+            'identifier_ledit': ledit,
+            'save_pbutton': pbutton_composer,
+            'close_pbutton': pbutton_composer})
 
-        # 
-        self.save_component_pbutton.clicked.connect(self.save)
+        # Loop over the QComboBox and QSpinBox elements
+        for box in (
+                'segment_cbox', 'type_cbox', 'embedding_cbox',
+                'segment_link_cbox', 'rank_sbox'):
 
-        # 
-        self.close_component_pbutton.clicked.connect(self.close)
+            # Install the custom event filters
+            getattr(self, box).installEventFilter(parent)
 
-    def position(self):
-        """."""
+        # Set the line edit cursor positions to zero
+        self.set_zero_line_cursor((
+            'target_dose_ledit', 'weight_ledit', 'lower_bound_ledit',
+            'upper_bound_ledit', 'identifier_ledit'))
 
-        # Get the window geometry
-        geometry = self.geometry()
+        # Disable the save button
+        self.save_pbutton.setEnabled(False)
 
-        # Move the geometry center towards the parent
-        geometry.moveCenter(self.parent.geometry().center())
+        # Connect the event signals
+        self.connect_signals()
 
-        # Set the shifted geometry
-        self.setGeometry(geometry)
+    def set_styles(
+            self,
+            key_value_pairs):
+        """
+        Set the element stylesheets from key-value pairs.
+
+        Parameters
+        ----------
+        key_value_pairs : dict
+            Dictionary with the field names (keys) and style sheets (values).
+        """
+
+        # Loop over the dictionary items
+        for key, value in key_value_pairs.items():
+
+            # Get the attribute and set the stylesheet
+            getattr(self, key).setStyleSheet(value)
+
+    def set_zero_line_cursor(
+            self,
+            field_names):
+        """
+        Set the line edit cursor positions to zero.
+
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
+
+        # Loop over the passed field names
+        for name in field_names:
+
+            # Get the attribute and set the cursor position to zero
+            getattr(self, name).setCursorPosition(0)
+
+    def set_enabled(
+            self,
+            field_names):
+        """
+        Enable multiple fields by their names.
+
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
+
+        # Loop over the passed field names
+        for name in field_names:
+
+            # Get the attribute and enable the field
+            getattr(self, name).setEnabled(True)
+
+    def set_disabled(
+            self,
+            field_names):
+        """
+        Disable multiple fields by their names.
+
+        Parameters
+        ----------
+        field_names : tuple
+            Tuple with the field names.
+        """
+
+        # Loop over the passed field names
+        for name in field_names:
+
+            # Get the attribute and disable the field
+            getattr(self, name).setEnabled(False)
+
+    def connect_signals(self):
+        """Connect the fields with the event signals."""
+
+        # Loop over the field names with 'clicked' events
+        for key, value in {
+                'save_pbutton': self.save,
+                'close_pbutton': self.close
+                }.items():
+
+            # Connect the 'clicked' event
+            getattr(self, key).clicked.connect(value)
+
+        # Loop over the field names with 'currentTextChanged' events
+        for key, value in {
+                'segment_cbox': self.update_save_button
+                }.items():
+
+            # Connect the 'currentTextChanged' event
+            getattr(self, key).currentTextChanged.connect(value)
+
+        # Loop over the field names with 'textChanged' events
+        for key, value in {
+                'target_dose_ledit': self.update_save_button,
+                }.items():
+
+            # Connect the 'textChanged' event
+            getattr(self, key).textChanged.connect(value)
 
     def load(
             self,
@@ -104,61 +219,88 @@ class SquaredDeviationWindow(QMainWindow, Ui_squared_deviation_window):
         # Get the edit attribute from the argument
         self.edit = edit
 
+        # Get the segment associated with the component
+        segment = next(iter(component))
+
         # Get the component parameters
-        key = list(component.keys())[0]
-        ctype = component[key]['type']
-        target_dose = component[key]['instance']['parameters']['target_dose']
-        embedding = component[key]['instance']['parameters'].get(
+        ctype = component[segment]['type']
+        target_dose = component[segment]['instance']['parameters'][
+            'target_dose']
+        embedding = component[segment]['instance']['parameters'].get(
             'embedding', 'active')
-        weight = component[key]['instance']['parameters'].get('weight', 1)
-        rank = component[key]['instance']['parameters'].get('rank', 1)
-        lower, upper = component[key]['instance']['parameters'].get(
+        weight = component[segment]['instance']['parameters'].get(
+            'weight', 1.0)
+        rank = component[segment]['instance']['parameters'].get('rank', 1)
+        lower, upper = component[segment]['instance']['parameters'].get(
             'bounds', (None, None))
-        link = component[key]['instance']['parameters'].get('link')
-        identifier = component[key]['instance']['parameters'].get('identifier')
-        display = component[key]['instance']['parameters'].get('display', True)
+        link = component[segment]['instance']['parameters'].get('link')
+        identifier = component[segment]['instance']['parameters'].get(
+            'identifier')
+        display = component[segment]['instance']['parameters'].get(
+            'display', True)
 
-        # 
-        self.segment_cbox.setCurrentText(key)
+        # Loop over the fields with 'setText' method
+        for key, value in {
+                'target_dose_ledit': str(float(target_dose)),
+                'weight_ledit': '' if weight == 1.0 else str(float(weight)),
+                'lower_bound_ledit': '' if not lower else str(float(lower)),
+                'upper_bound_ledit': '' if not upper else str(float(upper)),
+                'identifier_ledit': '' if not identifier else identifier
+                }.items():
 
-        # 
-        self.type_cbox.setCurrentText(ctype)
+            # Set the text
+            getattr(self, key).setText(value)
 
-        # 
-        self.target_dose_ledit.setText(str(float(target_dose)))
+        # Loop over the fields with 'setCurrentText' method
+        for key, value in {
+                'segment_cbox': segment,
+                'type_cbox': ctype,
+                'embedding_cbox': embedding,
+                }.items():
 
-        # 
-        self.embedding_cbox.setCurrentText(embedding)
+            # Set the text
+            getattr(self, key).setCurrentText(value)
 
-        # 
-        self.weight_ledit.setText('' if weight == 1 else str(float(weight)))
+        # Loop over the fields with 'setValue' method
+        for key, value in {
+                'rank_sbox': rank,
+                }.items():
 
-        # 
-        self.rank_sbox.setValue(rank)
+            # Set the value
+            getattr(self, key).setValue(value)
 
-        # 
-        self.lower_bound_ledit.setText('' if not lower else str(float(lower)))
+        # Loop over the fields with 'setCheckState' method
+        for key, value in {
+                'disp_component_check': 2*display
+                }.items():
 
-        # 
-        self.upper_bound_ledit.setText('' if not upper else str(float(upper)))
+            # Set the check state
+            getattr(self, key).setCheckState(value)
 
-        # 
-        self.link_ledit.setText(
-            '' if not link else str(link).replace("\'", ''))
+        # Loop over the checkable combo boxes with their selections
+        for box, selection in {
+                'segment_link_cbox': [] if not link else link}.items():
 
-        # 
-        self.identifier_ledit.setText('' if not identifier else identifier)
+            # Get the combo box
+            combo_box = getattr(self, box)
 
-        # 
-        self.disp_component_check.setCheckState(2 if display else 0)
+            # Loop over the combo box items
+            for item in (
+                    combo_box.model().item(index)
+                    for index in range(combo_box.count())):
+
+                # Set the item text to checked or unchecked
+                item.setCheckState(2*(item.text() in selection))
 
         # Set the line edit cursor positions to zero
-        self.set_zero_line_cursor(('link_ledit', 'identifier_ledit'))
+        self.set_zero_line_cursor((
+            'target_dose_ledit', 'weight_ledit', 'lower_bound_ledit',
+            'upper_bound_ledit', 'identifier_ledit'))
 
     def save(self):
-        """."""
+        """Save the fields to a component."""
 
-        # 
+        # Configure the component dictionary
         component = {
             self.segment_cbox.currentText(): {
                 'type': self.type_cbox.currentText(),
@@ -176,50 +318,38 @@ class SquaredDeviationWindow(QMainWindow, Ui_squared_deviation_window):
                             for bound in (self.lower_bound_ledit.text(),
                                           self.upper_bound_ledit.text())],
                         'link': (
-                            None if self.link_ledit.text() == ''
-                            else self.link_ledit.text().strip('][').split(', ')
-                            ),
+                            None
+                            if len(self.segment_link_cbox.currentData()) == 0
+                            else self.segment_link_cbox.currentData()),
                         'identifier': (
                             None if self.identifier_ledit.text() == ''
                             else self.identifier_ledit.text()),
                         'display': self.disp_component_check.isChecked()}}}}
 
-        # 
-        value = component[self.segment_cbox.currentText()]
+        # Get the component and function parameters
+        cparams = component[self.segment_cbox.currentText()]
+        fparams = cparams['instance']['parameters']
 
-        # 
-        segment = self.segment_cbox.currentText()
+        # Get the required parameter values
+        ctype = cparams['type']
+        identifier = fparams['identifier']
+        embedding = f'embedding: {str(fparams["embedding"])}'
+        weight = f'weight: {str(fparams["weight"])}'
 
-        # Check if the component is an objective
-        if value['type'] == 'objective':
+        # Map the component and segment type to the icon paths
+        paths = {
+            'objective_TARGET': (
+                ":/special_icons/icons_special/target-red-svgrepo-com.svg"),
+            'objective_OAR': (
+                ":/special_icons/icons_special/target-green-svgrepo-com.svg"),
+            'constraint_TARGET': (
+                ":/special_icons/icons_special/frame-red-svgrepo-com.svg"),
+            'constraint_OAR': (
+                ":/special_icons/icons_special/frame-green-svgrepo-com.svg")}
 
-            # 
-            if self.parent.segments[segment] == 'TARGET':
-
-                # Set the icon path on the red target
-                icon_path = (":/special_icons/icons_special/"
-                             "target-red-svgrepo-com.svg")
-
-            else:
-
-                # Set the icon path on the green target
-                icon_path = (":/special_icons/icons_special/"
-                             "target-green-svgrepo-com.svg")
-
-        else:
-
-            # 
-            if self.parent.segments[segment] == 'TARGET':
-
-                # Set the icon path on the red target
-                icon_path = (":/special_icons/icons_special/"
-                             "frame-red-svgrepo-com.svg")
-
-            else:
-
-                # Set the icon path on the green target
-                icon_path = (":/special_icons/icons_special/"
-                             "frame-green-svgrepo-com.svg")
+        # Get the icon path
+        icon_path = paths[
+            f'{ctype}_{self.parent.segments[self.segment_cbox.currentText()]}']
 
         # Initialize the icon object
         icon = QIcon()
@@ -227,174 +357,69 @@ class SquaredDeviationWindow(QMainWindow, Ui_squared_deviation_window):
         # Add the pixmap to the icon
         icon.addPixmap(QPixmap(icon_path), QIcon.Normal, QIcon.Off)
 
-        # Get the identifier string
-        identifier = value['instance']['parameters']['identifier']
-
-        # Get the embedding string
-        embedding = ''.join(
-            ('embedding: ', str(value['instance']['parameters']['embedding'])))
-
-        # Get the weight string
-        weight = ''.join(
-            ('weight: ', str(value['instance']['parameters']['weight'])))
-
-        # Join the segment and function name
+        # Get the component string
         component_string = ' - '.join((substring for substring in (
-            self.segment_cbox.currentText(), value['instance']['function'],
-            identifier, embedding, weight) if substring))
+            self.segment_cbox.currentText(), 'Squared Deviation', identifier,
+            embedding, weight) if substring))
 
-        # 
+        # Check if the component item is edited
         if self.edit:
 
-            #
+            # Remove the item from the plan components
             del self.parent.plan_components[self.parent.plan_ledit.text()][
                 self.parent.components_lwidget.currentItem().text()]
 
-            # Remove the item from the list widget
+            # Remove the item from the component list widget
             self.parent.components_lwidget.takeItem(
                 self.parent.components_lwidget.currentRow())
 
-            # Clear the selection in the list widget
+            # Clear the selection in the component list widget
             self.parent.components_lwidget.selectionModel().clear()
 
-            # 
+            # Disable some fields
             self.parent.set_disabled(
                 ('components_minus_tbutton', 'components_edit_tbutton'))
 
-        # Add the icon with the component string to the list
-        self.parent.components_lwidget.addItem(
-            QListWidgetItem(icon, component_string))
-
-        # 
+        # Add the component to the plan components
         self.parent.plan_components[self.parent.plan_ledit.text()][
             component_string] = component
 
-        # 
+        # Add the icon with the component string to the component list widget
+        self.parent.components_lwidget.addItem(
+            QListWidgetItem(icon, component_string))
+
+        # Clear the selection in the component list widget
+        self.parent.components_lwidget.selectionModel().clear()
+
+        # Close the window
         self.close()
 
-    def eventFilter(
-            self,
-            source,
-            event):
-        """
-        Customize the event filters.
-
-        Parameters
-        ----------
-        source : ...
-            ...
-
-        event : ...
-            ...
-
-        Returns
-        -------
-        ...
-        """
-
-        # Check if a mouse wheel event applies to QComboBox or QSpinBox
-        if (event.type() == QEvent.Wheel and
-                isinstance(source, (QComboBox, QSpinBox))):
-
-            # Filter the event
-            return True
-
-        # Else, return the even
-        return super().eventFilter(source, event)
-
     def update_save_button(self):
-        """."""
+        """Update the save button."""
 
-        # 
-        if any(text == '' for text in (
-                self.segment_cbox.currentText(),
-                self.target_dose_ledit.text())):
+        # Enable or disable the save button
+        self.save_pbutton.setEnabled(
+            all(text != '' for text in (
+                    self.segment_cbox.currentText(),
+                    self.target_dose_ledit.text())))
 
-            # 
-            self.save_component_pbutton.setEnabled(False)
+    def position(self):
+        """Set the window position."""
 
-        else:
+        # Get the window geometry
+        geometry = self.geometry()
 
-            # 
-            self.save_component_pbutton.setEnabled(True)
+        # Move the geometry center according to the parent window
+        geometry.moveCenter(self.parent.geometry().center())
 
-    def set_enabled(
-            self,
-            fieldnames):
-        """
-        Enable multiple fields by their names.
-
-        Parameters
-        ----------
-        fieldnames : ...
-            ...
-        """
-
-        # Loop over the passed fieldnames
-        for name in fieldnames:
-
-            # Get the attribute and set it enabled
-            getattr(self, name).setEnabled(True)
-
-    def set_disabled(
-            self,
-            fieldnames):
-        """
-        Disable multiple fields by their names.
-
-        Parameters
-        ----------
-        fieldnames : ...
-            ...
-        """
-
-        # Loop over the passed fieldnames
-        for name in fieldnames:
-
-            # Get the attribute and set it disabled
-            getattr(self, name).setEnabled(False)
-
-    def set_zero_line_cursor(
-            self,
-            fieldnames):
-        """
-        Set the line edit cursor positions to zero.
-
-        Parameters
-        ----------
-        fieldnames : ...
-            ...
-        """
-
-        # Loop over the passed fieldnames
-        for name in fieldnames:
-
-            # Get the attribute and set the cursor position to zero
-            getattr(self, name).setCursorPosition(0)
-
-    def set_styles(
-            self,
-            key_value_pairs):
-        """
-        Set the element stylesheets from key-value pairs.
-
-        Parameters
-        ----------
-        key_value_pairs : ...
-            ...
-        """
-
-        # Loop over the dictionary items
-        for key, value in key_value_pairs.items():
-
-            # Get the attribute and set the stylesheet
-            getattr(self, key).setStyleSheet(value)
+        # Set the window geometry
+        self.setGeometry(geometry)
 
     def close(self):
-        """."""
+        """Close the squared deviation window."""
 
         # Reset the edit boolean
         self.edit = False
 
-        # 
+        # Hide the window
         self.hide()

@@ -7,12 +7,12 @@
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import DecisionTreeModel
-from pyanno4rt.optimization.components import MachineLearningComponentClass
+from pyanno4rt.optimization.components import MachineLearningComponent
 
 # %% Class definition
 
 
-class DecisionTreeNTCP(MachineLearningComponentClass):
+class DecisionTreeNTCP(MachineLearningComponent):
     """
     Decision tree NTCP component class.
 

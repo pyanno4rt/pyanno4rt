@@ -10,12 +10,12 @@ from numpy import clip, concatenate, zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components import ConventionalComponentClass
+from pyanno4rt.optimization.components import ConventionalComponent
 
 # %% Class definition
 
 
-class SquaredUnderdosing(ConventionalComponentClass):
+class SquaredUnderdosing(ConventionalComponent):
     """
     Squared underdosing component class.
 

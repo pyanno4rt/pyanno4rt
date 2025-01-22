@@ -305,6 +305,3 @@ class Ui_squared_underdosing_window(object):
         self.weight_ledit.setPlaceholderText(_translate("squared_underdosing_window", "1.0"))
         self.disp_component_check.setText(_translate("squared_underdosing_window", "Display component"))
         self.lower_bound_ledit.setPlaceholderText(_translate("squared_underdosing_window", "0.0"))
-
-
-import resources_rc

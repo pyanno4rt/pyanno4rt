@@ -55,7 +55,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>0</y>
+       <y>-1033</y>
        <width>690</width>
        <height>1589</height>
       </rect>
@@ -1180,9 +1180,6 @@ color: rgb(0, 0, 0);</string>
       <property name="text">
        <string>Write features</string>
       </property>
-      <property name="checked">
-       <bool>true</bool>
-      </property>
      </widget>
      <widget class="QLabel" name="graphs_label">
       <property name="geometry">
@@ -1247,9 +1244,6 @@ color: rgb(0, 0, 0);</string>
       <property name="text">
        <string>Inspect model</string>
       </property>
-      <property name="checked">
-       <bool>true</bool>
-      </property>
      </widget>
      <widget class="QCheckBox" name="evaluate_model_check">
       <property name="geometry">
@@ -1269,9 +1263,6 @@ color: rgb(0, 0, 0);</string>
       </property>
       <property name="text">
        <string>Evaluate model</string>
-      </property>
-      <property name="checked">
-       <bool>true</bool>
       </property>
      </widget>
      <widget class="QComboBox" name="segment_cbox">

@@ -1,4 +1,4 @@
-"""Radiobiology objective retrieval."""
+"""Radiobiological objective retrieval."""
 
 # Author: Tim Ortkamp
 
@@ -9,9 +9,9 @@ from pyanno4rt.tools import flatten
 # %% Function definition
 
 
-def get_radiobiology_objectives(segmentation):
+def get_radiobiological_objectives(segmentation):
     """
-    Get a tuple with the set radiobiology model-based objective functions.
+    Get a tuple with the set radiobiological model-based objective functions.
 
     Parameters
     ----------
@@ -21,11 +21,11 @@ def get_radiobiology_objectives(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with the set radiobiology model-based objective \
+        Flattened tuple with the set radiobiological model-based objective \
         functions.
     """
 
     return tuple(objective for objective in flatten(
         segmentation[segment]['objective'] for segment in segmentation
         if segmentation[segment]['objective'])
-        if objective.RETURNS_OUTCOME and not objective.DEPENDS_ON_DATA)
+        if objective.get_class() == 'RadiobiologicalComponent')

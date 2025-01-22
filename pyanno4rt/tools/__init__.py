@@ -24,8 +24,8 @@ from ._get_conventional_constraints import get_conventional_constraints
 from ._get_machine_learning_constraints import get_machine_learning_constraints
 from ._get_machine_learning_objectives import get_machine_learning_objectives
 from ._get_objective_segments import get_objective_segments
-from ._get_radiobiology_constraints import get_radiobiology_constraints
-from ._get_radiobiology_objectives import get_radiobiology_objectives
+from ._get_radiobiological_constraints import get_radiobiological_constraints
+from ._get_radiobiological_objectives import get_radiobiological_objectives
 from ._identity import identity
 from ._inverse_sigmoid import inverse_sigmoid
 from ._load_list_from_file import load_list_from_file
@@ -56,8 +56,8 @@ __all__ = ['add_square_brackets',
            'get_machine_learning_constraints',
            'get_machine_learning_objectives',
            'get_objective_segments',
-           'get_radiobiology_constraints',
-           'get_radiobiology_objectives',
+           'get_radiobiological_constraints',
+           'get_radiobiological_objectives',
            'identity',
            'inverse_sigmoid',
            'load_list_from_file',

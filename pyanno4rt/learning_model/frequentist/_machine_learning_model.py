@@ -177,6 +177,7 @@ class MachineLearningModel(metaclass=ABCMeta):
             'feature_definitions': dataset['feature_definitions'],
             'tune_folds': dataset.get('tune_folds'),
             'oof_folds': dataset.get('oof_folds'),
+            'number_of_samples': dataset.get('number_of_samples'),
             'preprocessing_steps': preprocessing_steps,
             'architecture': architecture,
             'max_hidden_layers': max_hidden_layers,

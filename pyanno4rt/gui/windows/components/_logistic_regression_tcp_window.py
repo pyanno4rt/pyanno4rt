@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QFileDialog, QListWidgetItem, QMainWindow
 
 # %% Internal package import
 
+from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.components.logistic_regression_tcp_window import (
     Ui_logistic_regression_tcp_window)
 from pyanno4rt.gui.custom_widgets import CheckableComboBox
@@ -115,7 +116,9 @@ class LogisticRegressionTCPWindow(
             'lower_bound_ledit': ledit,
             'upper_bound_ledit': ledit,
             'model_label_ledit': ledit,
+            'model_path_ledit': ledit,
             'model_path_tbutton': tbutton_composer,
+            'data_path_ledit': ledit,
             'data_path_tbutton': tbutton_composer,
             'data_columns_tbutton': tbutton_data_window,
             'prep_steps_ledit': ledit,
@@ -136,11 +139,11 @@ class LogisticRegressionTCPWindow(
 
         # Loop over the QComboBox and QSpinBox elements
         for box in (
-                'segment_cbox', 'segment_link_cbox', 'type_cbox',
-                'embedding_cbox', 'rank_sbox', 'penalty_cbox',
-                'class_weight_cbox', 'graphs_cbox', 'kpi_cbox',
-                'tune_eval_sbox', 'tune_score_cbox', 'tune_splits_sbox',
-                'oof_splits_sbox'):
+                'segment_cbox', 'type_cbox', 'embedding_cbox',
+                'segment_link_cbox', 'rank_sbox', 'penalty_cbox',
+                'class_weight_cbox', 'tune_eval_sbox', 'tune_score_cbox',
+                'tune_splits_sbox', 'oof_splits_sbox', 'graphs_cbox',
+                'kpi_cbox'):
 
             # Install the custom event filter
             getattr(self, box).installEventFilter(parent)
@@ -296,7 +299,7 @@ class LogisticRegressionTCPWindow(
         rank = component[segment]['instance']['parameters'].get('rank', 1)
         lower, upper = component[segment]['instance']['parameters'].get(
             'bounds', (0.0, 1.0))
-        link = component[segment]['instance']['parameters'].get('link', [])
+        link = component[segment]['instance']['parameters'].get('link')
         identifier = component[segment]['instance']['parameters'].get(
             'identifier')
         display = component[segment]['instance']['parameters'].get(
@@ -352,7 +355,7 @@ class LogisticRegressionTCPWindow(
                 'identifier_ledit': '' if not identifier else identifier
                 }.items():
 
-            # Set the field text
+            # Set the text
             getattr(self, key).setText(value)
 
         # Loop over the fields with 'setCurrentText' method
@@ -364,7 +367,7 @@ class LogisticRegressionTCPWindow(
                     'tune_score', 'Logloss')
                 }.items():
 
-            # Set the field text
+            # Set the text
             getattr(self, key).setCurrentText(value)
 
         # Loop over the fields with 'setValue' method
@@ -375,26 +378,26 @@ class LogisticRegressionTCPWindow(
                 'tune_eval_sbox': model_parameters.get('tune_evaluations', 50)
                 }.items():
 
-            # Set the field text
+            # Set the value
             getattr(self, key).setValue(value)
 
         # Loop over the fields with 'setCheckState' method
         for key, value in {
                 'write_features_check': (
-                    2 if model_parameters.get('write_features', True) else 0),
+                    2*model_parameters.get('write_features', False)),
                 'inspect_model_check': (
-                    2 if model_parameters.get('inspect_model', True) else 0),
+                    2*model_parameters.get('inspect_model', False)),
                 'evaluate_model_check': (
-                    2 if model_parameters.get('evaluate_model', True) else 0),
-                'disp_component_check': 2 if display else 0
+                    2*model_parameters.get('evaluate_model', False)),
+                'disp_component_check': 2*display
                 }.items():
 
-            # Set the field text
+            # Set the check state
             getattr(self, key).setCheckState(value)
 
         # Loop over the checkable combo boxes with their selections
         for box, selection in {
-                'segment_link_cbox': link,
+                'segment_link_cbox': [] if not link else link,
                 'penalty_cbox': tune_space['penalty'],
                 'class_weight_cbox': map(str, tune_space['class_weight']),
                 'graphs_cbox': display_options['graphs'],
@@ -428,19 +431,18 @@ class LogisticRegressionTCPWindow(
                 None if self.model_path_ledit.text() == ''
                 else abspath(self.model_path_ledit.text())),
             'data_path': (
-                '' if self.data_path_ledit.text() == ''
+                None if self.data_path_ledit.text() == ''
                 else abspath(self.data_path_ledit.text())),
             'data_columns': self.data_columns,
             'preprocessing_steps': (
                 ['Identity'] if self.prep_steps_ledit.text() == ''
                 else self.prep_steps_ledit.text().strip('][').split(', ')),
             'tune_space': {
-                'C': (
-                    [2**-5, 2**10] if any(bound == '' for bound in (
-                        self.C_lower_bound_ledit.text(),
-                        self.C_upper_bound_ledit.text()))
-                    else [float(self.C_lower_bound_ledit.text()),
-                          float(self.C_upper_bound_ledit.text())]),
+                'C': [
+                    2**-5 if self.C_lower_bound_ledit.text() == ''
+                    else float(self.C_lower_bound_ledit.text()),
+                    2**10 if self.C_upper_bound_ledit.text() == ''
+                    else float(self.C_upper_bound_ledit.text())],
                 'penalty': self.penalty_cbox.currentData(),
                 'tol': (
                     [1e-4, 1e-5, 1e-6] if self.tol_ledit.text() == ''

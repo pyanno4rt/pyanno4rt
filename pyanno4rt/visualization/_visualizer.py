@@ -6,17 +6,18 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QHBoxLayout, QLabel, QMainWindow, QPushButton,
-                             QSizePolicy, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (
+    QHBoxLayout, QLabel, QMainWindow, QPushButton, QSizePolicy, QVBoxLayout,
+    QWidget)
 from pyqtgraph import mkQApp, setConfigOptions
 from pyqtgraph.Qt import QtGui
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import (get_conventional_objectives,
-                             get_machine_learning_objectives,
-                             get_radiobiology_objectives)
+from pyanno4rt.tools import (
+    get_conventional_objectives, get_machine_learning_objectives,
+    get_radiobiological_objectives)
 from pyanno4rt.visualization.visuals import (
     CtDoseSlicingWindowPyQt, DosimetricsTablePlotterMPL, DVHGraphPlotterMPL,
     FeatureSelectWindowPyQt, IterGraphPlotterMPL, MetricsGraphsPlotterMPL,
@@ -402,7 +403,7 @@ class MainWindow(QMainWindow):
         if hub.segmentation:
             cv_objectives = get_conventional_objectives(hub.segmentation)
             ml_objectives = get_machine_learning_objectives(hub.segmentation)
-            rb_objectives = get_radiobiology_objectives(hub.segmentation)
+            rb_objectives = get_radiobiological_objectives(hub.segmentation)
         else:
             cv_objectives, ml_objectives, rb_objectives = (), (), ()
 

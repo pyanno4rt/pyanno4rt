@@ -322,6 +322,3 @@ class Ui_minimum_dvh_window(object):
         self.disp_component_check.setText(_translate("minimum_dvh_window", "Display component"))
         self.lower_bound_ledit.setPlaceholderText(_translate("minimum_dvh_window", "0.0"))
         self.volume_label.setText(_translate("minimum_dvh_window", "Volume [%]"))
-
-
-import resources_rc

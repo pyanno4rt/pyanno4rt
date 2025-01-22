@@ -11,12 +11,12 @@ from numpy import concatenate, exp, zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components import RadiobiologyComponentClass
+from pyanno4rt.optimization.components import RadiobiologicalComponent
 
 # %% Class definition
 
 
-class LQPoissonTCP(RadiobiologyComponentClass):
+class LQPoissonTCP(RadiobiologicalComponent):
     """
     Linear-quadratic Poisson TCP component class.
 

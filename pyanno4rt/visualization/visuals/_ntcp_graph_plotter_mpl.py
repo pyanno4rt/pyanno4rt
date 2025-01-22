@@ -73,7 +73,9 @@ class NTCPGraphPlotterMPL():
             groups_obj = tuple(group for group in tuple(zip(
                 get_objective_segments(segmentation),
                 get_all_objectives(segmentation)))
-                if group[1].RETURNS_OUTCOME and group[1].display)
+                if group[1].get_class() in (
+                        'MachineLearningComponent', 'RadiobiologicalComponent')
+                and group[1].display)
 
             # Convert the pairs into an appropriate format
             groups_obj = ((group[0], str([group[0]]), group[1].name,
@@ -91,7 +93,9 @@ class NTCPGraphPlotterMPL():
             groups_cons = tuple(group for group in tuple(zip(
                 get_constraint_segments(segmentation),
                 get_all_constraints(segmentation)))
-                if group[1].RETURNS_OUTCOME and group[1].display)
+                if group[1].get_class() in (
+                        'MachineLearningComponent', 'RadiobiologicalComponent')
+                and group[1].display)
 
             # Convert the pairs into an appropriate format
             groups_cons = ((group[0], str([group[0]]), group[1].name,

@@ -21,8 +21,9 @@ from pyanno4rt.optimization.methods import method_map
 from pyanno4rt.optimization.solvers import solver_map
 from pyanno4rt.tools import (
    apply, flatten, get_constraint_segments, get_machine_learning_constraints,
-   get_machine_learning_objectives, get_radiobiology_constraints,
-   get_radiobiology_objectives, get_objective_segments, reset_outputs, sigmoid)
+   get_machine_learning_objectives, get_radiobiological_constraints,
+   get_radiobiological_objectives, get_objective_segments, reset_outputs,
+   sigmoid)
 
 # %% Class definition
 
@@ -485,8 +486,8 @@ class FluenceOptimizer():
                 (component.name, track[-1]/component.weight)
                 for label, track in problem.tracker.items()
                 for component in (
-                        get_radiobiology_objectives(segmentation)
-                        + get_radiobiology_constraints(segmentation))
+                        get_radiobiological_objectives(segmentation)
+                        + get_radiobiological_constraints(segmentation))
                     if component.name in label):
 
                 # Log a message about the (N)TCP prediction

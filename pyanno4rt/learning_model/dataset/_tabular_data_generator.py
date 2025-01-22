@@ -391,8 +391,10 @@ class TabularDataGenerator():
             return folds
 
         # Add the fold numbers to the data information
-        data_information |= {'tune_folds': get_folds(tune_splits),
-                             'oof_folds': get_folds(oof_splits)}
+        data_information |= {
+            'tune_folds': get_folds(tune_splits),
+            'oof_folds': get_folds(oof_splits),
+            'number_of_samples': data_information['feature_values'].shape[0]}
 
         return data_information
 
