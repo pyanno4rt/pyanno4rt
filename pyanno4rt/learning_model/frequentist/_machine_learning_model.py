@@ -332,7 +332,8 @@ class MachineLearningModel(metaclass=ABCMeta):
         # Else, check if the model files can be loaded from the datahub
         elif (self.model_label in hub.model_instances and compare_dictionaries(
                 self.configuration,
-                hub.model_instances[self.model_label]['configuration'])):
+                hub.model_instances[self.model_label]['configuration'],
+                ignore=('feature_statics', 'feature_definitions'))):
 
             # Set the update flag to False
             self.updated_model = False

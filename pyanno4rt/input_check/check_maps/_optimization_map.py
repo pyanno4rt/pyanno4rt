@@ -40,11 +40,12 @@ optimization_map = {
         partial(check_value_in_set, options={
             'lexicographic': ('', 'scipy'),
             'pareto': ('pymoo',),
-            'weighted-sum': ('proxmin', 'pypop7', 'scipy')})
+            'weighted-sum': ('ipyopt', 'proxmin', 'pypop7', 'scipy')})
         ),
     'algorithm': (
         partial(check_type, types=str),
         partial(check_value_in_set, options={
+            'weighted-sum/ipyopt': ('mumps'),
             'lexicographic/proxmin': (),
             'weighted-sum/proxmin': ('admm', 'pgm', 'sdmm'),
             'pareto/pymoo': ('NSGA3',),

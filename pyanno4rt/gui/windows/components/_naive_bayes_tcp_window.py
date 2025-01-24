@@ -456,7 +456,7 @@ class NaiveBayesTCPWindow(QMainWindow, Ui_naive_bayes_tcp_window):
 
         # Check if a prior has been specified
         if (self.priors_one_class_ledit.text() != ''
-                and len(self.priors_cbox.currentData()) > 0):
+                or len(self.priors_cbox.currentData()) > 0):
 
             # Append the prior information
             model_parameters['tune_space']['priors'] = (

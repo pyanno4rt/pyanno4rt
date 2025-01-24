@@ -54,9 +54,10 @@ def snapshot(instance, path, include_patient_data=False,
     """
 
     # Check if any required attribute is missing
-    if any(getattr(instance, attribute) is None for attribute in
-           ('logger', 'datahub', 'input_checker', 'patient_loader',
-           'plan_generator', 'dose_info_generator', 'fluence_optimizer')):
+    if (any(getattr(instance, attribute) is None for attribute in
+            ('logger', 'datahub', 'input_checker', 'patient_loader',
+             'plan_generator', 'dose_info_generator', 'fluence_optimizer'))
+            or instance.datahub.state < 3):
 
         # Raise an error to indicate a missing attribute
         raise AttributeError("Please configure and optimize the treatment "

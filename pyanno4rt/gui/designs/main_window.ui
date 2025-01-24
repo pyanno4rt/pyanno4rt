@@ -1905,7 +1905,7 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="iconSize">
            <size>
@@ -1956,8 +1956,8 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-201</y>
-                 <width>817</width>
+                 <y>0</y>
+                 <width>368</width>
                  <height>896</height>
                 </rect>
                </property>
@@ -3653,7 +3653,7 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-427</y>
+                 <y>-289</y>
                  <width>817</width>
                  <height>1122</height>
                 </rect>
@@ -4190,29 +4190,14 @@ border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="currentText">
-                       <string>scipy</string>
+                       <string/>
                       </property>
                       <property name="currentIndex">
-                       <number>2</number>
+                       <number>-1</number>
                       </property>
                       <property name="maxVisibleItems">
                        <number>25</number>
                       </property>
-                      <item>
-                       <property name="text">
-                        <string>proxmin</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>pypop7</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>scipy</string>
-                       </property>
-                      </item>
                      </widget>
                     </item>
                     <item>
@@ -4395,29 +4380,14 @@ border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
                       </property>
                       <property name="currentText">
-                       <string>L-BFGS-B</string>
+                       <string/>
                       </property>
                       <property name="currentIndex">
-                       <number>0</number>
+                       <number>-1</number>
                       </property>
                       <property name="maxVisibleItems">
                        <number>25</number>
                       </property>
-                      <item>
-                       <property name="text">
-                        <string>L-BFGS-B</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>TNC</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>trust-constr</string>
-                       </property>
-                      </item>
                      </widget>
                     </item>
                     <item>
@@ -5649,8 +5619,8 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>817</width>
-                 <height>695</height>
+                 <width>369</width>
+                 <height>624</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_evaluation_meta_layout">

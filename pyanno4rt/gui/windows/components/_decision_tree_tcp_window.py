@@ -542,19 +542,13 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
                     if self.min_weight_frac_leaf_upper_bound_ledit.text() == ''
                     else float(
                         self.min_weight_frac_leaf_upper_bound_ledit.text())],
-                'max_features': list(range(
-                    1 if self.max_features_lower_bound_ledit.text() == ''
-                    else int(self.max_features_lower_bound_ledit.text()),
-                    len(self.data_columns)+1
-                    if self.max_features_upper_bound_ledit.text() == ''
-                    else int(self.max_features_upper_bound_ledit.text())+1)),
                 'class_weight': [
                     None if value == 'None' else value
                     for value in self.class_weight_cbox.currentData()],
                 'ccp_alpha': [
                     0.0 if self.ccp_alpha_lower_bound_ledit.text() == ''
                     else float(self.ccp_alpha_lower_bound_ledit.text()),
-                    0.5 if self.ccp_alpha_upper_bound_ledit.text() == ''
+                    1.0 if self.ccp_alpha_upper_bound_ledit.text() == ''
                     else float(self.ccp_alpha_upper_bound_ledit.text())]},
             'tune_evaluations': self.tune_eval_sbox.value(),
             'tune_score': self.tune_score_cbox.currentText(),
@@ -566,6 +560,16 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
             'display_options': {
                 'graphs': self.graphs_cbox.currentData(),
                 'kpis': self.kpi_cbox.currentData()}}
+
+        # Check if bounds for the maximum features have been specified
+        if all(text != '' for text in (
+                self.max_features_lower_bound_ledit.text(),
+                self.max_features_upper_bound_ledit.text())):
+
+            # Add the 'max_features' to the tune space
+            model_parameters['tune_space']['max_features'] = list(range(
+                int(self.max_features_lower_bound_ledit.text()),
+                int(self.max_features_upper_bound_ledit.text())+1)),
 
         # Configure the component dictionary
         component = {

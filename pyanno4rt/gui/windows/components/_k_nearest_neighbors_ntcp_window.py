@@ -462,12 +462,12 @@ class KNeighborsNTCPWindow(
                 'graphs': self.graphs_cbox.currentData(),
                 'kpis': self.kpi_cbox.currentData()}}
 
-        # Check if a prior has been specified
+        # Check if the number of neighbors has been specified
         if all(bound != '' for bound in (
                 self.neighbors_lower_bound_ledit.text(),
                 self.neighbors_upper_bound_ledit.text())):
 
-            # Append the prior information
+            # Append the neighbors information
             model_parameters['tune_space']['n_neighbors'] = (list(range(
                 int(self.neighbors_lower_bound_ledit.text()),
                 int(self.neighbors_upper_bound_ledit.text())+1)))

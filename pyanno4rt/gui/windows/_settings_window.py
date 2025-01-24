@@ -19,7 +19,7 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
     """
     Settings window for the GUI.
 
-    This class creates the settings window for the graphical user interface, \
+    This class sets up the settings window for the graphical user interface, \
     including some user-definable parameters.
     """
 
@@ -39,6 +39,8 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         # 
         self.default = (
             'English', 'Dark', (1024, 768), (False, False, False, False))
+
+        # 
         self.current = self.default
 
         # Temporarily disable combo boxes
@@ -46,8 +48,9 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
         # Set the stylesheets
         self.set_styles({
-            'reset_settings_pbutton': pbutton_composer,
-            'save_settings_pbutton': pbutton_composer})
+            'reset_pbutton': pbutton_composer,
+            'save_pbutton': pbutton_composer,
+            'close_pbutton': pbutton_composer})
 
         # Loop over the QComboBox elements in the settings window
         for box in ('language_cbox', 'light_mode_cbox', 'resolution_cbox'):
@@ -57,24 +60,6 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
         # Connect the fields with the event signals
         self.connect_signals()
-
-    def set_enabled(
-            self,
-            field_names):
-        """
-        Enable multiple fields by their names.
-
-        Parameters
-        ----------
-        field_names : tuple
-            Tuple with the field names.
-        """
-
-        # Loop over the passed field names
-        for name in field_names:
-
-            # Get the attribute and enable the field
-            getattr(self, name).setEnabled(True)
 
     def set_disabled(
             self,
@@ -117,8 +102,9 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
         # Loop over the field names with 'clicked' events
         for key, value in {
-            'reset_settings_pbutton': self.reset,
-            'save_settings_pbutton': self.save_apply_close
+            'reset_pbutton': self.reset,
+            'save_pbutton': self.save,
+            'close_pbutton': self.close
                 }.items():
 
             # Connect the 'clicked' event
@@ -169,19 +155,7 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
         self.set_fields(self.default)
 
-    def position(self):
-        """Set the window position."""
-
-        # Get the window geometry
-        geometry = self.geometry()
-
-        # Move the geometry center according to the parent window
-        geometry.moveCenter(self.parent.geometry().center())
-
-        # Set the window geometry
-        self.setGeometry(geometry)
-
-    def save_apply_close(self):
+    def save(self):
         """."""
 
         # 
@@ -211,4 +185,22 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         self.parent.position()
 
         # 
+        self.close()
+
+    def position(self):
+        """Set the window position."""
+
+        # Get the window geometry
+        geometry = self.geometry()
+
+        # Move the geometry center according to the parent window
+        geometry.moveCenter(self.parent.geometry().center())
+
+        # Set the window geometry
+        self.setGeometry(geometry)
+
+    def close(self):
+        """Close the settings window."""
+
+        # Hide the window
         self.hide()

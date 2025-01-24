@@ -196,7 +196,7 @@ class TabularDataGenerator():
             | {'feature_statics': {
                 key: feature_meta[key]['value']
                 for key in list(features.columns)
-                if feature_meta[key]['value']}}
+                if feature_meta[key]['value'] is not None}}
             | {'feature_definitions': {
                 key: {'segment': feature_meta[key]['segment'],
                       'function': feature_meta[key]['function'],
@@ -421,7 +421,7 @@ class TabularDataGenerator():
             """Get the mapping for a single definition."""
 
             # Get the feature definition as string
-            definition = feature_map[definitions[key]['function']]
+            definition = feature_map.get(definitions[key]['function'])
 
             # Get the argument of the feature definition
             args = definitions[key]['argument']

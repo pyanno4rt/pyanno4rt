@@ -139,22 +139,6 @@ class SliceCompareWidget(QWidget):
             self.plan.datahub.computed_tomography['z'])
 
         # 
-        self.dose_cube_with_nan = self.dose_cube.copy()
-        self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
-
-        norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
-        mapper = ScalarMappable(norm=norm, cmap=colormaps[self.cmap])
-
-        self.dose_contours = []
-        for level in levels:
-            contour = IsocurveItem(level=level, pen=mkPen(
-                tuple([255*rgba for rgba in mapper.to_rgba(level)]),
-                width=2.5))
-            contour.setParentItem(self.dose_image)
-            contour.setZValue(5)
-            self.dose_contours.append(contour)
-
-        # 
         self.segment_masks = tuple(
             generate_segment_mask(segment) for segment in segmentation)
 
@@ -168,11 +152,25 @@ class SliceCompareWidget(QWidget):
 
         self.segment_contours = []
         for color, image in zip(segment_colors, segment_images):
-            contour = IsocurveItem(level=1, pen=mkPen(mkColor(color),
-                                                      width=2.5))
+            contour = IsocurveItem(level=1, pen=mkPen(mkColor(color), width=3))
             contour.setParentItem(image)
             contour.setZValue(5)
             self.segment_contours.append(contour)
+
+        # 
+        self.dose_cube_with_nan = self.dose_cube.copy()
+        self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
+
+        norm = Normalize(vmin=min(levels), vmax=max(levels), clip=True)
+        mapper = ScalarMappable(norm=norm, cmap=colormaps[self.cmap])
+
+        self.dose_contours = []
+        for level in levels:
+            contour = IsocurveItem(level=level, pen=mkPen(
+                tuple([255*rgba for rgba in mapper.to_rgba(level)]), width=2))
+            contour.setParentItem(self.dose_image)
+            contour.setZValue(5)
+            self.dose_contours.append(contour)
 
     def update_ct(self):
         """."""

@@ -9,7 +9,7 @@ from numpy import array_equal, ndarray
 # %% Function definition
 
 
-def compare_dictionaries(reference_dict, compare_dict):
+def compare_dictionaries(reference_dict, compare_dict, ignore=None):
     """
     Compare two dictionaries by their keys and values (including numpy arrays).
 
@@ -26,6 +26,19 @@ def compare_dictionaries(reference_dict, compare_dict):
     bool
         Indicator for the equality of the dictionaries.
     """
+
+    # Check if any keys should be ignored
+    if ignore is not None:
+
+        # Filter the reference dictionary
+        reference_dict = {
+            key: value for key, value in reference_dict.items()
+            if key not in ignore}
+
+        # Filter the comparison dictionary
+        compare_dict = {
+            key: value for key, value in compare_dict.items()
+            if key not in ignore}
 
     # Check if the dictionary keys are not equal
     if reference_dict.keys() != compare_dict.keys():

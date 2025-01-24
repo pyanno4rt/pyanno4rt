@@ -101,14 +101,14 @@ class Ui_settings_window(object):
         self.incl_dij_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
         self.incl_dij_check.setObjectName("incl_dij_check")
-        self.reset_settings_pbutton = QtWidgets.QPushButton(self.settings_widget)
-        self.reset_settings_pbutton.setGeometry(QtCore.QRect(760, 640, 71, 31))
-        self.reset_settings_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.reset_settings_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.reset_pbutton = QtWidgets.QPushButton(self.settings_widget)
+        self.reset_pbutton.setGeometry(QtCore.QRect(680, 640, 71, 31))
+        self.reset_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.reset_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.reset_settings_pbutton.setObjectName("reset_settings_pbutton")
+        self.reset_pbutton.setObjectName("reset_pbutton")
         self.light_model_label = QtWidgets.QLabel(self.settings_widget)
         self.light_model_label.setGeometry(QtCore.QRect(30, 130, 141, 31))
         font = QtGui.QFont()
@@ -166,36 +166,45 @@ class Ui_settings_window(object):
         self.save_tpi_line.setStyleSheet("border-color: rgb(0, 0, 0);")
         self.save_tpi_line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.save_tpi_line.setObjectName("save_tpi_line")
-        self.save_settings_pbutton = QtWidgets.QPushButton(self.settings_widget)
-        self.save_settings_pbutton.setGeometry(QtCore.QRect(840, 640, 71, 31))
-        self.save_settings_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.save_settings_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+        self.save_pbutton = QtWidgets.QPushButton(self.settings_widget)
+        self.save_pbutton.setGeometry(QtCore.QRect(760, 640, 71, 31))
+        self.save_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.save_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
-        self.save_settings_pbutton.setObjectName("save_settings_pbutton")
+        self.save_pbutton.setObjectName("save_pbutton")
         self.incl_opt_fluence_check = QtWidgets.QCheckBox(self.settings_widget)
         self.incl_opt_fluence_check.setGeometry(QtCore.QRect(390, 200, 231, 23))
         self.incl_opt_fluence_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.incl_opt_fluence_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
         self.incl_opt_fluence_check.setObjectName("incl_opt_fluence_check")
+        self.close_pbutton = QtWidgets.QPushButton(self.settings_widget)
+        self.close_pbutton.setGeometry(QtCore.QRect(840, 640, 71, 31))
+        self.close_pbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.close_pbutton.setStyleSheet("color: rgb(0, 0, 0);\n"
+"background-color: rgb(238, 238, 236);\n"
+"border: 1px solid;\n"
+"border-color: rgb(186, 189, 182);")
+        self.close_pbutton.setObjectName("close_pbutton")
         self.light_mode_cbox.raise_()
         self.general_settings_label.raise_()
         self.resolution_label.raise_()
         self.language_label.raise_()
         self.language_cbox.raise_()
         self.incl_dij_check.raise_()
-        self.reset_settings_pbutton.raise_()
+        self.reset_pbutton.raise_()
         self.light_model_label.raise_()
         self.incl_img_data_check.raise_()
         self.resolution_cbox.raise_()
         self.incl_model_data_check.raise_()
         self.save_tpi_label.raise_()
         self.save_tpi_line.raise_()
-        self.save_settings_pbutton.raise_()
+        self.save_pbutton.raise_()
         self.general_settings_line.raise_()
         self.incl_opt_fluence_check.raise_()
+        self.close_pbutton.raise_()
         settings_window.setCentralWidget(self.settings_widget)
 
         self.retranslateUi(settings_window)
@@ -217,7 +226,7 @@ class Ui_settings_window(object):
         self.language_cbox.setItemText(3, _translate("settings_window", "Français"))
         self.language_cbox.setItemText(4, _translate("settings_window", "Italiano"))
         self.incl_dij_check.setText(_translate("settings_window", "Include dose-influence matrix"))
-        self.reset_settings_pbutton.setText(_translate("settings_window", "Reset"))
+        self.reset_pbutton.setText(_translate("settings_window", "Reset"))
         self.light_model_label.setText(_translate("settings_window", "Light mode"))
         self.incl_img_data_check.setText(_translate("settings_window", "Include CT/segmentation data"))
         self.resolution_cbox.setItemText(1, _translate("settings_window", "1024x768"))
@@ -228,5 +237,6 @@ class Ui_settings_window(object):
         self.resolution_cbox.setItemText(6, _translate("settings_window", "2560x1440"))
         self.incl_model_data_check.setText(_translate("settings_window", "Include model training data"))
         self.save_tpi_label.setText(_translate("settings_window", "Save TPI"))
-        self.save_settings_pbutton.setText(_translate("settings_window", "Save"))
+        self.save_pbutton.setText(_translate("settings_window", "Save"))
         self.incl_opt_fluence_check.setText(_translate("settings_window", "Include optimized fluence"))
+        self.close_pbutton.setText(_translate("settings_window", "Close"))

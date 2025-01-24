@@ -36,6 +36,7 @@ from pyanno4rt.optimization.components import (
     ConventionalComponent, component_map, MachineLearningComponent,
     RadiobiologicalComponent)
 from pyanno4rt.optimization.methods import method_map
+from pyanno4rt.optimization.solvers import solver_map
 from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, get_machine_learning_constraints,
     get_machine_learning_objectives, load_list_from_file,
@@ -133,6 +134,12 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.method_cbox.addItems(list(method_map.keys()))
         self.method_cbox.model().sort(0)
         self.method_cbox.setCurrentText('weighted-sum')
+
+        # Add the solvers to the solver combo box
+        self.solver_cbox.addItems(list(solver_map.keys()))
+        self.solver_cbox.model().sort(0)
+        self.solver_cbox.setCurrentText('scipy')
+        self.update_by_solver()
 
         # Initialize the custom combo box for the display segments
         self.display_segments_cbox = CheckableComboBox()
@@ -1436,7 +1443,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         elif self.method_cbox.currentText() == 'weighted-sum':
 
             # Add the solver items
-            self.solver_cbox.addItems(['proxmin', 'pypop7', 'scipy'])
+            self.solver_cbox.addItems(['ipyopt', 'proxmin', 'pypop7', 'scipy'])
 
             # Set the default item
             self.solver_cbox.setCurrentText('scipy')
@@ -1447,8 +1454,17 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Clear the algorithm combo box
         self.algorithm_cbox.clear()
 
+        # Check if the solver is 'ipyopt'
+        if self.solver_cbox.currentText() == 'ipyopt':
+
+            # Add the algorithm items
+            self.algorithm_cbox.addItems(['mumps'])
+
+            # Set the default item
+            self.algorithm_cbox.setCurrentText('mumps')
+
         # Check if the solver is 'proxmin'
-        if self.solver_cbox.currentText() == 'proxmin':
+        elif self.solver_cbox.currentText() == 'proxmin':
 
             # Add the algorithm items
             self.algorithm_cbox.addItems(['admm', 'pgm', 'sdmm'])

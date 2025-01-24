@@ -131,7 +131,7 @@ class EmptyDataGenerator():
             """Get the mapping for a single definition."""
 
             # Get the feature definition as string
-            definition = feature_map[definitions[key]['function']]
+            definition = feature_map.get(definitions[key]['function'])
 
             # Get the argument of the feature definition
             args = definitions[key]['argument']

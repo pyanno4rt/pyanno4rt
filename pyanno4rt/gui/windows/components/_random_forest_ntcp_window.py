@@ -559,12 +559,6 @@ class RandomForestNTCPWindow(QMainWindow, Ui_random_forest_ntcp_window):
                     if self.min_weight_frac_leaf_upper_bound_ledit.text() == ''
                     else float(
                         self.min_weight_frac_leaf_upper_bound_ledit.text())],
-                'max_features': list(range(
-                    1 if self.max_features_lower_bound_ledit.text() == ''
-                    else int(self.max_features_lower_bound_ledit.text()),
-                    len(self.data_columns)+1
-                    if self.max_features_upper_bound_ledit.text() == ''
-                    else int(self.max_features_upper_bound_ledit.text())+1)),
                 'bootstrap': self.bootstrap_cbox.currentData(),
                 'class_weight': [
                     None if value == 'None' else value
@@ -584,6 +578,16 @@ class RandomForestNTCPWindow(QMainWindow, Ui_random_forest_ntcp_window):
             'display_options': {
                 'graphs': self.graphs_cbox.currentData(),
                 'kpis': self.kpi_cbox.currentData()}}
+
+        # Check if bounds for the maximum features have been specified
+        if all(text != '' for text in (
+                self.max_features_lower_bound_ledit.text(),
+                self.max_features_upper_bound_ledit.text())):
+
+            # Add the 'max_features' to the tune space
+            model_parameters['tune_space']['max_features'] = list(range(
+                int(self.max_features_lower_bound_ledit.text()),
+                int(self.max_features_upper_bound_ledit.text())+1)),
 
         # Configure the component dictionary
         component = {

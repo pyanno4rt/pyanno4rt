@@ -495,7 +495,8 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         line_edit.setStyleSheet(ledit)
 
         # Set the text to the current value
-        line_edit.setText(parameters['value'])
+        line_edit.setText(
+            '' if parameters['value'] is None else str(parameters['value']))
 
         # Check if the columns are loaded from a model folder
         if self.from_model:
@@ -606,7 +607,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             widget.setRange(1, 99)
 
             # Set the initial value
-            widget.setValue(value if value else 1)
+            widget.setValue(1 if value is None else value)
 
         # Else, check if the function is 'Dose Gradient'
         elif function == 'Dose Gradient':
@@ -624,7 +625,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             widget.addItems(['x', 'y', 'z'])
 
             # Set the initial text
-            widget.setCurrentText(value if value else 'x')
+            widget.setCurrentText('x' if value is None else value)
 
         # Else, check if the function is 'Dose Moment'
         elif function == 'Dose Moment':
@@ -636,7 +637,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             widget.setStyleSheet(ledit)
 
             # Set the initial text
-            widget.setText(value if value else '')
+            widget.setText('' if value is None else value)
 
         # Else, check if the function is 'Dose Subvolume'
         elif function == 'Dose Subvolume':
@@ -657,7 +658,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
                 'y1of2', 'y2of2', 'y1of3', 'y2of3', 'y3of3'])
 
             # Set the initial text
-            widget.setCurrentText(value if value else 'x1of2')
+            widget.setCurrentText('x1of2' if value is None else value)
 
         else:
 
@@ -754,8 +755,12 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
                     else self.feature_table.cellWidget(index, 4).text())
 
             return {
-                'type': 'feature', 'scale': scale, 'segment': segment,
-                'function': function, 'argument': argument, 'value': value}
+                'type': 'feature',
+                'scale': None if scale == '' else scale,
+                'segment': None if segment == '' else segment,
+                'function': None if function == '' else function,
+                'argument': None if argument == '' else argument,
+                'value': None if value == '' else value}
 
         # Set up the feature dictionary
         features = {

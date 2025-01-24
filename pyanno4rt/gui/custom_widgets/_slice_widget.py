@@ -123,8 +123,7 @@ class SliceWidget(QWidget):
 
         self.segment_contours = []
         for color, image in zip(segment_colors, segment_images):
-            contour = IsocurveItem(level=1, pen=mkPen(mkColor(color),
-                                                      width=2.5))
+            contour = IsocurveItem(level=1, pen=mkPen(mkColor(color), width=3))
             contour.setParentItem(image)
             contour.setZValue(5)
             self.segment_contours.append(contour)
@@ -152,8 +151,8 @@ class SliceWidget(QWidget):
         self.dose_contours = []
         for level in levels:
             contour = IsocurveItem(level=level, pen=mkPen(
-                tuple([255*rgba for rgba in mapper.to_rgba(level)]),
-                width=2.5))
+                tuple([255*rgba for rgba in mapper.to_rgba(level)]), width=2)
+                )
             contour.setParentItem(self.dose_image)
             contour.setZValue(5)
             self.dose_contours.append(contour)
