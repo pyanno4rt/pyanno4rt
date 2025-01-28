@@ -102,6 +102,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Initialize the segment dictionary
         self.segments = {}
 
+        # Initialize the data presets
+        self.data_presets = {}
+
         # Initialize the thread and the worker
         self.thread = None
         self.worker = None

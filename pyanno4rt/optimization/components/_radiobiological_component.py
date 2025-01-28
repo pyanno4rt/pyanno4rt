@@ -138,11 +138,11 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         self.segment = segment
         self.parameter_name = parameter_name
         self.parameter_category = parameter_category
-        self.parameter_value = list(parameter_value)
+        self.parameter_value = list(map(float, parameter_value))
         self.embedding = embedding
         self.weight = float(weight)
         self.rank = rank
-        self.bounds = [0.0, 1.0] if bounds is None else bounds
+        self.bounds = self.convert_bounds(bounds)
         self.link = [] if link is None else link
         self.identifier = identifier
         self.display = display
@@ -159,14 +159,45 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
                     self.__dict__.get('model_parameters', {}),
                     other.__dict__.get('model_parameters', {})))
 
+    def convert_bounds(
+            self,
+            bounds):
+        """
+        Convert the bounds from probabilities to function bounds.
+
+        Parameters
+        ----------
+        bounds : None or list
+            Constraint bounds for the component.
+
+        Returns
+        -------
+        list
+            Lower and upper function bounds.
+        """
+
+        # Get the (N)TCP function sign
+        sign = (-1)**('NTCP' not in self.name)
+
+        # Check if the bounds are None
+        if bounds is None:
+
+            # Return the default function bounds
+            return sorted([0.0, sign])
+
+        # Return the transformed function bounds
+        return sorted(
+            [0.0 if bounds[0] is None or bounds[0] < 0 else sign*bounds[0],
+             sign if bounds[1] is None or bounds[1] > 1 else sign*bounds[1]])
+
     def get_class(self):
         """
-        Get the name of the component class.
+        Get the name of the component superclass.
 
         Returns
         -------
         str
-            Name of the component class.
+            Name of the component superclass.
         """
 
         return 'RadiobiologicalComponent'

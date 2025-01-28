@@ -5,7 +5,7 @@
 # %% External package import
 
 from abc import abstractmethod
-from numpy import array, array_equal
+from numpy import array, array_equal, copy
 
 # %% Class definition
 
@@ -65,7 +65,7 @@ class BackProjection():
             self.__dose__ = self.compute_dose_result(fluence)
 
             # Update the cached fluence
-            self.__fluence__ = fluence
+            self.__fluence__ = copy(fluence)
 
         return self.__dose__
 
@@ -95,7 +95,7 @@ class BackProjection():
                 dose_gradient)
 
             # Update the cached dose gradient
-            self.__dose_gradient__ = dose_gradient
+            self.__dose_gradient__ = copy(dose_gradient)
 
         return self.__fluence_gradient__
 

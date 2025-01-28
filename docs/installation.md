@@ -40,16 +40,17 @@ from pyanno4rt.gui import GraphicalUserInterface
 <ul>
 	<li> python (>=3.10, <3.11)
 	<li> numpy (==1.26.4) </li>
+	<li> ipyopt (>=0.12.9) </li>
 	<li> proxmin (>=0.6.12) </li>
 	<li> absl-py (>=2.1.0) </li>
 	<li> pydicom (>=3.0.1) </li>
 	<li> scikit-image (>=0.25.0) </li>
 	<li> h5py (>=3.12.1) </li>
 	<li> pandas (>=2.2.3) </li>
-	<li> jax (>=0.4.38) </li>
-	<li> jaxlib (>=0.4.38) </li>
-	<li> numba (>=0.60.0) </li>
-	<li> scikit-learn (>=1.6.0) </li>
+	<li> jax (>=0.5.0) </li>
+	<li> jaxlib (>=0.5.0) </li>
+	<li> numba (>=0.61.0) </li>
+	<li> scikit-learn (>=1.6.1) </li>
 	<li> tensorflow (==2.11.1) </li>
 	<li> tensorflow-io-gcs-filesystem (==0.31.0) </li>
 	<li> hyperopt (>=0.2.7) </li>

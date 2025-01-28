@@ -9,8 +9,8 @@ from json import load
 from pandas import read_csv
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import (
-    QAbstractItemView, QComboBox, QHeaderView, QLineEdit, QMainWindow,
-    QMenu, QSpinBox, QTableWidgetItem)
+    QAbstractItemView, QComboBox, QHeaderView, QInputDialog, QLineEdit,
+    QMainWindow, QMenu, QSpinBox, QTableWidgetItem)
 
 # %% Internal package import
 
@@ -51,6 +51,8 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
         # Set the stylesheets
         self.set_styles({
+            'preset_load_tbutton': tbutton_composer,
+            'preset_save_tbutton': tbutton_composer,
             'feature_plus_tbutton': tbutton_composer,
             'feature_minus_tbutton': tbutton_composer,
             'column_cbox': cbox,
@@ -152,6 +154,8 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
         # Loop over the field names with 'clicked' events
         for key, value in {
+                'preset_load_tbutton': self.load_preset,
+                'preset_save_tbutton': self.save_preset,
                 'feature_minus_tbutton': self.remove_feature,
                 'save_pbutton': self.save,
                 'close_pbutton': self.close
@@ -203,6 +207,34 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
             # Enable the 'minus' button
             self.feature_minus_tbutton.setEnabled(True)
+
+    def save_preset(self):
+        """Save the field inputs to a preset."""
+
+        # Get the text input and state from the input dialog
+        text, checked = QInputDialog.getText(
+            self, "Save preset", "Enter preset name:", QLineEdit.Normal, "")
+
+        # Check if the dialog has been confirmed with a non-empty text
+        if checked and text != '':
+
+            # Save the data columns to the presets dictionary
+            self.parent.parent.data_presets[text] = self.read_columns()
+
+    def load_preset(self):
+        """Load the field inputs from a preset."""
+
+        # Get the selected preset and state from the input dialog
+        selection, checked = QInputDialog.getItem(
+            self, "Load preset", "Select preset:",
+            [''] + list(self.parent.parent.data_presets.keys()),
+            current=0, editable=False)
+
+        # Check if the dialog has been confirmed with a non-empty selection
+        if checked and selection != '':
+
+            # Load the data columns from the presets dictionary
+            self.load(self.parent.parent.data_presets.get(selection, {}))
 
     def load(
             self,
@@ -701,8 +733,15 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             # Reset the current index
             self.time_variable_cbox.setCurrentIndex(0)
 
-    def save(self):
-        """Save the data columns."""
+    def read_columns(self):
+        """
+        Read the data columns from the input fields.
+
+        Returns
+        -------
+        dict
+            Dictionary with the features and the label.
+        """
 
         def read_cells(index):
             """Read the cells for a row index."""
@@ -781,8 +820,13 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
                         self.lower_bound_ledit.text(),
                         self.upper_bound_ledit.text())]}}
 
+        return features | label
+
+    def save(self):
+        """Save the data columns."""
+
         # Overwrite the parent data columns dictionary
-        self.parent.data_columns = features | label
+        self.parent.data_columns = self.read_columns()
 
         # Update the parent button status
         self.parent.update_buttons()
@@ -820,7 +864,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         self.setGeometry(geometry)
 
     def close(self):
-        """Close the log window."""
+        """Close the data columns window."""
 
         # Hide the window
         self.hide()

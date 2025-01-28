@@ -137,7 +137,7 @@ class DecisionTreeNTCP(MachineLearningComponent):
         self.parameter_value = []
 
         # Transform the component bounds
-        self.bounds = sorted(self.weight*bound for bound in self.bounds)
+        self.bounds = sorted(-bound for bound in self.bounds)
 
     def compute_value(
             self,

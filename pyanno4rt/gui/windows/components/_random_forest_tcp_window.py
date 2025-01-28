@@ -559,14 +559,16 @@ class RandomForestTCPWindow(QMainWindow, Ui_random_forest_tcp_window):
                     if self.min_weight_frac_leaf_upper_bound_ledit.text() == ''
                     else float(
                         self.min_weight_frac_leaf_upper_bound_ledit.text())],
-                'bootstrap': self.bootstrap_cbox.currentData(),
+                'bootstrap': [
+                    False if value == 'False' else True
+                    for value in self.bootstrap_cbox.currentData()],
                 'class_weight': [
                     None if value == 'None' else value
                     for value in self.class_weight_cbox.currentData()],
                 'ccp_alpha': [
                     0.0 if self.ccp_alpha_lower_bound_ledit.text() == ''
                     else float(self.ccp_alpha_lower_bound_ledit.text()),
-                    0.5 if self.ccp_alpha_upper_bound_ledit.text() == ''
+                    1.0 if self.ccp_alpha_upper_bound_ledit.text() == ''
                     else float(self.ccp_alpha_upper_bound_ledit.text())]},
             'tune_evaluations': self.tune_eval_sbox.value(),
             'tune_score': self.tune_score_cbox.currentText(),

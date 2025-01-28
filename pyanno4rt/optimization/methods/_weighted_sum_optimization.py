@@ -69,8 +69,8 @@ class WeightedSumOptimization():
         self.constraints = constraints
 
         # Initialize the tracker dictionary
-        self.tracker = {label: []
-                        for label in tuple(objectives) + tuple(constraints)}
+        self.tracker = {
+            label: [] for label in tuple(objectives) + tuple(constraints)}
 
     def objective(
             self,
@@ -227,7 +227,7 @@ class WeightedSumOptimization():
             # Compute the constraint function value
             constraint_value = instance.compute_value(
                 tuple(dose[segmentation[segment]['resized_indices']]
-                      for segment in segments), segments) * instance.weight
+                      for segment in segments), segments)
 
             # Check if the objective value should be tracked
             if track:
@@ -235,14 +235,8 @@ class WeightedSumOptimization():
                 # Enter the value into the tracking dictionary
                 self.tracker[label] += (constraint_value,)
 
-            # Check if the instance is set to active
-            if instance.embedding == 'active':
-
-                # Return the value of the constraint function
-                return constraint_value
-
-            # Otherwise, return the lower constraint bound
-            return instance.bounds[0]
+            # Return the value of the constraint function
+            return constraint_value
 
         return array([compute_single_constraint(label, constraint)
                       for label, constraint in self.constraints.items()])
@@ -283,7 +277,7 @@ class WeightedSumOptimization():
                 # Return the value of the constraint jacobian function
                 return instance.compute_gradient(
                     tuple(dose[segmentation[segment]['resized_indices']]
-                          for segment in segments), segments) * instance.weight
+                          for segment in segments), segments)
 
             # Otherwise, return zero array
             return array([0.0]*Datahub().dose_information['number_of_voxels'])

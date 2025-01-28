@@ -154,16 +154,10 @@ class ParetoOptimization():
             # Get the constraint function value
             constraint_value = instance.compute_value(
                 tuple(dose[segmentation[segment]['resized_indices']]
-                      for segment in segments), segments) * instance.weight
+                      for segment in segments), segments)
 
-            # Check if the instance is set to active
-            if instance.embedding == 'active':
-
-                # Return the value of the constraint function
-                return constraint_value
-
-            # Otherwise, return the lower constraint bound
-            return instance.bounds[0]
+            # Return the value of the constraint function
+            return constraint_value
 
         return [compute_single_constraint(constraint)
                 for constraint in self.constraints.values()]

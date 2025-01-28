@@ -59,11 +59,6 @@ class LQPoissonTCP(RadiobiologicalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
-
-    Attributes
-    ----------
-    parameter_value : list
-        Value of the component parameters.
     """
 
     def __init__(
@@ -94,13 +89,6 @@ class LQPoissonTCP(RadiobiologicalComponent):
                          link=link,
                          identifier=identifier,
                          display=display)
-
-        # Set the individual parameter value
-        self.parameter_value = [
-            float(alpha), float(beta), float(volume_parameter)]
-
-        # Transform the component bounds
-        self.bounds = sorted(-self.weight*bound for bound in self.bounds)
 
     def compute_value(
             self,

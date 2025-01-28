@@ -173,11 +173,9 @@ class SupportVectorMachineTCP(MachineLearningComponent):
             decision_map[self.model.prediction_model.kernel])
 
         # Transform the component bounds
-        self.bounds = sorted(
-            -self.weight*inverse_sigmoid(
-                bound, -self.model.prediction_model.probA_[0],
-                self.model.prediction_model.probB_[0])
-            for bound in self.bounds)
+        self.bounds = sorted(-inverse_sigmoid(
+            bound, -self.model.prediction_model.probA_[0],
+            self.model.prediction_model.probB_[0]) for bound in self.bounds)
 
     def compute_value(
             self,

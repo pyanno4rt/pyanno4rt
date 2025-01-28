@@ -508,9 +508,13 @@ class MachineLearningModel(metaclass=ABCMeta):
         # Run the hyperparameter tuning algorithm
         tuned_hyperparameters = fmin(
             fn=partial(objective, trials=bayes_trials, space=self.hp_space),
-            space=self.hp_space, algo=tpe.suggest,
+            space=self.hp_space,
+            algo=tpe.suggest,
             max_evals=self.configuration['tune_evaluations'],
-            trials=bayes_trials, return_argmin=False)
+            trials=bayes_trials,
+            return_argmin=False,
+            verbose=False,
+            show_progressbar=False)
 
         # Log a message about the tuning status
         hub.logger.display_info(

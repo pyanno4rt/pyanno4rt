@@ -5,6 +5,7 @@
 # %% External package import
 
 from abc import ABCMeta, abstractmethod
+from math import inf
 
 # %% Internal package import
 
@@ -142,7 +143,7 @@ class ConventionalComponent(metaclass=ABCMeta):
         self.embedding = embedding
         self.weight = float(weight)
         self.rank = rank
-        self.bounds = [None, None] if bounds is None else bounds
+        self.bounds = self.convert_bounds(bounds)
         self.link = [] if link is None else link
         self.identifier = identifier
         self.display = display
@@ -170,6 +171,34 @@ class ConventionalComponent(metaclass=ABCMeta):
         """
 
         return 'ConventionalComponent'
+
+    def convert_bounds(
+            self,
+            bounds):
+        """
+        Convert the bounds to function bounds.
+
+        Parameters
+        ----------
+        bounds : None or list
+            Constraint bounds for the component.
+
+        Returns
+        -------
+        list
+            Lower and upper function bounds.
+        """
+
+        # Check if the bounds are None
+        if bounds is None:
+
+            # Return the default function bounds
+            return [-inf, inf]
+
+        # Return the transformed function bounds
+        return sorted(
+            [-inf if bounds[0] is None else bounds[0],
+             inf if bounds[1] is None else bounds[1]])
 
     def get_parameter_value(self):
         """

@@ -73,7 +73,7 @@ class NaiveBayesTCPWindow(QMainWindow, Ui_naive_bayes_tcp_window):
                 'priors_cbox': (
                     121,
                     ['None'] + [str(round(1-i/100, 2)) for i in range(1, 100)],
-                    True, 'priors_layout'),
+                    False, 'priors_layout'),
                 'graphs_cbox': (
                     261, ['AUC-ROC', 'AUC-PR', 'F1'], True, 'graphs_layout'),
                 'kpi_cbox': (
@@ -93,6 +93,9 @@ class NaiveBayesTCPWindow(QMainWindow, Ui_naive_bayes_tcp_window):
 
             # Add the combo box to the layout
             getattr(self, parameters[3]).addWidget(combo_box)
+
+        # Set the 'None' item of the priors combo box to checked
+        self.priors_cbox.model().item(0).setCheckState(2)
 
         # Add the segment items to the segment combo box
         self.segment_cbox.addItems(list(self.parent.segments.keys()))
@@ -464,7 +467,8 @@ class NaiveBayesTCPWindow(QMainWindow, Ui_naive_bayes_tcp_window):
                  else (
                      [[1-value, value]
                       for value in loads(self.priors_one_class_ledit.text())]))
-                + self.priors_cbox.currentData())
+                + [None if value == 'None' else [1-value, value]
+                   for value in self.priors_cbox.currentData()])
 
         # Configure the component dictionary
         component = {

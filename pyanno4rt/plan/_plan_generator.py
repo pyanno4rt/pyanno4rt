@@ -2,6 +2,10 @@
 
 # Author: Tim Ortkamp
 
+# %% External package import
+
+from math import inf
+
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
@@ -82,31 +86,6 @@ class PlanGenerator():
             Indicator for logging output messages.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the logger and the segmentation data
-        logger, segmentation = hub.logger, hub.segmentation
-
-        # Loop over the segments
-        for segment in segmentation:
-
-            # Reset the segment objective and constraint key
-            segmentation[segment]['objective'] = None
-            segmentation[segment]['constraint'] = None
-
-        # Check if verbose is True
-        if verbose:
-
-            # Log a message about the components setting
-            logger.display_info("Setting objectives and constraints ...")
-
-        # Initialize the objective and constraint dictionaries
-        objectives, constraints = {}, {}
-
-        # Set the base dictionaries for the component types
-        bases = {'objective': objectives, 'constraint': constraints}
-
         def set_component(component, segment, category, base_dict):
             """Set the component by its segment and type assignment."""
 
@@ -155,6 +134,31 @@ class PlanGenerator():
                         segmentation[segment][category] = [
                             segmentation[segment][category], instance]
 
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Get the logger and the segmentation data
+        logger, segmentation = hub.logger, hub.segmentation
+
+        # Loop over the segments
+        for segment in segmentation:
+
+            # Reset the segment objective and constraint key
+            segmentation[segment]['objective'] = None
+            segmentation[segment]['constraint'] = None
+
+        # Check if verbose is True
+        if verbose:
+
+            # Log a message about the components setting
+            logger.display_info("Setting objectives and constraints ...")
+
+        # Initialize the objective and constraint dictionaries
+        objectives, constraints = {}, {}
+
+        # Set the base dictionaries for the component types
+        bases = {'objective': objectives, 'constraint': constraints}
+
         # Loop over the segments in the components dictionary
         for segment in self.components:
 
@@ -183,6 +187,20 @@ class PlanGenerator():
 
                 # Set the component
                 set_component(component, segment, category, base_dict)
+
+        # Loop over the constraints
+        for label, constraint in constraints.items():
+
+            # Get the constraint object
+            instance = constraint['instance']
+
+            # Set the weight to the default
+            instance.weight = 1.0
+
+            # Overwrite the constraint bounds by the embedding type
+            instance.bounds = (
+                instance.bounds if instance.embedding == 'active'
+                else [-inf, inf])
 
         # Check if the optimization dictionary already exists
         if hub.optimization:

@@ -38,18 +38,16 @@ optimization_map = {
     'solver': (
         partial(check_type, types=str),
         partial(check_value_in_set, options={
-            'lexicographic': ('', 'scipy'),
+            'lexicographic': ('scipy',),
             'pareto': ('pymoo',),
             'weighted-sum': ('ipyopt', 'proxmin', 'pypop7', 'scipy')})
         ),
     'algorithm': (
         partial(check_type, types=str),
         partial(check_value_in_set, options={
-            'weighted-sum/ipyopt': ('mumps'),
-            'lexicographic/proxmin': (),
+            'weighted-sum/ipyopt': ('mumps',),
             'weighted-sum/proxmin': ('admm', 'pgm', 'sdmm'),
             'pareto/pymoo': ('NSGA3',),
-            'lexicographic/pypop7': (),
             'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),
             'lexicographic/scipy': ('trust-constr',),
             'weighted-sum/scipy': ('L-BFGS-B', 'TNC', 'trust-constr')})

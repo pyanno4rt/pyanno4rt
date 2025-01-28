@@ -16,9 +16,8 @@ class IpyoptSolver():
     Ipyopt wrapper class.
 
     This class serves as a wrapper for the interior-point optimization \
-    algorithms from the Ipyopt solver. It takes the problem structure, \
-    configures the selected algorithm, and defines the method to run the \
-    solver.
+    algorithms from the Ipyopt solver. It takes the problem structure and \
+    defines the method to run the solver.
 
     Parameters
     ----------
@@ -59,11 +58,11 @@ class IpyoptSolver():
 
     Attributes
     ----------
-    fun : callable
-        Minimization function from the pyanno4rt library.
+    nlp : object of class :class:`~ipyopt.Problem`
+        The object used to represent the nonlinear optimization problem.
 
     arguments : dict
-        Dictionary with the function arguments.
+        Dictionary with the problem arguments.
     """
 
     def __init__(
@@ -84,18 +83,46 @@ class IpyoptSolver():
         Datahub().logger.display_info(
             f"Initializing Ipyopt solver with {algorithm} algorithm ...")
 
-        # Get the callable optimization function and its arguments
-        self.nlp = configure_ipyopt(
+        # Get the callable nonlinear problem object
+        self.nlp, self.arguments = configure_ipyopt(
             number_of_variables, number_of_constraints, problem_instance,
             lower_variable_bounds, upper_variable_bounds,
             lower_constraint_bounds, upper_constraint_bounds, algorithm,
-            max_iter, tolerance)
+            max_iter, tolerance, self.callback)
+
+        # Initialize the layer indicator (for 'lexicographic' method)
+        self.layer = None
+
+    def callback(
+            self,
+            *args):
+        """
+        Log the intermediate results after each iteration.
+
+        Parameters
+        ----------
+        *args : tuple
+            Tuple with the callback parameters of the Ipyopt solver.
+
+        Returns
+        -------
+        bool
+            Indicator for the success of the callback iteration.
+        """
+
+        # Set the base output string
+        output_string = f"At iterate {args[1]}: f={round(args[2], 4)}"
+
+        # Log a message about the intermediate function value(s)
+        Datahub().logger.display_info(output_string)
+
+        return True
 
     def run(
             self,
             initial_fluence):
         """
-        Run the ipyopt solver.
+        Run the Ipyopt solver.
 
         Parameters
         ----------
@@ -107,11 +134,12 @@ class IpyoptSolver():
         ndarray
             Optimized fluence vector.
 
-        str
-            Description for the cause of termination.
+        int
+            Indicator for the cause of termination.
         """
 
         # Solve the optimization problem
-        x, objective_value, status = self.nlp.solve(x0=initial_fluence)
+        optimized_fluence, _, status = self.nlp(**self.arguments).solve(
+            x0=initial_fluence)
 
-        return x, status
+        return optimized_fluence, status

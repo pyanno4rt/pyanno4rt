@@ -214,7 +214,10 @@ class MachineLearningComponent(metaclass=ABCMeta):
         self.embedding = embedding
         self.weight = float(weight)
         self.rank = rank
-        self.bounds = [0.0, 1.0] if bounds is None else bounds
+        self.bounds = (
+            [0.0, 1.0] if bounds is None
+            else [0.0 if bounds[0] is None else bounds[0],
+                  1.0 if bounds[1] is None else bounds[1]])
         self.link = [] if link is None else link
         self.identifier = identifier
         self.display = display

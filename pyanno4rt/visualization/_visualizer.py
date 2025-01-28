@@ -16,8 +16,9 @@ from pyqtgraph.Qt import QtGui
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.tools import (
-    get_conventional_objectives, get_machine_learning_objectives,
-    get_radiobiological_objectives)
+    get_conventional_constraints, get_conventional_objectives,
+    get_machine_learning_constraints, get_machine_learning_objectives,
+    get_radiobiological_constraints, get_radiobiological_objectives)
 from pyanno4rt.visualization.visuals import (
     CtDoseSlicingWindowPyQt, DosimetricsTablePlotterMPL, DVHGraphPlotterMPL,
     FeatureSelectWindowPyQt, IterGraphPlotterMPL, MetricsGraphsPlotterMPL,
@@ -207,13 +208,13 @@ class MainWindow(QMainWindow):
 
             # Check if the iteration values button should be disabled
             if (not any(objective.display for objective in (
-                    *cv_objectives, *rb_objectives, *ml_objectives))
+                    *cv_components, *rb_components, *ml_components))
                     and subclass.name == 'iterations_plotter'):
                 button.setEnabled(False)
 
             # Check if the (N)TCP values button should be disabled
             if (not any(objective.display for objective in (
-                    rb_objectives + ml_objectives))
+                    rb_components + ml_components))
                     and subclass.name == 'ntcp_plotter'):
                 button.setEnabled(False)
 
@@ -225,7 +226,7 @@ class MainWindow(QMainWindow):
                    or all(value == [] for value
                           in hub.optimization['problem'].tracker.values()))))
                  or all(objective.model_parameters['write_features'] is False
-                        for objective in ml_objectives))
+                        for objective in ml_components))
                     and subclass.name == 'features_plotter'):
                 button.setEnabled(False)
 
@@ -399,13 +400,19 @@ class MainWindow(QMainWindow):
             text.setStyleSheet(label_styles[i])
             layouts[i].addWidget(text)
 
-        # Get all objectives
+        # Get all components
         if hub.segmentation:
-            cv_objectives = get_conventional_objectives(hub.segmentation)
-            ml_objectives = get_machine_learning_objectives(hub.segmentation)
-            rb_objectives = get_radiobiological_objectives(hub.segmentation)
+            cv_components = (
+                get_conventional_constraints(hub.segmentation)
+                + get_conventional_objectives(hub.segmentation))
+            ml_components = (
+                get_machine_learning_constraints(hub.segmentation)
+                + get_machine_learning_objectives(hub.segmentation))
+            rb_components = (
+                get_radiobiological_constraints(hub.segmentation)
+                + get_radiobiological_objectives(hub.segmentation))
         else:
-            cv_objectives, ml_objectives, rb_objectives = (), (), ()
+            cv_components, ml_components, rb_components = (), (), ()
 
         # Initialize the counter
         counts = [0, 0, 0]

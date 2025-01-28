@@ -139,6 +139,15 @@ class FluenceOptimizer():
             max_iter=max_iter,
             tolerance=tolerance)
 
+        # Check if the solver ignores any constraints
+        if len(constraints) > 0 and algorithm not in ('trust-constr', 'mumps'):
+
+            # Log a message about the ignored constraints
+            hub.logger.display_warning(
+                f"The selected algorithm '{algorithm}' only allows for "
+                "unconstrained optimization problems - all constraints set "
+                "will be ignored ...")
+
         # Get the optimization data
         optimization_dictionary = {
             'problem': problem,
@@ -335,7 +344,7 @@ class FluenceOptimizer():
     @staticmethod
     def get_variable_bounds(lower, upper, length):
         """
-        Get the lower and upper variable bounds in a compatible form.
+        Get the lower and upper variable bounds.
 
         Parameters
         ----------
@@ -351,10 +360,10 @@ class FluenceOptimizer():
         Returns
         -------
         list
-            Transformed lower bounds on the decision variables.
+            Lower bounds on the decision variables.
 
         list
-            Transformed upper bounds on the decision variables.
+            Upper bounds on the decision variables.
         """
 
         def get_bounds(value, limit):
@@ -380,7 +389,7 @@ class FluenceOptimizer():
     @staticmethod
     def get_constraint_bounds(method, constraints):
         """
-        Get the lower and upper constraint bounds in a compatible form.
+        Get the lower and upper constraint bounds.
 
         Parameters
         ----------
@@ -393,14 +402,8 @@ class FluenceOptimizer():
         Returns
         -------
         tuple
-            Transformed lower and upper bounds on the constraints.
+            Lower and upper bounds on the constraints.
         """
-
-        def transform(bounds, limit):
-            """Get the lower or upper bounds by the input value and limit."""
-
-            # Generate a cleansed list by replacing None with the limit
-            return [limit if bound is None else bound for bound in bounds]
 
         # Check if no constraints have been passed
         if len(constraints) == 0:
@@ -413,17 +416,17 @@ class FluenceOptimizer():
 
             # Return the rank-ordered, transformed bounds
             return tuple(
-                {rank: transform(
+                {rank:
                     [constraint['instance'].bounds[index]
-                     for constraint in rank_constraints.values()], limit)
+                     for constraint in rank_constraints.values()]
                     for rank, rank_constraints in constraints.items()}
-                for index, limit in enumerate((-inf, inf)))
+                for index in range(2))
 
         # Else, return the unranked, transformed bounds
         return tuple(
-            transform([constraint['instance'].bounds[index]
-                       for constraint in constraints.values()], limit)
-            for index, limit in enumerate((-inf, inf)))
+            [constraint['instance'].bounds[index]
+             for constraint in constraints.values()]
+            for index in range(2))
 
     def solve(self):
         """Solve the optimization problem."""

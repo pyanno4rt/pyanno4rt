@@ -65,6 +65,7 @@
 			</li>
 			<li> Local and global solvers
 				<ul> 
+					<li> Interior-point algorithms provided by Ipyopt </li>
 					<li> Proximal algorithms provided by Proxmin </li>
 					<li> Multi-objective algorithms provided by Pymoo </li>
 					<li> Population-based algorithms provided by PyPop7 </li>

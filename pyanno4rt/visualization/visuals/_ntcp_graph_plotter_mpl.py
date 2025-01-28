@@ -115,7 +115,7 @@ class NTCPGraphPlotterMPL():
                             for group in groups_cons[0]),
                     tuple(divide(tracker[group[1]+'-'+group[2]], group[3])
                           for group in groups_obj[1])
-                    + tuple(array(tracker[group[1]+'-'+group[2]])
+                    + tuple(divide(tracker[group[1]+'-'+group[2]], group[3])
                             for group in groups_cons[1]),
                     tuple(group[4] for group in groups_obj[2])
                     + tuple(group[4] for group in groups_cons[2]))

@@ -151,8 +151,7 @@ class NeuralNetworkNTCP(MachineLearningComponent):
             for weight in weights)
 
         # Transform the component bounds
-        self.bounds = sorted(
-            self.weight*inverse_sigmoid(bound) for bound in self.bounds)
+        self.bounds = sorted(inverse_sigmoid(bound) for bound in self.bounds)
 
     def compute_value(
             self,

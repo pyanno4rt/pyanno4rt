@@ -19,7 +19,8 @@ from scipy.sparse import hstack as shstack
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.features import FeatureCalculator
-from pyanno4rt.tools import flatten, get_objective_segments
+from pyanno4rt.tools import (
+    flatten, get_constraint_segments, get_objective_segments)
 
 # %% Class definition
 
@@ -71,9 +72,10 @@ class FluenceInitializer():
         """
 
         # Map the selected initialization strategy to the methods
-        strategies = {'data-medoid': self.initialize_from_data,
-                      'target-coverage': self.initialize_from_target,
-                      'warm-start': self.initialize_from_reference}
+        strategies = {
+            'data-medoid': self.initialize_from_data,
+            'target-coverage': self.initialize_from_target,
+            'warm-start': self.initialize_from_reference}
 
         # Check if warm-start initialization has been selected
         if self.initial_strategy == 'warm-start':
@@ -97,20 +99,21 @@ class FluenceInitializer():
         hub = Datahub()
 
         # Log a message about the vector initialization
-        hub.logger.display_info("Initializing fluence vector with respect to "
-                                "data medoid points ...")
+        hub.logger.display_info(
+            "Initializing fluence vector with respect to data medoid points "
+            "...")
 
         # Get the datasets and feature maps from the datahub
         sets = hub.datasets
         maps = hub.feature_maps
 
         # Check if no datasets have been provided
-        if not sets:
+        if sets is None:
 
             # Log a message about falling back to target coverage strategy
-            hub.logger.display_info("No datasets have been provided - "
-                                    "falling back to target coverage "
-                                    "initialization strategy ...")
+            hub.logger.display_info(
+                "No datasets have been provided - falling back to target "
+                "coverage initialization strategy ...")
 
             return self.initialize_from_target()
 
@@ -118,8 +121,9 @@ class FluenceInitializer():
             """Get the standardized dose features."""
 
             # Get the columns of the dosiomic features
-            columns = [index for index, feat in enumerate(maps[key])
-                       if maps[key][feat]['class'] == 'Dosiomics']
+            columns = [
+                index for index, feat in enumerate(maps[key])
+                if maps[key][feat]['class'] == 'Dosiomics']
 
             # Extract the dosiomic feature values
             values = sets[key]['feature_values'][:, columns]
@@ -212,8 +216,9 @@ class FluenceInitializer():
                 """Precompute the features and the segment doses/names."""
 
                 # Get the dose vector from the fluence
-                full_dose = (hub.dose_information['dose_influence_matrix']
-                             @ (fluence*factor))
+                full_dose = (
+                    hub.dose_information['dose_influence_matrix']
+                    @ (fluence*factor))
 
                 # Get the segments across the feature maps
                 segments = tuple(
@@ -276,17 +281,26 @@ class FluenceInitializer():
             # Optimize the fluence under homogeneity condition
             factor_result = minimize_scalar(
                 fun=partial(objective, ones(degrees_of_freedom)),
-                bounds=(0, 100), method='bounded',
-                options={'disp': False, 'maxiter': 1000})
+                bounds=(0, 100),
+                method='bounded',
+                options={
+                    'disp': False,
+                    'maxiter': 1000})
 
             # Optimize the fluence under heterogeneity condition
             fluence_result = minimize(
                 x0=[factor_result.x]*degrees_of_freedom,
-                fun=partial(objective, factor=1), jac=gradient,
+                fun=partial(objective, factor=1),
+                jac=gradient,
                 bounds=zip([0]*degrees_of_freedom, [inf]*degrees_of_freedom),
-                tol=0.001, method='L-BFGS-B', callback=None,
-                options={'disp': False, 'ftol': 0.001, 'maxiter': 1000,
-                         'maxls': 20})
+                tol=0.001,
+                method='L-BFGS-B',
+                callback=None,
+                options={
+                    'disp': False,
+                    'ftol': 0.001,
+                    'maxiter': 1000,
+                    'maxls': 20})
 
             return fluence_result.x
 
@@ -323,38 +337,33 @@ class FluenceInitializer():
         dose_information = hub.dose_information
 
         def get_dose_parameters(target):
-            """Get the dose-related objective parameters of a target."""
+            """Get the dose-related component parameters of a target."""
 
-            # Get the objective from the target
-            target_objective = segmentation[target]['objective']
+            # Get the component(s) from the target
+            target_component = filter(None, flatten(
+                segmentation[target][key]
+                for key in ('constraint', 'objective')))
 
-            # Check if the objective is a tuple
-            if isinstance(target_objective, list):
+            # Return the dose parameters from all components
+            return (tuple(component.parameter_value[index]
+                          for index, category in enumerate(
+                                  component.parameter_category)
+                          if category == 'dose')
+                    for component in target_component)
 
-                # Return the dose parameters from all objectives
-                return (tuple(objective.parameter_value[index]
-                              for index, category in enumerate(
-                                      objective.parameter_category)
-                              if category == 'dose')
-                        for objective in target_objective)
-
-            # Return the dose parameters from the single objective
-            return (target_objective.parameter_value[index]
-                    for index, category in enumerate(
-                            target_objective.parameter_category)
-                    if category == 'dose')
-
-        # Get the objective-assigned target segments
+        # Get the component-assigned target segments
         targets = set(
-            segment for segment in get_objective_segments(segmentation)
+            segment for segment in (
+                get_constraint_segments(segmentation)
+                + get_objective_segments(segmentation))
             if segmentation[segment]['type'] == 'TARGET')
 
-        # Check if any objective-assigned target segments are present
+        # Check if any component-assigned target segments are present
         if len(targets) > 0:
 
             # Get the resized indices of the target segments
-            indices = hstack([segmentation[target]['resized_indices']
-                              for target in targets])
+            indices = hstack([
+                segmentation[target]['resized_indices'] for target in targets])
 
             # Get the target dose parameters
             target_doses = tuple(flatten(map(get_dose_parameters, targets)))
@@ -364,15 +373,16 @@ class FluenceInitializer():
 
         else:
 
-            # Log a message about non-defined target objectives
+            # Log a message about non-defined target components
             hub.logger.display_info(
                 "No target objectives defined - falling back to virtual "
                 "target with total dose prescription of 30 Gy ...")
 
             # Get the resized indices of all target segments
-            indices = hstack([segmentation[segment]['resized_indices']
-                              for segment in segmentation
-                              if segmentation[segment] == 'TARGET'])
+            indices = hstack([
+                segmentation[segment]['resized_indices']
+                for segment in segmentation
+                if segmentation[segment]['type'] == 'TARGET'])
 
             # Set the maximum target dose parameter for a total dose of 30 Gy
             max_dose = 30/dose_information['number_of_fractions']
@@ -403,7 +413,8 @@ class FluenceInitializer():
         """
 
         # Log a message about the vector initialization
-        Datahub().logger.display_info("Initializing fluence vector with "
-                                      "respect to a reference point ...")
+        Datahub().logger.display_info(
+            "Initializing fluence vector with respect to a reference point "
+            "...")
 
         return array(initial_fluence_vector)
