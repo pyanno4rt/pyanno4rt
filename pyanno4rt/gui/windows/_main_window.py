@@ -185,9 +185,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             'nfx_sbox': sbox,
             'img_path_ledit': ledit,
             'img_path_tbutton': tbutton_composer,
-            'img_res_ledit_x': ledit,
-            'img_res_ledit_y': ledit,
-            'img_res_ledit_z': ledit,
             'dose_path_ledit': ledit,
             'dose_path_tbutton': tbutton_composer,
             'dose_res_ledit_x': ledit,
@@ -1202,24 +1199,6 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Load the segment names and types
         self.segments = load_segments_from_path(self.img_path_ledit.text())
 
-        # Check if no target imaging resolution has been passed
-        if configuration['target_imaging_resolution'] is None:
-
-            # Clear the target imaging resolution
-            self.img_res_ledit_x.clear()
-            self.img_res_ledit_y.clear()
-            self.img_res_ledit_z.clear()
-
-        else:
-
-            # Get the resolution
-            resolution = configuration['target_imaging_resolution']
-
-            # Set the target imaging resolution
-            self.img_res_ledit_x.setText(str(resolution[0]))
-            self.img_res_ledit_y.setText(str(resolution[1]))
-            self.img_res_ledit_z.setText(str(resolution[2]))
-
         # Set the dose matrix path
         self.dose_path_ledit.setText(
             abspath(configuration['dose_matrix_path']))
@@ -1257,11 +1236,6 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Reset the imaging path
         self.img_path_ledit.setText(self.base_configuration['imaging_path'])
 
-        # Clear the target imaging resolution
-        self.img_res_ledit_x.clear()
-        self.img_res_ledit_y.clear()
-        self.img_res_ledit_z.clear()
-
         # Reset the dose matrix path
         self.dose_path_ledit.setText(
             self.base_configuration['dose_matrix_path'])
@@ -1298,13 +1272,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             'imaging_path': (
                 None if not self.img_path_ledit.text()
                 else abspath(self.img_path_ledit.text())),
-            'target_imaging_resolution': (
-                None if any(resolution == '' for resolution in (
-                    self.img_res_ledit_x.text(), self.img_res_ledit_y.text(),
-                    self.img_res_ledit_z.text()))
-                else [string_to_numeric(resolution) for resolution in (
-                    self.img_res_ledit_x.text(), self.img_res_ledit_y.text(),
-                    self.img_res_ledit_z.text())]),
             'dose_matrix_path': (
                 None if not self.dose_path_ledit.text()
                 else abspath(self.dose_path_ledit.text())),
@@ -2783,10 +2750,19 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Create a mapping between planes and axes
         mapping = {'axial': 2, 'coronal': 0, 'sagittal': 1}
 
-        # Get the depth of the current plane
-        plane_depth = self.plans[
-            self.plan_ledit.text()].datahub.computed_tomography[
-                'cube_dimensions'][mapping[self.plane_cbox.currentText()]]
+        # Check if the slice widget already stores a CT cube
+        if self.slice_widget.ct_cube is not None:
+
+            # Get the depth of the slice widget's CT cube
+            plane_depth = self.slice_widget.ct_cube.shape[
+                mapping[self.plane_cbox.currentText()]]
+
+        else:
+
+            # Get the depth of the current plan's CT cube
+            plane_depth = self.plans[
+                self.plan_ledit.text()].datahub.computed_tomography[
+                    'cube_dimensions'][mapping[self.plane_cbox.currentText()]]
 
         # Set the range of the slice selection scroll bar
         self.slice_selection_sbar.setRange(0, plane_depth-1)

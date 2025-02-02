@@ -14,7 +14,7 @@ from pyanno4rt.patient.import_functions._read_data_from_p import (
 # %% Function definition
 
 
-def import_from_p(path, resolution):
+def import_from_p(path):
     """
     Import the patient data from a Python (.p) file.
 
@@ -22,10 +22,6 @@ def import_from_p(path, resolution):
     ----------
     path : str
         Path to the Python file.
-
-    resolution : None or list
-        Imaging resolution for post-processing interpolation of the CT and \
-        segmentation data.
 
     Returns
     -------
@@ -40,12 +36,9 @@ def import_from_p(path, resolution):
     computed_tomography_data, segmentation_data = read_data_from_p(path)
 
     # Generate the CT dictionary
-    computed_tomography = generate_ct_from_p(
-        computed_tomography_data, resolution)
+    computed_tomography = generate_ct_from_p(computed_tomography_data)
 
     # Generate the segmentation dictionary
-    segmentation = generate_segmentation_from_p(
-        segmentation_data, computed_tomography)
+    segmentation = generate_segmentation_from_p(segmentation_data)
 
-    return {key: value for key, value in computed_tomography.items()
-            if key not in ('old_dimensions', 'zooms')}, segmentation
+    return computed_tomography, segmentation

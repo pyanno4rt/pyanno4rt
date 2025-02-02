@@ -14,7 +14,7 @@ from pyanno4rt.patient.import_functions._read_data_from_dcm import (
 # %% Function definition
 
 
-def import_from_dcm(path, resolution):
+def import_from_dcm(path):
     """
     Import the patient data from a folder with DICOM (.dcm) files.
 
@@ -22,10 +22,6 @@ def import_from_dcm(path, resolution):
     ----------
     path : str
         Path to the DICOM folder.
-
-    resolution : None or list
-        Imaging resolution for post-processing interpolation of the CT and \
-        segmentation data.
 
     Returns
     -------
@@ -40,8 +36,7 @@ def import_from_dcm(path, resolution):
     computed_tomography_data, segmentation_data = read_data_from_dcm(path)
 
     # Generate the CT dictionary
-    computed_tomography = generate_ct_from_dcm(
-        computed_tomography_data, resolution)
+    computed_tomography = generate_ct_from_dcm(computed_tomography_data)
 
     # Generate the segmentation dictionary
     segmentation = generate_segmentation_from_dcm(

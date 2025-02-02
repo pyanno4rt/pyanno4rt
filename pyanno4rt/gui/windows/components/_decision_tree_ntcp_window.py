@@ -569,7 +569,7 @@ class DecisionTreeNTCPWindow(QMainWindow, Ui_decision_tree_ntcp_window):
             # Add the 'max_features' to the tune space
             model_parameters['tune_space']['max_features'] = list(range(
                 int(self.max_features_lower_bound_ledit.text()),
-                int(self.max_features_upper_bound_ledit.text())+1)),
+                int(self.max_features_upper_bound_ledit.text())+1))
 
         # Configure the component dictionary
         component = {
@@ -693,7 +693,7 @@ class DecisionTreeNTCPWindow(QMainWindow, Ui_decision_tree_ntcp_window):
         """Open the data columns window."""
 
         # Load the data columns into the window
-        self.data_columns_window.load(self.data_columns)
+        self.data_columns_window.load()
 
         # Set the position of the window
         self.data_columns_window.position()

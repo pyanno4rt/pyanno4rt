@@ -100,7 +100,8 @@ class DataModelHandler():
             # Initialize the empty dataset generator
             self.data_generator = EmptyDataGenerator(
                 model_label=model_label,
-                model_folder_path=model_folder_path)
+                model_folder_path=model_folder_path,
+                data_columns=data_columns)
 
         # Check if the data path leads to a tabular file
         elif data_path.endswith('.csv'):

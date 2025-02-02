@@ -7,16 +7,11 @@
 from numpy import array, clip, dstack, prod
 from pydicom.pixel_data_handlers.util import apply_modality_lut
 from scipy.interpolate import interp1d
-from scipy.ndimage import zoom
-
-# %% Internal package import
-
-from pyanno4rt.tools import arange_with_endpoint
 
 # %% Function definition
 
 
-def generate_ct_from_dcm(data, resolution):
+def generate_ct_from_dcm(data):
     """
     Generate the CT dictionary from a folder with DICOM (.dcm) files.
 
@@ -25,10 +20,6 @@ def generate_ct_from_dcm(data, resolution):
     data : tuple
         Tuple of :class:`pydicom.dataset.FileDataset` objects with \
         information on the CT slices.
-
-    resolution : None or list
-        Imaging resolution for post-processing interpolation of the CT and \
-        segmentation data.
 
     Returns
     -------
@@ -96,43 +87,6 @@ def generate_ct_from_dcm(data, resolution):
 
         return interpolator(cube_hounsfield)
 
-    def interpolate_ct_dictionary(computed_tomography, resolution):
-        """Interpolate the CT dictionary values to a resolution."""
-
-        # Get the current cube dimensions
-        old_dimensions = computed_tomography['cube_dimensions']
-
-        # Update the grid resolution
-        computed_tomography['resolution'] = dict(
-            zip(('x', 'y', 'z'), resolution))
-
-        # Loop over the grid axes
-        for index, axis in enumerate(('x', 'y', 'z')):
-
-            # Update the grid points on the current axis
-            computed_tomography[axis] = arange_with_endpoint(
-                computed_tomography[axis][0],
-                computed_tomography[axis][-1],
-                resolution[index])
-
-        # Update the cube dimensions
-        computed_tomography['cube_dimensions'] = array([
-            len(computed_tomography[axis]) for axis in ('x', 'y', 'z')])
-
-        # Get the zoom factors for all cube dimensions
-        zooms = (pair[0]/pair[1] for pair in zip(
-            computed_tomography['cube_dimensions'], old_dimensions))
-
-        # Interpolate the CT cube to the target resolution
-        computed_tomography['cubeHU'] = zoom(
-            computed_tomography['cubeHU'], zooms, order=1)
-
-        # Update the number of voxels
-        computed_tomography['number_of_voxels'] = prod(
-            computed_tomography['cube_dimensions'])
-
-        return computed_tomography
-
     # Check the CT data
     check_ct_data(data)
 
@@ -169,11 +123,5 @@ def generate_ct_from_dcm(data, resolution):
     # Add the number of voxels to the dictionary
     computed_tomography['number_of_voxels'] = prod(
         computed_tomography['cube_dimensions'])
-
-    # Check if a target resolution has been passed
-    if resolution:
-
-        # Return the interpolated CT dictionary
-        return interpolate_ct_dictionary(computed_tomography, resolution)
 
     return computed_tomography

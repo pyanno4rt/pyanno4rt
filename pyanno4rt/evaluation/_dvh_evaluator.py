@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from numpy import array, linspace, logical_and, unravel_index
+from numpy import array, linspace, logical_and, nan, unravel_index
 
 # %% Internal package import
 
@@ -123,9 +123,14 @@ class DVHEvaluator():
         def get_segment_dvh(indices, cube_dimensions, points):
             """Get the DVH for a single segment."""
 
-            return (dvh_functions[self.dvh_type](dose_cube[unravel_index(
-                indices, cube_dimensions, order='F')], points)
-                * 100/len(indices))
+            # Check if any voxel indices are present
+            if len(indices) > 0:
+
+                return (dvh_functions[self.dvh_type](dose_cube[unravel_index(
+                    indices, cube_dimensions, order='F')], points)
+                    * 100/len(indices))
+
+            return array([nan]*len(points))
 
         # Map the DVH type to the evaluation function
         dvh_functions = {'cumulative': evaluate_cumulative_dvh,

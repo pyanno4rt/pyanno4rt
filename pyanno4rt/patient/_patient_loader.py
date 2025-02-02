@@ -28,30 +28,21 @@ class PatientLoader():
     imaging_path : str
         Path to the CT and segmentation data.
 
-    target_imaging_resolution : None or list
-        Imaging resolution for post-processing interpolation of the CT and \
-        segmentation data.
-
     Attributes
     ----------
     imaging_path : str
-        See 'Parameters'.
-
-    target_imaging_resolution : None or list
         See 'Parameters'.
     """
 
     def __init__(
             self,
-            imaging_path,
-            target_imaging_resolution):
+            imaging_path):
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info("Initializing patient loader ...")
 
-        # Get the instance attributes from the arguments
+        # Get the imaging path from the arguments
         self.imaging_path = imaging_path
-        self.target_imaging_resolution = target_imaging_resolution
 
     def load(self):
         """Load the patient data from the path."""
@@ -72,5 +63,4 @@ class PatientLoader():
             f"Importing CT and segmentation data from {source} ...")
 
         # Enter the patient imaging data into the datahub
-        hub.computed_tomography, hub.segmentation = importer(
-            self.imaging_path, self.target_imaging_resolution)
+        hub.computed_tomography, hub.segmentation = importer(self.imaging_path)

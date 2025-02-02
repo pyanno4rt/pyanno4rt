@@ -93,4 +93,4 @@ def load_segments_from_path(path):
         # Set the segment dictionary empty
         segments = {}
 
-    return segments
+    return dict(sorted(segments.items()))

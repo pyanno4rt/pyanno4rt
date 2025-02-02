@@ -37,12 +37,16 @@ class EmptyDataGenerator():
 
     model_folder_path : None or str
         See 'Parameters'.
+
+    data_columns : dict
+        Dictionary with the column information on features and label.
     """
 
     def __init__(
             self,
             model_label,
-            model_folder_path):
+            model_folder_path,
+            data_columns):
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info(
@@ -52,6 +56,7 @@ class EmptyDataGenerator():
         # Get the instance attributes from the arguments
         self.model_label = model_label
         self.model_folder_path = model_folder_path
+        self.data_columns = data_columns
 
     def generate(self):
         """
@@ -95,6 +100,12 @@ class EmptyDataGenerator():
             'oof_folds': configuration['oof_folds'],
             'number_of_samples': configuration['number_of_samples']
             }
+
+        # Loop over the feature definitions
+        for key, value in data_information['feature_definitions'].items():
+
+            # Replace the segment name by the data columns dictionary
+            value['segment'] = self.data_columns[key]['segment']
 
         # Enter the data information dictionary into the datahub
         hub.datasets |= {self.model_label: data_information}

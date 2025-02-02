@@ -594,7 +594,7 @@ class KNeighborsTCPWindow(
         """Open the data columns window."""
 
         # Load the data columns into the window
-        self.data_columns_window.load(self.data_columns)
+        self.data_columns_window.load()
 
         # Set the position of the window
         self.data_columns_window.position()

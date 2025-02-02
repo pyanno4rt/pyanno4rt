@@ -1905,7 +1905,7 @@ border-color: rgb(186, 189, 182);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="iconSize">
            <size>
@@ -1949,6 +1949,9 @@ background-color: rgb(211, 215, 207);</string>
             </property>
             <item>
              <widget class="QScrollArea" name="scroll_configuration">
+              <property name="verticalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOn</enum>
+              </property>
               <property name="widgetResizable">
                <bool>true</bool>
               </property>
@@ -1957,8 +1960,8 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>368</width>
-                 <height>896</height>
+                 <width>817</width>
+                 <height>775</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_configuration_meta_layout">
@@ -2656,328 +2659,6 @@ border-color: rgb(186, 189, 182);</string>
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QLabel" name="img_res_label">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>25</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>25</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <weight>75</weight>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">border: 0px solid;</string>
-                    </property>
-                    <property name="text">
-                     <string>Target imaging resolution [mm]</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="img_res_vspacer">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::Fixed</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>10</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item>
-                   <layout class="QHBoxLayout" name="img_res_layout">
-                    <item>
-                     <widget class="QLabel" name="img_res_sublabel_xyz">
-                      <property name="minimumSize">
-                       <size>
-                        <width>0</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">border: 0px solid;</string>
-                      </property>
-                      <property name="text">
-                       <string>[x, y, z] : </string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <spacer name="img_res_hspacer_left">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeType">
-                       <enum>QSizePolicy::Fixed</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>5</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item>
-                     <widget class="QLabel" name="img_res_bracket_left">
-                      <property name="minimumSize">
-                       <size>
-                        <width>0</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">border: 0px solid;</string>
-                      </property>
-                      <property name="text">
-                       <string>[</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <spacer name="img_res_hspacer_between_left">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeType">
-                       <enum>QSizePolicy::Fixed</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>5</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item>
-                     <widget class="QLineEdit" name="img_res_ledit_x">
-                      <property name="minimumSize">
-                       <size>
-                        <width>45</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>45</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignCenter</set>
-                      </property>
-                      <property name="placeholderText">
-                       <string>None</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QLabel" name="img_res_comma_left">
-                      <property name="minimumSize">
-                       <size>
-                        <width>0</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">border: 0px solid;</string>
-                      </property>
-                      <property name="text">
-                       <string>,</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QLineEdit" name="img_res_ledit_y">
-                      <property name="minimumSize">
-                       <size>
-                        <width>45</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>45</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignCenter</set>
-                      </property>
-                      <property name="placeholderText">
-                       <string>None</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QLabel" name="img_res_comma_right">
-                      <property name="minimumSize">
-                       <size>
-                        <width>0</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">border: 0px solid;</string>
-                      </property>
-                      <property name="text">
-                       <string>,</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QLineEdit" name="img_res_ledit_z">
-                      <property name="minimumSize">
-                       <size>
-                        <width>45</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>45</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignCenter</set>
-                      </property>
-                      <property name="placeholderText">
-                       <string>None</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <spacer name="img_res_hspacer_between_right">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeType">
-                       <enum>QSizePolicy::Fixed</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>5</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item>
-                     <widget class="QLabel" name="img_res_bracket_right">
-                      <property name="minimumSize">
-                       <size>
-                        <width>0</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">border: 0px solid;</string>
-                      </property>
-                      <property name="text">
-                       <string>]</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <spacer name="img_res_hspacer_right">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeType">
-                       <enum>QSizePolicy::MinimumExpanding</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                   </layout>
-                  </item>
-                  <item>
-                   <spacer name="img_res_dose_path_vspacer">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::Fixed</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item>
                    <widget class="QLabel" name="dose_path_label">
                     <property name="minimumSize">
                      <size>
@@ -3653,7 +3334,7 @@ background-color: rgb(211, 215, 207);</string>
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-289</y>
+                 <y>0</y>
                  <width>817</width>
                  <height>1122</height>
                 </rect>
@@ -5619,8 +5300,8 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>369</width>
-                 <height>624</height>
+                 <width>817</width>
+                 <height>695</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_evaluation_meta_layout">
@@ -6788,13 +6469,13 @@ border-color: rgb(211, 215, 207);</string>
                   <number>15</number>
                  </property>
                  <property name="horizontalSpacing">
-                  <number>3</number>
+                  <number>5</number>
                  </property>
                  <property name="verticalSpacing">
                   <number>7</number>
                  </property>
-                 <item row="0" column="3">
-                  <widget class="QLabel" name="slice_selection_label">
+                 <item row="0" column="4">
+                  <widget class="QLabel" name="slice_selection_pos">
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -6813,42 +6494,8 @@ border-color: rgb(211, 215, 207);</string>
                      <bold>true</bold>
                     </font>
                    </property>
-                   <property name="text">
-                    <string>Slice</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="3" colspan="2">
-                  <widget class="QScrollBar" name="slice_selection_sbar">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>153</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-                   </property>
-                   <property name="value">
-                    <number>49</number>
-                   </property>
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
                   </widget>
                  </item>
@@ -6874,6 +6521,59 @@ border-color: rgb(186, 189, 182);</string>
                    </property>
                    <property name="text">
                     <string>Dose opacity</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QLabel" name="slice_selection_label">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Slice</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="plane_label">
+                   <property name="minimumSize">
+                    <size>
+                     <width>101</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>101</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">border: 0px;</string>
+                   </property>
+                   <property name="text">
+                    <string>Plane</string>
                    </property>
                   </widget>
                  </item>
@@ -6903,8 +6603,7 @@ border-color: rgb(186, 189, 182);</string>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgb(238, 238, 236);
 border: 1px solid;
-border-color: rgb(186, 189, 182);
-margin-right: 6px;</string>
+border-color: rgb(186, 189, 182);</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -6917,31 +6616,6 @@ margin-right: 6px;</string>
                    </property>
                    <property name="value">
                     <number>70</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="4">
-                  <widget class="QLabel" name="slice_selection_pos">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
                   </widget>
                  </item>
@@ -6997,31 +6671,37 @@ border-color: rgb(186, 189, 182);</string>
                    </item>
                   </widget>
                  </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="plane_label">
+                 <item row="1" column="3" colspan="2">
+                  <widget class="QScrollBar" name="slice_selection_sbar">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="minimumSize">
                     <size>
-                     <width>101</width>
-                     <height>25</height>
+                     <width>153</width>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>101</width>
-                     <height>25</height>
+                     <width>16777215</width>
+                     <height>30</height>
                     </size>
                    </property>
-                   <property name="font">
-                    <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
-                    </font>
-                   </property>
                    <property name="styleSheet">
-                    <string notr="true">border: 0px;</string>
+                    <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
                    </property>
-                   <property name="text">
-                    <string>Plane</string>
+                   <property name="value">
+                    <number>49</number>
+                   </property>
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
                    </property>
                   </widget>
                  </item>

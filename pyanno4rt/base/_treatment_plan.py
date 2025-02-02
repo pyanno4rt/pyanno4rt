@@ -82,10 +82,6 @@ class TreatmentPlan():
                 included in a single file (.mat or .p) or a series of files \
                 (.dcm), whose content follows the pyanno4rt data structure.
 
-        - target_imaging_resolution : None or list, default=None
-            Imaging resolution for post-processing interpolation of the CT \
-            and segmentation data, only used if a list is passed.
-
         - dose_matrix_path : str
             Path to the dose-influence matrix file (.mat or .npy).
 
@@ -396,8 +392,6 @@ class TreatmentPlan():
             'number_of_fractions': configuration.get(
                 'number_of_fractions', 30),
             'imaging_path': configuration.get('imaging_path'),
-            'target_imaging_resolution': configuration.get(
-                'target_imaging_resolution'),
             'dose_matrix_path': configuration.get('dose_matrix_path'),
             'dose_resolution': configuration.get('dose_resolution')
             }
@@ -461,9 +455,7 @@ class TreatmentPlan():
 
         # Initialize the patient loader
         self.patient_loader = PatientLoader(
-            imaging_path=self.configuration['imaging_path'],
-            target_imaging_resolution=self.configuration[
-                'target_imaging_resolution'])
+            imaging_path=self.configuration['imaging_path'])
 
         # Load the patient data
         self.patient_loader.load()

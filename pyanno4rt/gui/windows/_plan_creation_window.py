@@ -6,7 +6,9 @@
 
 from functools import partial
 from os.path import abspath, dirname, isfile
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMenu, QMessageBox
+from PyQt5.QtCore import QEvent
+from PyQt5.QtWidgets import (
+    QComboBox, QFileDialog, QMainWindow, QMenu, QMessageBox, QSpinBox)
 
 # %% Internal package import
 
@@ -16,7 +18,9 @@ from pyanno4rt.gui.compilations.plan_creation_window import (
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, tbutton_composer)
 from pyanno4rt.gui.windows.components import component_window_map
-from pyanno4rt.optimization.components import component_map
+from pyanno4rt.optimization.components import (
+    ConventionalComponent, component_map, MachineLearningComponent,
+    RadiobiologicalComponent)
 from pyanno4rt.tools import load_segments_from_path
 
 # %% Class definition
@@ -85,7 +89,7 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             'close_plan_pbutton': pbutton_composer})
 
         # Install the custom event filter for the reference combo box
-        self.ref_plan_cbox.installEventFilter(parent)
+        self.ref_plan_cbox.installEventFilter(self)
 
         # Adjust the component list widget spacing
         self.components_lwidget.setSpacing(4)
@@ -95,6 +99,37 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
 
         # Connect the fields with the event signals
         self.connect_signals()
+
+    def eventFilter(
+            self,
+            source,
+            event):
+        """
+        Filter the events (overwrites the default event filter).
+
+        Parameters
+        ----------
+        source : object of class :class:`~PyQt5.QtWidgets`
+            The object representing the event source.
+
+        event : object of class :class:`~PyQt5.QtCore.QEvent`
+            The object representing the event.
+
+        Returns
+        -------
+        bool or object of class :class:`~PyQt5.QtCore.QEvent`
+            Boolean value or event object depending on the filter.
+        """
+
+        # Check if a mouse wheel event applies to QComboBox or QSpinBox
+        if (event.type() == QEvent.Wheel and
+                isinstance(source, (QComboBox, QSpinBox))):
+
+            # Filter the event by returning True
+            return True
+
+        # Else, return the unfiltered event
+        return super().eventFilter(source, event)
 
     def mousePressEvent(
             self,
@@ -124,11 +159,34 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
         # Initialize the dropdown menu
         menu = QMenu()
 
-        # Loop over the component map keys
-        for key in component_map:
+        # Add submenus for the different component types
+        conv_menu = menu.addMenu('Conventional')
+        rb_menu = menu.addMenu('Radiobiological')
+        ml_menu = menu.addMenu('Machine Learning')
 
-            # Add the key to the dropdown menu
-            menu.addAction(key, partial(self.open_component_window, key))
+        # Loop over the component map items
+        for label, component in component_map.items():
+
+            # Check if the component is of conventional type
+            if issubclass(component, ConventionalComponent):
+
+                # Add the action to the conventional submenu
+                conv_menu.addAction(
+                    label, partial(self.open_component_window, label))
+
+            # Check if the component is of machine learning type
+            elif issubclass(component, MachineLearningComponent):
+
+                # Add the action to the machine learning menu
+                ml_menu.addAction(
+                    label, partial(self.open_component_window, label))
+
+            # Check if the component is of radiobiological type
+            elif issubclass(component, RadiobiologicalComponent):
+
+                # Add the action to the radiobiological menu
+                rb_menu.addAction(
+                    label, partial(self.open_component_window, label))
 
         # Connect the menu trigger event
         menu.triggered.connect(self.update_plan_component_key)
@@ -400,11 +458,22 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
                 # Transfer the item clone
                 self.parent.components_lwidget.addItem(item_clone)
 
-            # Initialize the treatment plan from the main window
-            self.parent.initialize()
-
             # Load the segment names and types from the imaging path
             self.segments = load_segments_from_path(self.img_path_ledit.text())
+
+            # Add the segment names to the parent display combo box
+            self.parent.display_segments_cbox.addItems(
+                list(self.segments.keys()))
+
+            # Loop over the parent display segments
+            for index in range(self.parent.display_segments_cbox.count()):
+
+                # Reset the parent display segments to checked
+                self.parent.display_segments_cbox.model().item(
+                    index).setCheckState(2)
+
+            # Initialize the treatment plan from the main window
+            self.parent.initialize()
 
         # Close the plan creation window
         self.close()

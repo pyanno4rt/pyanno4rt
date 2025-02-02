@@ -7,11 +7,18 @@
 from matplotlib import colormaps
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
-from numpy import (nan, rot90, transpose, unravel_index, zeros)
+from numpy import (
+    array, nan, ravel_multi_index, rot90, transpose, unravel_index, where,
+    zeros)
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from pyqtgraph import (
     colormap, ColorBarItem, GraphicsLayoutWidget, ImageItem, IsocurveItem,
     mkColor, mkPen)
+from scipy.ndimage import zoom
+
+# %% Internal package import
+
+from pyanno4rt.tools import arange_with_endpoint
 
 # %% Class definition
 
@@ -57,6 +64,7 @@ class SliceWidget(QWidget):
         self.bar.setImageItem(self.dose_image)
 
         # 
+        self.zooms = None
         self.slice = None
         self.positions = None
 
@@ -81,41 +89,108 @@ class SliceWidget(QWidget):
     def add_ct(self):
         """."""
 
-        def generate_segment_mask(segment):
+        def interpolate_ct(computed_tomography, segmentation, resolution):
+            """Interpolate the CT values."""
+
+            # Get the current cube dimensions
+            old_dimensions = computed_tomography['cube_dimensions']
+
+            # 
+            interpolated_ct = {
+                'x': None,
+                'y': None,
+                'z': None,
+                'cube_dimensions': None,
+                'cubeHU': None}
+
+            # 
+            interpolated_cst = {
+                segment: {'raw_indices': None} for segment in segmentation}
+
+            # Loop over the grid axes
+            for index, axis in enumerate(('x', 'y', 'z')):
+
+                # Update the grid points on the current axis
+                interpolated_ct[axis] = arange_with_endpoint(
+                    computed_tomography[axis][0],
+                    computed_tomography[axis][-1],
+                    resolution[index])
+
+            # Update the cube dimensions
+            interpolated_ct['cube_dimensions'] = array([
+                len(interpolated_ct[axis]) for axis in ('x', 'y', 'z')])
+
+            # Get the zoom factors for all cube dimensions
+            self.zooms = tuple(pair[0]/pair[1] for pair in zip(
+                interpolated_ct['cube_dimensions'], old_dimensions))
+
+            # Interpolate the CT cube to the target resolution
+            interpolated_ct['cubeHU'] = zoom(
+                computed_tomography['cubeHU'], self.zooms, order=1)
+
+            # Loop over the segments
+            for segment in segmentation:
+
+                # Initialize the segment mask
+                mask = zeros(old_dimensions)
+
+                # Insert ones at the segment indices
+                mask[unravel_index(
+                    segmentation[segment]['raw_indices'], old_dimensions,
+                    order='F')] = 1
+
+                # Get the resized segment indices
+                resized_indices = where(zoom(mask, self.zooms, order=0))
+
+                # Enter the new segment indices into the datahub
+                interpolated_cst[segment]['raw_indices'] = ravel_multi_index(
+                    resized_indices, interpolated_ct['cube_dimensions'],
+                    order='F')
+
+            return interpolated_ct, interpolated_cst
+
+        def get_segment_mask(segment, dimensions):
             """Generate the segmentation masks as a single cube."""
+
             # Initialize the segment mask
-            segment_mask = zeros(computed_tomography['cube_dimensions'])
+            segment_mask = zeros(dimensions)
 
             # Insert ones at the indices of the segment
             segment_mask[unravel_index(
-                segmentation[segment]['raw_indices'],
-                computed_tomography['cube_dimensions'], order='F')] = 1
+                interpolated_cst[segment]['raw_indices'], dimensions,
+                order='F')] = 1
 
             return segment_mask
 
         # 
-        self.plan = self.parent.plans[self.parent.plan_ledit.text()]
+        plan = self.parent.plans[self.parent.plan_ledit.text()]
 
         # 
-        computed_tomography = self.plan.datahub.computed_tomography
-        segmentation = self.plan.datahub.segmentation
+        computed_tomography = plan.datahub.computed_tomography
+        segmentation = plan.datahub.segmentation
 
         # 
-        self.ct_cube = self.plan.datahub.computed_tomography['cubeHU']
+        interpolated_ct, interpolated_cst = interpolate_ct(
+            computed_tomography, segmentation,
+            plan.configuration['dose_resolution'])
 
         # 
-        self.positions = (
-            computed_tomography['x'],
-            computed_tomography['y'],
-            computed_tomography['z'])
+        self.ct_cube = interpolated_ct['cubeHU']
+
+        # 
+        self.positions = {
+            'x': interpolated_ct['x'],
+            'y': interpolated_ct['y'],
+            'z': interpolated_ct['z']}
 
         # 
         self.segment_masks = tuple(
-            generate_segment_mask(segment) for segment in segmentation)
+            get_segment_mask(segment, interpolated_ct['cube_dimensions'])
+            for segment in segmentation)
 
         segment_colors = tuple(
             255*segmentation[segment]['parameters']['visibleColor']
-            for segment in (*segmentation,))
+            for segment in segmentation)
 
         segment_images = [ImageItem() for _ in self.segment_masks]
         for image in segment_images:
@@ -132,10 +207,12 @@ class SliceWidget(QWidget):
         """."""
 
         # 
-        self.plan = self.parent.plans[self.parent.plan_ledit.text()]
+        plan = self.parent.plans[self.parent.plan_ledit.text()]
 
         # 
-        self.dose_cube = self.plan.datahub.optimization['optimized_dose']
+        self.dose_cube = zoom(
+            plan.datahub.optimization['optimized_dose'], self.zooms, order=1)
+
         self.minimum, self.maximum = self.dose_cube.min(), self.dose_cube.max()
 
         # 
@@ -254,8 +331,7 @@ class SliceWidget(QWidget):
         if self.positions is not None:
 
             # 
-            position = round(
-                self.plan.datahub.computed_tomography[axis][self.slice], 2)
+            position = round(self.positions[axis][self.slice], 2)
 
             # 
             self.parent.slice_selection_pos.setText(
@@ -351,7 +427,9 @@ class SliceWidget(QWidget):
     def reset_parent(self):
         """."""
 
+        self.parent.plane_cbox.blockSignals(True)
         self.parent.plane_cbox.setCurrentText('axial')
+        self.parent.plane_cbox.blockSignals(False)
         self.parent.slice_selection_pos.clear()
         self.parent.set_disabled((
             'plane_cbox', 'opacity_sbox', 'slice_selection_sbar'))

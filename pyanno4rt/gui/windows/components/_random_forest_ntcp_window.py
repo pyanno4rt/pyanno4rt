@@ -713,7 +713,7 @@ class RandomForestNTCPWindow(QMainWindow, Ui_random_forest_ntcp_window):
         """Open the data columns window."""
 
         # Load the data columns into the window
-        self.data_columns_window.load(self.data_columns)
+        self.data_columns_window.load()
 
         # Set the position of the window
         self.data_columns_window.position()

@@ -38,12 +38,6 @@ configuration_map = {
         partial(check_regular_extension_directory, extensions=('.dcm',),
                 no_directory=('.mat', '.p'))
         ),
-    'target_imaging_resolution': (
-        partial(check_type, types=(type(None), list)),
-        partial(check_subtype, types=(int, float)),
-        partial(check_length, reference=3, sign='=='),
-        partial(check_value, reference=0, sign='>', is_vector=True)
-        ),
     'dose_matrix_path': (
         partial(check_type, types=str),
         partial(check_regular_extension, extensions=('.mat', '.npy'))

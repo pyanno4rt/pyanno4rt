@@ -236,17 +236,8 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             # Load the data columns from the presets dictionary
             self.load(self.parent.parent.data_presets.get(selection, {}))
 
-    def load(
-            self,
-            data_columns):
-        """
-        Load the data columns dictionary into the table.
-
-        Parameters
-        ----------
-        data_columns : dict
-            Dictionary with the column information on features and label.
-        """
+    def load(self, preset=None):
+        """Load the data columns into the table."""
 
         # Set the initial number of rows and columns
         self.feature_table.setRowCount(0)
@@ -260,8 +251,19 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         self.feature_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.Stretch)
 
-        # Load the data column names from the data
-        column_names = self.load_names_from_data()
+        # Check if no preset has been passed
+        if preset is None:
+
+            # Load the column names and dictionary from the model/dataset
+            column_names, data_columns = self.load_columns_from_data()
+
+        else:
+
+            # Load the column names from the data
+            column_names, _ = self.load_columns_from_data()
+
+            # Load the data columns dictionary from the preset
+            data_columns = preset
 
         # Check if the columns are not loaded from a model folder
         if not self.from_model:
@@ -269,13 +271,13 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             # Add the dropdown menu to the 'plus' button
             self.add_dropdown_to_features(column_names)
 
-            # Enable the 'plus' button
-            self.feature_plus_tbutton.setEnabled(True)
+            # Enable some fields
+            self.set_enabled(('preset_load_tbutton', 'feature_plus_tbutton'))
 
         else:
 
-            # Disable the 'plus' button
-            self.feature_plus_tbutton.setEnabled(False)
+            # Disable some fields
+            self.set_disabled(('preset_load_tbutton', 'feature_plus_tbutton'))
 
         # Clear the variable label combo boxes
         self.column_cbox.clear()
@@ -298,8 +300,18 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         # Update the time variable combo box
         self.update_by_viewpoint()
 
-    def load_names_from_data(self):
-        """Load the column names from the data."""
+    def load_columns_from_data(self):
+        """
+        Load the data columns from the data.
+
+        Returns
+        -------
+        list
+            The column names read from the model folder or data file path.
+
+        dict
+            Dictionary with the features and the label.
+        """
 
         try:
 
@@ -314,14 +326,40 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
                 configuration = load(file)
 
             # Get the column names from the configuration
-            model_columns = (configuration['feature_names'] + list(filter(
+            model_columns = (configuration['feature_names'] + list(set(filter(
                 None, [configuration['label_name'],
-                       configuration['time_variable_name']])))
+                       configuration['time_variable_name']]))))
+
+            # Compile the model data columns dictionary
+            model_dictionary = (
+                {item[0]: item[1] | {
+                    'type': 'feature',
+                    'scale': configuration['feature_scales'][index]}
+                    for index, item in enumerate(
+                            configuration['feature_definitions'].items())}
+                | {configuration['label_name']: {
+                    'type': 'label',
+                    'viewpoint': configuration['label_viewpoint'],
+                    'time_variable': configuration['time_variable_name'],
+                    'bounds': configuration['label_bounds']}})
+
+            # Loop over the model dictionary items
+            for key, value in model_dictionary.items():
+
+                # Check if the item is a feature from the parent data columns
+                if (value['type'] == 'feature' and
+                        key in self.parent.data_columns):
+
+                    # Replace the segment name by the data columns dictionary
+                    value['segment'] = self.parent.data_columns[key]['segment']
 
         except FileNotFoundError:
 
             # Set the model column names to the empty list
             model_columns = []
+
+            # Set the model columns dictionary as empty
+            model_dictionary = {}
 
         try:
 
@@ -334,20 +372,29 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             # Set the dataset column names to the empty list
             tab_data_columns = []
 
-        # Check if model column names have been passed
-        if len(model_columns) >= 2 and not len(tab_data_columns) >= 2:
+        # Set the column names and the dictionary to the tabular data inputs
+        columns, dictionary = tab_data_columns, self.parent.data_columns
 
-            # Set the model load indicator to True
-            self.from_model = True
-
-            # Return the sorted model column names
-            return model_columns
-
-        # Set the model load indicator to False
+        # Set the model load indicator to the default
         self.from_model = False
 
-        # Return the sorted tabular data column names
-        return tab_data_columns
+        # Check if model columns have been passed
+        if len(model_columns) >= 2:
+
+            # Set the model load indicator
+            self.from_model = len(tab_data_columns) < 2
+
+            # Check if the columns are loaded from a model folder
+            if self.from_model:
+
+                # Overwrite the columns by the model inputs
+                columns = model_columns
+
+            # Overwrite the columns dictionary by the model inputs
+            dictionary = model_dictionary
+
+        # Return the column names and dictionary
+        return columns, dictionary
 
     def add_dropdown_to_features(
             self,
@@ -460,7 +507,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             combo_box.setCurrentText(current_text)
 
             # Check if the columns are loaded from a model folder
-            if self.from_model:
+            if self.from_model and column != 1:
 
                 # Disable the combo box
                 combo_box.setEnabled(False)
@@ -719,8 +766,9 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         """Update the time variable by the viewpoint."""
 
         # Check if the viewpoint requires a time variable
-        if self.viewpoint_cbox.currentText() in (
-                'early', 'late', 'long-term', 'profile'):
+        if (self.viewpoint_cbox.currentText() in (
+                'early', 'late', 'long-term', 'profile')
+                and not self.from_model):
 
             # Enable the time variable combo box
             self.time_variable_cbox.setEnabled(True)
@@ -730,8 +778,11 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             # Disable the time variable combo box
             self.time_variable_cbox.setEnabled(False)
 
-            # Reset the current index
-            self.time_variable_cbox.setCurrentIndex(0)
+            # Check if the columns are not loaded from a model folder
+            if not self.from_model:
+
+                # Reset the current index
+                self.time_variable_cbox.setCurrentIndex(0)
 
     def read_columns(self):
         """

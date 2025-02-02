@@ -5,7 +5,6 @@
         "modality": "photon",
         "number_of_fractions": 30,
         "imaging_path": "./docs/TG_119_data.mat",
-        "target_imaging_resolution": null,
         "dose_matrix_path": "./docs/TG_119_photonDij.mat",
         "dose_resolution": [
             6,

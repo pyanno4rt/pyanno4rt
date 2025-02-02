@@ -100,7 +100,7 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
     upper_variable_bounds = array(upper_variable_bounds)
 
     # Initialize the arguments dictionary
-    arguments = {'e_rel': 1e-2,
+    arguments = {'e_rel': 1e-6,
                  'max_iter': max_iter,
                  'callback': partial(
                      callback, objective=problem_instance.objective)}

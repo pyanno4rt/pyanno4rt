@@ -985,6 +985,9 @@ border: 0px solid</string>
     <property name="text">
      <string>Disable segmentation</string>
     </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QCheckBox" name="disDose_cbox">
     <property name="geometry">
@@ -1020,6 +1023,9 @@ border: 0px solid</string>
     </property>
     <property name="text">
      <string>Disable dose contours</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLabel" name="plane_label">

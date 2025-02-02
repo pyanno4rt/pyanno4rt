@@ -22,7 +22,6 @@ def test_copycat():
             'modality': 'photon',
             'number_of_fractions': 30,
             'imaging_path': './docs/TG_119_data.mat',
-            'target_imaging_resolution': None,
             'dose_matrix_path': './docs/TG_119_photonDij.mat',
             'dose_resolution': [6, 6, 6]
             },

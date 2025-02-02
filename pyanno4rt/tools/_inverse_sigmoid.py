@@ -34,7 +34,10 @@ def inverse_sigmoid(value, multiplier=1, summand=0):
     # Check if the passed value is a tuple or a list
     if isinstance(value, (tuple, list)):
 
-        return tuple((log(val/(1-val))-summand)/multiplier if val != 1 else inf
-                     for val in value)
+        return tuple(
+            (log(val/(1-val))-summand)/multiplier if val not in (0, 1)
+            else inf if val == 1 else -inf for val in value)
 
-    return (log(value/(1-value))-summand)/multiplier if value != 1 else inf
+    return (
+        (log(value/(1-value))-summand)/multiplier if value not in (0, 1)
+        else inf if value == 1 else -inf)

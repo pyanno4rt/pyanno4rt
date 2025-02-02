@@ -364,6 +364,7 @@ class Ui_compare_window(object):
         self.disSegm_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);\n"
 "border: 0px solid")
+        self.disSegm_cbox.setChecked(True)
         self.disSegm_cbox.setObjectName("disSegm_cbox")
         self.disDose_cbox = QtWidgets.QCheckBox(self.compare_widget)
         self.disDose_cbox.setGeometry(QtCore.QRect(620, 584, 110, 30))
@@ -376,6 +377,7 @@ class Ui_compare_window(object):
         self.disDoseCon_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
 "background-color: rgb(211, 215, 207);\n"
 "border: 0px solid")
+        self.disDoseCon_cbox.setChecked(True)
         self.disDoseCon_cbox.setObjectName("disDoseCon_cbox")
         self.plane_label = QtWidgets.QLabel(self.compare_widget)
         self.plane_label.setGeometry(QtCore.QRect(10, 540, 101, 25))
