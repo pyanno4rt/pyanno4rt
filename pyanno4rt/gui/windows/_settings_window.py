@@ -37,18 +37,14 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         self.parent = parent
 
         # 
-        self.default = (
+        self.current = (
             'English', 'Dark', (1024, 768), (False, False, False, False))
-
-        # 
-        self.current = self.default
 
         # Temporarily disable combo boxes
         self.set_disabled(('language_cbox', 'light_mode_cbox'))
 
         # Set the stylesheets
         self.set_styles({
-            'reset_pbutton': pbutton_composer,
             'save_pbutton': pbutton_composer,
             'close_pbutton': pbutton_composer})
 
@@ -102,7 +98,6 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
         # Loop over the field names with 'clicked' events
         for key, value in {
-            'reset_pbutton': self.reset,
             'save_pbutton': self.save,
             'close_pbutton': self.close
                 }.items():
@@ -150,11 +145,6 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
         self.incl_model_data_check.setCheckState(2*settings[3][2])
         self.incl_opt_fluence_check.setCheckState(2*settings[3][3])
 
-    def reset(self):
-        """."""
-
-        self.set_fields(self.default)
-
     def save(self):
         """."""
 
@@ -201,6 +191,9 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
     def close(self):
         """Close the settings window."""
+
+        # Reset to the current saved state
+        self.set_fields(self.current)
 
         # Hide the window
         self.hide()

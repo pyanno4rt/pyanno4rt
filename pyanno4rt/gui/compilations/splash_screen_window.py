@@ -37,22 +37,11 @@ class Ui_splash_window(object):
         self.version_label.setGeometry(QtCore.QRect(0, 20, 411, 31))
         font = QtGui.QFont()
         font.setPointSize(15)
-        font.setBold(False)
-        font.setWeight(50)
         self.version_label.setFont(font)
         self.version_label.setStyleSheet("background-color: transparent;\n"
 "color: rgb(254, 144, 41);")
         self.version_label.setAlignment(QtCore.Qt.AlignCenter)
         self.version_label.setObjectName("version_label")
-        self.init_label = QtWidgets.QLabel(self.text_frame)
-        self.init_label.setGeometry(QtCore.QRect(-1, 50, 411, 25))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.init_label.setFont(font)
-        self.init_label.setStyleSheet("background-color: transparent;\n"
-"color: rgb(211, 215, 207);")
-        self.init_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.init_label.setObjectName("init_label")
         self.progressBar = QtWidgets.QProgressBar(self.text_frame)
         self.progressBar.setGeometry(QtCore.QRect(16, 80, 379, 30))
         self.progressBar.setStyleSheet("QProgressBar{\n"
@@ -62,9 +51,18 @@ class Ui_splash_window(object):
 "       background-color: qlineargradient(x0: 0, x2: 1,  stop: 0 #4664aa, stop: 0.11765 #009682, stop: 0.2353 #8cb63c, stop: 0.3529 #a7822e, stop: 0.4706 #df9b1b, stop: 0.588 #a22223);\n"
 "}")
         self.progressBar.setMinimum(0)
-        self.progressBar.setProperty("value", 100)
+        self.progressBar.setProperty("value", 0)
         self.progressBar.setTextVisible(False)
         self.progressBar.setObjectName("progressBar")
+        self.init_label = QtWidgets.QLabel(self.text_frame)
+        self.init_label.setGeometry(QtCore.QRect(-1, 50, 411, 25))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.init_label.setFont(font)
+        self.init_label.setStyleSheet("background-color: transparent;\n"
+"color: rgb(211, 215, 207);")
+        self.init_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.init_label.setObjectName("init_label")
         splash_window.setCentralWidget(self.splash_widget)
 
         self.retranslateUi(splash_window)
@@ -73,5 +71,4 @@ class Ui_splash_window(object):
     def retranslateUi(self, splash_window):
         _translate = QtCore.QCoreApplication.translate
         splash_window.setWindowTitle(_translate("splash_window", "pyanno4rt"))
-        self.version_label.setText(_translate("splash_window", "\"Amadeus\" v1.0.0"))
         self.init_label.setText(_translate("splash_window", "Launching Graphical User Interface ..."))

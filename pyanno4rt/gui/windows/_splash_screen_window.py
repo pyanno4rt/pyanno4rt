@@ -78,7 +78,7 @@ class SplashScreenWindow(QMainWindow, Ui_splash_window):
             self.progressBar.setValue(i)
 
         # Sleep
-        sleep(1)
+        sleep(0.3)
 
     def position(self):
         """Set the window position."""

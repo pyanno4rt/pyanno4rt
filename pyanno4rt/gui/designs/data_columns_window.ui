@@ -206,7 +206,7 @@ border-color: rgb(186, 189, 182);</string>
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
     <property name="toolTip">
-     <string>Add a component</string>
+     <string>Add a feature</string>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(238, 238, 236);
@@ -249,7 +249,7 @@ border-color: rgb(186, 189, 182);</string>
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
     <property name="toolTip">
-     <string>Remove the selected component</string>
+     <string>Remove the selected feature</string>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(238, 238, 236);

@@ -79,6 +79,9 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             # Install the custom event filter
             getattr(self, box).installEventFilter(parent)
 
+        # 
+        self.joint_ntcp_pbutton.setEnabled(False)
+
         # Set the view box links
         self.set_links()
 
@@ -410,16 +413,22 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                 self.minimum_ledit.clear()
 
     def open_joint_dvh(self):
-        """."""
+        """Open the joint DVH plot."""
+
+        # Get the segmentation dictionaries
+        baseline_segmentation = self.baseline.datahub.segmentation
+        reference_segmentation = self.reference.datahub.segmentation
+
+        # Get the dose histogram dictionaries
+        baseline_dvh = self.baseline.datahub.dose_histogram
+        reference_dvh = self.reference.datahub.dose_histogram
 
         # Get the segments to be displayed
-        segments = sorted(tuple(
-            set(get_constraint_segments(self.baseline.datahub.segmentation)
-                + get_objective_segments(self.baseline.datahub.segmentation))
-            &
-            set(get_constraint_segments(self.reference.datahub.segmentation)
-                + get_objective_segments(self.reference.datahub.segmentation)))
-            )
+        segments = sorted(
+            set(get_constraint_segments(baseline_segmentation)
+                + get_objective_segments(baseline_segmentation)) &
+            set(get_constraint_segments(reference_segmentation)
+                + get_objective_segments(reference_segmentation)))
 
         # Get the colormap
         colors = get_cmap('jet')(linspace(0, 1.0, len(segments)))
@@ -427,26 +436,26 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         # Create a figure and subplots
         figure, axis = subplots(figsize=(14, 8))
 
-        # Add the dose-volume histogram curve for each segment
-        for i, segment in enumerate(segments):
+        # Loop over the segments
+        for index, segment in enumerate(segments):
 
-            # Baseline curves
+            # Add the baseline DVH curves
             axis.plot(
-                self.baseline.datahub.dose_histogram['evaluation_points'],
-                self.baseline.datahub.dose_histogram[segment]['dvh_values'],
+                baseline_dvh['evaluation_points'],
+                baseline_dvh[segment]['dvh_values'],
                 linewidth=1.7,
-                color=colors[i],
+                color=colors[index],
                 linestyle='-',
-                label=''.join((segment, ' (baseline) ')))
+                label=f'{segment} (baseline) ')
 
-            # Reference curves
+            # Add the reference DVH curves
             axis.plot(
-                self.reference.datahub.dose_histogram['evaluation_points'],
-                self.reference.datahub.dose_histogram[segment]['dvh_values'],
+                reference_dvh['evaluation_points'],
+                reference_dvh[segment]['dvh_values'],
                 linewidth=1.7,
-                color=colors[i],
+                color=colors[index],
                 linestyle='--',
-                label=''.join((segment, ' (reference) ')))
+                label=f'{segment} (reference) ')
 
         # Set x- and y-label
         axis.set_xlabel("Dose per fraction [Gy]", fontsize=16)
@@ -459,16 +468,13 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         x_step = min(
             (0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100),
             key=lambda x: abs(ceil(max(
-                self.baseline.datahub.dose_histogram['evaluation_points'],
-                self.reference.datahub.dose_histogram['evaluation_points']
-                )/x)-20))
+                baseline_dvh['evaluation_points'][-1],
+                reference_dvh['evaluation_points'][-1])/x)-20))
 
         # Set x- and y-ticks
-        axis.set_xticks(tuple(i*x_step for i in range(
-            int(ceil(max(
-                self.baseline.datahub.dose_histogram['evaluation_points'],
-                self.reference.datahub.dose_histogram['evaluation_points']
-                ))/x_step)+1)))
+        axis.set_xticks(tuple(i*x_step for i in range(int(ceil(max(
+                baseline_dvh['evaluation_points'][-1],
+                reference_dvh['evaluation_points'][-1]))/x_step)+1)))
         axis.set_yticks(tuple(i*5 for i in range(21)))
 
         # Set the x- and y-limits
@@ -480,8 +486,8 @@ class CompareWindow(QMainWindow, Ui_compare_window):
 
         # Specify the grid with a subgrid
         axis.grid(which='major', color='lightgray', linewidth=0.8)
-        axis.grid(which='minor', color='lightgray', linestyle=':',
-                  linewidth=0.5)
+        axis.grid(
+            which='minor', color='lightgray', linestyle=':', linewidth=0.5)
         axis.minorticks_on()
 
         # Set the legend and its facecolor
@@ -542,6 +548,9 @@ class CompareWindow(QMainWindow, Ui_compare_window):
 
     def position(self):
         """Set the window position."""
+
+        # Reset the window size
+        self.resize(920, 680)
 
         # Get the window geometry
         geometry = self.geometry()

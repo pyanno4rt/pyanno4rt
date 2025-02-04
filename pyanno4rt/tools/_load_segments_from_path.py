@@ -51,7 +51,8 @@ def load_segments_from_path(path):
                 if roi_contour.ReferencedROINumber == sequence.ROINumber)
 
             # Check if the segment is a target volume
-            if any(string in roi_structure.lower() for string in flags):
+            if any(string in roi_structure.ROIName.lower()
+                   for string in flags):
 
                 # Set the segment type to 'TARGET'
                 segment_type = 'TARGET'

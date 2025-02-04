@@ -73,41 +73,11 @@ border-radius: 15px;</string>
      <property name="font">
       <font>
        <pointsize>15</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
       </font>
      </property>
      <property name="styleSheet">
       <string notr="true">background-color: transparent;
 color: rgb(254, 144, 41);</string>
-     </property>
-     <property name="text">
-      <string>&quot;Amadeus&quot; v1.0.0</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-    <widget class="QLabel" name="init_label">
-     <property name="geometry">
-      <rect>
-       <x>-1</x>
-       <y>50</y>
-       <width>411</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: transparent;
-color: rgb(211, 215, 207);</string>
-     </property>
-     <property name="text">
-      <string>Launching Graphical User Interface ...</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -134,10 +104,35 @@ QProgressBar::chunk{
       <number>0</number>
      </property>
      <property name="value">
-      <number>100</number>
+      <number>0</number>
      </property>
      <property name="textVisible">
       <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="init_label">
+     <property name="geometry">
+      <rect>
+       <x>-1</x>
+       <y>50</y>
+       <width>411</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: transparent;
+color: rgb(211, 215, 207);</string>
+     </property>
+     <property name="text">
+      <string>Launching Graphical User Interface ...</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </widget>

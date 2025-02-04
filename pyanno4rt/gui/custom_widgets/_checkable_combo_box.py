@@ -50,9 +50,12 @@ class CheckableComboBox(QComboBox):
         self.view().viewport().installEventFilter(self)
 
     def resizeEvent(self, event):
-        # Recompute text to elide as needed
-        self.updateText()
+
+        # Run the superclass constructor
         super().resizeEvent(event)
+
+        # Update the combo box text
+        self.updateText()
 
     def eventFilter(self, object, event):
 

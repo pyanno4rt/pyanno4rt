@@ -5,7 +5,7 @@
 # %% External package import
 
 from functools import partial
-from os.path import abspath, dirname, isfile
+from os.path import abspath, dirname, isdir, isfile
 from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import (
     QComboBox, QFileDialog, QMainWindow, QMenu, QMessageBox, QSpinBox)
@@ -498,14 +498,16 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
                 'dose_path_ledit', 'dose_path_tbutton', 'dose_res_ledit_x',
                 'dose_res_ledit_y', 'dose_res_ledit_z', 'components_lwidget'))
 
+        # Get the imaging path
+        path = self.img_path_ledit.text()
+
         # Check if the imaging path leads to a file
-        if isfile(self.img_path_ledit.text()):
+        if any((isfile(path), isdir(path))):
 
             try:
 
                 # Load the segment names and types
-                self.segments = load_segments_from_path(
-                    self.img_path_ledit.text())
+                self.segments = load_segments_from_path(path)
 
                 # Set the boolean indicator to True
                 loaded_segments = True

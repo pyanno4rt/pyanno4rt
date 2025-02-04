@@ -177,7 +177,7 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
 
             # Add the visible color to the dictionary
             segmentation[segment]['parameters']['visibleColor'] = array(
-                [int(num)/255 for num in roi_contour.ROIDisplayColor])
+                [int(number)/255 for number in roi_contour.ROIDisplayColor])
 
         else:
 

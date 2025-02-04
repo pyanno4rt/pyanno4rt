@@ -296,7 +296,14 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.connect_signals()
 
         # Check if an initial treatment plan has been specified
-        if treatment_plan:
+        if treatment_plan is not None:
+
+            # Update the splash screen label
+            self.splash_screen_window.init_label.setText(
+                "Loading initial treatment plan(s) ...")
+
+            # Process the splash screen events
+            self.application.processEvents()
 
             # Set the initial treatment plan
             self.set_initial_plan(treatment_plan)
@@ -2054,6 +2061,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                 item.text() in evaluation['display_segments'] or
                 evaluation['display_segments'] == []))
 
+        # Update the line edit text
+        self.display_segments_cbox.updateText()
+
         # Loop over the display metrics items
         for item in (
                 self.display_metrics_cbox.model().item(index)
@@ -2063,6 +2073,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             item.setCheckState(2*(
                 item.text() in evaluation['display_metrics'] or
                 evaluation['display_metrics'] == []))
+
+        # Update the line edit text
+        self.display_metrics_cbox.updateText()
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))

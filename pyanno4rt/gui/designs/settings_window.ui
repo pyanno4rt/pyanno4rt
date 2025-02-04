@@ -257,28 +257,6 @@ color: rgb(0, 0, 0);</string>
      <string>Include dose-influence matrix</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="reset_pbutton">
-    <property name="geometry">
-     <rect>
-      <x>680</x>
-      <y>640</y>
-      <width>71</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="cursor">
-     <cursorShape>PointingHandCursor</cursorShape>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-    </property>
-    <property name="text">
-     <string>Reset</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="light_model_label">
     <property name="geometry">
      <rect>
@@ -547,7 +525,6 @@ border-color: rgb(186, 189, 182);</string>
    <zorder>language_label</zorder>
    <zorder>language_cbox</zorder>
    <zorder>incl_dij_check</zorder>
-   <zorder>reset_pbutton</zorder>
    <zorder>light_model_label</zorder>
    <zorder>incl_img_data_check</zorder>
    <zorder>resolution_cbox</zorder>

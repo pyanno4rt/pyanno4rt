@@ -112,32 +112,6 @@ class DVHWidget(QWidget):
         # 
         self.plot_graph.plotItem.vb.enableAutoRange()
 
-    def get_segment_statistics(self, event):
-        """."""
-
-        # 
-        dosimetrics = (self.parent.plans[self.parent.plan_ledit.text()]
-                       .datahub.dosimetrics)
-
-        # 
-        self.parent.segment_ledit.setText(event.name())
-
-        # 
-        self.parent.mean_ledit.setText(str(
-            round(dosimetrics[event.name()]['mean'], 2)))
-
-        # 
-        self.parent.std_ledit.setText(str(
-            round(dosimetrics[event.name()]['std'], 2)))
-
-        # 
-        self.parent.maximum_ledit.setText(str(
-            round(dosimetrics[event.name()]['max'], 2)))
-
-        # 
-        self.parent.minimum_ledit.setText(str(
-            round(dosimetrics[event.name()]['min'], 2)))
-
     def reset_dvh(self):
         """."""
 
@@ -169,6 +143,30 @@ class DVHWidget(QWidget):
                     event.curve.setPen(mkPen(color=pen.color(),
                                              style=pen.style(),
                                              width=4))
+                    # 
+                    dosimetrics = (
+                        self.parent.plans[self.parent.plan_ledit.text()]
+                        .datahub.dosimetrics)
+
+                    # 
+                    self.parent.segment_ledit.setText(event.name())
+
+                    # 
+                    self.parent.mean_ledit.setText(str(
+                        round(dosimetrics[event.name()]['mean'], 2)))
+
+                    # 
+                    self.parent.std_ledit.setText(str(
+                        round(dosimetrics[event.name()]['std'], 2)))
+
+                    # 
+                    self.parent.maximum_ledit.setText(str(
+                        round(dosimetrics[event.name()]['max'], 2)))
+
+                    # 
+                    self.parent.minimum_ledit.setText(str(
+                        round(dosimetrics[event.name()]['min'], 2)))
+
                 else:
                     event.curve.setPen(mkPen(color=pen.color(),
                                              style=pen.style(),
@@ -261,6 +259,5 @@ class DVHWidget(QWidget):
                 self.dose_histogram[segment]['dvh_values'],
                 pen=pen, name=segment, clickable=True)
             plot.sigClicked.connect(self.select_dvh_curve)
-            plot.sigClicked.connect(self.get_segment_statistics)
             self.plot_graph.scene().sigMouseClicked.connect(
                 self.unselect_curves)
