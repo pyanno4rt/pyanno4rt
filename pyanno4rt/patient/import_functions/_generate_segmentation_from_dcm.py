@@ -10,6 +10,10 @@ from numpy import (
 from scipy.interpolate import interp1d
 from skimage.draw import polygon2mask
 
+# %% Internal package import
+
+from pyanno4rt.datahub import Datahub
+
 # %% Function definition
 
 
@@ -23,7 +27,7 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
         The :class:`pydicom.dataset.FileDataset` object with information on \
         the segmented structures.
 
-    slices : tuple
+    ct_slices : tuple
         Tuple of :class:`pydicom.dataset.FileDataset` objects with \
         information on the CT slices.
 
@@ -41,6 +45,9 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
         If the contour sequence for a segment includes out-of-slice points.
     """
 
+    # Initialize the logger
+    logger = Datahub().logger
+
     def generate_colors(length):
         """Generate a tuple of specific length with different RGB colors."""
 
@@ -51,7 +58,8 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
         """Compute the (sorted) binary segment indices."""
 
         # Initialize the segment cube
-        segment_cube = zeros(computed_tomography['cube_dimensions'])
+        segment_cube = zeros(
+            computed_tomography['cube_dimensions'])
 
         # Loop over the contour sequences
         for sequence in roi_contour.ContourSequence:
@@ -78,6 +86,11 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
                 # Check if contour points outside the slice exist
                 if len(set(points_z)) > 1:
 
+                    # Log a message about the out-of-slice points
+                    logger.display_error(
+                        f"The contour sequence for the segment {segment} "
+                        "includes out-of-slice points!")
+
                     # Raise an error to indicate out-of-slice points
                     raise ValueError(
                         f"The contour sequence for the segment {segment} "
@@ -98,8 +111,7 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
                     # Convert the polygon vertices into a binary mask
                     mask = polygon2mask(
                         computed_tomography['cube_dimensions'][:2],
-                        column_stack((interpolated_y, interpolated_x))
-                        + (0, 0.5))
+                        column_stack((interpolated_y, interpolated_x)))
 
                     # Get the computed tomography slice indices
                     ct_slice_indices = [
@@ -115,9 +127,15 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
                         # Enter the binary mask into the segment cube
                         segment_cube[:, :, index] = mask
 
+                else:
+
+                    # Log a message about the missing CT data
+                    logger.display_warning(
+                        f"Omitting contour data for '{segment}' at slice "
+                        "position {points_z[0]} mm - no CT data available ...")
+
         return sort(ravel_multi_index(
-            where(segment_cube == 1), computed_tomography['cube_dimensions'],
-            order='F'))
+            where(segment_cube == 1), segment_cube.shape, order='F'))
 
     # Get the default color tuple
     default_colors = generate_colors(len(data.ROIContourSequence))
@@ -192,5 +210,10 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
             # Add the segment indices to the dictionary
             segmentation[segment]['raw_indices'] = compute_segment_indices(
                 ct_slices, computed_tomography, roi_contour)
+
+        else:
+
+            # Log a message about the empty ROI contour
+            logger.display_warning(f"The ROI contour '{segment}' is empty ...")
 
     return dict(sorted(segmentation.items()))

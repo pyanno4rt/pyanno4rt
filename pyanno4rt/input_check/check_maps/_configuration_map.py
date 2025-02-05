@@ -40,7 +40,7 @@ configuration_map = {
         ),
     'dose_matrix_path': (
         partial(check_type, types=str),
-        partial(check_regular_extension, extensions=('.mat', '.npy'))
+        partial(check_regular_extension, extensions=('.mat', '.npy', 'npz'))
         ),
     'dose_resolution': (
         partial(check_type, types=list),

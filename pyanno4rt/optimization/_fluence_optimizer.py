@@ -271,8 +271,9 @@ class FluenceOptimizer():
         segmentation = hub.segmentation
 
         # Get the CT and dose cube dimensions
-        ct_dim, dose_dim = (hub.computed_tomography['cube_dimensions'],
-                            hub.dose_information['cube_dimensions'])
+        ct_dim, dose_dim = (
+            hub.computed_tomography['cube_dimensions'],
+            hub.dose_information['cube_dimensions'])
 
         def resize_segment(segment):
             """Resize a segment to the dose grid."""

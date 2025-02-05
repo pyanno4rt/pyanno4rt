@@ -589,7 +589,7 @@ class RandomForestNTCPWindow(QMainWindow, Ui_random_forest_ntcp_window):
             # Add the 'max_features' to the tune space
             model_parameters['tune_space']['max_features'] = list(range(
                 int(self.max_features_lower_bound_ledit.text()),
-                int(self.max_features_upper_bound_ledit.text())+1)),
+                int(self.max_features_upper_bound_ledit.text())+1))
 
         # Configure the component dictionary
         component = {

@@ -24,7 +24,7 @@
 		<ul> 
 			<li> DICOM files (.dcm) </li>
 			<li> MATLAB files (.mat) </li>
-			<li> Python files (.npy, .p) </li>
+			<li> Python files (.npy, .npz, .p) </li>
 		</ul>
 	</li>
 	<br>

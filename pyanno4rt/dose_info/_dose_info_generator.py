@@ -7,7 +7,7 @@
 from h5py import File
 from numpy import load, prod
 from scipy.io import loadmat
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, load_npz
 
 # %% Internal package import
 
@@ -109,42 +109,33 @@ class DoseInfoGenerator():
 
             try:
 
-                # Load the dose-influence matrix from version < 7.3
-                dose_matrix = loadmat(self.dose_matrix_path)['Dij']
+                # Load the data dictionary from version < 7.3
+                data = loadmat(self.dose_matrix_path)
 
-                # Check if the dose-influence matrix is an array of object
-                if dose_matrix.shape == (1, 1):
-
-                    # Get the sparse dose-influence matrix from the object
-                    dose_information['dose_influence_matrix'] = csr_matrix(
-                        dose_matrix[0][0])
-
-                else:
-
-                    # Get the sparse dose-influence matrix directly
-                    dose_information['dose_influence_matrix'] = csr_matrix(
-                        dose_matrix)
+                # Get the dose-influence matrix
+                dose_matrix = csr_matrix(data[next(
+                    key for key in data if key not in (
+                        '__globals__', '__header__', '__version__'))])
 
             except NotImplementedError:
 
                 # Open a file stream
                 with File(self.dose_matrix_path, 'r') as file:
 
-                    # Load the dose-influence matrix from version >= 7.3
-                    dose_matrix = file['Dij']
+                    # Get the matrix key
+                    key = next(key for key in file if key != '#refs#')
 
-                    # Check if the dose-influence matrix is an array of object
-                    if dose_matrix.shape == (1, 1):
+                    # Load the dose-influence matrix
+                    dose_matrix = csr_matrix(
+                        (file[f'/{key}/data'], file[f'/{key}/ir'],
+                         file[f'/{key}/jc']),
+                        shape=(
+                            len(file['/D/jc'])-1,
+                            dose_information['number_of_voxels'])
+                        ).transpose()
 
-                        # Get the sparse dose-influence matrix from the object
-                        dose_information['dose_influence_matrix'] = csr_matrix(
-                            dose_matrix[0][0])
-
-                    else:
-
-                        # Get the sparse dose-influence matrix directly
-                        dose_information['dose_influence_matrix'] = csr_matrix(
-                            dose_matrix)
+            # Get the sparse dose-influence matrix directly
+            dose_information['dose_influence_matrix'] = dose_matrix
 
         # Else, check if the dose path leads to a numpy binary file
         elif self.dose_matrix_path.endswith('.npy'):
@@ -156,6 +147,18 @@ class DoseInfoGenerator():
             # Add the dose-influence matrix from the .npy file
             dose_information['dose_influence_matrix'] = csr_matrix(
                 load(self.dose_matrix_path))
+
+        # Else, check if the dose path leads to a zipped numpy binary file
+        elif self.dose_matrix_path.endswith('.npz'):
+
+            # Log a message about the dose-influence matrix addition
+            hub.logger.display_info(
+                "Adding dose-influence matrix from SciPy sparse binary file "
+                "...")
+
+            # Add the dose-influence matrix from the .npz file
+            dose_information['dose_influence_matrix'] = load_npz(
+                self.dose_matrix_path)
 
         # Add the degrees of freedom (the number of decision variables)
         dose_information['degrees_of_freedom'] = dose_information[

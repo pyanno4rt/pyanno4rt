@@ -98,18 +98,18 @@ def generate_ct_from_dcm(data):
 
     # Add the grid resolution to the dictionary
     computed_tomography['resolution'] = {
-        'x': data[0].PixelSpacing[1],
-        'y': data[0].PixelSpacing[0],
+        'x': data[0].PixelSpacing[0],
+        'y': data[0].PixelSpacing[1],
         'z': data[0].SliceThickness}
 
     # Add the grid points in x to the dictionary
     computed_tomography['x'] = array([
-        data[0].ImagePositionPatient[0] + factor*data[0].PixelSpacing[1]
+        data[0].ImagePositionPatient[0] + factor*data[0].PixelSpacing[0]
         for factor in range(data[0].Columns)])
 
     # Add the grid points in y to the dictionary
     computed_tomography['y'] = array([
-        data[0].ImagePositionPatient[1] + factor*data[0].PixelSpacing[0]
+        data[0].ImagePositionPatient[1] + factor*data[0].PixelSpacing[1]
         for factor in range(data[0].Rows)])
 
     # Add the grid points in z to the dictionary

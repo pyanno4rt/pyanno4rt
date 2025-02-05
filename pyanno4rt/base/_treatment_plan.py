@@ -83,7 +83,7 @@ class TreatmentPlan():
                 (.dcm), whose content follows the pyanno4rt data structure.
 
         - dose_matrix_path : str
-            Path to the dose-influence matrix file (.mat or .npy).
+            Path to the dose-influence matrix file (.mat, .npy or .npz).
 
         - dose_resolution : list
             Size of the dose grid in [`mm`] per dimension, needs to be \

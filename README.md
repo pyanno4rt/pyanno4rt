@@ -28,7 +28,7 @@
 		<ul> 
 			<li> DICOM files (.dcm) </li>
 			<li> MATLAB files (.mat) </li>
-			<li> Python files (.npy, .p) </li>
+			<li> Python files (.npy, .npz, .p) </li>
 		</ul>
 	</li>
 	<br>
@@ -165,8 +165,8 @@ from pyanno4rt.gui import GraphicalUserInterface
 <h3>Dependencies</h3>
 
 <ul>
-	<li> python (>=3.10, <3.11)
-	<li> numpy (==1.26.4) </li>
+	<li> python (>=3.10, <3.12)
+	<li> numpy (>=2.0.2) </li>
 	<li> ipyopt (>=0.12.9) </li>
 	<li> proxmin (>=0.6.12) </li>
 	<li> absl-py (>=2.1.0) </li>
@@ -178,7 +178,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> jaxlib (>=0.5.0) </li>
 	<li> numba (>=0.61.0) </li>
 	<li> scikit-learn (>=1.6.1) </li>
-	<li> tensorflow (==2.11.1) </li>
+	<li> tensorflow (>=2.18.0) </li>
 	<li> tensorflow-io-gcs-filesystem (==0.31.0) </li>
 	<li> hyperopt (>=0.2.7) </li>
 	<li> pymoo (>=0.6.1.3) </li>
@@ -186,11 +186,11 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> pyqt5 (==5.15.10) </li>
 	<li> pyqtgraph (>=0.13.7) </li>
 	<li> ipython (>=8.32.0) </li>
-	<li> matplotlib (==3.8.3) </li>
+	<li> matplotlib (>=3.10.0) </li>
 	<li> seaborn (>=0.13.2) </li>
 	<li> pypop7 (>=0.0.82) </li>
 </ul>
-We are using Python version 3.10.15 with the Spyder IDE version 5.4.5 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>
+We are using Python version 3.11.10 with the Spyder IDE version 6.0.3 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>
 
 # Development
 
