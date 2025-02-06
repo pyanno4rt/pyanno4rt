@@ -174,14 +174,17 @@ class TreatmentPlan():
             - 'weighted-sum' : parallel optimization based on a weighted-sum \
                 scalarization of the objective function
 
-        - solver : {'proxmin', 'pymoo', 'pypop7', 'scipy'}, default='scipy'
+        - solver : {'ipyopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}, \
+            default='scipy'
             Python package to be used for solving the optimization problem, \
             see the classes \
+            :class:`~pyanno4rt.optimization.solvers._proxmin_solver.IpyoptSolver`\
             :class:`~pyanno4rt.optimization.solvers._proxmin_solver.ProxminSolver`\
             :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
             :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
             :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`.
 
+            - 'ipyopt': interior-point algorithms provided by Ipyopt
             - 'proxmin' : proximal algorithms provided by Proxmin
             - 'pymoo' : multi-objective algorithms provided by Pymoo
             - 'pypop7': population-based algorithms provided by PyPop7
@@ -192,6 +195,10 @@ class TreatmentPlan():
 
         - algorithm : str
             Solution algorithm from the chosen solver:
+
+            - solver='ipyopt': {'mumps'}, default='mumps'
+
+                - 'mumps': multifrontal massively parallel sparse direct solver
 
             - solver='proxmin' : {'admm', 'pgm', 'sdmm'}, default='pgm'
 
@@ -217,8 +224,8 @@ class TreatmentPlan():
                 - 'TNC' : truncated Newton method
                 - 'trust-constr' : trust-region constrained method
 
-            .. note:: Constraints are currently only supported by 'NSGA3' \
-                and 'trust-constr'.
+            .. note:: Constraints are currently only supported by 'mumps', \
+                'NSGA3' and 'trust-constr'.
 
         - initial_strategy : {'data-medoid', 'target-coverage', \
                               'warm-start'}, default='target-coverage'
@@ -532,8 +539,9 @@ class TreatmentPlan():
                 + get_machine_learning_objectives(segmentation))):
 
             # Log a message about the non-modeled components
-            self.logger.display_error("Please set up the machine learning "
-                                      "models before optimization!")
+            self.logger.display_error(
+                "Please set up the machine learning models before "
+                "optimization!")
 
         else:
 

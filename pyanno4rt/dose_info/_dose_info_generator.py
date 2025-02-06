@@ -35,7 +35,7 @@ class DoseInfoGenerator():
         Number of fractions according to the treatment scheme.
 
     dose_matrix_path : str
-        Path to the dose-influence matrix file (.mat or .npy).
+        Path to the dose-influence matrix file (.mat, .npy or .npz).
 
     Attributes
     ----------
@@ -91,7 +91,7 @@ class DoseInfoGenerator():
 
         # Add the dose cube dimensions
         dose_information['cube_dimensions'] = tuple(
-            len(dose_information[dimension]) for dimension in ('x', 'y', 'z'))
+            len(dose_information[dimension]) for dimension in ('y', 'x', 'z'))
 
         # Add the total number of dose voxels
         dose_information['number_of_voxels'] = prod(
@@ -117,22 +117,35 @@ class DoseInfoGenerator():
                     key for key in data if key not in (
                         '__globals__', '__header__', '__version__'))])
 
-            except NotImplementedError:
+            except (NotImplementedError, ValueError) as error:
 
-                # Open a file stream
-                with File(self.dose_matrix_path, 'r') as file:
+                # Check if the error is NotImplementedError
+                if isinstance(error, NotImplementedError):
 
-                    # Get the matrix key
-                    key = next(key for key in file if key != '#refs#')
+                    # Open a file stream
+                    with File(self.dose_matrix_path, 'r') as file:
 
-                    # Load the dose-influence matrix
-                    dose_matrix = csr_matrix(
-                        (file[f'/{key}/data'], file[f'/{key}/ir'],
-                         file[f'/{key}/jc']),
-                        shape=(
-                            len(file['/D/jc'])-1,
-                            dose_information['number_of_voxels'])
-                        ).transpose()
+                        # Get the matrix key
+                        key = next(key for key in file if key != '#refs#')
+
+                        # Load the dose-influence matrix
+                        dose_matrix = csr_matrix(
+                            (file[f'/{key}/data'], file[f'/{key}/ir'],
+                             file[f'/{key}/jc']),
+                            shape=(
+                                len(file['/D/jc'])-1,
+                                dose_information['number_of_voxels'])
+                            ).transpose()
+
+                else:
+
+                    # Log a message about the failed sparse conversion
+                    hub.logger.display_error(
+                        "The dose-influence matrix can not be read from the "
+                        "data - did you wrap the matrix? ...")
+
+                    # Raise the error
+                    raise ValueError(error) from error
 
             # Get the sparse dose-influence matrix directly
             dose_information['dose_influence_matrix'] = dose_matrix
@@ -165,8 +178,9 @@ class DoseInfoGenerator():
             'dose_influence_matrix'].shape[1]
 
         # Check the dose resolution with the dose-influence matrix dimensions
-        check_dose_matrix(dose_information['cube_dimensions'],
-                          dose_information['dose_influence_matrix'].shape[0])
+        check_dose_matrix(
+            dose_information['cube_dimensions'],
+            dose_information['dose_influence_matrix'].shape[0])
 
         # Enter the dose information dictionary into the datahub
         hub.dose_information = dose_information

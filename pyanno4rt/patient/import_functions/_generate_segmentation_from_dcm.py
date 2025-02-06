@@ -6,7 +6,7 @@
 
 from colorsys import hsv_to_rgb
 from numpy import (
-    append, array, column_stack, ravel_multi_index, sort, where, zeros)
+    array, column_stack, logical_or, ravel_multi_index, sort, where, zeros)
 from scipy.interpolate import interp1d
 from skimage.draw import polygon2mask
 
@@ -51,15 +51,15 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
     def generate_colors(length):
         """Generate a tuple of specific length with different RGB colors."""
 
-        return tuple(array(hsv_to_rgb(value/(length+1), 1.0, 1.0))
-                     for value in range(length))
+        return tuple(
+            array(hsv_to_rgb(value/(length+1), 1.0, 1.0))
+            for value in range(length))
 
     def compute_segment_indices(ct_slices, computed_tomography, roi_contour):
         """Compute the (sorted) binary segment indices."""
 
         # Initialize the segment cube
-        segment_cube = zeros(
-            computed_tomography['cube_dimensions'])
+        segment_cube = zeros(computed_tomography['cube_dimensions'])
 
         # Loop over the contour sequences
         for sequence in roi_contour.ContourSequence:
@@ -74,11 +74,8 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
                 # Loop over the grid point dimensions
                 for points in (points_x, points_y, points_z):
 
-                    # Check if the endpoint differs from the starting point
-                    if points[-1] != points[0]:
-
-                        # Close the contour polygon by adding the first point
-                        points = append(points, points[0])
+                    # Close the contour polygon by adding the first point
+                    points.append(points[0])
 
                 # Round the z-points to account for numerical issues
                 points_z = [1e-10*round(1e10*value) for value in points_z]
@@ -125,7 +122,8 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
                     for index in ct_slice_indices:
 
                         # Enter the binary mask into the segment cube
-                        segment_cube[:, :, index] = mask
+                        segment_cube[:, :, index] = logical_or(
+                            segment_cube[:, :, index], mask)
 
                 else:
 
@@ -135,7 +133,7 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
                         "position {points_z[0]} mm - no CT data available ...")
 
         return sort(ravel_multi_index(
-            where(segment_cube == 1), segment_cube.shape, order='F'))
+            where(segment_cube), segment_cube.shape, order='F'))
 
     # Get the default color tuple
     default_colors = generate_colors(len(data.ROIContourSequence))

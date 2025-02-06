@@ -42,7 +42,7 @@ class FluenceOptimizer():
     method : {'lexicographic', 'pareto', 'weighted-sum'}
         Single- or multi-criteria optimization method.
 
-    solver : {'proxmin', 'pymoo', 'scipy'}
+    solver : {'ipyopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}
         Python package to be used for solving the optimization problem.
 
     algorithm : str
