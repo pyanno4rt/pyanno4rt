@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from numba import njit
 from numpy import array, linspace, logical_and, nan, unravel_index
 
 # %% Internal package import
@@ -80,31 +81,8 @@ class DVHEvaluator():
         Parameters
         ----------
         dose_cube : ndarray
-            Three-dimensional array with the dose values (CT resolution).
+            3D array with the dose values (CT resolution).
         """
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the DVH evaluation
-        hub.logger.display_info(
-            f"Evaluating {self.dvh_type} DVH with {self.number_of_points} "
-            "points for all segments ...")
-
-        def evaluate_cumulative_dvh(dose, points):
-            """Evaluate the cumulative DVH points."""
-
-            return array([(dose >= point).sum() for point in points])
-
-        def evaluate_differential_dvh(dose, points):
-            """Evaluate the differential DVH points."""
-
-            # Determine the bin radius
-            radius = (points[1] - points[0]) / 2
-
-            return array(
-                [sum(logical_and(point - radius < dose, point + radius > dose))
-                 for point in points])
 
         def get_evaluation_points():
             """Get the points at which to evaluate the DVH."""
@@ -117,8 +95,20 @@ class DVHEvaluator():
                 'cumulative': (0, 1.05*maximum_dose),
                 'differential': (0.95*minimum_dose, 1.05*maximum_dose)}
 
-            return linspace(*intervals[self.dvh_type], self.number_of_points,
-                            endpoint=True)
+            # Return the evenly spaced evaluation points
+            return linspace(
+                *intervals[self.dvh_type], self.number_of_points,
+                endpoint=True)
+
+        def evaluate_cumulative_dvh(dose, points):
+            """Return the values from the jitted 'cumulate' function."""
+
+            return cumulate(dose, points)
+
+        def evaluate_differential_dvh(dose, points):
+            """Return the values from the jitted 'differentiate' function."""
+
+            return differentiate(dose, points)
 
         def get_segment_dvh(indices, cube_dimensions, points):
             """Get the DVH for a single segment."""
@@ -126,24 +116,39 @@ class DVHEvaluator():
             # Check if any voxel indices are present
             if len(indices) > 0:
 
-                return (dvh_functions[self.dvh_type](dose_cube[unravel_index(
-                    indices, cube_dimensions, order='F')], points)
-                    * 100/len(indices))
+                # Get the dose vector
+                dose = dose_cube[unravel_index(
+                    indices, cube_dimensions, order='F')]
 
+                # Return the DVH values for the segment
+                return dvh_functions[self.dvh_type](dose, points)
+
+            # Else, return NaNs
             return array([nan]*len(points))
 
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Log a message about the DVH evaluation
+        hub.logger.display_info(
+            f"Evaluating {self.dvh_type} DVH with {self.number_of_points} "
+            "points for all segments ...")
+
         # Map the DVH type to the evaluation function
-        dvh_functions = {'cumulative': evaluate_cumulative_dvh,
-                         'differential': evaluate_differential_dvh}
+        dvh_functions = {
+            'cumulative': evaluate_cumulative_dvh,
+            'differential': evaluate_differential_dvh}
 
         # Initialize the dose histogram dictionary with the evaluation points
         dose_histogram = {'evaluation_points': get_evaluation_points()}
 
         # Add the segment names with the corresponding DVH values
-        dose_histogram |= {segment: {'dvh_values': get_segment_dvh(
-            hub.segmentation[segment]['raw_indices'],
-            hub.computed_tomography['cube_dimensions'],
-            dose_histogram['evaluation_points'])}
+        dose_histogram |= {
+            segment: {
+                'dvh_values': get_segment_dvh(
+                    hub.segmentation[segment]['raw_indices'],
+                    hub.computed_tomography['cube_dimensions'],
+                    dose_histogram['evaluation_points'])}
             for segment in hub.segmentation}
 
         # Add the segment names to be displayed
@@ -151,3 +156,52 @@ class DVHEvaluator():
 
         # Enter the dose histogram dictionary into the datahub
         hub.dose_histogram = dose_histogram
+
+
+@njit
+def cumulate(dose, points):
+    """
+    Evaluate the cumulative DVH points.
+
+    Parameters
+    ----------
+    dose : ndarray
+        Array with the dose values for the respective segment.
+
+    points : ndarray
+        Array with the evenly-spaced evaluation points.
+
+    Returns
+    -------
+    ndarray
+        Array with the DVH values.
+    """
+
+    return array([(dose >= point).sum() for point in points]) / len(dose)
+
+
+@njit
+def differentiate(dose, points):
+    """
+    Evaluate the differential DVH points.
+
+    Parameters
+    ----------
+    dose : ndarray
+        Array with the dose values for the respective segment.
+
+    points : ndarray
+        Array with the evenly-spaced evaluation points.
+
+    Returns
+    -------
+    ndarray
+        Array with the DVH values.
+    """
+
+    # Determine the bin radius
+    radius = (points[1] - points[0]) / 2
+
+    return array([
+        sum(logical_and(point - radius < dose, point + radius > dose))
+        for point in points]) / len(dose)

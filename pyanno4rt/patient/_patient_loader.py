@@ -51,9 +51,10 @@ class PatientLoader():
         hub = Datahub()
 
         # Map the path extensions to the sources and import functions
-        sources = {'': ('DICOM folder', import_from_dcm),
-                   '.mat': ('MATLAB file', import_from_mat),
-                   '.p': ('Python file', import_from_p)}
+        sources = {
+            '': ('DICOM folder', import_from_dcm),
+            '.mat': ('MATLAB file', import_from_mat),
+            '.p': ('Python file', import_from_p)}
 
         # Get the source and import function from the extension
         source, importer = sources[splitext(self.imaging_path)[1]]

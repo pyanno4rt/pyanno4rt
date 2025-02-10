@@ -21,10 +21,10 @@ def get_conventional_objectives(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with all set conventional objective functions.
+        Tuple with all set conventional objective functions.
     """
 
     return tuple(objective for objective in flatten(
         segmentation[segment]['objective'] for segment in segmentation
-        if segmentation[segment]['objective'])
+        if segmentation[segment]['objective'] is not None)
         if objective.get_class() == 'ConventionalComponent')

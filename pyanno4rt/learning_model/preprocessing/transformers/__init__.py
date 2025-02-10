@@ -14,7 +14,8 @@ from ._whitening import Whitening
 
 from ._transformer_map import transformer_map
 
-__all__ = ['Identity',
-           'StandardScaler',
-           'Whitening',
-           'transformer_map']
+__all__ = [
+    'Identity',
+    'StandardScaler',
+    'Whitening',
+    'transformer_map']

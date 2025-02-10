@@ -4,11 +4,12 @@
 
 # %% External package import
 
-from json import dump
-from numpy import save
 from os import mkdir
 from os.path import abspath, exists, splitext
 from shutil import copy
+
+from json import dump
+from numpy import save
 
 # %% Internal package import
 
@@ -60,8 +61,9 @@ def snapshot(instance, path, include_patient_data=False,
             or instance.datahub.state < 3):
 
         # Raise an error to indicate a missing attribute
-        raise AttributeError("Please configure and optimize the treatment "
-                             "plan before taking a snapshot!")
+        raise AttributeError(
+            "Please configure and optimize the treatment plan before taking a "
+            "snapshot!")
 
     def dict_path_to_absolute(search_key, dictionary):
         """Search a path key and convert the value into an absolute path."""
@@ -73,17 +75,12 @@ def snapshot(instance, path, include_patient_data=False,
             if key == search_key:
 
                 # Check if the value is None
-                if value is None:
-
-                    # Set the path to None
-                    dictionary[key] = value
-
-                else:
+                if value is not None:
 
                     # Convert the path into an absolute value
                     dictionary[key] = abspath(value)
 
-            # Check if the value is a dictionary
+            # Else, check if the value is a dictionary
             elif isinstance(value, dict):
 
                 # Loop recursively over the function output
@@ -135,7 +132,7 @@ def snapshot(instance, path, include_patient_data=False,
         model.write_hyperparameters_to_file(model.hyperparameters)
 
         # Check if the model data should be saved and exists
-        if include_model_data and data[2]:
+        if include_model_data and data[2] is not None:
 
             # Get the file extension
             _, extension = splitext(data[2])
@@ -153,15 +150,17 @@ def snapshot(instance, path, include_patient_data=False,
         mkdir(snap_path)
 
     # Build a joint dictionary for the plan inputs
-    input_dictionaries = {'configuration': instance.configuration,
-                          'optimization': instance.optimization,
-                          'evaluation': instance.evaluation}
+    input_dictionaries = {
+        'configuration': instance.configuration,
+        'optimization': instance.optimization,
+        'evaluation': instance.evaluation}
 
     # Get the machine learning model data
-    ml_model_data = tuple((objective.model.model_label, objective.model,
-                           objective.model_parameters.get('data_path'))
-                          for objective in get_machine_learning_objectives(
-                              instance.datahub.segmentation))
+    ml_model_data = tuple(
+        (objective.model.model_label, objective.model,
+         objective.model_parameters.get('data_path'))
+        for objective in get_machine_learning_objectives(
+                instance.datahub.segmentation))
 
     # Check if machine learning model data exists
     if len(ml_model_data) > 0:
@@ -170,8 +169,10 @@ def snapshot(instance, path, include_patient_data=False,
         input_dictionaries['optimization'] = dict_path_to_absolute(
             'data_path', input_dictionaries['optimization'])
 
-    # Convert the configuration file paths into absolute paths
+    # Loop over the configuration path variables
     for key in ('imaging_path', 'dose_matrix_path'):
+
+        # Convert the paths into absolute paths
         input_dictionaries['configuration'] = dict_path_to_absolute(
             key, input_dictionaries['configuration'])
 

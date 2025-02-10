@@ -15,7 +15,8 @@ from ._dose_projection import DoseProjection
 
 from ._projection_map import projection_map
 
-__all__ = ['BackProjection',
-           'ConstantRBEProjection',
-           'DoseProjection',
-           'projection_map']
+__all__ = [
+    'BackProjection',
+    'ConstantRBEProjection',
+    'DoseProjection',
+    'projection_map']

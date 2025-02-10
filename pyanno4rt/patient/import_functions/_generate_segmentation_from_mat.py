@@ -16,7 +16,7 @@ def generate_segmentation_from_mat(data):
 
     Returns
     -------
-    segmentation : dict
+    dict
         Dictionary with information on the segmented structures.
     """
 
@@ -37,11 +37,13 @@ def generate_segmentation_from_mat(data):
         for segment_values in data)
 
     # Set the dictionary keys
-    segment_keys = ('index', 'type', 'raw_indices', 'prioritized_indices',
-                    'resized_indices', 'parameters', 'objective', 'constraint')
+    segment_keys = (
+        'index', 'type', 'raw_indices', 'prioritized_indices',
+        'resized_indices', 'parameters', 'objective', 'constraint')
 
     # Merge the keys and the values into the segmentation dictionary
-    segmentation = {values[0]: dict(zip(segment_keys, values[1]))
-                    for values in raw_segment_values}
+    segmentation = {
+        values[0]: dict(zip(segment_keys, values[1]))
+        for values in raw_segment_values}
 
     return dict(sorted(segmentation.items()))

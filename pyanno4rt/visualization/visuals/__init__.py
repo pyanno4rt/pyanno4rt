@@ -28,12 +28,13 @@ from pyanno4rt.visualization.visuals._ntcp_graph_plotter_mpl import (
 from pyanno4rt.visualization.visuals._permutation_importance_plotter_mpl import (
     PermutationImportancePlotterMPL)
 
-__all__ = ['CtDoseSlicingWindowPyQt',
-           'DosimetricsTablePlotterMPL',
-           'DVHGraphPlotterMPL',
-           'FeatureSelectWindowPyQt',
-           'IterGraphPlotterMPL',
-           'MetricsGraphsPlotterMPL',
-           'MetricsTablesPlotterMPL',
-           'NTCPGraphPlotterMPL',
-           'PermutationImportancePlotterMPL']
+__all__ = [
+    'CtDoseSlicingWindowPyQt',
+    'DosimetricsTablePlotterMPL',
+    'DVHGraphPlotterMPL',
+    'FeatureSelectWindowPyQt',
+    'IterGraphPlotterMPL',
+    'MetricsGraphsPlotterMPL',
+    'MetricsTablesPlotterMPL',
+    'NTCPGraphPlotterMPL',
+    'PermutationImportancePlotterMPL']

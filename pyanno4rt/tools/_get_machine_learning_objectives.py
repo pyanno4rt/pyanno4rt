@@ -21,11 +21,10 @@ def get_machine_learning_objectives(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with all set machine learning model-based objective \
-        functions.
+        Tuple with all set machine learning model-based objective functions.
     """
 
     return tuple(objective for objective in flatten(
         segmentation[segment]['objective'] for segment in segmentation
-        if segmentation[segment]['objective'])
+        if segmentation[segment]['objective'] is not None)
         if objective.get_class() == 'MachineLearningComponent')

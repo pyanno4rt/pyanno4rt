@@ -79,7 +79,7 @@ class DVHGraphPlotterMPL():
         for segment in segments:
 
             axis.plot(dose_histogram['evaluation_points'],
-                      dose_histogram[segment]['dvh_values'],
+                      dose_histogram[segment]['dvh_values']*100,
                       linewidth=1.7,
                       color=segment_styles[segment][0],
                       linestyle=segment_styles[segment][1])

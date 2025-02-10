@@ -14,8 +14,9 @@ from ._dvh_widget import DVHWidget
 from ._slice_compare_widget import SliceCompareWidget
 from ._slice_widget import SliceWidget
 
-__all__ = ['CheckableComboBox',
-           'DVHCompareWidget',
-           'DVHWidget',
-           'SliceCompareWidget',
-           'SliceWidget']
+__all__ = [
+    'CheckableComboBox',
+    'DVHCompareWidget',
+    'DVHWidget',
+    'SliceCompareWidget',
+    'SliceWidget']

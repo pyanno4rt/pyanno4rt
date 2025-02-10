@@ -16,8 +16,9 @@ from . import reducers
 from . import samplers
 from . import transformers
 
-__all__ = ['DataPreprocessor',
-           'cleaners',
-           'reducers',
-           'samplers',
-           'transformers']
+__all__ = [
+    'DataPreprocessor',
+    'cleaners',
+    'reducers',
+    'samplers',
+    'transformers']

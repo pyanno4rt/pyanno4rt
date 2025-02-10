@@ -32,24 +32,24 @@ def load_list_from_file(path):
         with open(path, 'rb') as file:
 
             # Get the list of values
-            value_list = jload(file)
+            return jload(file)
 
-    # Else, check if a python binary file has been selected
-    elif path.endswith('.p'):
+    # Check if a python binary file has been selected
+    if path.endswith('.p'):
 
         # Open a file stream
         with open(path, 'rb') as file:
 
             # Get the list of values
-            value_list = load(file)
+            return load(file)
 
-    # Else, check if a text file has been selected
-    elif path.endswith('.txt'):
+    # Check if a text file has been selected
+    if path.endswith('.txt'):
 
         # Open a file stream
         with open(path, 'r', encoding='utf-8') as file:
 
             # Get the list of values
-            value_list = [float(line.rstrip('\n')) for line in file]
+            return [float(line.rstrip('\n')) for line in file]
 
-    return value_list
+    return []

@@ -23,7 +23,7 @@ def generate_ct_from_dcm(data):
 
     Returns
     -------
-    computed_tomography : dict
+    dict
         Dictionary with information on the CT images.
 
     Raises
@@ -34,18 +34,17 @@ def generate_ct_from_dcm(data):
     """
 
     # Specify the Hounsfield lookup table (HU to RED/RSP)
-    hlut = ((-1024.0, 200.0, 449.0, 2000.0, 2048.0, 3071.0),
-            (0.00324, 1.2, 1.20001, 2.49066, 2.5306, 2.53061))
+    hlut = (
+        (-1024.0, 200.0, 449.0, 2000.0, 2048.0, 3071.0),
+        (0.00324, 1.2, 1.20001, 2.49066, 2.5306, 2.53061))
 
     def check_ct_data(data):
         """Check the CT data from the DICOM files."""
 
         # Check if the grid resolutions are inconsistent
         if any(len(set(resolutions)) != 1 for resolutions in zip(
-                *((file.PixelSpacing[1],
-                   file.PixelSpacing[0],
-                   file.SliceThickness)
-                  for file in data))):
+            *((file.PixelSpacing[1], file.PixelSpacing[0], file.SliceThickness)
+              for file in data))):
 
             # Raise an error to indicate an inconsistency
             raise ValueError(
@@ -54,8 +53,8 @@ def generate_ct_from_dcm(data):
 
         # Check if the image positions are inconsistent
         if any(len(set(positions)) != 1 for positions in zip(
-                *((file.ImagePositionPatient[1], file.ImagePositionPatient[0])
-                  for file in data))):
+            *((file.ImagePositionPatient[1], file.ImagePositionPatient[0])
+              for file in data))):
 
             # Raise an error to indicate an inconsistency
             raise ValueError(

@@ -23,7 +23,7 @@ def check_regular_extension_directory(label, data, extensions, no_directory):
         Path to the file directory.
 
     extensions : tuple
-        Tuple with the allowed extensions for the directory files.
+        Tuple with the valid extensions for the directory files.
 
     no_directory : tuple
         Tuple with the valid single file formats if no directory.
@@ -47,10 +47,10 @@ def check_regular_extension_directory(label, data, extensions, no_directory):
 
     # Check if any file in the directory has an invalid extension
     if isdir(data) and not all(
-            (any((file.endswith(extension) for extension in extensions))
-             for file in listdir(data))):
+            any(file.endswith(extension) for extension in extensions)
+            for file in listdir(data)):
 
-        # Check if the number of allowed extensions is one
+        # Check if the number of valid extensions is one
         if len(extensions) == 1:
 
             # Get the extension output string from the single element

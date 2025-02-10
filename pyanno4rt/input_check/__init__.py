@@ -14,6 +14,7 @@ from . import check_maps
 
 from ._input_checker import InputChecker
 
-__all__ = ['check_functions',
-           'check_maps',
-           'InputChecker']
+__all__ = [
+    'check_functions',
+    'check_maps',
+    'InputChecker']

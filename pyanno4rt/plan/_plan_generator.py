@@ -91,7 +91,7 @@ class PlanGenerator():
 
             # Get the instance from the component map
             instance = component_map[component['function']](
-                segment=segment, **component['parameters'])
+                segment, **component['parameters'])
 
             # Check if verbose is True
             if verbose:
@@ -189,7 +189,7 @@ class PlanGenerator():
                 set_component(component, segment, category, base_dict)
 
         # Loop over the constraints
-        for label, constraint in constraints.items():
+        for constraint in constraints.values():
 
             # Get the constraint object
             instance = constraint['instance']

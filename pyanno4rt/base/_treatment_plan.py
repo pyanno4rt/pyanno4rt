@@ -438,8 +438,9 @@ class TreatmentPlan():
             }
 
         # Approve the input values
-        apply(self.input_checker.approve,
-              (self.configuration, self.optimization, self.evaluation))
+        apply(
+            self.input_checker.approve,
+            (self.configuration, self.optimization, self.evaluation))
 
         # Initialize the instance attributes
         self.logger = Logger(

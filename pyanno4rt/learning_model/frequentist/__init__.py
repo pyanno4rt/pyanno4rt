@@ -24,12 +24,13 @@ from ._support_vector_machine import SupportVectorMachineModel
 
 from . import extensions
 
-__all__ = ['DecisionTreeModel',
-           'KNeighborsModel',
-           'LogisticRegressionModel',
-           'MachineLearningModel',
-           'NaiveBayesModel',
-           'NeuralNetworkModel',
-           'RandomForestModel',
-           'SupportVectorMachineModel',
-           'extensions']
+__all__ = [
+    'DecisionTreeModel',
+    'KNeighborsModel',
+    'LogisticRegressionModel',
+    'MachineLearningModel',
+    'NaiveBayesModel',
+    'NeuralNetworkModel',
+    'RandomForestModel',
+    'SupportVectorMachineModel',
+    'extensions']

@@ -20,13 +20,14 @@ from ._tree_window import TreeWindow
 
 from ._main_window import MainWindow
 
-__all__ = ['CompareWindow',
-           'DataColumnsWindow',
-           'InfoWindow',
-           'LogWindow',
-           'MainWindow',
-           'PlanCreationWindow',
-           'SettingsWindow',
-           'SplashScreenWindow',
-           'TextWindow',
-           'TreeWindow']
+__all__ = [
+    'CompareWindow',
+    'DataColumnsWindow',
+    'InfoWindow',
+    'LogWindow',
+    'MainWindow',
+    'PlanCreationWindow',
+    'SettingsWindow',
+    'SplashScreenWindow',
+    'TextWindow',
+    'TreeWindow']

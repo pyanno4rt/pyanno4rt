@@ -17,9 +17,10 @@ from . import solvers
 
 from ._fluence_optimizer import FluenceOptimizer
 
-__all__ = ['components',
-           'initializers',
-           'methods',
-           'projections',
-           'solvers',
-           'FluenceOptimizer']
+__all__ = [
+    'components',
+    'initializers',
+    'methods',
+    'projections',
+    'solvers',
+    'FluenceOptimizer']

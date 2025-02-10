@@ -13,5 +13,6 @@ analysis, data-driven model review, and treatment plan evaluation.
 from pyanno4rt.visualization._visualizer import Visualizer
 from pyanno4rt.visualization import visuals
 
-__all__ = ['Visualizer',
-           'visuals']
+__all__ = [
+    'Visualizer',
+    'visuals']

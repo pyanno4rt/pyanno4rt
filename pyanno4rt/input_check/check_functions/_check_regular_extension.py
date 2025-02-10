@@ -22,7 +22,7 @@ def check_regular_extension(label, data, extensions):
         Path to the file.
 
     extensions : tuple
-        Tuple with the allowed extensions for the file path.
+        Tuple with the valid extensions for the file path.
 
     Raises
     ------
@@ -45,7 +45,7 @@ def check_regular_extension(label, data, extensions):
     if (isfile(data) and not any(
             data.endswith(extension) for extension in extensions)):
 
-        # Check if the number of allowed extensions is one
+        # Check if the number of valid extensions is one
         if len(extensions) == 1:
 
             # Get the extension output string from the single element

@@ -21,8 +21,7 @@ def check_type(label, data, types, type_condition=None):
         Tuple or dictionary with the allowed data types.
 
     type_condition : None or str, default=None
-        Value of the conditional variable (used as a selector if types is a \
-        dictionary).
+        Value of the conditional (only used if types is a dictionary).
 
     Raises
     ------

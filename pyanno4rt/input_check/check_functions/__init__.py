@@ -23,16 +23,17 @@ from ._check_string_is_number import check_string_is_number
 from ._check_value import check_value
 from ._check_value_in_set import check_value_in_set
 
-__all__ = ['check_components',
-           'check_data_columns',
-           'check_dose_matrix',
-           'check_key_in_dict',
-           'check_length',
-           'check_path',
-           'check_regular_extension',
-           'check_regular_extension_directory',
-           'check_subtype',
-           'check_type',
-           'check_string_is_number',
-           'check_value',
-           'check_value_in_set']
+__all__ = [
+    'check_components',
+    'check_data_columns',
+    'check_dose_matrix',
+    'check_key_in_dict',
+    'check_length',
+    'check_path',
+    'check_regular_extension',
+    'check_regular_extension_directory',
+    'check_subtype',
+    'check_type',
+    'check_string_is_number',
+    'check_value',
+    'check_value_in_set']

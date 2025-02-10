@@ -6,7 +6,7 @@
 
 from statistics import mean
 
-from numpy import floor, linspace, power, sort, unravel_index
+from numpy import floor, isnan, linspace, nan, sort, unravel_index
 from scipy.interpolate import interp1d
 
 # %% Internal package import
@@ -68,8 +68,8 @@ class DosimetricsEvaluator():
         hub.logger.display_info("Initializing dosimetrics evaluator ...")
 
         # Get the sorted reference volumes and doses from the arguments
-        self.reference_volume, self.reference_dose = map(
-            sorted, (tuple(reference_volume), tuple(reference_dose)))
+        self.reference_volume, self.reference_dose = map(tuple, map(
+            sorted, (reference_volume, reference_dose)))
 
         # Check if the length of the "display_segments" argument is zero
         if len(display_segments) == 0:
@@ -103,7 +103,7 @@ class DosimetricsEvaluator():
         Parameters
         ----------
         dose_cube : ndarray
-            Three-dimensional array with the dose values (CT resolution).
+            3D array with the dose values (CT resolution).
         """
 
         # Initialize the datahub
@@ -112,7 +112,10 @@ class DosimetricsEvaluator():
         # Log a message about the dosimetrics evaluation
         hub.logger.display_info("Evaluating dosimetrics for all segments ...")
 
-        # Check if the reference dose list is empty
+        # Get the segmentation data
+        segmentation = hub.segmentation
+
+        # Check if the reference dose tuple is empty
         if len(self.reference_dose) == 0:
 
             # Apply default reference dose values
@@ -120,15 +123,16 @@ class DosimetricsEvaluator():
                 floor(linspace(0, dose_cube.max(), 5)*10)/10)
 
         # Initialize the dosimetrics dictionary
-        dosimetrics = {segment: {} for segment in hub.segmentation}
+        dosimetrics = {segment: {} for segment in segmentation}
 
         # Loop over the segments
         for segment in dosimetrics:
 
             # Get the sorted dose vector
             dose = sort(dose_cube[unravel_index(
-                hub.segmentation[segment]['raw_indices'],
-                hub.computed_tomography['cube_dimensions'], order='F')])
+                segmentation[segment]['raw_indices'],
+                hub.computed_tomography['cube_dimensions'],
+                order='F')])
 
             # Get the length of the dose vector
             dose_length = len(dose)
@@ -137,8 +141,9 @@ class DosimetricsEvaluator():
             if dose_length > 0:
 
                 # Initialize the linear dose interpolator
-                interpolator = interp1d(linspace(0, 1, dose_length), dose,
-                                        'linear', fill_value='extrapolate')
+                interpolator = interp1d(
+                    linspace(0, 1, dose_length), dose, 'linear',
+                    fill_value='extrapolate')
 
                 # Compute the base statistics from the dose vector
                 dosimetrics[segment] |= {
@@ -152,59 +157,54 @@ class DosimetricsEvaluator():
 
                 # Compute the relative volumes from the reference doses
                 dosimetrics[segment] |= {
-                    f'Vx_{value}': ((dose >= value).sum()/dose_length)
+                    f'Vx_{value}': (dose >= value).sum()/dose_length
                     for value in self.reference_dose}
 
                 # Check if the segment is a target volume with objective
-                if (hub.segmentation[segment]['type'].lower() in (
-                        'tv', 'target', 'boost', 'tumor')
-                        and hub.segmentation[segment]['objective']):
+                if (segmentation[segment]['type'].lower() in (
+                        'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor')
+                        and segmentation[segment]['objective'] is not None):
 
-                    # Get the target objective
-                    target_objective = hub.segmentation[segment]['objective']
+                    # Get the objective
+                    objective = segmentation[segment]['objective']
 
                     # Set the relevant objective names
                     names = ('Squared Deviation', 'Squared Underdosing')
 
-                    # Check if the objective is a tuple with relevant elements
-                    if (isinstance(target_objective, list)
-                            and any(objective.name in names
-                                    for objective in target_objective)):
+                    # Initialize the target dose level to NaN
+                    target_dose = nan
 
-                        # Set the target dose to the mean parameter value
+                    # Check if the objective is a list
+                    if isinstance(objective, list):
+
+                        # Get the mean dose parameter value
                         target_dose = mean(
-                            objective.get_parameter_value()[0]
-                            for objective in target_objective
-                            if objective.name in names)
+                            element.get_parameter_value()[0]
+                            for element in objective
+                            if element.name in names)
 
-                    # Else, check if the objective is not a tuple but relevant
-                    elif (not isinstance(target_objective, list)
-                          and target_objective.name in names):
+                    # Else, check if the objective name is relevant
+                    elif objective.name in names:
 
-                        # Set the target dose to the parameter value
-                        target_dose = target_objective.get_parameter_value()[0]
+                        # Get the dose parameter value
+                        target_dose = objective.get_parameter_value()[0]
 
-                    else:
-
-                        # Set the target dose to None
-                        target_dose = None
-
-                    # Check if the target dose has a value
-                    if target_dose:
+                    # Check if the target dose level exists
+                    if not isnan(target_dose):
 
                         # Set the dose threshold
                         threshold = 0.95*target_dose
 
-                        # Get the rounded threshold as a string
-                        sub = str(round(target_dose*100)/100)
+                        # Get the rounded target dose level
+                        level = round(target_dose*100)/100
 
-                        # Add the conformity index to the dosimetrics
-                        dosimetrics[segment][f'CI_{sub}Gy'] = (
-                            power((dose >= threshold).sum(), 2)
+                        # Add the conformity index
+                        dosimetrics[segment][f'CI_{level}Gy'] = (
+                            ((dose >= threshold).sum())**2
                             / (dose_length*(dose_cube >= threshold).sum()))
 
-                        # Add the homogeneity index to the dosimetrics
-                        dosimetrics[segment][f'HI_{sub}Gy'] = (
+                        # Add the homogeneity index
+                        dosimetrics[segment][f'HI_{level}Gy'] = (
                             ((interpolator(0.95)-interpolator(0.05))
                              / target_dose) * 100)
 

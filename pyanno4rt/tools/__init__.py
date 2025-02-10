@@ -8,6 +8,8 @@ This module aims to provide helpful functions that improve code readability.
 
 # Author: Tim Ortkamp
 
+from ._filter_dict import filter_dict
+
 from ._add_square_brackets import add_square_brackets
 from ._apply import apply
 from ._arange_with_endpoint import arange_with_endpoint
@@ -40,33 +42,35 @@ from ._snapshot import snapshot
 from ._string_to_numeric import string_to_numeric
 
 
-__all__ = ['add_square_brackets',
-           'apply',
-           'arange_with_endpoint',
-           'compare_dictionaries',
-           'copycat',
-           'custom_round',
-           'deduplicate',
-           'flatten',
-           'get_all_constraints',
-           'get_all_objectives',
-           'get_constraint_segments',
-           'get_conventional_constraints',
-           'get_conventional_objectives',
-           'get_machine_learning_constraints',
-           'get_machine_learning_objectives',
-           'get_objective_segments',
-           'get_radiobiological_constraints',
-           'get_radiobiological_objectives',
-           'identity',
-           'inverse_sigmoid',
-           'load_list_from_file',
-           'load_segments_from_path',
-           'non_decreasing',
-           'non_increasing',
-           'monotonic',
-           'replace_nan',
-           'reset_outputs',
-           'sigmoid',
-           'snapshot',
-           'string_to_numeric']
+__all__ = [
+    'filter_dict',
+    'add_square_brackets',
+    'apply',
+    'arange_with_endpoint',
+    'compare_dictionaries',
+    'copycat',
+    'custom_round',
+    'deduplicate',
+    'flatten',
+    'get_all_constraints',
+    'get_all_objectives',
+    'get_constraint_segments',
+    'get_conventional_constraints',
+    'get_conventional_objectives',
+    'get_machine_learning_constraints',
+    'get_machine_learning_objectives',
+    'get_objective_segments',
+    'get_radiobiological_constraints',
+    'get_radiobiological_objectives',
+    'identity',
+    'inverse_sigmoid',
+    'load_list_from_file',
+    'load_segments_from_path',
+    'non_decreasing',
+    'non_increasing',
+    'monotonic',
+    'replace_nan',
+    'reset_outputs',
+    'sigmoid',
+    'snapshot',
+    'string_to_numeric']

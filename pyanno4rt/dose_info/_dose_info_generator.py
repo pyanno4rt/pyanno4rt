@@ -28,14 +28,14 @@ class DoseInfoGenerator():
 
     Parameters
     ----------
-    dose_resolution : list
-        Size of the dose grid in [`mm`] per dimension.
-
     number_of_fractions : int
         Number of fractions according to the treatment scheme.
 
     dose_matrix_path : str
         Path to the dose-influence matrix file (.mat, .npy or .npz).
+
+    dose_resolution : list
+        Size of the dose grid in [`mm`] per dimension.
 
     Attributes
     ----------
@@ -79,14 +79,15 @@ class DoseInfoGenerator():
         dose_information = {}
 
         # Add the dose grid resolution
-        dose_information['resolution'] = dict(
-            zip(('x', 'y', 'z'), self.dose_resolution))
+        dose_information['resolution'] = dict(zip(
+            ('x', 'y', 'z'), self.dose_resolution))
 
         # Add the grid points for all dimensions
-        dose_information |= {dimension: arange_with_endpoint(
-            hub.computed_tomography[dimension][0],
-            hub.computed_tomography[dimension][-1],
-            dose_information['resolution'][dimension])
+        dose_information |= {
+            dimension: arange_with_endpoint(
+                hub.computed_tomography[dimension][0],
+                hub.computed_tomography[dimension][-1],
+                dose_information['resolution'][dimension])
             for dimension in ('x', 'y', 'z')}
 
         # Add the dose cube dimensions
@@ -100,7 +101,7 @@ class DoseInfoGenerator():
         # Add the number of fractions
         dose_information['number_of_fractions'] = self.number_of_fractions
 
-        # Check if the dose path leads to a matlab file
+        # Check if the dose path leads to a .mat file
         if self.dose_matrix_path.endswith('.mat'):
 
             # Log a message about the dose-influence matrix addition
@@ -128,11 +129,10 @@ class DoseInfoGenerator():
                         # Get the matrix key
                         key = next(key for key in file if key != '#refs#')
 
-                        # Load the dose-influence matrix
+                        # Get the dose-influence matrix
                         dose_matrix = csr_matrix(
                             (file[f'/{key}/data'], file[f'/{key}/ir'],
-                             file[f'/{key}/jc']),
-                            shape=(
+                             file[f'/{key}/jc']), shape=(
                                 len(file['/D/jc'])-1,
                                 dose_information['number_of_voxels'])
                             ).transpose()
@@ -147,21 +147,21 @@ class DoseInfoGenerator():
                     # Raise the error
                     raise ValueError(error) from error
 
-            # Get the sparse dose-influence matrix directly
+            # Add the dose-influence matrix to the dictionary
             dose_information['dose_influence_matrix'] = dose_matrix
 
-        # Else, check if the dose path leads to a numpy binary file
+        # Else, check if the dose path leads to a .npy file
         elif self.dose_matrix_path.endswith('.npy'):
 
             # Log a message about the dose-influence matrix addition
             hub.logger.display_info(
                 "Adding dose-influence matrix from NumPy binary file ...")
 
-            # Add the dose-influence matrix from the .npy file
+            # Add the dose-influence matrix to the dictionary
             dose_information['dose_influence_matrix'] = csr_matrix(
                 load(self.dose_matrix_path))
 
-        # Else, check if the dose path leads to a zipped numpy binary file
+        # Else, check if the dose path leads to a .npz file
         elif self.dose_matrix_path.endswith('.npz'):
 
             # Log a message about the dose-influence matrix addition
@@ -169,7 +169,7 @@ class DoseInfoGenerator():
                 "Adding dose-influence matrix from SciPy sparse binary file "
                 "...")
 
-            # Add the dose-influence matrix from the .npz file
+            # Add the dose-influence matrix to the dictionary
             dose_information['dose_influence_matrix'] = load_npz(
                 self.dose_matrix_path)
 

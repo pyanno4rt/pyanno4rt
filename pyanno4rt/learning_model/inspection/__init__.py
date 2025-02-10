@@ -13,5 +13,6 @@ from ._model_inspector import ModelInspector
 
 from . import algorithms
 
-__all__ = ['ModelInspector',
-           'algorithms']
+__all__ = [
+    'ModelInspector',
+    'algorithms']

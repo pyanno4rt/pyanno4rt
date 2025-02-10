@@ -1,4 +1,4 @@
-"""String number checking."""
+"""String-to-integer checking."""
 
 # Author: Tim Ortkamp
 
@@ -7,7 +7,7 @@
 
 def check_string_is_number(label, data):
     """
-    Check if a string can be converted to a number.
+    Check if a string can be converted to an integer.
 
     Parameters
     ----------
@@ -31,9 +31,9 @@ def check_string_is_number(label, data):
             # Convert the data to integer
             int(data)
 
-        except ValueError:
+        except ValueError as error:
 
             # Raise an error to indicate an invalid literal
             raise ValueError(
                 f"The treatment plan parameter '{label}' is a string, but "
-                "it has an invalid literal for int() with base 10!")
+                "it has an invalid literal for int() with base 10!") from error

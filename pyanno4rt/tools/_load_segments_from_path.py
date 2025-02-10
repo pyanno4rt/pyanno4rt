@@ -65,7 +65,7 @@ def load_segments_from_path(path):
             # Add segment name and type to the dictionary
             segments |= {roi_structure.ROIName: segment_type}
 
-    # Check if the path leads to a MATLAB file
+    # Else, check if the path leads to a MATLAB file
     elif splitext(path)[1] == '.mat':
 
         # Read the MATLAB segmentation data
@@ -73,11 +73,10 @@ def load_segments_from_path(path):
 
         # Generate the segment dictionary
         segments = {
-            segment_values[1]: ('TARGET' if any(
-                string in segment_values[1].lower() for string in flags)
-                else 'OAR') for segment_values in segmentation_data}
+            segment_values[1]: segment_values[2]
+            for segment_values in segmentation_data}
 
-    # Check if the path leads to a Python file
+    # Else, check if the path leads to a Python file
     elif splitext(path)[1] == '.p':
 
         # Get the segmentation data
@@ -85,9 +84,8 @@ def load_segments_from_path(path):
 
         # Get the segments
         segments = {
-            segment: ('TARGET' if any(
-                string in segment.lower() for string in flags)
-                else 'OAR') for segment in segmentation_data}
+            segment: values['type']
+            for segment, values in segmentation_data.items()}
 
     else:
 

@@ -21,12 +21,12 @@ def read_data_from_dcm(path):
 
     Returns
     -------
-    computed_tomography_data : tuple
+    tuple
         Tuple of :class:`pydicom.dataset.FileDataset` objects with \
         information on the CT slices.
 
-    segmentation_data : object of class :class:`pydicom.dataset.FileDataset`
-        The object representation of the segmentation data.
+    object of class :class:`pydicom.dataset.FileDataset`
+        The object used to represent the segmentation data.
     """
 
     # Load the DICOM files

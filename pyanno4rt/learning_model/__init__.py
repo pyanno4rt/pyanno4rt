@@ -19,11 +19,12 @@ from . import preprocessing
 
 from ._data_model_handler import DataModelHandler
 
-__all__ = ['dataset',
-           'evaluation',
-           'features',
-           'frequentist',
-           'inspection',
-           'losses',
-           'preprocessing',
-           'DataModelHandler']
+__all__ = [
+    'dataset',
+    'evaluation',
+    'features',
+    'frequentist',
+    'inspection',
+    'losses',
+    'preprocessing',
+    'DataModelHandler']

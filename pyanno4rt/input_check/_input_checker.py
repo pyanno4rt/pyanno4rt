@@ -6,6 +6,7 @@
 
 from warnings import warn
 
+from collections import ChainMap
 from pandas import read_csv
 
 # %% Internal package import
@@ -13,7 +14,7 @@ from pandas import read_csv
 from pyanno4rt.input_check.check_maps import (
     component_map, configuration_map, evaluation_map, model_display_map,
     model_map, optimization_map, top_level_map, tune_space_map)
-from pyanno4rt.tools import flatten, load_segments_from_path
+from pyanno4rt.tools import load_segments_from_path
 
 # %% Class definition
 
@@ -34,7 +35,7 @@ class InputChecker():
         check functions.
 
     imaging_path : str
-        
+        Path to the CT and segmentation data.
 
     data_path : str
         Path to the data set used for fitting the machine learning model.
@@ -55,13 +56,12 @@ class InputChecker():
     def __init__(self):
 
         # Get all available check maps
-        check_maps = (component_map, configuration_map, evaluation_map,
-                      model_map, model_display_map, optimization_map,
-                      top_level_map, tune_space_map)
+        check_maps = (
+            component_map, configuration_map, evaluation_map, model_map,
+            model_display_map, optimization_map, top_level_map, tune_space_map)
 
         # Get all parameter names
-        parameter_names = tuple(flatten([
-            dictionary.keys() for dictionary in check_maps]))
+        parameter_names = set().union(*check_maps)
 
         # Check if there are duplicate keys
         if len(parameter_names) != len(set(parameter_names)):
@@ -72,9 +72,7 @@ class InputChecker():
                 "that there are duplicates within or between some maps!")
 
         # Build the full check map
-        self.check_map = {key: value
-                          for dictionary in check_maps
-                          for key, value in dictionary.items()}
+        self.check_map = dict(ChainMap(*check_maps))
 
         # Initialize the external data paths
         self.imaging_path = None
@@ -95,21 +93,21 @@ class InputChecker():
         """
 
         # Set the additional check function arguments
-        args = {'solver': {
-                    'value_condition': input_dictionary.get('method')},
-                'algorithm': {
-                    'value_condition': (
-                        f"{input_dictionary.get('method')}/"
-                        f"{input_dictionary.get('solver')}")},
-                'initial_fluence_vector': {
-                    'type_condition': input_dictionary.get(
-                        'initial_strategy')},
-                'data_path': {
-                    'type_condition': isinstance(
-                        input_dictionary.get('model_folder_path'), str)},
-                'data_columns': {
-                    'type_condition': isinstance(
-                        input_dictionary.get('model_folder_path'), str)}}
+        args = {
+            'solver': {
+                'value_condition': input_dictionary.get('method')},
+            'algorithm': {
+                'value_condition': (
+                    f"{input_dictionary.get('method')}/"
+                    f"{input_dictionary.get('solver')}")},
+            'initial_fluence_vector': {
+                'type_condition': input_dictionary.get('initial_strategy')},
+            'data_path': {
+                'type_condition': isinstance(
+                    input_dictionary.get('model_folder_path'), str)},
+            'data_columns': {
+                'type_condition': isinstance(
+                    input_dictionary.get('model_folder_path'), str)}}
 
         # Check if the type condition on the data path is fulfilled
         if args['data_path']['type_condition']:
@@ -130,6 +128,18 @@ class InputChecker():
             # Check if the key is included in the check map
             if key in self.check_map:
 
+                # Check if the key is 'imaging_path'
+                if key == 'imaging_path':
+
+                    # Update the imaging path
+                    self.imaging_path = value
+
+                # Check if the key is 'data_path'
+                if key == 'data_path':
+
+                    # Update the data path
+                    self.data_path = value
+
                 # Check if the key holds vector-like lower or upper bounds
                 if (key in ('lower_variable_bounds', 'upper_variable_bounds')
                         and not isinstance(value, (int, float, type(None)))):
@@ -147,8 +157,9 @@ class InputChecker():
                     func_args = function.func.__code__.co_varnames
 
                     # Get the additional arguments filtered by function
-                    filter_args = {arg: key_args[arg] for arg in func_args
-                                   if arg in key_args}
+                    filter_args = {
+                        arg: key_args[arg] for arg in func_args
+                        if arg in key_args}
 
                     # Check if the function is 'check_components'
                     if function.func.__name__ == 'check_components':
@@ -170,20 +181,9 @@ class InputChecker():
                     # Run the check function
                     function(key, value, **filter_args)
 
-                    # Check if the key is 'imaging_path'
-                    if key == 'imaging_path':
-
-                        # Update the imaging path
-                        self.imaging_path = value
-
-                    # Check if the key is 'data_path'
-                    if key == 'data_path':
-
-                        # Update the data path
-                        self.data_path = value
-
             else:
 
                 # Raise a warning to indicate an uncheckable parameter
-                warn(f"The key '{key}' cannot be found in the check map and "
-                     "is therefore not approved!")
+                warn(
+                    f"The key '{key}' cannot be found in the check map and "
+                    "is therefore not approved!")

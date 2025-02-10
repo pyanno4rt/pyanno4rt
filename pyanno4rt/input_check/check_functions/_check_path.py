@@ -28,7 +28,7 @@ def check_path(label, data):
     """
 
     # Check if the path references an invalid file or directory
-    if data and not (isdir(data) or isfile(data)):
+    if data is not None and not (isdir(data) or isfile(data)):
 
         # Raise an error to indicate an invalid value
         raise IOError(

@@ -30,7 +30,7 @@ def check_subtype(label, data, types):
     if (isinstance(data, (list, tuple))
             and not all(isinstance(element, types) for element in data)):
 
-        # Raise an error to indicate one or more elements with invalid type
+        # Raise an error to indicate any element with invalid type
         raise TypeError(
             f"One or more elements of the treatment plan parameter '{label}' "
             "have an invalid data type!")

@@ -6,6 +6,10 @@
 
 from numpy import prod
 
+# %% Internal package import
+
+from pyanno4rt.tools import filter_dict
+
 # %% Function definition
 
 
@@ -20,14 +24,13 @@ def generate_ct_from_mat(data):
 
     Returns
     -------
-    computed_tomography : dict
+    dict
         Dictionary with information on the CT images.
     """
 
     # Initialize the CT dictionary with a subset of the data items
-    computed_tomography = {
-        key: value for key, value in data.items()
-        if key in ('cubeHU', 'resolution', 'x', 'y', 'z', 'cubeDim')}
+    computed_tomography = filter_dict(
+        data, retain_keys=('cubeHU', 'resolution', 'x', 'y', 'z', 'cubeDim'))
 
     # Rename the cube dimensions key
     computed_tomography['cube_dimensions'] = (

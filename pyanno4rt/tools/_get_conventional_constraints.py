@@ -21,10 +21,10 @@ def get_conventional_constraints(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with all set conventional constraint functions.
+        Tuple with all set conventional constraint functions.
     """
 
     return tuple(constraint for constraint in flatten(
         segmentation[segment]['constraint'] for segment in segmentation
-        if segmentation[segment]['constraint'])
+        if segmentation[segment]['constraint'] is not None)
         if constraint.get_class() == 'ConventionalComponent')

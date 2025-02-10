@@ -14,6 +14,7 @@ from ._log_loss import log_loss
 
 from ._loss_map import loss_map
 
-__all__ = ['brier_loss',
-           'log_loss',
-           'loss_map']
+__all__ = [
+    'brier_loss',
+    'log_loss',
+    'loss_map']

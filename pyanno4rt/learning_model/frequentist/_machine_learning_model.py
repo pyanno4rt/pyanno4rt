@@ -484,7 +484,8 @@ class MachineLearningModel(metaclass=ABCMeta):
                 hub.logger.display_info(
                     f'Tuning hyperparameters for "{self.model_label}" '
                     f'({self.step}/{self.configuration["tune_evaluations"]}) '
-                    f'- best loss: {min(filter(None, trials.losses()))} ...')
+                    '- best loss: '
+                    f'{round(min(filter(None, trials.losses())), 4)} ...')
 
             # Increment the step variable
             self.step += 1
@@ -520,7 +521,8 @@ class MachineLearningModel(metaclass=ABCMeta):
         hub.logger.display_info(
             f'Completed hyperparameter tuning for "{self.model_label}" '
             f'({self.step}/{self.configuration["tune_evaluations"]}) '
-            f'- best loss: {min(filter(None, bayes_trials.losses()))} ...')
+            '- best loss: '
+            f'{round(min(filter(None, bayes_trials.losses())), 4)} ...')
 
         return tuned_hyperparameters
 

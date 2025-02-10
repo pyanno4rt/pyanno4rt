@@ -13,5 +13,6 @@ from ._model_evaluator import ModelEvaluator
 
 from . import metrics
 
-__all__ = ['ModelEvaluator',
-           'metrics']
+__all__ = [
+    'ModelEvaluator',
+    'metrics']

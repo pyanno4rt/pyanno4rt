@@ -11,14 +11,14 @@ from operator import eq, ge, gt, le, lt
 
 def check_value(label, data, reference, sign, is_vector=False):
     """
-    Check if the data has an invalid value range.
+    Check if the data has an invalid value.
 
     Parameters
     ----------
     label : str
         Label for the item to be checked.
 
-    data : int, float, None, list or tuple
+    data : None, int, float, list or tuple
         Scalar or vector input to be checked.
 
     reference : int or float
@@ -33,7 +33,7 @@ def check_value(label, data, reference, sign, is_vector=False):
     Raises
     ------
     ValueError
-        If the data has an invalid value range.
+        If the data has an invalid value.
     """
 
     # Check if an input is passed
@@ -50,9 +50,10 @@ def check_value(label, data, reference, sign, is_vector=False):
                 f"The treatment plan parameter '{label}' must be {sign} "
                 f"{reference}, got {data}!")
 
-        # Check if the data is a vector with one or more invalid values
-        if is_vector and not all(operator_dict[sign](element, reference)
-                                 for element in data if element):
+        # Check if the data is a vector with any invalid value
+        if is_vector and not all(
+                operator_dict[sign](element, reference)
+                for element in data if isinstance(element, (int, float))):
 
             # Raise an error to indicate an invalid element
             raise ValueError(

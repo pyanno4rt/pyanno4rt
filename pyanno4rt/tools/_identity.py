@@ -15,12 +15,16 @@ def identity(value, *args):
         Value to be returned.
 
     *args : tuple
-        Tuple with optional (non-keyworded) parameters.
+        Tuple with optional (non-keyworded) parameters (only needed for \
+        compatibility).
 
     Returns
     -------
     value : arbitrary
         See 'Parameters'.
     """
+
+    # Delete the optional parameters
+    del args
 
     return value

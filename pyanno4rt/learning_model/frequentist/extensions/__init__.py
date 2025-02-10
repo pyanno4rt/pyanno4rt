@@ -18,17 +18,18 @@ from ._support_vector_machine_decision_functions import (
     rbf_decision_gradient, poly_decision_function, poly_decision_gradient,
     sigmoid_decision_function, sigmoid_decision_gradient)
 
-__all__ = ['build_vanilla_iocnn',
-           'build_vanilla_nn',
-           'loss_map',
-           'optimizer_map',
-           'OptimizableDecisionTree',
-           'OptimizableRandomForest',
-           'linear_decision_function',
-           'linear_decision_gradient',
-           'rbf_decision_function',
-           'rbf_decision_gradient',
-           'poly_decision_function',
-           'poly_decision_gradient',
-           'sigmoid_decision_function',
-           'sigmoid_decision_gradient']
+__all__ = [
+    'build_vanilla_iocnn',
+    'build_vanilla_nn',
+    'loss_map',
+    'optimizer_map',
+    'OptimizableDecisionTree',
+    'OptimizableRandomForest',
+    'linear_decision_function',
+    'linear_decision_gradient',
+    'rbf_decision_function',
+    'rbf_decision_gradient',
+    'poly_decision_function',
+    'poly_decision_gradient',
+    'sigmoid_decision_function',
+    'sigmoid_decision_gradient']

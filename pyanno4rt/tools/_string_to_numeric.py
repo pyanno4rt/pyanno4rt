@@ -13,6 +13,11 @@ def string_to_numeric(text):
     ----------
     text : str
         String value to be converted into numeric.
+
+    Returns
+    -------
+    int or float
+        Numeric value from the string.
     """
 
     # Convert the text to float

@@ -21,11 +21,10 @@ def get_machine_learning_constraints(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with all set machine learning model-based constraint \
-        functions.
+        Tuple with all set machine learning model-based constraint functions.
     """
 
     return tuple(constraint for constraint in flatten(
         segmentation[segment]['constraint'] for segment in segmentation
-        if segmentation[segment]['constraint'])
+        if segmentation[segment]['constraint'] is not None)
         if constraint.get_class() == 'MachineLearningComponent')

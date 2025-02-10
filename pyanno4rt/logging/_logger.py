@@ -6,8 +6,8 @@
 
 from importlib.metadata import version
 from io import StringIO
-from logging import (CRITICAL, DEBUG, ERROR, Formatter, getLogger, INFO,
-                     StreamHandler, WARNING)
+from logging import (
+    CRITICAL, DEBUG, ERROR, Formatter, getLogger, INFO, StreamHandler, WARNING)
 from platform import python_version
 
 # %% Class definition
@@ -18,15 +18,14 @@ class Logger():
     Logging class.
 
     This class provides methods to configure an instance of the logger, \
-    including multiple stream handlers and formatters to print messages at \
-    different levels.
+    including multiple stream handlers and formatters to print log messages.
 
     Parameters
     ----------
     *args : tuple
         Tuple with optional (non-keyworded) logging parameters. The value \
-        args[0] refers to the label of the treatment plan, while args[1] \
-        specifies the minimum logging level.
+        args[0] should refer to the label of the treatment plan, while \
+        args[1] specifies the minimum logging level.
 
     Attributes
     ----------
@@ -42,8 +41,7 @@ class Logger():
         if args:
 
             # Initialize the logger
-            self.logger = self.initialize_logger(
-                label=args[0], min_log_level=args[1])
+            self.logger = self.initialize_logger(args[0], args[1])
 
             # Log a message about the software versions used
             self.display_info(
@@ -78,11 +76,12 @@ class Logger():
         """
 
         # Map the values of 'min_log_level' to the logging levels of the module
-        levels = {'debug': DEBUG,
-                  'info': INFO,
-                  'warning': WARNING,
-                  'error': ERROR,
-                  'critical': CRITICAL}
+        levels = {
+            'debug': DEBUG,
+            'info': INFO,
+            'warning': WARNING,
+            'error': ERROR,
+            'critical': CRITICAL}
 
         # Get the logger by the label
         logger = getLogger(name=f'pyanno4rt - {label}')
@@ -140,11 +139,12 @@ class Logger():
         """
 
         # Map the values of 'min_log_level' to the logging levels of the module
-        levels = {'debug': DEBUG,
-                  'info': INFO,
-                  'warning': WARNING,
-                  'error': ERROR,
-                  'critical': CRITICAL}
+        levels = {
+            'debug': DEBUG,
+            'info': INFO,
+            'warning': WARNING,
+            'error': ERROR,
+            'critical': CRITICAL}
 
         # Loop over the handlers
         for handler in self.logger.handlers:
@@ -174,11 +174,12 @@ class Logger():
         """
 
         # Map the values of 'level' to the logging methods of the attribute
-        logging_methods = {'debug': self.logger.debug,
-                           'info': self.logger.info,
-                           'warning': self.logger.warning,
-                           'error': self.logger.error,
-                           'critical': self.logger.critical}
+        logging_methods = {
+            'debug': self.logger.debug,
+            'info': self.logger.info,
+            'warning': self.logger.warning,
+            'error': self.logger.error,
+            'critical': self.logger.critical}
 
         # Run the selected logging method
         logging_methods[level](formatted_string, *args)

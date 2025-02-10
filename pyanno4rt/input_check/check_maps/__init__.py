@@ -18,11 +18,12 @@ from ._optimization_map import optimization_map
 from ._top_level_map import top_level_map
 from ._tune_space_map import tune_space_map
 
-__all__ = ['component_map',
-           'configuration_map',
-           'evaluation_map',
-           'model_display_map',
-           'model_map',
-           'optimization_map',
-           'top_level_map',
-           'tune_space_map']
+__all__ = [
+    'component_map',
+    'configuration_map',
+    'evaluation_map',
+    'model_display_map',
+    'model_map',
+    'optimization_map',
+    'top_level_map',
+    'tune_space_map']

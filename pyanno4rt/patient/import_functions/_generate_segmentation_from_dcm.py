@@ -36,7 +36,7 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
 
     Returns
     -------
-    segmentation : dict
+    dict
         Dictionary with information on the segmented structures.
 
     Raises
@@ -44,9 +44,6 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
     ValueError
         If the contour sequence for a segment includes out-of-slice points.
     """
-
-    # Initialize the logger
-    logger = Datahub().logger
 
     def generate_colors(length):
         """Generate a tuple of specific length with different RGB colors."""
@@ -134,6 +131,9 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
 
         return sort(ravel_multi_index(
             where(segment_cube), segment_cube.shape, order='F'))
+
+    # Initialize the logger
+    logger = Datahub().logger
 
     # Get the default color tuple
     default_colors = generate_colors(len(data.ROIContourSequence))

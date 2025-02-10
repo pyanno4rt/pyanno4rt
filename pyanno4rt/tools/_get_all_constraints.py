@@ -21,9 +21,9 @@ def get_all_constraints(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with the user-assigned constraints.
+        Tuple with the user-assigned constraints.
     """
 
     return tuple(constraint for constraint in flatten(
         segmentation[segment]['constraint'] for segment in segmentation
-        if segmentation[segment]['constraint']))
+        if segmentation[segment]['constraint'] is not None))

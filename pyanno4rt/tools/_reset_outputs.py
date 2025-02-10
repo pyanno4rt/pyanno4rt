@@ -24,7 +24,7 @@ def reset_outputs():
     # Get the segmentation from the datahub
     segmentation = hub.segmentation
 
-    # Check if lexicographic or weighted-sum optimization are selected
+    # Check if lexicographic or weighted-sum optimization have been selected
     if type(hub.optimization['problem']).__name__ in (
             'LexicographicOptimization', 'WeightedSumOptimization'):
 

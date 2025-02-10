@@ -21,12 +21,13 @@ from ._solver_map import solver_map
 from . import configurations
 from . import internals
 
-__all__ = ['IpyoptSolver',
-           'ProxminSolver',
-           # 'Pyanno4rtSolver',
-           'PymooSolver',
-           'PyPop7Solver',
-           'SciPySolver',
-           'solver_map',
-           'configurations',
-           'internals']
+__all__ = [
+    'IpyoptSolver',
+    'ProxminSolver',
+    # 'Pyanno4rtSolver',
+    'PymooSolver',
+    'PyPop7Solver',
+    'SciPySolver',
+    'solver_map',
+    'configurations',
+    'internals']

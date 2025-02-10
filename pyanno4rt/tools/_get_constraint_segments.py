@@ -21,11 +21,11 @@ def get_constraint_segments(segmentation):
     Returns
     -------
     tuple
-        Flattened tuple with the segments associated with the constraints.
+        Tuple with the segments associated with the constraints.
     """
 
     return tuple(flatten(
         [segment]*len(segmentation[segment]['constraint'])
         if isinstance(segmentation[segment]['constraint'], list)
         else [segment] for segment in segmentation
-        if segmentation[segment]['constraint']))
+        if segmentation[segment]['constraint'] is not None))

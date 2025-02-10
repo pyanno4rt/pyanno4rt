@@ -4,11 +4,12 @@
 
 # %% External package import
 
+from os import listdir, walk
+from os.path import basename
+
 from itertools import product
 from json import load
 from numpy import load as npload
-from os import listdir, walk
-from os.path import basename
 
 # %% Internal package import
 
@@ -72,8 +73,7 @@ def copycat(base_class, path, ignore_optimum=False):
                             'data_path'] = f'{inputs[0]}/{filename}'
 
         # Get the component
-        component = treatment_plan.optimization[
-            'components'][inputs[1]]
+        component = treatment_plan.optimization['components'][inputs[1]]
 
         # Check if the component is a list
         if isinstance(component, list):
@@ -88,8 +88,7 @@ def copycat(base_class, path, ignore_optimum=False):
             edit(component)
 
     # Open a file stream
-    with open(f'{path}/input_parameters.json', 'r',
-              encoding='utf-8') as file:
+    with open(f'{path}/input_parameters.json', 'r', encoding='utf-8') as file:
 
         # Load the input parameter dictionaries
         input_parameters = load(file)

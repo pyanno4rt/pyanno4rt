@@ -144,21 +144,17 @@ class FluenceOptimizer():
 
             # Log a message about the ignored constraints
             hub.logger.display_warning(
-                f"The selected algorithm '{algorithm}' only allows for "
-                "unconstrained optimization problems - all constraints set "
-                "will be ignored ...")
+                f"The '{algorithm}' algorithm only allows for unconstrained "
+                "optimization problems - constraints set will be ignored ...")
 
-        # Get the optimization data
-        optimization_dictionary = {
+        # Extend the optimization dictionary in the datahub
+        hub.optimization |= {
             'problem': problem,
             'initializer': initializer,
             'initial_fluence': initial_fluence,
             'initial_strategy': initial_strategy,
             'solver_object': solver_object,
             'initial_time': time()-start_time}
-
-        # Extend the optimization dictionary in the datahub
-        hub.optimization |= optimization_dictionary
 
     @staticmethod
     def remove_overlap(objectives, constraints):
@@ -167,10 +163,65 @@ class FluenceOptimizer():
 
         Parameters
         ----------
-        components : dict
-            Optimization components for each segment of interest, i.e., \
-            objectives and constraints, in the raw user format.
+        objectives : dict
+            Dictionary with the plan objectives.
+
+        constraints : dict
+            Dictionary with the plan constraints.
+
+        Returns
+        -------
+        dict
+            Cleaned dictionary with the plan objectives.
+
+        dict
+            Cleaned dictionary with the plan constraints.
         """
+
+        def remove_segment_overlap(reference):
+            """Remove the overlap from a reference segment."""
+
+            # Get the indices from all higher prioritized VOIs
+            superior_indices = (
+                segmentation[segment]['raw_indices'] for segment in segments
+                if (segmentation[segment]['parameters']['priority']
+                    < segmentation[reference]['parameters']['priority']))
+
+            # Enter the overlap-free (prioritized) indices into the datahub
+            segmentation[reference]['prioritized_indices'] = setdiff1d(
+                segmentation[reference]['raw_indices'],
+                reduce(union1d, superior_indices, -1))
+
+            # Check if the prioritized index set is empty and relevant
+            if (len(segmentation[reference]['prioritized_indices']) == 0 and (
+                    segmentation[reference]['objective'] is not None or
+                    segmentation[reference]['constraint'] is not None)):
+
+                # Loop over the component types and dictionaries
+                for label, dictionary in {
+                        'objective': objectives,
+                        'constraint': constraints}.items():
+
+                    # Loop over the component keys
+                    for key in (
+                        key for key in dictionary
+                            if reference in dictionary[key]['segments']):
+
+                        # Remove the reference segment
+                        dictionary[key]['segments'].remove(reference)
+
+                        # Check if the segment list is empty
+                        if len(dictionary[key]['segments']) == 0:
+
+                            # Log a message about the component removal
+                            hub.logger.display_info(
+                                f"Removing {label} "
+                                f"'{dictionary[key]['instance'].name}' from "
+                                f"fully enclosed segment '{reference}' ...")
+
+                            # Delete the component from the dictionaries
+                            del dictionary[key]
+                            segmentation[reference][label] = None
 
         # Initialize the datahub
         hub = Datahub()
@@ -181,76 +232,10 @@ class FluenceOptimizer():
         # Get the segmentation data
         segmentation = hub.segmentation
 
-        def remove_segment_overlap(reference):
-            """Remove the overlap from a reference segment."""
-
-            # Get the superior indices from all VOIs
-            superior_indices = [
-                segmentation[segment]['raw_indices']
-                for segment in set(flatten(
-                    [component['segments']
-                     for component in (objectives | constraints).values()]))
-                if (segmentation[segment]['parameters']['priority']
-                    < segmentation[reference]['parameters']['priority'])]
-
-            # Enter the overlap-free (prioritized) indices into the datahub
-            segmentation[reference]['prioritized_indices'] = setdiff1d(
-                segmentation[reference]['raw_indices'],
-                reduce(union1d, superior_indices, -1))
-
-            # Check if the prioritized index set is empty and relevant
-            if (len(segmentation[reference]['prioritized_indices']) == 0
-                    and any(parameter is not None for parameter in (
-                        segmentation[reference]['objective'],
-                        segmentation[reference]['constraint']))):
-
-                # Get the objective keys associated with the reference segment
-                objective_keys = [
-                    key for key in objectives
-                    if reference in objectives[key]['segments']]
-
-                # Get the constraint keys associated with the reference segment
-                constraint_keys = [
-                    key for key in constraints
-                    if reference in constraints[key]['segments']]
-
-                # Loop over the objective keys
-                for key in objective_keys:
-
-                    # Remove the reference segment
-                    objectives[key]['segments'].remove(reference)
-
-                    # Check if the segment list is empty
-                    if len(objectives[key]['segments']) == 0:
-
-                        # Log a message about the objective removal
-                        hub.logger.display_info(
-                            "Removing objective "
-                            f"'{objectives[key]['instance'].name}' from "
-                            f"fully enclosed segment '{reference}' ...")
-
-                        # Delete the objective from the dictionaries
-                        del objectives[key]
-                        segmentation[reference]['objective'] = None
-
-                # Loop over the constraint keys
-                for key in constraint_keys:
-
-                    # Remove the reference segment
-                    constraints[key]['segments'].remove(reference)
-
-                    # Check if the segment list is empty
-                    if len(constraints[key]['segments']) == 0:
-
-                        # Log a message about the constraint removal
-                        hub.logger.display_info(
-                            "Removing constraint "
-                            f"'{constraints[key]['instance'].name}' from "
-                            f"fully enclosed segment '{reference}' ...")
-
-                        # Delete the constraint from the dictionaries
-                        del constraints[key]
-                        segmentation[reference]['constraint'] = None
+        # Get all segments from the components
+        segments = set(flatten(
+            component['segments']
+            for component in (objectives | constraints).values()))
 
         # Remove the overlaps from all segments
         apply(remove_segment_overlap, (*segmentation,))
@@ -260,20 +245,6 @@ class FluenceOptimizer():
     @staticmethod
     def resize_segments_to_dose():
         """Resize the segments from CT to dose grid."""
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the segment resizing
-        hub.logger.display_info("Resizing segments from CT to dose grid ...")
-
-        # Get the segmentation data
-        segmentation = hub.segmentation
-
-        # Get the CT and dose cube dimensions
-        ct_dim, dose_dim = (
-            hub.computed_tomography['cube_dimensions'],
-            hub.dose_information['cube_dimensions'])
 
         def resize_segment(segment):
             """Resize a segment to the dose grid."""
@@ -293,6 +264,20 @@ class FluenceOptimizer():
             segmentation[segment]['resized_indices'] = ravel_multi_index(
                 where(zoom(mask, zooms, order=0)), dose_dim, order='F')
 
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Log a message about the segment resizing
+        hub.logger.display_info("Resizing segments from CT to dose grid ...")
+
+        # Get the segmentation data
+        segmentation = hub.segmentation
+
+        # Get the CT and dose cube dimensions
+        ct_dim, dose_dim = (
+            hub.computed_tomography['cube_dimensions'],
+            hub.dose_information['cube_dimensions'])
+
         # Resize all segments
         apply(resize_segment, (*segmentation,))
 
@@ -306,16 +291,6 @@ class FluenceOptimizer():
         components : dict
             Dictionary with the internally configured objectives/constraints.
         """
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the parameter adjustment
-        hub.logger.display_info(
-            "Adjusting dose parameters for fractionation ...")
-
-        # Get the number of fractions
-        number_of_fractions = hub.dose_information['number_of_fractions']
 
         def adjust_component(component):
             """Adjust the dose parameters for a component."""
@@ -335,6 +310,16 @@ class FluenceOptimizer():
 
             # Activate the adjustment indicator of the component
             component.adjusted_parameters = True
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Log a message about the parameter adjustment
+        hub.logger.display_info(
+            "Adjusting dose parameters for fractionation ...")
+
+        # Get the number of fractions
+        number_of_fractions = hub.dose_information['number_of_fractions']
 
         # Adjust all non-adjusted components with dose-related parameters
         apply(adjust_component, (
@@ -604,6 +589,9 @@ class FluenceOptimizer():
 
             # Initialize the current best score
             best_score = -inf
+
+            # Initialize the current best fluence
+            best_fluence = zeros(optimized_fluence.shape)
 
             # Get the indices of targets and OARs of interest
             target_indices, oar_indices = (reduce(

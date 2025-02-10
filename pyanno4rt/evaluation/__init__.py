@@ -12,5 +12,6 @@ treatment plans.
 from ._dosimetrics_evaluator import DosimetricsEvaluator
 from ._dvh_evaluator import DVHEvaluator
 
-__all__ = ['DosimetricsEvaluator',
-           'DVHEvaluator']
+__all__ = [
+    'DosimetricsEvaluator',
+    'DVHEvaluator']

@@ -34,7 +34,7 @@ def check_length(label, data, reference, sign):
     """
 
     # Check if an input is passed
-    if data:
+    if data is not None:
 
         # Create the operator dictionary
         operator_dict = {'==': eq, '>=': ge, '>': gt, '<=': le, '<': lt}

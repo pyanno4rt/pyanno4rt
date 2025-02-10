@@ -23,16 +23,17 @@ from pyanno4rt import (
     base, datahub, dose_info, evaluation, gui, input_check, learning_model,
     logging, optimization, patient, plan, tools, visualization)
 
-__all__ = ['base',
-           'datahub',
-           'dose_info',
-           'evaluation',
-           'gui',
-           'input_check',
-           'learning_model',
-           'logging',
-           'optimization',
-           'patient',
-           'plan',
-           'tools',
-           'visualization']
+__all__ = [
+    'base',
+    'datahub',
+    'dose_info',
+    'evaluation',
+    'gui',
+    'input_check',
+    'learning_model',
+    'logging',
+    'optimization',
+    'patient',
+    'plan',
+    'tools',
+    'visualization']

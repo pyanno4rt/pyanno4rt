@@ -6,10 +6,14 @@
 
 from numpy import array_equal, ndarray
 
+# %% Internal package import
+
+from pyanno4rt.tools import filter_dict
+
 # %% Function definition
 
 
-def compare_dictionaries(reference_dict, compare_dict, ignore=None):
+def compare_dictionaries(reference_dict, compare_dict, ignore_keys=None):
     """
     Compare two dictionaries by their keys and values (including numpy arrays).
 
@@ -21,6 +25,9 @@ def compare_dictionaries(reference_dict, compare_dict, ignore=None):
     compare_dict : dict
         Dictionary for the comparison.
 
+    ignore_keys : list or tuple
+        Names of the keys to be excluded from comparison.
+
     Returns
     -------
     bool
@@ -28,17 +35,13 @@ def compare_dictionaries(reference_dict, compare_dict, ignore=None):
     """
 
     # Check if any keys should be ignored
-    if ignore is not None:
+    if ignore_keys is not None:
 
         # Filter the reference dictionary
-        reference_dict = {
-            key: value for key, value in reference_dict.items()
-            if key not in ignore}
+        reference_dict = filter_dict(reference_dict, remove_keys=ignore_keys)
 
         # Filter the comparison dictionary
-        compare_dict = {
-            key: value for key, value in compare_dict.items()
-            if key not in ignore}
+        compare_dict = filter_dict(compare_dict, remove_keys=ignore_keys)
 
     # Check if the dictionary keys are not equal
     if reference_dict.keys() != compare_dict.keys():
