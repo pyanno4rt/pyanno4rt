@@ -72,18 +72,19 @@ class SquaredUnderdosing(ConventionalComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Squared Underdosing',
-                         segment=segment,
-                         parameter_name=('minimum_dose',),
-                         parameter_category=('dose',),
-                         parameter_value=(minimum_dose,),
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='Squared Underdosing',
+            segment=segment,
+            parameter_name=('minimum_dose',),
+            parameter_category=('dose',),
+            parameter_value=(minimum_dose,),
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
         # Set the individual parameter value
         self.parameter_value = [float(minimum_dose)]
@@ -129,10 +130,16 @@ class SquaredUnderdosing(ConventionalComponent):
         # Initialize the datahub
         hub = Datahub()
 
-        return differentiate(args[0], self.parameter_value,
-                             hub.dose_information['number_of_voxels'],
-                             tuple(hub.segmentation[segment]['resized_indices']
-                                   for segment in args[1]))
+        # Get the number of voxels
+        number_of_voxels = hub.dose_information['number_of_voxels']
+
+        # Get the segment indices
+        indices = tuple(
+            hub.segmentation[segment]['resized_indices']
+            for segment in args[1])
+
+        return differentiate(
+            args[0], self.parameter_value, number_of_voxels, indices)
 
 
 @njit

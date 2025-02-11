@@ -333,7 +333,7 @@ class MachineLearningModel(metaclass=ABCMeta):
         elif (self.model_label in hub.model_instances and compare_dictionaries(
                 self.configuration,
                 hub.model_instances[self.model_label]['configuration'],
-                ignore=('feature_statics', 'feature_definitions'))):
+                ignore_keys=('feature_statics', 'feature_definitions'))):
 
             # Set the update flag to False
             self.updated_model = False

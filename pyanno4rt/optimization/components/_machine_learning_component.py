@@ -216,8 +216,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
         self.rank = rank
         self.bounds = (
             [0.0, 1.0] if bounds is None
-            else [0.0 if bounds[0] is None else bounds[0],
-                  1.0 if bounds[1] is None else bounds[1]])
+            else [
+                0.0 if bounds[0] is None else bounds[0],
+                1.0 if bounds[1] is None else bounds[1]])
         self.link = [] if link is None else link
         self.identifier = identifier
         self.display = display
@@ -243,9 +244,10 @@ class MachineLearningComponent(metaclass=ABCMeta):
             'display_options': model_parameters.get(
                 'display_options', {
                     'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
-                    'kpis': ['Logloss', 'Brier score', 'Subset accuracy',
-                             'Cohen Kappa', 'Hamming loss', 'Jaccard score',
-                             'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']})
+                    'kpis': [
+                        'Logloss', 'Brier score', 'Subset accuracy',
+                        'Cohen Kappa', 'Hamming loss', 'Jaccard score',
+                        'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']})
             }
 
         # Check the model parameters
@@ -264,14 +266,29 @@ class MachineLearningComponent(metaclass=ABCMeta):
         # Initialize the adjustment indicator
         self.adjusted_parameters = False
 
-    def __eq__(self, other):
-        """Compare an instance with another object."""
+    def __eq__(
+            self,
+            other):
+        """
+        Compare an instance with another object.
 
-        return (all(self.__dict__[key] == other.__dict__[key]
-                    for key in ('name', 'link', 'identifier'))
-                and compare_dictionaries(
-                    self.__dict__.get('model_parameters', {}),
-                    other.__dict__.get('model_parameters', {})))
+        Parameters
+        ----------
+        other : object
+            The component object to compare the instance with.
+
+        Returns
+        -------
+        bool
+            Indicator for the equality of the objects.
+        """
+
+        return (
+            all(self.__dict__[key] == other.__dict__[key] for key in (
+                'name', 'link', 'identifier'))
+            and compare_dictionaries(
+                self.__dict__.get('model_parameters', {}),
+                other.__dict__.get('model_parameters', {})))
 
     def get_class(self):
         """

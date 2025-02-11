@@ -76,19 +76,19 @@ class LQPoissonTCP(RadiobiologicalComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='LQ Poisson TCP',
-                         segment=segment,
-                         parameter_name=('alpha', 'beta', 'volume_parameter'),
-                         parameter_category=(
-                             'coefficient', 'coefficient', 'coefficient'),
-                         parameter_value=(alpha, beta, volume_parameter),
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='LQ Poisson TCP',
+            segment=segment,
+            parameter_name=('alpha', 'beta', 'volume_parameter'),
+            parameter_category=('coefficient', 'coefficient', 'coefficient'),
+            parameter_value=(alpha, beta, volume_parameter),
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
     def compute_value(
             self,
@@ -108,8 +108,11 @@ class LQPoissonTCP(RadiobiologicalComponent):
             Value of the component function.
         """
 
-        return compute(args[0], self.parameter_value,
-                       Datahub().dose_information['number_of_fractions'])
+        # Get the number of fractions
+        number_of_fractions = Datahub().dose_information['number_of_fractions']
+
+        return compute(
+            args[0], self.parameter_value, number_of_fractions)
 
     def compute_gradient(
             self,
@@ -132,11 +135,20 @@ class LQPoissonTCP(RadiobiologicalComponent):
         # Initialize the datahub
         hub = Datahub()
 
-        return differentiate(args[0], self.parameter_value,
-                             hub.dose_information['number_of_voxels'],
-                             tuple(hub.segmentation[segment]['resized_indices']
-                                   for segment in args[1]),
-                             Datahub().dose_information['number_of_fractions'])
+        # Get the number of voxels
+        number_of_voxels = hub.dose_information['number_of_voxels']
+
+        # Get the segment indices
+        indices = tuple(
+            hub.segmentation[segment]['resized_indices']
+            for segment in args[1])
+
+        # Get the number of fractions
+        number_of_fractions = hub.dose_information['number_of_fractions']
+
+        return differentiate(
+            args[0], self.parameter_value, number_of_voxels, indices,
+            number_of_fractions)
 
 
 @njit

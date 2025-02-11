@@ -6,7 +6,7 @@
 
 from math import erf, pi, sqrt
 from numba import njit
-from numpy import concatenate, exp, zeros
+from numpy import concatenate, exp, prod, zeros
 
 # %% Internal package import
 
@@ -76,23 +76,23 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Lyman-Kutcher-Burman NTCP',
-                         segment=segment,
-                         parameter_name=(
-                             'tolerance_dose_50', 'slope_parameter',
-                             'volume_parameter'),
-                         parameter_category=(
-                             'dose', 'coefficient', 'coefficient'),
-                         parameter_value=(
-                             tolerance_dose_50, slope_parameter,
-                             volume_parameter),
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='Lyman-Kutcher-Burman NTCP',
+            segment=segment,
+            parameter_name=(
+                'tolerance_dose_50', 'slope_parameter',
+                'volume_parameter'),
+            parameter_category=('dose', 'coefficient', 'coefficient'),
+            parameter_value=(
+                tolerance_dose_50, slope_parameter,
+                volume_parameter),
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
     def compute_value(
             self,
@@ -135,10 +135,16 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
         # Initialize the datahub
         hub = Datahub()
 
-        return differentiate(args[0], self.parameter_value,
-                             hub.dose_information['number_of_voxels'],
-                             tuple(hub.segmentation[segment]['resized_indices']
-                                   for segment in args[1]))
+        # Get the number of voxels
+        number_of_voxels = hub.dose_information['number_of_voxels']
+
+        # Get the segment indices
+        indices = tuple(
+            hub.segmentation[segment]['resized_indices']
+            for segment in args[1])
+
+        return differentiate(
+            args[0], self.parameter_value, number_of_voxels, indices)
 
 
 @njit
@@ -170,8 +176,8 @@ def compute(dose, parameter_value):
     eud = ((full_dose**(1/parameter_value[2])).sum()/len(full_dose)
            )**parameter_value[2]
 
-    return 0.5*(1+erf((eud-parameter_value[0])
-                      / (sqrt(2)*parameter_value[1]*parameter_value[0])))
+    return 0.5*(1+erf(
+        (eud-parameter_value[0])/(sqrt(2)*prod(parameter_value[:2]))))
 
 
 @njit
@@ -216,9 +222,9 @@ def differentiate(dose, parameter_value, number_of_voxels, segment_indices):
         / (len(full_dose)**parameter_value[2]))
 
     # Compute the EUD gradient of the component
-    ntcp_gradient = exp(-((eud-parameter_value[0])
-                          / (sqrt(2)*parameter_value[1]*parameter_value[0])
-                          )**2) / sqrt(pi)
+    ntcp_gradient = (exp(-(
+        (eud-parameter_value[0])/(sqrt(2)*prod(parameter_value[:2])))**2)
+        / sqrt(pi))
 
     # Initialize the component gradient
     component_gradient = zeros((number_of_voxels,))

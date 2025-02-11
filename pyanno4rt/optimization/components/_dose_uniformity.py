@@ -69,18 +69,19 @@ class DoseUniformity(ConventionalComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Dose Uniformity',
-                         segment=segment,
-                         parameter_name=(),
-                         parameter_category=(),
-                         parameter_value=(),
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='Dose Uniformity',
+            segment=segment,
+            parameter_name=(),
+            parameter_category=(),
+            parameter_value=(),
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
         # Set the individual parameter value
         self.parameter_value = []
@@ -126,9 +127,15 @@ class DoseUniformity(ConventionalComponent):
         # Initialize the datahub
         hub = Datahub()
 
-        return differentiate(args[0], hub.dose_information['number_of_voxels'],
-                             tuple(hub.segmentation[segment]['resized_indices']
-                                   for segment in args[1]))
+        # Get the number of voxels
+        number_of_voxels = hub.dose_information['number_of_voxels']
+
+        # Get the segment indices
+        indices = tuple(
+            hub.segmentation[segment]['resized_indices']
+            for segment in args[1])
+
+        return differentiate(args[0], number_of_voxels, indices)
 
 
 @njit

@@ -90,18 +90,19 @@ class NeuralNetworkNTCP(MachineLearningComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Neural Network NTCP',
-                         segment=segment,
-                         parameter_name=('(weight, bias)',),
-                         parameter_category=('parameter',),
-                         model_parameters=model_parameters,
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='Neural Network NTCP',
+            segment=segment,
+            parameter_name=('(weight, bias)',),
+            parameter_category=('parameter',),
+            model_parameters=model_parameters,
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
     def add_model(self):
         """Add the neural network model to the component."""
@@ -145,7 +146,8 @@ class NeuralNetworkNTCP(MachineLearningComponent):
         # Get the neural network model parameters
         self.parameter_value = list(
             weight for weights in (
-                layer.flatten().astype(float) if len(layer.shape) == 2
+                layer.flatten().astype(float)
+                if len(layer.shape) == 2
                 else layer.astype(float)
                 for layer in self.model.prediction_model.get_weights())
             for weight in weights)

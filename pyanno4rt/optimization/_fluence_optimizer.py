@@ -401,18 +401,17 @@ class FluenceOptimizer():
         if method == 'lexicographic':
 
             # Return the rank-ordered, transformed bounds
-            return tuple(
-                {rank:
-                    [constraint['instance'].bounds[index]
-                     for constraint in rank_constraints.values()]
-                    for rank, rank_constraints in constraints.items()}
+            return tuple({
+                rank: [
+                    constraint['instance'].bounds[index]
+                    for constraint in rank_constraints.values()]
+                for rank, rank_constraints in constraints.items()}
                 for index in range(2))
 
         # Else, return the unranked, transformed bounds
-        return tuple(
-            [constraint['instance'].bounds[index]
-             for constraint in constraints.values()]
-            for index in range(2))
+        return tuple(zip(*(
+            constraint['instance'].bounds
+            for constraint in constraints.values())))
 
     def solve(self):
         """Solve the optimization problem."""
@@ -566,8 +565,9 @@ class FluenceOptimizer():
         dose_matrix = hub.dose_information['dose_influence_matrix']
 
         # Get the CT and dose grid dimensions
-        ct_dim, dose_dim = (hub.computed_tomography['cube_dimensions'],
-                            hub.dose_information['cube_dimensions'])
+        ct_dim, dose_dim = (
+            hub.computed_tomography['cube_dimensions'],
+            hub.dose_information['cube_dimensions'])
 
         # Check if a single fluence vector is passed
         if optimized_fluence.ndim == 1:
@@ -591,15 +591,17 @@ class FluenceOptimizer():
             best_score = -inf
 
             # Initialize the current best fluence
-            best_fluence = zeros(optimized_fluence.shape)
+            best_fluence = zeros(optimized_fluence[0].shape)
 
             # Get the indices of targets and OARs of interest
             target_indices, oar_indices = (reduce(
-                union1d, [segmentation[segment]['resized_indices']
-                          for segment in (
-                                  get_constraint_segments(segmentation)
-                                  + get_objective_segments(segmentation))
-                          if segmentation[segment]['type'] == string], -1)
+                union1d,
+                (segmentation[segment]['resized_indices']
+                 for segment in (
+                    get_constraint_segments(segmentation)
+                    + get_objective_segments(segmentation))
+                    if segmentation[segment]['type'] == string),
+                -1)
                 for string in ('TARGET', 'OAR'))
 
             # Loop over the number of trade-off solutions
@@ -631,7 +633,7 @@ class FluenceOptimizer():
         zooms = (pair[0]/pair[1] for pair in zip(ct_dim, dose_dim))
 
         # Interpolate the dose cube to the CT grid and multiply by the RBE
-        optimized_dose = (zoom(optimized_dose, zooms, order=1)
-                          * hub.plan_configuration['RBE'])
+        optimized_dose = (
+            zoom(optimized_dose, zooms, order=1)*hub.plan_configuration['RBE'])
 
         return optimized_dose

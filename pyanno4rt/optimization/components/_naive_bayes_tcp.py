@@ -90,18 +90,19 @@ class NaiveBayesTCP(MachineLearningComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Naive Bayes TCP',
-                         segment=segment,
-                         parameter_name=(),
-                         parameter_category=(),
-                         model_parameters=model_parameters,
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='Naive Bayes TCP',
+            segment=segment,
+            parameter_name=(),
+            parameter_category=(),
+            model_parameters=model_parameters,
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
     def add_model(self):
         """Add the naive Bayes model to the component."""
@@ -205,8 +206,9 @@ class NaiveBayesTCP(MachineLearningComponent):
             joint_log_likelihood = [
                 log(self.model.prediction_model.class_prior_[i])
                 - 0.5*nsum(log(2*pi*variances[i, :]))
-                - 0.5*nsum(((preprocessed_features - means[i, :])**2)
-                           / (variances[i, :]), 1)
+                - 0.5*nsum(
+                    ((preprocessed_features - means[i, :])**2)
+                    / (variances[i, :]), 1)
                 for i in range(number_of_classes)]
 
             # Calculate the joint log likelihood gradient for all classes
@@ -215,11 +217,14 @@ class NaiveBayesTCP(MachineLearningComponent):
                 for i in range(number_of_classes)]
 
             # Calculate the log evidence gradient
-            log_evidence_gradient = (nsum(
-                joint_log_likelihood_gradient[0]*exp(joint_log_likelihood[0])
-                for i in range(number_of_classes))
-                / nsum(exp(joint_log_likelihood[i])
-                       for i in range(number_of_classes)))
+            log_evidence_gradient = (
+                nsum(
+                    joint_log_likelihood_gradient[i]
+                    * exp(joint_log_likelihood[i])
+                    for i in range(number_of_classes))
+                / nsum(
+                    exp(joint_log_likelihood[i])
+                    for i in range(number_of_classes)))
 
             # Calculate the probability prediction from the model
             prediction = exp(

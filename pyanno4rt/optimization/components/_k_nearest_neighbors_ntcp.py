@@ -85,18 +85,19 @@ class KNeighborsNTCP(MachineLearningComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='K-Nearest Neighbors NTCP',
-                         segment=segment,
-                         parameter_name=(),
-                         parameter_category=(),
-                         model_parameters=model_parameters,
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='K-Nearest Neighbors NTCP',
+            segment=segment,
+            parameter_name=(),
+            parameter_category=(),
+            model_parameters=model_parameters,
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
     def add_model(self):
         """Add the k-nearest neighbors model to the component."""

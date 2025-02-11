@@ -96,18 +96,19 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Support Vector Machine NTCP',
-                         segment=segment,
-                         parameter_name=('w/alpha',),
-                         parameter_category=('coefficient',),
-                         model_parameters=model_parameters,
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='Support Vector Machine NTCP',
+            segment=segment,
+            parameter_name=('w/alpha',),
+            parameter_category=('coefficient',),
+            model_parameters=model_parameters,
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
         # Initialize the decision function/gradient
         self.decision_function, self.decision_gradient = None, None

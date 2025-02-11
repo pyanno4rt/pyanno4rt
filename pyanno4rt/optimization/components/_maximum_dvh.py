@@ -76,18 +76,19 @@ class MaximumDVH(ConventionalComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Maximum DVH',
-                         segment=segment,
-                         parameter_name=('target_dose', 'quantile_volume'),
-                         parameter_category=('dose', 'volume'),
-                         parameter_value=(target_dose, quantile_volume),
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='Maximum DVH',
+            segment=segment,
+            parameter_name=('target_dose', 'quantile_volume'),
+            parameter_category=('dose', 'volume'),
+            parameter_value=(target_dose, quantile_volume),
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
         # Set the individual parameter value
         self.parameter_value = [float(target_dose), float(quantile_volume)/100]
@@ -133,10 +134,16 @@ class MaximumDVH(ConventionalComponent):
         # Initialize the datahub
         hub = Datahub()
 
-        return differentiate(args[0], self.parameter_value,
-                             hub.dose_information['number_of_voxels'],
-                             tuple(hub.segmentation[segment]['resized_indices']
-                                   for segment in args[1]))
+        # Get the number of voxels
+        number_of_voxels = hub.dose_information['number_of_voxels']
+
+        # Get the segment indices
+        indices = tuple(
+            hub.segmentation[segment]['resized_indices']
+            for segment in args[1])
+
+        return differentiate(
+            args[0], self.parameter_value, number_of_voxels, indices)
 
 
 @njit

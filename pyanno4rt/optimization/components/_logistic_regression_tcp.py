@@ -93,18 +93,19 @@ class LogisticRegressionTCP(MachineLearningComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Logistic Regression TCP',
-                         segment=segment,
-                         parameter_name=('beta',),
-                         parameter_category=('coefficient',),
-                         model_parameters=model_parameters,
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='Logistic Regression TCP',
+            segment=segment,
+            parameter_name=('beta',),
+            parameter_category=('coefficient',),
+            model_parameters=model_parameters,
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
         # Initialize the intercept value
         self.intercept_value = None
@@ -203,8 +204,9 @@ class LogisticRegressionTCP(MachineLearningComponent):
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        return -((dot(preprocessed_features, self.parameter_value)
-                  + self.intercept_value)[0])
+        return -(
+            (dot(preprocessed_features, self.parameter_value)
+             + self.intercept_value)[0])
 
     def compute_gradient(
             self,

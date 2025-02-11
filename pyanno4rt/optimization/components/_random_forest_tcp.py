@@ -84,18 +84,19 @@ class RandomForestTCP(MachineLearningComponent):
             display=True):
 
         # Call the superclass constructor to initialize and check attributes
-        super().__init__(name='Random Forest TCP',
-                         segment=segment,
-                         parameter_name=(),
-                         parameter_category=(),
-                         model_parameters=model_parameters,
-                         embedding=embedding,
-                         weight=weight,
-                         rank=rank,
-                         bounds=bounds,
-                         link=link,
-                         identifier=identifier,
-                         display=display)
+        super().__init__(
+            name='Random Forest TCP',
+            segment=segment,
+            parameter_name=(),
+            parameter_category=(),
+            model_parameters=model_parameters,
+            embedding=embedding,
+            weight=weight,
+            rank=rank,
+            bounds=bounds,
+            link=link,
+            identifier=identifier,
+            display=display)
 
     def add_model(self):
         """Add the random forest model to the component."""
