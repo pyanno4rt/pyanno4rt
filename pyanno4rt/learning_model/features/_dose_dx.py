@@ -6,7 +6,6 @@
 
 from jax import grad, jit, lax
 import jax.numpy as jnp
-from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -21,11 +20,13 @@ class DoseDx(DosiomicFeature):
     @staticmethod
     def pyfunction(level, dose):
         """Compute the dose-volume histogram abscissa in 'python' mode."""
+
         return jnp.sort(dose)[jnp.int32(jnp.round(len(dose)*(1-level/100)))]
 
     @staticmethod
     def matfunction(level, dose):
         """Compute the dose-volume histogram abscissa in 'matlab' mode."""
+
         # Get the quantile from the 'level'
         quantile = len(dose)*(1-level/100)
 
@@ -76,10 +77,4 @@ class DoseDx(DosiomicFeature):
             # Set 'gradient_is_jitted' to True for one-time jitting
             DoseDx.gradient_is_jitted = True
 
-        # Initialize the gradient vector
-        gradient = lil_matrix((1, args[0]))
-
-        # Insert the gradient values at the indices of the segment
-        gradient[:, args[1]] = DoseDx.gradient_function(level, dose)
-
-        return gradient
+        return DoseDx.gradient_function(level, dose)

@@ -1,14 +1,12 @@
-"""Feature value and gradient (re)calculation."""
+"""Feature values and gradient (re)calculation."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
 from numpy import (
-    array, array_equal, empty, fromiter, unravel_index, vstack, zeros)
+    array, array_equal, empty, fromiter, pad, unravel_index, vstack, zeros)
 from scipy.ndimage import zoom
-from scipy.sparse import lil_matrix
-from scipy.sparse import vstack as svstack
 
 # %% Internal package import
 
@@ -19,7 +17,7 @@ from pyanno4rt.datahub import Datahub
 
 class FeatureCalculator():
     """
-    Feature value and gradient (re)calculation class.
+    Feature values and gradient (re)calculation class.
 
     Parameters
     ----------
@@ -34,34 +32,27 @@ class FeatureCalculator():
     write_features : bool
         See 'Parameters'.
 
-    feature_history : ndarray or None
-        Feature values per iteration. If ``write_features`` is False, this \
-        attribute is not set.
-
-    gradient_history : list or None
-        Gradient matrices per iteration. If ``write_gradients`` is False, \
-        this attribute is not set.
-
     radiomics : dict
-        Dictionary for mapping the radiomic feature names to the radiomic \
-        feature values. It allows to retrieve the feature values after first \
-        computation and thus prevents unnecessary recalculation.
+        Dictionary with the radiomic feature names and values for caching.
 
     statics : dict
-        See 'Parameters'.
+        Dictionary with the static (fixed) feature names and values.
 
-    feature_inputs : dict
-        Dictionary for collecting the candidate feature input values. This \
-        allows to centralize the input retrieval for all calculations.
+    feature_map : dict
+        Dictionary with the mappings of feature names, segments and \
+        computation/differentiation functions.
+
+    feature_history : ndarray or None
+        Feature values per iteration (only if ``write_features`` is True).
+
+    inputs : dict
+        Dictionary with the input values for feature calculation.
 
     __iteration__ : list
-        Iteration numbers for the feature calculation and the optimization \
-        problem. By keeping the two elements the same, it is assured that the \
-        feature calculator is only active for new problem iterations, rather \
-        than per evaluation step.
+        Iteration numbers for feature calculation and optimization problem.
 
-    __dose_cache__ : ndarray
-        Cache array for the dose values.
+    __dose_cache__ : tuple
+        Cache tuple for the dose values.
 
     __feature_cache__ : ndarray
         Cache array for the feature values.
@@ -82,7 +73,7 @@ class FeatureCalculator():
         # Get the feature writing indicator from the argument
         self.write_features = write_features
 
-        # Initialize the radiomics/static feature dictionaries to store values
+        # Initialize the radiomic and static feature dictionaries
         self.radiomics = {}
         self.statics = {}
 
@@ -90,20 +81,21 @@ class FeatureCalculator():
         self.feature_map = None
         self.feature_history = None
 
-        # Initialize the feature input dictionary
-        self.feature_inputs = {'dose': None,
-                               'dose_cube': None,
-                               'require_cube': ('doseSubvolume',
-                                                'doseMoment',
-                                                'doseGradient'),
-                               'require_spacing': ('doseGradient',),
-                               'masks': None}
+        # Initialize the input dictionary
+        self.inputs = {
+            'dose': None,
+            'dose_cube': None,
+            'indices': None,
+            'paddings': None,
+            'require_cube': ('doseSubvolume', 'doseMoment', 'doseGradient'),
+            'require_spacing': ('doseGradient',),
+            'masks': None}
 
         # Initialize the iteration numbers for synchronization
         self.__iteration__ = [0, 0]
 
         # Initialize the dose and the feature cache
-        self.__dose_cache__ = array([])
+        self.__dose_cache__ = tuple(array([]))
         self.__feature_cache__ = array([])
 
     def add_static_map(
@@ -149,22 +141,24 @@ class FeatureCalculator():
 
             return self
 
+        return None
+
     def precompute(
             self,
             dose,
             segment):
         """
-        Precompute the dose, dose cube and segment masks as inputs for the \
-        feature calculation.
+        Precompute the input quantities for the feature calculation.
 
         Parameters
         ----------
-        dose : tuple of ndarray
-            Value of the dose for a single or multiple segments.
+        dose : tuple
+            Tuple with the dose values.
 
-        segment : list of strings
-            Names of the segments associated with the dose.
+        segment : tuple
+            Tuple with the segment names.
         """
+
         # Initialize the datahub
         hub = Datahub()
 
@@ -174,37 +168,65 @@ class FeatureCalculator():
 
         def precompute_dose(dose):
             """Precompute the dose."""
-            return (dose_information['number_of_fractions'] * subdose.ravel()
-                    for subdose in dose)
+
+            return (
+                dose_information['number_of_fractions'] * subdose.ravel()
+                for subdose in dose)
 
         def precompute_dose_cube(segment):
             """Precompute the dose cube."""
+
             # Get the dose grid dimensions
             dimensions = dose_information['cube_dimensions']
 
             def get_subsegment_cube(subsegment):
                 """Get the dose cube for a single segment."""
+
                 # Initialize the dose cube
                 dose_cube = zeros(dimensions)
 
                 # Insert the dose values of the segment into the dose cube
                 dose_cube[unravel_index(
                     segmentation[subsegment]['resized_indices'], dimensions,
-                    order='F')] = self.feature_inputs['dose'][subsegment]
+                    order='F')] = self.inputs['dose'][subsegment]
 
                 return dose_cube
 
             return (get_subsegment_cube(subsegment) for subsegment in segment)
 
+        def precompute_indices(segment):
+            """Precompute the segment indices."""
+
+            return (
+                segmentation[subsegment]['resized_indices']
+                for subsegment in segment)
+
+        def precompute_paddings():
+            """Precompute the gradient paddings."""
+
+            # Get the lengths of the segment indices
+            lengths = tuple(
+                len(index) for index in self.inputs['indices'].values())
+
+            return (
+                (0, sum(lengths[1:]))
+                 if index == 0
+                 else (sum(lengths[:index]), sum(lengths[index+1:]))
+                 if index < len(lengths)-1
+                 else (sum(lengths[:index]), 0)
+                 for index, _ in enumerate(lengths))
+
         def precompute_masks(segment):
             """Precompute the segment masks."""
+
             # Get the cube dimensions from the information unit
             ct_dimensions = hub.computed_tomography['cube_dimensions']
             dose_dimensions = dose_information['cube_dimensions']
 
             def get_subsegment_masks(subsegment):
                 """Get the masks for a single segment."""
-                # Initialize the radiomics mask by zeros
+
+                # Initialize the radiomics mask
                 radiomics_mask = zeros(ct_dimensions)
 
                 # Insert ones at the indices of the segment
@@ -212,30 +234,40 @@ class FeatureCalculator():
                     segmentation[subsegment]['raw_indices'],
                     ct_dimensions, order='F')] = 1
 
-                # Get the dose mask by zooming into the radiomics mask
-                dose_mask = zoom(radiomics_mask,
-                                 (dose_dimensions[j]/ct_dimensions[j]
-                                  for j in range(len(dose_dimensions))),
-                                 order=0)
+                # Get the dose mask
+                dose_mask = zoom(
+                    radiomics_mask, (pair[0]/pair[1] for pair in zip(
+                        dose_dimensions, ct_dimensions)), order=0)
 
                 return (radiomics_mask, dose_mask)
 
             return (get_subsegment_masks(subsegment) for subsegment in segment)
 
-        # Add the precomputed dose by segment to the input dictionary
-        self.feature_inputs['dose'] = dict(
+        # Add the precomputed dose vectors to the input dictionary
+        self.inputs['dose'] = dict(
             zip(segment, precompute_dose(dose)))
 
-        # Add the precomputed dose cube by segment to the input dictionary
-        self.feature_inputs['dose_cube'] = dict(
+        # Add the precomputed dose cubes to the input dictionary
+        self.inputs['dose_cube'] = dict(
             zip(segment, precompute_dose_cube(segment)))
 
-        # Check if the segment masks have not already been stored
-        if (self.feature_inputs['masks'] is None
-                or tuple(segment) != (*self.feature_inputs['masks'],)):
+        # Check if the segment indices have not been computed yet
+        if self.inputs['indices'] is None:
+
+            # Add the precomputed segment indices to the input dictionary
+            self.inputs['indices'] = dict(
+                zip(segment, precompute_indices(segment)))
+
+            # Add the precomputed gradient paddings to the input dictionary
+            self.inputs['paddings'] = dict(
+                zip(segment, precompute_paddings()))
+
+        # Check if the segment masks have not been computed yet
+        if (self.inputs['masks'] is None
+                or tuple(segment) != (*self.inputs['masks'],)):
 
             # Add the precomputed masks by segment to the input dictionary
-            self.feature_inputs['masks'] = dict(
+            self.inputs['masks'] = dict(
                 zip(segment, precompute_masks(segment)))
 
     def featurize(
@@ -244,21 +276,22 @@ class FeatureCalculator():
             segment,
             no_cache=False):
         """
-        Convert dose and segment information into the feature vector.
+        Transform dose and segment information into the feature vector.
 
         Parameters
         ----------
-        dose : tuple of ndarray
-            Value of the dose for a single or multiple segments.
+        dose : tuple
+            Tuple with the dose values.
 
-        segment : list of strings
-            Names of the segments associated with the dose.
+        segment : tuple
+            Tuple with the segment names.
 
         Returns
         -------
         ndarray
-            Values of the calculated features.
+            Feature vector.
         """
+
         # Check if the feature cache needs to be updated
         if (len(self.__feature_cache__) == 0
                 or self.__iteration__[0] != self.__iteration__[1]
@@ -285,19 +318,12 @@ class FeatureCalculator():
         """
         Get the feature vector.
 
-        Parameters
-        ----------
-        dose : tuple of ndarray
-            Value of the dose for a single or multiple segments.
-
-        segment : list of strings
-            Names of the segments associated with the dose.
-
         Returns
         -------
         ndarray
-            Values of the calculated features.
+            Feature vector.
         """
+
         # Initialize the datahub
         hub = Datahub()
 
@@ -306,32 +332,40 @@ class FeatureCalculator():
 
             def get_dosiomic_value(feature, segment):
                 """Get the value of a dosiomic feature."""
+
                 # Determine the number of input conditions fulfilled
                 boolean_sum = sum((
                     any(label in feature
-                        for label in self.feature_inputs['require_cube']),
+                        for label in self.inputs['require_cube']),
                     any(label in feature
-                        for label in self.feature_inputs['require_spacing'])))
+                        for label in self.inputs['require_spacing'])))
 
-                # Compute the feature value if the boolean sum is zero or one
+                # Check if the boolean sum is zero
                 if boolean_sum == 0:
-                    return self.feature_map[feature]['computation'](
-                        self.feature_inputs['dose'][segment])
-                if boolean_sum == 1:
-                    return self.feature_map[feature]['computation'](
-                        self.feature_inputs['dose'][segment],
-                        self.feature_inputs['dose_cube'][segment])
 
-                # Otherwise, compute the value if the boolean sum is two
+                    # Compute the feature value
+                    return self.feature_map[feature]['computation'](
+                        self.inputs['dose'][segment])
+
+                # Check if the boolean sum is one
+                if boolean_sum == 1:
+
+                    # Compute the feature value
+                    return self.feature_map[feature]['computation'](
+                        self.inputs['dose'][segment],
+                        self.inputs['dose_cube'][segment])
+
+                # Else, compute the feature value for the boolean sum of two
                 return self.feature_map[feature]['computation'](
-                    self.feature_inputs['dose'][segment],
-                    self.feature_inputs['dose_cube'][segment],
-                    fromiter(hub.dose_information['resolution'].values(),
-                             float),
-                    self.feature_inputs['masks'][segment][1])
+                    self.inputs['dose'][segment],
+                    self.inputs['dose_cube'][segment],
+                    fromiter(
+                        hub.dose_information['resolution'].values(), float),
+                    self.inputs['masks'][segment][1])
 
             def get_radiomic_value(feature, segment):
                 """Get the value of a radiomic feature."""
+
                 # Check if the feature has already been computed
                 if feature in self.radiomics:
 
@@ -341,7 +375,7 @@ class FeatureCalculator():
                 # Compute the feature value
                 self.radiomics[feature] = self.feature_map[
                     feature]['computation'](
-                        self.feature_inputs['masks'][segment][0],
+                        self.inputs['masks'][segment][0],
                         fromiter(
                             hub.computed_tomography['resolution'].values(),
                             float))
@@ -357,20 +391,19 @@ class FeatureCalculator():
                     # Return the value from the static feature dictionary
                     return self.statics[feature]
 
-                else:
+                # Log a message about a missing static feature
+                hub.logger.display_error(
+                    f"The feature '{feature}' is missing in the static "
+                    "values map ...")
 
-                    # Log a message about a missing static feature
-                    hub.logger.display_error(
-                        f"The feature '{feature}' is missing in the static "
-                        "values map ...")
-
-                    # Raise an attribute error
-                    raise AttributeError
+                # Raise an attribute error
+                raise AttributeError
 
             # Map the feature types to the get functions
-            get_functions = {'Dosiomics': get_dosiomic_value,
-                             'Radiomics': get_radiomic_value,
-                             'Statics': get_static_value}
+            get_functions = {
+                'Dosiomics': get_dosiomic_value,
+                'Radiomics': get_radiomic_value,
+                'Statics': get_static_value}
 
             # Run the specific get function to retrieve the feature value
             feature_value = get_functions[self.feature_map[feature]['class']](
@@ -388,8 +421,8 @@ class FeatureCalculator():
         if self.write_features and self.__iteration__[1] >= 2:
 
             # Add the feature vector to the history
-            self.feature_history = vstack((self.feature_history,
-                                           feature_vector))
+            self.feature_history = vstack((
+                self.feature_history, feature_vector))
 
         return feature_vector
 
@@ -398,21 +431,22 @@ class FeatureCalculator():
             dose,
             segment):
         """
-        Convert dose and segment information into the gradient matrix.
+        Transform dose and segment information into the gradient matrix.
 
         Parameters
         ----------
-        dose : tuple of ndarray
-            Value of the dose for a single or multiple segments.
+        dose : tuple
+            Tuple with the dose values.
 
-        segment : list of strings
-            Names of the segments associated with the dose.
+        segment : tuple
+            Tuple with the segment names.
 
         Returns
         -------
         csr_matrix
-            Matrix of the calculated gradients.
+            Gradient matrix.
         """
+
         # Initialize the datahub
         hub = Datahub()
 
@@ -433,48 +467,62 @@ class FeatureCalculator():
 
             def get_dosiomic_gradient(feature, segment):
                 """Get the gradient of a dosiomic feature."""
+
+                # Get the inputs
+                dose = self.inputs['dose'][segment]
+                dose_cube = self.inputs['dose_cube'][segment]
+                indices = self.inputs['indices'][segment]
+                require_cube = self.inputs['require_cube']
+                require_spacing = self.inputs['require_spacing']
+                masks = self.inputs['masks'][segment]
+
+                # Get the gradient function
+                differentiate = self.feature_map[feature]['differentiation']
+
                 # Determine the number of input conditions fulfilled
                 boolean_sum = sum((
-                    any(label in feature
-                        for label in self.feature_inputs['require_cube']),
-                    any(label in feature
-                        for label in self.feature_inputs['require_spacing'])))
+                    any(label in feature for label in require_cube),
+                    any(label in feature for label in require_spacing)))
 
-                # Compute the gradient if the boolean sum is zero or one
+                # Check if the boolean sum is zero
                 if boolean_sum == 0:
-                    return self.feature_map[feature]['differentiation'](
-                        self.feature_inputs['dose'][segment],
-                        dose_information['number_of_voxels'],
-                        hub.segmentation[segment]['resized_indices'])
+
+                    # Compute the gradient vector
+                    return differentiate(
+                        dose, dose_information['number_of_voxels'], indices)
+
+                # Check if the boolean sum is one
                 if boolean_sum == 1:
-                    return self.feature_map[feature]['differentiation'](
-                        self.feature_inputs['dose'][segment],
-                        self.feature_inputs['dose_cube'][segment])
 
-                # Otherwise, compute the gradient if the boolean sum is two
-                return self.feature_map[feature]['differentiation'](
-                    self.feature_inputs['dose'][segment],
-                    self.feature_inputs['dose_cube'][segment],
+                    # Compute the gradient vector
+                    return differentiate(dose, dose_cube)[indices]
+
+                # Else, compute the gradient vector for the boolean sum of two
+                return differentiate(
+                    dose, dose_cube,
                     fromiter(dose_information['resolution'].values(), float),
-                    self.feature_inputs['masks'][segment][1])
+                    masks[1])[indices]
 
-            def get_default_gradient(_, __):
+            def get_default_gradient(_, segment):
                 """Return a default gradient for non-dosiomic features."""
-                return lil_matrix((1, dose_information['number_of_voxels']))
+
+                return zeros((len(self.inputs['indices'][segment]),))
 
             # Map the feature types to the get functions
-            get_functions = {'Dosiomics': get_dosiomic_gradient,
-                             'Radiomics': get_default_gradient,
-                             'Statics': get_default_gradient}
+            get_functions = {
+                'Dosiomics': get_dosiomic_gradient,
+                'Radiomics': get_default_gradient,
+                'Statics': get_default_gradient}
 
             # Run the specific get function to retrieve the feature gradient
             feature_gradient = (
                 get_functions[self.feature_map[feature]['class']](
                     feature, self.feature_map[feature]['segment']))
 
-            return feature_gradient
+            return pad(feature_gradient, self.inputs['paddings'][
+                self.feature_map[feature]['segment']])
 
         # Run the computation function for all features in the feature map
         gradients = map(compute_feature_gradient, (*self.feature_map,))
 
-        return svstack(tuple(gradients))
+        return vstack(tuple(gradients))

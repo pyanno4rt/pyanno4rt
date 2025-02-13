@@ -4,13 +4,14 @@
 
 # %% External package import
 
-from numpy import array, vstack
+from numpy import array, concatenate, vstack, zeros
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.tools import (
-    flatten, get_machine_learning_constraints, get_machine_learning_objectives)
+    apply, flatten, get_machine_learning_constraints,
+    get_machine_learning_objectives)
 
 # %% Class definition
 
@@ -21,7 +22,7 @@ class LexicographicOptimization():
 
     This class provides methods to perform lexicographic optimization. It \
     features a component tracker and implements the respective objective, \
-    gradient, constraint and constraint jacobian functions.
+    gradient, constraint and constraint Jacobian functions.
 
     Parameters
     ----------
@@ -50,7 +51,7 @@ class LexicographicOptimization():
         Dictionary with the rank-ordered constraints.
 
     tracker : dict
-        Dictionary with the iteration-wise component values.
+        Dictionary with the iteration-wise plan component values.
     """
 
     def __init__(
@@ -59,8 +60,11 @@ class LexicographicOptimization():
             objectives,
             constraints):
 
+        # Initialize the datahub
+        hub = Datahub()
+
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
+        hub.logger.display_info(
             "Initializing lexicographic optimization method ...")
 
         # Get the backprojection from the arguments
@@ -68,28 +72,32 @@ class LexicographicOptimization():
 
         # Get the rank-ordered objectives
         self.objectives = {
-            rank: {label: objective for label, objective in objectives.items()
-                   if objective['instance'].rank == rank}
+            rank: {
+                label: objective for label, objective in objectives.items()
+                if objective['instance'].rank == rank}
             for rank in sorted(set(
-                    objective['instance'].rank
-                    for objective in objectives.values()))}
+                objective['instance'].rank
+                for objective in objectives.values()))}
 
-        # Initialize the rank-ordered constraints by the static constraints
+        # Initialize the rank-ordered constraints by the "static" constraints
         self.constraints = {
-            rank: {label: constraint
-                   for label, constraint in constraints.items()
-                   if constraint['instance'].rank == rank}
+            rank: {
+                label: constraint for label, constraint in constraints.items()
+                if constraint['instance'].rank == rank}
             for rank in self.objectives}
 
         # Loop over the lexicographic layers
         for rank in self.constraints:
 
-            # Update the constraints with the dynamic constraints
+            # Update the constraints with the "dynamic" constraints
             self.constraints[rank] |= {
-                label: constraint for subdict in (
+                label: constraint for dictionary in (
                     self.objectives[label] for label in tuple(
                         self.constraints)[:list(self.constraints).index(rank)])
-                for label, constraint in subdict.items()}
+                for label, constraint in dictionary.items()}
+
+        # Get the number of dose voxels
+        self.number_of_voxels = hub.dose_information['number_of_voxels']
 
         # Initialize the tracker dictionary
         self.tracker = {
@@ -99,25 +107,25 @@ class LexicographicOptimization():
             self,
             fluence,
             track=True,
-            layer=1):
+            rank=1):
         """
-        Compute the objective function value.
+        Compute the lexicographic objective function value at a rank.
 
         Parameters
         ----------
         fluence : ndarray
             Fluence vector.
 
-        layer : int
-            Current layer of the lexicographic order.
+        rank : int
+            Current rank of the lexicographic order.
 
         track : bool, default=True
-            Indicator for tracking the single objective function values.
+            Indicator for tracking the objective function values.
 
         Returns
         -------
         float
-            Objective function value.
+            Lexicographic objective function value.
         """
 
         # Get the segmentation data from the datahub
@@ -140,10 +148,14 @@ class LexicographicOptimization():
             segments = objective['segments']
             instance = objective['instance']
 
+            # Get the segment indices
+            indices = (
+                segmentation[segment]['resized_indices']
+                for segment in segments)
+
             # Compute the objective function value
-            objective_value = instance.compute_value(
-                tuple(dose[segmentation[segment]['resized_indices']]
-                      for segment in segments), segments) * instance.weight
+            objective_value = instance.weight * instance.compute_value(
+                tuple(dose[index] for index in indices), segments)
 
             # Check if the objective value should be tracked
             if track:
@@ -151,14 +163,8 @@ class LexicographicOptimization():
                 # Enter the value into the tracking dictionary
                 self.tracker[label] += (objective_value,)
 
-            # Check if the instance is set to active
-            if instance.embedding == 'active':
-
-                # Return the value of the objective function
-                return objective_value
-
-            # Otherwise, return zero
-            return 0.0
+            # Return the objective function value depending on the embedding
+            return objective_value * (instance.embedding == 'active')
 
         # Check if the objective value should be tracked
         if track:
@@ -167,7 +173,7 @@ class LexicographicOptimization():
             upper_labels = flatten(
                 tuple(self.objectives[key].keys()) for key in {
                     key: value for key, value in self.objectives.items()
-                    if key > layer})
+                    if key > rank})
 
             # Loop over the labels
             for label in upper_labels:
@@ -175,28 +181,29 @@ class LexicographicOptimization():
                 # Enter the value of None into the tracking dictionary
                 self.tracker[label] += (None,)
 
-        return sum(compute_single_objective(label, objective)
-                   for label, objective in self.objectives[layer].items())
+        return sum(
+            compute_single_objective(label, objective)
+            for label, objective in self.objectives[rank].items())
 
     def gradient(
             self,
             fluence,
-            layer=1):
+            rank=1):
         """
-        Compute the gradient function value.
+        Compute the lexicographic fluence gradient vector at a rank.
 
         Parameters
         ----------
         fluence : ndarray
             Fluence vector.
 
-        layer : int
-            Current layer of the lexicographic order.
+        rank : int
+            Current rank of the lexicographic order.
 
         Returns
         -------
         ndarray
-            Gradient function value.
+            Fluence gradient vector.
         """
 
         # Get the segmentation data from the datahub
@@ -204,6 +211,9 @@ class LexicographicOptimization():
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
+
+        # Initialize the dose gradient vector
+        dose_gradient = zeros((self.number_of_voxels,))
 
         def compute_single_gradient(objective):
             """Compute the value of a single gradient function."""
@@ -215,43 +225,44 @@ class LexicographicOptimization():
             # Check if the instance is set to active
             if instance.embedding == 'active':
 
-                # Return the value of the gradient function
-                return instance.compute_gradient(
-                    tuple(dose[segmentation[segment]['resized_indices']]
-                          for segment in segments), segments) * instance.weight
+                # Get the segment indices
+                indices = tuple(
+                    segmentation[segment]['resized_indices']
+                    for segment in segments)
 
-            # Otherwise, return zero
-            return 0.0
+                # Add the single gradient to the dose gradient vector
+                dose_gradient[concatenate(indices)] += (
+                    instance.weight * instance.compute_gradient(
+                        tuple(dose[index] for index in indices), segments))
 
-        # Compute the total gradient function value
-        total_gradient = sum(compute_single_gradient(objective)
-                             for objective in self.objectives[layer].values())
+        # Compute the gradient function for each objective
+        apply(compute_single_gradient, self.objectives[rank].values())
 
-        return self.backprojection.compute_fluence_gradient(total_gradient)
+        return self.backprojection.compute_fluence_gradient(dose_gradient)
 
     def constraint(
             self,
             fluence,
             track=True,
-            layer=1):
+            rank=1):
         """
-        Compute the constraint function value(s).
+        Compute the lexicographic constraint function values at a rank.
 
         Parameters
         ----------
         fluence : ndarray
             Fluence vector.
 
-        layer : int
-            Current layer of the lexicographic order.
+        rank : int
+            Current rank of the lexicographic order.
 
         track : bool, default=True
-            Indicator for tracking the constraint function value(s).
+            Indicator for tracking the constraint function values.
 
         Returns
         -------
         float
-            Constraint function value(s).
+            Constraint function values.
         """
 
         # Get the segmentation data from the datahub
@@ -274,12 +285,16 @@ class LexicographicOptimization():
             segments = constraint['segments']
             instance = constraint['instance']
 
+            # Get the segment indices
+            indices = (
+                segmentation[segment]['resized_indices']
+                for segment in segments)
+
             # Compute the constraint function value
             constraint_value = instance.compute_value(
-                tuple(dose[segmentation[segment]['resized_indices']]
-                      for segment in segments), segments)
+                tuple(dose[index] for index in indices), segments)
 
-            # Check if the objective value should be tracked
+            # Check if the constraint value should be tracked
             if track:
 
                 # Enter the value into the tracking dictionary
@@ -288,29 +303,44 @@ class LexicographicOptimization():
             # Return the value of the constraint function
             return constraint_value
 
+        # Check if the constraint value should be tracked
+        if track:
+
+            # Get the labels from all upper ranks
+            upper_labels = flatten(
+                tuple(self.constraints[key].keys()) for key in {
+                    key: value for key, value in self.constraints.items()
+                    if key > rank})
+
+            # Loop over the labels
+            for label in upper_labels:
+
+                # Enter the value of None into the tracking dictionary
+                self.tracker[label] += (None,)
+
         return array([
             compute_single_constraint(label, constraint)
-            for label, constraint in self.constraints[layer].items()])
+            for label, constraint in self.constraints[rank].items()])
 
     def jacobian(
             self,
             fluence,
-            layer=1):
+            rank=1):
         """
-        Compute the constraint jacobian function value.
+        Compute the lexicographic Jacobian matrix at a rank.
 
         Parameters
         ----------
         fluence : ndarray
             Fluence vector.
 
-        layer : int
-            Current layer of the lexicographic order.
+        rank : int
+            Current rank of the lexicographic order.
 
         Returns
         -------
         ndarray
-            Constraint jacobian function value.
+            Fluence Jacobian matrix.
         """
 
         # Get the segmentation data from the datahub
@@ -319,27 +349,34 @@ class LexicographicOptimization():
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_jacobian(constraint):
+        # Initialize the dose Jacobian matrix
+        dose_jacobian = zeros((len(self.constraints), self.number_of_voxels))
+
+        def compute_single_jacobian(enumerator):
             """Compute the value of a single constraint jacobian function."""
+
+            # Get the row and constraint
+            row, constraint = enumerator
 
             # Get the associated segments and the instance
             segments = constraint['segments']
             instance = constraint['instance']
 
-            # Check if the instance is set to active
-            if instance.embedding == 'active':
+            # Get the segment indices
+            indices = tuple(
+                segmentation[segment]['resized_indices']
+                for segment in segments)
 
-                # Return the value of the constraint jacobian function
-                return instance.compute_gradient(
-                    tuple(dose[segmentation[segment]['resized_indices']]
-                          for segment in segments), segments)
+            # Insert the single Jacobian into the dose Jacobian matrix
+            dose_jacobian[row][concatenate(indices)] = (
+                instance.compute_gradient(
+                    tuple(dose[index] for index in indices), segments))
 
-            # Otherwise, return zero array
-            return array([0.0]*Datahub().dose_information['number_of_voxels'])
+        # Compute the Jacobian for each constraint
+        apply(
+            compute_single_jacobian,
+            enumerate(self.constraints[rank].values()))
 
-        # Compute all constraint jacobian function values
-        jacobians = (compute_single_jacobian(constraint)
-                     for constraint in self.constraints[layer].values())
-
-        return vstack([self.backprojection.compute_fluence_gradient(
-            jacobian) for jacobian in jacobians])
+        return vstack([
+            self.backprojection.compute_fluence_gradient(row)
+            for row in dose_jacobian])

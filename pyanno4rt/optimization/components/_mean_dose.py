@@ -5,11 +5,10 @@
 # %% External package import
 
 from numba import njit
-from numpy import concatenate, ones, zeros
+from numpy import concatenate, ones
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.optimization.components import ConventionalComponent
 
 # %% Class definition
@@ -86,121 +85,95 @@ class MeanDose(ConventionalComponent):
             identifier=identifier,
             display=display)
 
-        # Set the individual parameter value
-        self.parameter_value = [float(target_dose)]
-
     def compute_value(
             self,
+            dose,
             *args):
         """
-        Return the component value from the jitted 'compute' function.
+        Return the function value from the jitted 'compute' function.
 
         Parameters
         ----------
+        dose : tuple
+            Tuple with the dose arrays.
+
         *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate.
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
         float
-            Value of the component function.
+            Function value.
         """
 
-        return compute(args[0], self.parameter_value)
+        return compute(dose, *self.parameter_value)
 
     def compute_gradient(
             self,
+            dose,
             *args):
         """
-        Return the component gradient from the jitted 'differentiate' function.
+        Return the gradient vector from the jitted 'differentiate' function.
 
         Parameters
         ----------
+        dose : tuple
+            Tuple with the dose arrays.
+
         *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate and args[1] the corresponding segment(s).
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
         ndarray
-            Value of the component gradient.
+            Gradient vector.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the number of voxels
-        number_of_voxels = hub.dose_information['number_of_voxels']
-
-        # Get the segment indices
-        indices = tuple(
-            hub.segmentation[segment]['resized_indices']
-            for segment in args[1])
-
-        return differentiate(
-            args[0], self.parameter_value, number_of_voxels, indices)
+        return differentiate(dose, *self.parameter_value)
 
 
 @njit
-def compute(dose, parameter_value):
+def compute(dose, target_dose):
     """
-    Compute the component value.
+    Compute the function value.
 
     Parameters
     ----------
     dose : tuple
-        Values of the dose in the segment(s).
+        Tuple with the dose arrays.
 
-    parameter_value : list
-        Value of the component parameters.
+    target_dose : float
+        Target value for the dose.
 
     Returns
     -------
     float
-        Value of the component function.
+        Function value.
     """
 
-    return (concatenate(dose).mean() - parameter_value[0])**2
+    return (concatenate(dose) - target_dose)**2
 
 
 @njit
-def differentiate(dose, parameter_value, number_of_voxels, segment_indices):
+def differentiate(dose, target_dose):
     """
-    Compute the component gradient.
+    Compute the gradient vector.
 
     Parameters
     ----------
     dose : tuple
-        Values of the dose in the segment(s).
+        Tuple with the dose arrays.
 
-    parameter_value : list
-        Value of the component parameters.
-
-    number_of_voxels : int
-        Total number of dose voxels.
-
-    segment_indices : tuple
-        Indices of the segment(s).
+    target_dose : float
+        Target value for the dose.
 
     Returns
     -------
     ndarray
-        Value of the component gradient.
+        Gradient vector.
     """
 
     # Concatenate the dose arrays
-    full_dose = concatenate(dose)
+    dose = concatenate(dose)
 
-    # Concatenate the segment index arrays
-    full_indices = concatenate(segment_indices)
-
-    # Initialize the component gradient
-    component_gradient = zeros((number_of_voxels,))
-
-    # Compute the gradient
-    component_gradient[full_indices] = (
-        2*(full_dose.mean() - parameter_value[0])
-        * ones(full_dose.shape)/len(full_dose))
-
-    return component_gradient
+    return 2*(dose.mean() - target_dose)*ones(dose.shape)/len(dose)

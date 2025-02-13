@@ -6,7 +6,6 @@
 
 from numba import njit
 from numpy import array, exp, linspace, power
-from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -16,10 +15,7 @@ from pyanno4rt.learning_model.features import DosiomicFeature
 
 
 @njit
-def sigmoid(
-        value,
-        coeff_1,
-        coeff_2):
+def sigmoid(value, coeff_1, coeff_2):
     """
     Compute the sigmoid function value.
 
@@ -39,6 +35,7 @@ def sigmoid(
     float or tuple of floats
         Value(s) of the sigmoid function.
     """
+
     # Check if the passed value is tuple or a list
     if isinstance(value, list):
 
@@ -54,6 +51,7 @@ class DoseEnergy(DosiomicFeature):
     @njit
     def function(dose):
         """Compute the energy."""
+
         # Set the number of histogram bins
         number_of_bins = 256
 
@@ -90,6 +88,7 @@ class DoseEnergy(DosiomicFeature):
     @njit
     def gradient(dose):
         """Compute the energy gradient."""
+
         # Set the number of histogram bins
         number_of_bins = 256
 
@@ -146,15 +145,11 @@ class DoseEnergy(DosiomicFeature):
     @staticmethod
     def compute(dose, *args):
         """Call the computation function."""
+
         return DoseEnergy.function(dose)
 
     @staticmethod
     def differentiate(dose, *args):
         """Call the differentiation function."""
-        # Initialize the gradient vector
-        gradient = lil_matrix((1, args[0]))
 
-        # Insert the gradient values at the indices of the segment
-        gradient[:, args[1]] = DoseEnergy.gradient(dose)
-
-        return gradient
+        return DoseEnergy.gradient(dose)

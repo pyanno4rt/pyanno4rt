@@ -10,7 +10,6 @@ from math import inf
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import compare_dictionaries
 
 # %% Class definition
 
@@ -139,11 +138,11 @@ class ConventionalComponent(metaclass=ABCMeta):
         self.segment = segment
         self.parameter_name = parameter_name
         self.parameter_category = parameter_category
-        self.parameter_value = list(parameter_value)
+        self.parameter_value = list(map(float, parameter_value))
         self.embedding = embedding
         self.weight = float(weight)
         self.rank = rank
-        self.bounds = self.convert_bounds(bounds)
+        self.bounds = self.convert_bounds(bounds, embedding)
         self.link = [] if link is None else link
         self.identifier = identifier
         self.display = display
@@ -160,7 +159,7 @@ class ConventionalComponent(metaclass=ABCMeta):
         Parameters
         ----------
         other : object
-            The component object to compare the instance with.
+            The object to compare the instance with.
 
         Returns
         -------
@@ -168,12 +167,8 @@ class ConventionalComponent(metaclass=ABCMeta):
             Indicator for the equality of the objects.
         """
 
-        return (
-            all(self.__dict__[key] == other.__dict__[key] for key in (
-                'name', 'link', 'identifier'))
-            and compare_dictionaries(
-                self.__dict__.get('model_parameters', {}),
-                other.__dict__.get('model_parameters', {})))
+        return all(self.__dict__[key] == other.__dict__[key] for key in (
+            'name', 'link', 'identifier'))
 
     def get_class(self):
         """
@@ -189,7 +184,8 @@ class ConventionalComponent(metaclass=ABCMeta):
 
     def convert_bounds(
             self,
-            bounds):
+            bounds,
+            embedding):
         """
         Convert the bounds to function bounds.
 
@@ -198,6 +194,9 @@ class ConventionalComponent(metaclass=ABCMeta):
         bounds : None or list
             Constraint bounds for the component.
 
+        embedding : {'active', 'passive'}
+            Mode of embedding for the component.
+
         Returns
         -------
         list
@@ -205,15 +204,15 @@ class ConventionalComponent(metaclass=ABCMeta):
         """
 
         # Check if the bounds are None
-        if bounds is None:
+        if bounds is None or embedding == 'passive':
 
             # Return the default function bounds
             return [-inf, inf]
 
         # Return the transformed function bounds
         return sorted(
-            [-inf if bounds[0] is None else bounds[0],
-             inf if bounds[1] is None else bounds[1]])
+            (-inf if bounds[0] is None else float(bounds[0]),
+             inf if bounds[1] is None else float(bounds[1])))
 
     def get_parameter_value(self):
         """
@@ -229,17 +228,17 @@ class ConventionalComponent(metaclass=ABCMeta):
 
     def set_parameter_value(
             self,
-            *args):
+            value):
         """
         Set the value of the parameters.
 
         Parameters
         ----------
-        *args : tuple
-            Keyworded parameters. args[0] should give the value to be set.
+        value : list
+            Value to be set.
         """
 
-        self.parameter_value = args[0]
+        self.parameter_value = value
 
     def get_weight_value(self):
         """
@@ -255,26 +254,28 @@ class ConventionalComponent(metaclass=ABCMeta):
 
     def set_weight_value(
            self,
-           *args):
+           value):
         """
         Set the value of the weight.
 
         Parameters
         ----------
-        *args : tuple
-            Keyworded parameters. args[0] should give the value to be set.
+        value : float
+            Value to be set.
         """
 
-        self.weight = args[0]
+        self.weight = value
 
     @abstractmethod
     def compute_value(
             self,
+            dose,
             *args):
         """Compute the component value."""
 
     @abstractmethod
     def compute_gradient(
             self,
+            dose,
             *args):
         """Compute the component gradient."""

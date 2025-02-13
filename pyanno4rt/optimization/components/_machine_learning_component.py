@@ -215,10 +215,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
         self.weight = float(weight)
         self.rank = rank
         self.bounds = (
-            [0.0, 1.0] if bounds is None
-            else [
-                0.0 if bounds[0] is None else bounds[0],
-                1.0 if bounds[1] is None else bounds[1]])
+            (0.0, 1.0) if bounds is None or embedding == 'passive' else (
+                0.0 if bounds[0] is None else float(bounds[0]),
+                1.0 if bounds[1] is None else float(bounds[1])))
         self.link = [] if link is None else link
         self.identifier = identifier
         self.display = display
@@ -275,7 +274,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
         Parameters
         ----------
         other : object
-            The component object to compare the instance with.
+            The object to compare the instance with.
 
         Returns
         -------
@@ -316,17 +315,17 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
     def set_parameter_value(
             self,
-            *args):
+            value):
         """
         Set the value of the parameters.
 
         Parameters
         ----------
-        *args : tuple
-            Keyworded parameters. args[0] should give the value to be set.
+        value : list
+            Value to be set.
         """
 
-        self.parameter_value = args[0]
+        self.parameter_value = value
 
     def get_weight_value(self):
         """
@@ -342,17 +341,17 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
     def set_weight_value(
            self,
-           *args):
+           value):
         """
         Set the value of the weight.
 
         Parameters
         ----------
-        *args : tuple
-            Keyworded parameters. args[0] should give the value to be set.
+        value : float
+            Value to be set.
         """
 
-        self.weight = args[0]
+        self.weight = value
 
     @abstractmethod
     def add_model(self):
@@ -361,11 +360,13 @@ class MachineLearningComponent(metaclass=ABCMeta):
     @abstractmethod
     def compute_value(
             self,
-            *args):
+            dose,
+            segment):
         """Compute the component value."""
 
     @abstractmethod
     def compute_gradient(
             self,
-            *args):
+            dose,
+            segment):
         """Compute the component gradient."""

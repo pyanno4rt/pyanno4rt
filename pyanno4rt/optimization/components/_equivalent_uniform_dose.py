@@ -5,11 +5,10 @@
 # %% External package import
 
 from numba import njit
-from numpy import concatenate, zeros
+from numpy import concatenate
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.optimization.components import ConventionalComponent
 
 # %% Class definition
@@ -90,136 +89,116 @@ class EquivalentUniformDose(ConventionalComponent):
             identifier=identifier,
             display=display)
 
-        # Set the individual parameter value
-        self.parameter_value = [float(target_eud), float(volume_parameter)]
-
     def compute_value(
             self,
+            dose,
             *args):
         """
-        Return the component value from the jitted 'compute' function.
+        Return the function value from the jitted 'compute' function.
 
         Parameters
         ----------
+        dose : tuple
+            Tuple with the dose arrays.
+
         *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate.
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
         float
-            Value of the component function.
+            Function value.
         """
 
-        return compute(args[0], self.parameter_value)
+        return compute(dose, *self.parameter_value)
 
     def compute_gradient(
             self,
+            dose,
             *args):
         """
-        Return the component gradient from the jitted 'differentiate' function.
+        Return the gradient vector from the jitted 'differentiate' function.
 
         Parameters
         ----------
+        dose : tuple
+            Tuple with the dose arrays.
+
         *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate and args[1] the corresponding segment(s).
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
         ndarray
-            Value of the component gradient.
+            Gradient vector.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the number of voxels
-        number_of_voxels = hub.dose_information['number_of_voxels']
-
-        # Get the segment indices
-        indices = tuple(
-            hub.segmentation[segment]['resized_indices']
-            for segment in args[1])
-
-        return differentiate(
-            args[0], self.parameter_value, number_of_voxels, indices)
+        return differentiate(dose, *self.parameter_value)
 
 
 @njit
-def compute(dose, parameter_value):
+def compute(dose, target_eud, volume_parameter):
     """
-    Compute the component value.
+    Compute the function value.
 
     Parameters
     ----------
     dose : tuple
-        Values of the dose in the segment(s).
+        Tuple with the dose arrays.
 
-    parameter_value : list
-        Value of the component parameters.
+    target_eud : float
+        Target value for the EUD.
+
+    volume_parameter : float
+        Dose-volume effect parameter.
 
     Returns
     -------
     float
-        Value of the component function.
+        Function value.
     """
 
     # Concatenate the dose arrays
-    full_dose = concatenate(dose)
+    dose = concatenate(dose)
 
     # Compute the EUD
-    eud = ((full_dose**(1/parameter_value[1])).sum()/len(full_dose)
-           )**parameter_value[1]
+    eud = ((dose**(1/volume_parameter)).sum()/len(dose))**volume_parameter
 
-    return (eud - parameter_value[0])**2
+    return (eud - target_eud)**2
 
 
 @njit
-def differentiate(dose, parameter_value, number_of_voxels, segment_indices):
+def differentiate(
+        dose, target_eud, volume_parameter):
     """
-    Compute the component gradient.
+    Compute the gradient vector.
 
     Parameters
     ----------
     dose : tuple
-        Values of the dose in the segment(s).
+        Tuple with the dose arrays.
 
-    parameter_value : list
-        Value of the component parameters.
+    target_eud : float
+        Target value for the EUD.
 
-    number_of_voxels : int
-        Total number of dose voxels.
-
-    segment_indices : tuple
-        Indices of the segment(s).
+    volume_parameter : float
+        Dose-volume effect parameter.
 
     Returns
     -------
     ndarray
-        Value of the component gradient.
+        Gradient vector.
     """
 
     # Concatenate the dose arrays
-    full_dose = concatenate(dose)
-
-    # Concatenate the segment index arrays
-    full_indices = concatenate(segment_indices)
+    dose = concatenate(dose)
 
     # Compute the EUD
-    eud = ((full_dose**(1/parameter_value[1])).sum()/len(full_dose)
-           )**parameter_value[1]
+    eud = ((dose**(1/volume_parameter)).sum()/len(dose))**volume_parameter
 
     # Compute the dose gradient of the EUD
     eud_gradient = (
-        (full_dose**(1/parameter_value[1])).sum()**(parameter_value[1]-1)
-        * full_dose**(1/parameter_value[1]-1)
-        / (len(full_dose)**parameter_value[1]))
+        (dose**(1/volume_parameter)).sum()**(volume_parameter-1)
+        * dose**(1/volume_parameter-1) / (len(dose)**volume_parameter))
 
-    # Initialize the component gradient
-    component_gradient = zeros((number_of_voxels,))
-
-    # Compute the gradient
-    component_gradient[full_indices] = 2*(eud-parameter_value[0])*eud_gradient
-
-    return component_gradient
+    return 2*(eud - target_eud)*eud_gradient

@@ -6,7 +6,6 @@
 
 from jax import grad, jit
 import jax.numpy as jnp
-from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -21,12 +20,14 @@ class DoseSkewness(DosiomicFeature):
     @staticmethod
     def function(dose):
         """Compute the skewness."""
+
         return 1/len(dose) * jnp.sum(
             jnp.power(dose-jnp.mean(dose), 3)) / jnp.power(jnp.std(dose), 3)
 
     @staticmethod
     def compute(dose, *args):
         """Check the jitting status and call the computation function."""
+
         # Check if the value function has not yet been jitted
         if not DoseSkewness.value_is_jitted:
 
@@ -41,6 +42,7 @@ class DoseSkewness(DosiomicFeature):
     @staticmethod
     def differentiate(dose, *args):
         """Check the jitting status and call the differentiation function."""
+
         # Check if the gradient function has not yet been jitted
         if not DoseSkewness.gradient_is_jitted:
 
@@ -51,10 +53,4 @@ class DoseSkewness(DosiomicFeature):
             # Set 'gradient_is_jitted' to True for one-time jitting
             DoseSkewness.gradient_is_jitted = True
 
-        # Initialize the gradient vector
-        gradient = lil_matrix((1, args[0]))
-
-        # Insert the gradient values at the indices of the segment
-        gradient[:, args[1]] = DoseSkewness.gradient_function(dose)
-
-        return gradient
+        return DoseSkewness.gradient_function(dose)

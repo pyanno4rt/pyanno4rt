@@ -150,6 +150,7 @@ class Ui_compare_window(object):
         self.dose_dvh_layout.addWidget(self.difference_dvh_widget, 2, 2, 1, 1)
         self.compare_widget_layout.addLayout(self.dose_dvh_layout)
         self.fields_layout = QtWidgets.QGridLayout()
+        self.fields_layout.setContentsMargins(10, -1, 10, -1)
         self.fields_layout.setObjectName("fields_layout")
         self.display_options_layout = QtWidgets.QGridLayout()
         self.display_options_layout.setContentsMargins(-1, -1, -1, 0)

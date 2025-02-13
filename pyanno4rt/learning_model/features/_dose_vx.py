@@ -6,7 +6,6 @@
 
 from jax import grad, jit
 import jax.numpy as jnp
-from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -21,6 +20,7 @@ class DoseVx(DosiomicFeature):
     @staticmethod
     def function(level, dose):
         """Compute the dose-volume histogram ordinate."""
+
         return jnp.sum(dose >= level) / len(dose)
 
     @staticmethod
@@ -51,10 +51,4 @@ class DoseVx(DosiomicFeature):
             # Set 'gradient_is_jitted' to True for one-time jitting
             DoseVx.gradient_is_jitted = True
 
-        # Initialize the gradient vector
-        gradient = lil_matrix((1, args[0]))
-
-        # Insert the gradient values at the indices of the segment
-        gradient[:, args[1]] = DoseVx.gradient_function(level, dose)
-
-        return gradient
+        return DoseVx.gradient_function(level, dose)

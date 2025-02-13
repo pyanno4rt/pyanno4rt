@@ -5,7 +5,7 @@
 # %% External package import
 
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import array, ceil, linspace, sort, unravel_index
+from numpy import array, ceil, linspace, nan, sort, unravel_index
 from PyQt5.QtWidgets import QMainWindow
 from pyqtgraph import mkPen
 
@@ -320,33 +320,44 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         def evaluate_cumulative_dvh(dose, points):
             """Evaluate the cumulative DVH points."""
 
-            return array([(dose >= point).sum() for point in points])
+            return (
+                array([(dose >= point).sum() for point in points]) / len(dose))
 
         def get_evaluation_points():
             """Get the points at which to evaluate the DVH."""
 
-            # Get the minimum and the maximum dose from the dose cube
-            minimum_dose, maximum_dose = dose_cube.min(), dose_cube.max()
+            # Get the maximum dose from the dose cube
+            maximum_dose = dose_cube.max()
 
             return linspace(
-                *(min(0, minimum_dose), 1.05*maximum_dose), number_of_points,
-                endpoint=True)
+                0, 1.05*maximum_dose, number_of_points, endpoint=True)
 
         def get_segment_dvh(indices, cube_dimensions, points):
             """Get the DVH for a single segment."""
 
-            return (evaluate_cumulative_dvh(dose_cube[unravel_index(
-                indices, cube_dimensions, order='F')], points)
-                * 100/len(indices))
+            # Check if any voxel indices are present
+            if len(indices) > 0:
+
+                # Get the dose vector
+                dose = dose_cube[unravel_index(
+                    indices, cube_dimensions, order='F')]
+
+                # Return the DVH values for the segment
+                return evaluate_cumulative_dvh(dose, points)
+
+            # Else, return NaNs
+            return array([nan]*len(points))
 
         # Initialize the dose histogram dictionary with the evaluation points
         dose_histogram = {'evaluation_points': get_evaluation_points()}
 
         # Add the segment names with the corresponding DVH values
-        dose_histogram |= {segment: {'dvh_values': get_segment_dvh(
-            segmentation[segment]['raw_indices'],
-            computed_tomography['cube_dimensions'],
-            dose_histogram['evaluation_points'])}
+        dose_histogram |= {
+            segment: {
+                'dvh_values': get_segment_dvh(
+                    segmentation[segment]['raw_indices'],
+                    computed_tomography['cube_dimensions'],
+                    dose_histogram['evaluation_points'])}
             for segment in segmentation}
 
         # Add the segment names to be displayed
@@ -442,7 +453,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             # Add the baseline DVH curves
             axis.plot(
                 baseline_dvh['evaluation_points'],
-                baseline_dvh[segment]['dvh_values'],
+                baseline_dvh[segment]['dvh_values']*100,
                 linewidth=1.7,
                 color=colors[index],
                 linestyle='-',
@@ -451,7 +462,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             # Add the reference DVH curves
             axis.plot(
                 reference_dvh['evaluation_points'],
-                reference_dvh[segment]['dvh_values'],
+                reference_dvh[segment]['dvh_values']*100,
                 linewidth=1.7,
                 color=colors[index],
                 linestyle='--',

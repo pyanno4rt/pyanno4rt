@@ -256,7 +256,7 @@ class DVHWidget(QWidget):
 
             plot = self.plot_graph.plot(
                 self.dose_histogram['evaluation_points'],
-                self.dose_histogram[segment]['dvh_values'],
+                self.dose_histogram[segment]['dvh_values']*100.0,
                 pen=pen, name=segment, clickable=True)
             plot.sigClicked.connect(self.select_dvh_curve)
             self.plot_graph.scene().sigMouseClicked.connect(

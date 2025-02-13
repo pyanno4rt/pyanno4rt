@@ -6,11 +6,10 @@
 
 from math import sqrt
 from numba import njit
-from numpy import concatenate, zeros
+from numpy import concatenate
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.optimization.components import ConventionalComponent
 
 # %% Class definition
@@ -83,117 +82,92 @@ class DoseUniformity(ConventionalComponent):
             identifier=identifier,
             display=display)
 
-        # Set the individual parameter value
-        self.parameter_value = []
-
     def compute_value(
             self,
+            dose,
             *args):
         """
-        Return the component value from the jitted 'compute' function.
+        Return the function value from the jitted 'compute' function.
 
         Parameters
         ----------
+        dose : tuple
+            Tuple with the dose arrays.
+
         *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate.
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
         float
-            Value of the component function.
+            Function value.
         """
 
-        return compute(args[0])
+        return compute(dose)
 
     def compute_gradient(
             self,
+            dose,
             *args):
         """
-        Return the component gradient from the jitted 'differentiate' function.
+        Return the gradient vector from the jitted 'differentiate' function.
 
         Parameters
         ----------
+        dose : tuple
+            Tuple with the dose arrays.
+
         *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate and args[1] the corresponding segment(s).
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
         ndarray
-            Value of the component gradient.
+            Gradient vector.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the number of voxels
-        number_of_voxels = hub.dose_information['number_of_voxels']
-
-        # Get the segment indices
-        indices = tuple(
-            hub.segmentation[segment]['resized_indices']
-            for segment in args[1])
-
-        return differentiate(args[0], number_of_voxels, indices)
+        return differentiate(dose)
 
 
 @njit
 def compute(dose):
     """
-    Compute the component value.
+    Compute the function value.
 
     Parameters
     ----------
     dose : tuple
-        Values of the dose in the segment(s).
+        Tuple with the dose arrays.
 
     Returns
     -------
     float
-        Value of the component function.
+        Function value.
     """
 
     # Concatenate the dose arrays
-    full_dose = concatenate(dose)
+    dose = concatenate(dose)
 
-    return sqrt(len(full_dose)/(len(full_dose)-1)) * full_dose.std()
+    return sqrt(len(dose) / (len(dose)-1))*dose.std()
 
 
 @njit
-def differentiate(dose, number_of_voxels, segment_indices):
+def differentiate(dose):
     """
-    Compute the component gradient.
+    Compute the gradient vector.
 
     Parameters
     ----------
     dose : tuple
-        Values of the dose in the segment(s).
-
-    number_of_voxels : int
-        Total number of dose voxels.
-
-    segment_indices : tuple
-        Indices of the segment(s).
+        Tuple with the dose arrays.
 
     Returns
     -------
     ndarray
-        Value of the component gradient.
+        Gradient vector.
     """
 
     # Concatenate the dose arrays
-    full_dose = concatenate(dose)
+    dose = concatenate(dose)
 
-    # Concatenate the segment index arrays
-    full_indices = concatenate(segment_indices)
-
-    # Initialize the component gradient
-    component_gradient = zeros((number_of_voxels,))
-
-    # Compute the component gradient
-    component_gradient[full_indices] = (
-        (full_dose-full_dose.mean())
-        / (sqrt((len(full_dose)-1)*len(full_dose))*full_dose.std()))
-
-    return component_gradient
+    return (dose - dose.mean()) / (sqrt((len(dose)-1)*len(dose))*dose.std())

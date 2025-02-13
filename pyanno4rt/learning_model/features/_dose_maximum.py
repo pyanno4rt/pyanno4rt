@@ -6,7 +6,6 @@
 
 from jax import grad, jit
 import jax.numpy as jnp
-from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -21,11 +20,13 @@ class DoseMaximum(DosiomicFeature):
     @staticmethod
     def function(dose):
         """Compute the maximum dose."""
+
         return jnp.max(dose)
 
     @staticmethod
     def compute(dose, *args):
         """Check the jitting status and call the computation function."""
+
         # Check if the value function has not yet been jitted
         if not DoseMaximum.value_is_jitted:
 
@@ -40,6 +41,7 @@ class DoseMaximum(DosiomicFeature):
     @staticmethod
     def differentiate(dose, *args):
         """Check the jitting status and call the differentiation function."""
+
         # Check if the gradient function has not yet been jitted
         if not DoseMaximum.gradient_is_jitted:
 
@@ -50,10 +52,4 @@ class DoseMaximum(DosiomicFeature):
             # Set 'gradient_is_jitted' to True for one-time jitting
             DoseMaximum.gradient_is_jitted = True
 
-        # Initialize the gradient vector
-        gradient = lil_matrix((1, args[0]))
-
-        # Insert the gradient values at the indices of the segment
-        gradient[:, args[1]] = DoseMaximum.gradient_function(dose)
-
-        return gradient
+        return DoseMaximum.gradient_function(dose)

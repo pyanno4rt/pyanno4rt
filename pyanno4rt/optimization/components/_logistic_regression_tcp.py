@@ -124,17 +124,17 @@ class LogisticRegressionTCP(MachineLearningComponent):
 
     def set_intercept_value(
             self,
-            *args):
+            value):
         """
         Set the value of the intercept.
 
         Parameters
         ----------
-        *args : tuple
-            Keyworded parameters. args[0] should give the value to be set.
+        value : float
+            Value for the intercept.
         """
 
-        self.intercept_value = args[0]
+        self.intercept_value = [value]
 
     def add_model(self):
         """Add the logistic regression model to the component."""
@@ -181,25 +181,28 @@ class LogisticRegressionTCP(MachineLearningComponent):
 
     def compute_value(
             self,
-            *args):
+            dose,
+            segment):
         """
-        Compute the component value.
+        Compute the function value.
 
         Parameters
         ----------
-        *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate and args[1] the corresponding segment(s).
+        dose : tuple
+            Tuple with the dose values.
+
+        segment : tuple
+            Tuple with the segment names.
 
         Returns
         -------
         float
-            Value of the component function.
+            Function value.
         """
 
-        # Compute the feature vector from the dose vector(s) and segment(s)
+        # Compute the feature vector
         raw_features = self.data_model_handler.feature_calculator.featurize(
-            args[0], args[1])
+            dose, segment)
 
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
@@ -210,27 +213,30 @@ class LogisticRegressionTCP(MachineLearningComponent):
 
     def compute_gradient(
             self,
-            *args):
+            dose,
+            segment):
         """
-        Compute the component gradient.
+        Compute the gradient vector.
 
         Parameters
         ----------
-        *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate and args[1] the corresponding segment(s).
+        dose : tuple
+            Tuple with the dose values.
+
+        segment : tuple
+            Tuple with the segment names.
 
         Returns
         -------
         ndarray
-            Value of the component gradient.
+            Gradient vector.
         """
 
         # Get the feature calculator
         feature_calculator = self.data_model_handler.feature_calculator
 
-        # Compute the feature vector from the dose vector(s) and segment(s)
-        raw_features = feature_calculator.featurize(args[0], args[1])
+        # Compute the feature vector
+        raw_features = feature_calculator.featurize(dose, segment)
 
         # Get the model gradient
         model_gradient = -array(self.parameter_value)
@@ -240,6 +246,6 @@ class LogisticRegressionTCP(MachineLearningComponent):
             self.model.preprocessor.gradientize(raw_features))
 
         # Compute the feature gradient
-        feature_gradient = feature_calculator.gradientize(args[0], args[1])
+        feature_gradient = feature_calculator.gradientize(dose, segment)
 
         return (model_gradient * preprocessing_gradient) @ feature_gradient

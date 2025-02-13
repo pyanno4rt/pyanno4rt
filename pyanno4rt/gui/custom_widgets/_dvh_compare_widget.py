@@ -259,7 +259,7 @@ class DVHCompareWidget(QWidget):
 
             plot = self.plot_graph.plot(
                 self.dose_histogram['evaluation_points'],
-                self.dose_histogram[segment]['dvh_values'],
+                self.dose_histogram[segment]['dvh_values']*100,
                 pen=pen, name=segment, clickable=True)
             plot.sigClicked.connect(self.get_segment_statistics)
             plot.sigClicked.connect(self.select_dvh_curves_from_parent)

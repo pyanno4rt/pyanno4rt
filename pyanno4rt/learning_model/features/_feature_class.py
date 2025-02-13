@@ -24,11 +24,17 @@ class DosiomicFeature(metaclass=ABCMeta):
     gradient_is_jitted = False
 
     @abstractmethod
-    def compute(self, dose, *args):
+    def compute(
+            self,
+            dose,
+            *args):
         """Abstract method for computing the feature value."""
 
     @abstractmethod
-    def differentiate(self, dose, *args):
+    def differentiate(
+            self,
+            dose,
+            *args):
         """Abstract method for differentiating the feature."""
 
 
@@ -39,5 +45,8 @@ class RadiomicFeature(metaclass=ABCMeta):
     feature_class = 'Radiomics'
 
     @abstractmethod
-    def compute(self, mask, spacing):
+    def compute(
+            self,
+            mask,
+            spacing):
         """Abstract method for computing the feature value."""

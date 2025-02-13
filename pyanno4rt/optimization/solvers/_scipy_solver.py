@@ -96,8 +96,8 @@ class SciPySolver():
             lower_constraint_bounds, upper_constraint_bounds, algorithm,
             max_iter, tolerance, self.callback)
 
-        # Initialize the layer indicator (for 'lexicographic' method)
-        self.layer = None
+        # Initialize the rank indicator (for 'lexicographic' method)
+        self.rank = None
 
         # Initialize the iteration counter
         self.counter = None
@@ -119,7 +119,7 @@ class SciPySolver():
                          f"f={round(intermediate_result['fun'], 4)}")
 
         # Check if any constraints have been passed to the algorithm
-        if 'constraints' in self.arguments.get(self.layer, self.arguments):
+        if 'constraints' in self.arguments.get(self.rank, self.arguments):
 
             # Add the constraint values to the output string
             output_string = (
@@ -176,8 +176,8 @@ class SciPySolver():
                 hub.logger.display_info(
                     f"Considering lexicography at rank {rank} ...")
 
-                # Set the current layer for the callback
-                self.layer = rank
+                # Set the current rank for the callback
+                self.rank = rank
 
                 # Get the initial objective value
                 objective_value = arguments['fun'](initial_fluence, False)
@@ -204,10 +204,10 @@ class SciPySolver():
                 # Solve the optimization problem of the current rank
                 result = self.fun(x0=initial_fluence, **arguments)
 
-                # Update the initial fluence for the next layer
+                # Update the initial fluence for the next rank
                 initial_fluence = result.x
 
-                # Check if the current rank is not from the final layer
+                # Check if the current rank is not from the final rank
                 if rank != ranks[-1]:
 
                     # Get the value of the next rank

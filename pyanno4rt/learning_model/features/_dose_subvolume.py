@@ -6,7 +6,6 @@
 
 from jax import grad
 import jax.numpy as jnp
-from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -21,6 +20,7 @@ class DoseSubvolume(DosiomicFeature):
     @staticmethod
     def function(subvolume, _, *args):
         """Compute the subvolume dose."""
+
         # Map the axes to the permutation orders
         orders = {'x': ([1, 0, 2], [1, 2, 0]),
                   'y': ([0, 2, 1], [0, 1, 2]),
@@ -64,6 +64,7 @@ class DoseSubvolume(DosiomicFeature):
     @staticmethod
     def compute(subvolume, dose, *args):
         """Check the jitting status and call the computation function."""
+
         # Check if the value function has not yet been jitted
         if not DoseSubvolume.value_is_jitted:
 
@@ -78,6 +79,7 @@ class DoseSubvolume(DosiomicFeature):
     @staticmethod
     def differentiate(subvolume, dose, *args):
         """Check the jitting status and call the differentiation function."""
+
         # Check if the gradient function has not yet been jitted
         if not DoseSubvolume.gradient_is_jitted:
 
@@ -88,5 +90,5 @@ class DoseSubvolume(DosiomicFeature):
             # Set 'gradient_is_jitted' to True for one-time jitting
             DoseSubvolume.gradient_is_jitted = True
 
-        return lil_matrix(DoseSubvolume.gradient_function(
-            subvolume, dose, *args).reshape(-1))
+        return DoseSubvolume.gradient_function(
+            subvolume, dose, *args).reshape(-1)

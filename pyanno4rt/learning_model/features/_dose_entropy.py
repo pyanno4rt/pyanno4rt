@@ -6,7 +6,6 @@
 
 from numba import njit
 from numpy import array, exp, linspace, log, log2
-from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -16,10 +15,7 @@ from pyanno4rt.learning_model.features import DosiomicFeature
 
 
 @njit
-def sigmoid(
-        value,
-        coeff_1,
-        coeff_2):
+def sigmoid(value, coeff_1, coeff_2):
     """
     Compute the sigmoid function value.
 
@@ -39,6 +35,7 @@ def sigmoid(
     float or tuple of floats
         Value(s) of the sigmoid function.
     """
+
     # Check if the passed value is tuple or a list
     if isinstance(value, list):
 
@@ -54,6 +51,7 @@ class DoseEntropy(DosiomicFeature):
     @njit
     def function(dose):
         """Compute the entropy."""
+
         # Set the number of histogram bins
         number_of_bins = 256
 
@@ -90,6 +88,7 @@ class DoseEntropy(DosiomicFeature):
     @njit
     def gradient(dose):
         """Compute the entropy gradient."""
+
         # Set the number of histogram bins
         number_of_bins = 256
 
@@ -110,6 +109,7 @@ class DoseEntropy(DosiomicFeature):
 
         def compute_probability(dos, bns):
             """Compute the bin probability."""
+
             return 1/length * (sigmoid(-parameter*(dos-bns[1]
                                                    if dos != bns[1]
                                                    else dos-bns[1]-epsilon),
@@ -121,6 +121,7 @@ class DoseEntropy(DosiomicFeature):
 
         def compute_probability_gradient(dos, bns):
             """Compute the gradient of the bin probability."""
+
             return -parameter/length * (
                 sigmoid(
                     -parameter*(dos-bns[1] if dos != bns[1]
@@ -148,15 +149,11 @@ class DoseEntropy(DosiomicFeature):
     @staticmethod
     def compute(dose, *args):
         """Call the computation function."""
+
         return DoseEntropy.function(dose)
 
     @staticmethod
     def differentiate(dose, *args):
         """Call the differentiation function."""
-        # Initialize the gradient vector
-        gradient = lil_matrix((1, args[0]))
 
-        # Insert the gradient values at the indices of the segment
-        gradient[:, args[1]] = DoseEntropy.gradient(dose)
-
-        return gradient
+        return DoseEntropy.gradient(dose)

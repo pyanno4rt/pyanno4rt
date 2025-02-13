@@ -109,8 +109,8 @@ def configure_scipy(problem_instance, lower_variable_bounds,
             # Initialize the arguments by the multi-rank items
             arguments = {
                 rank: {
-                    'fun': partial(problem_instance.objective, layer=rank),
-                    'jac': partial(problem_instance.gradient, layer=rank),
+                    'fun': partial(problem_instance.objective, rank=rank),
+                    'jac': partial(problem_instance.gradient, rank=rank),
                     'method': 'trust-constr',
                     'bounds': tuple(
                         zip(lower_variable_bounds, upper_variable_bounds)),
@@ -134,13 +134,13 @@ def configure_scipy(problem_instance, lower_variable_bounds,
                     # Update the arguments by the constraint items
                     arguments[rank] |= {
                         'constraints': NonlinearConstraint(
-                            partial(problem_instance.constraint, layer=rank),
+                            partial(problem_instance.constraint, rank=rank),
                             lower_constraint_bounds[rank],
                             upper_constraint_bounds[rank],
-                            jac=partial(problem_instance.jacobian, layer=rank),
+                            jac=partial(problem_instance.jacobian, rank=rank),
                             hess=SR1()),
                         'cfun': partial(
-                            problem_instance.constraint, layer=rank)}
+                            problem_instance.constraint, rank=rank)}
 
             # Add the indicator for the 'lexicographic' method
             arguments |= {'lexicographic': True}

@@ -2,6 +2,10 @@
 
 # Author: Tim Ortkamp
 
+# %% External package import
+
+from numpy import concatenate
+
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
@@ -64,7 +68,7 @@ class ParetoOptimization():
             self,
             fluence):
         """
-        Compute the objective function value(s).
+        Compute the objective function values.
 
         Parameters
         ----------
@@ -74,7 +78,7 @@ class ParetoOptimization():
         Returns
         -------
         list
-            Objective function value(s).
+            Objective function values.
         """
 
         # Get the segmentation data from the datahub
@@ -97,28 +101,27 @@ class ParetoOptimization():
             segments = objective['segments']
             instance = objective['instance']
 
+            # Get the segment indices
+            indices = (
+                segmentation[segment]['resized_indices']
+                for segment in segments)
+
             # Compute the objective function value
-            objective_value = instance.compute_value(
-                tuple(dose[segmentation[segment]['resized_indices']]
-                      for segment in segments), segments) * instance.weight
+            objective_value = instance.weight * instance.compute_value(
+                tuple(dose[index] for index in indices), segments)
 
-            # Check if the instance is set to active
-            if instance.embedding == 'active':
+            # Return the objective function value depending on the embedding
+            return objective_value * (instance.embedding == 'active')
 
-                # Return the value of the objective function
-                return objective_value
-
-            # Otherwise, return zero
-            return 0.0
-
-        return [compute_single_objective(objective)
-                for objective in self.objectives.values()]
+        return [
+            compute_single_objective(objective)
+            for objective in self.objectives.values()]
 
     def constraint(
             self,
             fluence):
         """
-        Compute the constraint function value(s).
+        Compute the constraint function values.
 
         Parameters
         ----------
@@ -128,7 +131,7 @@ class ParetoOptimization():
         Returns
         -------
         list
-            Constraint function value(s).
+            Constraint function values.
         """
 
         # Get the segmentation data from the datahub
@@ -151,13 +154,18 @@ class ParetoOptimization():
             segments = constraint['segments']
             instance = constraint['instance']
 
-            # Get the constraint function value
+            # Get the segment indices
+            indices = (
+                segmentation[segment]['resized_indices']
+                for segment in segments)
+
+            # Compute the constraint function value
             constraint_value = instance.compute_value(
-                tuple(dose[segmentation[segment]['resized_indices']]
-                      for segment in segments), segments)
+                tuple(dose[index] for index in indices), segments)
 
             # Return the value of the constraint function
             return constraint_value
 
-        return [compute_single_constraint(constraint)
-                for constraint in self.constraints.values()]
+        return [
+            compute_single_constraint(constraint)
+            for constraint in self.constraints.values()]

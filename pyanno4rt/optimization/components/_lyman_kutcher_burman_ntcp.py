@@ -6,11 +6,10 @@
 
 from math import erf, pi, sqrt
 from numba import njit
-from numpy import concatenate, exp, prod, zeros
+from numpy import concatenate, exp
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.optimization.components import RadiobiologicalComponent
 
 # %% Class definition
@@ -80,12 +79,10 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
             name='Lyman-Kutcher-Burman NTCP',
             segment=segment,
             parameter_name=(
-                'tolerance_dose_50', 'slope_parameter',
-                'volume_parameter'),
+                'tolerance_dose_50', 'slope_parameter', 'volume_parameter'),
             parameter_category=('dose', 'coefficient', 'coefficient'),
             parameter_value=(
-                tolerance_dose_50, slope_parameter,
-                volume_parameter),
+                tolerance_dose_50, slope_parameter, volume_parameter),
             embedding=embedding,
             weight=weight,
             rank=rank,
@@ -96,61 +93,55 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
 
     def compute_value(
             self,
+            dose,
             *args):
         """
-        Return the component value from the jitted 'compute' function.
+        Return the function value from the jitted 'compute' function.
 
         Parameters
         ----------
+        dose : tuple
+            Tuple with the dose arrays.
+
         *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate.
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
         float
-            Value of the component function.
+            Function value.
         """
 
-        return compute(args[0], self.parameter_value)
+        return compute(dose, *self.parameter_value)
 
     def compute_gradient(
             self,
+            dose,
             *args):
         """
-        Return the component gradient from the jitted 'differentiate' function.
+        Return the gradient vector from the jitted 'differentiate' function.
 
         Parameters
         ----------
+        dose : tuple
+            Tuple with the dose arrays.
+
         *args : tuple
-            Keyworded parameters, where args[0] must be the dose vector(s) to \
-            evaluate and args[1] the corresponding segment(s).
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
         ndarray
-            Value of the component gradient.
+            Gradient vector.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the number of voxels
-        number_of_voxels = hub.dose_information['number_of_voxels']
-
-        # Get the segment indices
-        indices = tuple(
-            hub.segmentation[segment]['resized_indices']
-            for segment in args[1])
-
-        return differentiate(
-            args[0], self.parameter_value, number_of_voxels, indices)
+        return differentiate(dose, *self.parameter_value)
 
 
 @njit
-def compute(dose, parameter_value):
+def compute(dose, tolerance_dose_50, slope_parameter, volume_parameter):
     """
-    Compute the component value.
+    Compute the function value.
 
     Adapted from Samant et al. (2023): \
     https://doi.org/10.1016/j.ctro.2023.100595
@@ -158,78 +149,72 @@ def compute(dose, parameter_value):
     Parameters
     ----------
     dose : tuple
-        Values of the dose in the segment(s).
+        Tuple with the dose arrays.
 
-    parameter_value : list
-        Value of the component parameters.
+    tolerance_dose_50 : float
+        Tolerance value for the dose at 50% tumor control.
+
+    slope_parameter : float
+        Slope parameter.
+
+    volume_parameter : float
+        Dose-volume effect parameter.
 
     Returns
     -------
     float
-        Value of the component function.
+        Function value.
     """
 
     # Concatenate the dose arrays
-    full_dose = concatenate(dose)
+    dose = concatenate(dose)
 
     # Compute the EUD
-    eud = ((full_dose**(1/parameter_value[2])).sum()/len(full_dose)
-           )**parameter_value[2]
+    eud = ((dose**(1/volume_parameter)).sum()/len(dose))**volume_parameter
 
     return 0.5*(1+erf(
-        (eud-parameter_value[0])/(sqrt(2)*prod(parameter_value[:2]))))
+        (eud-tolerance_dose_50)/(sqrt(2)*tolerance_dose_50*slope_parameter)))
 
 
 @njit
-def differentiate(dose, parameter_value, number_of_voxels, segment_indices):
+def differentiate(dose, tolerance_dose_50, slope_parameter, volume_parameter):
     """
-    Compute the component gradient.
+    Compute the gradient vector.
 
     Parameters
     ----------
     dose : tuple
-        Values of the dose in the segment(s).
+        Tuple with the dose arrays.
 
-    parameter_value : list
-        Value of the component parameters.
+    tolerance_dose_50 : float
+        Tolerance value for the dose at 50% tumor control.
 
-    number_of_voxels : int
-        Total number of dose voxels.
+    slope_parameter : float
+        Slope parameter.
 
-    segment_indices : tuple
-        Indices of the segment(s).
+    volume_parameter : float
+        Dose-volume effect parameter.
 
     Returns
     -------
     ndarray
-        Value of the component gradient.
+        Gradient vector.
     """
 
     # Concatenate the dose arrays
-    full_dose = concatenate(dose)
-
-    # Concatenate the segment index arrays
-    full_indices = concatenate(segment_indices)
+    dose = concatenate(dose)
 
     # Compute the EUD
-    eud = (1/len(full_dose)*(full_dose**(1/parameter_value[2])).sum()
-           )**parameter_value[2]
+    eud = ((dose**(1/volume_parameter)).sum()/len(dose))**volume_parameter
 
     # Compute the dose gradient of the EUD
     eud_gradient = (
-        (full_dose**(1/parameter_value[2])).sum()**(parameter_value[2]-1)
-        * full_dose**(1/parameter_value[2]-1)
-        / (len(full_dose)**parameter_value[2]))
+        (dose**(1/volume_parameter)).sum()**(volume_parameter-1)
+        * dose**(1/volume_parameter-1) / (len(dose)**volume_parameter))
 
-    # Compute the EUD gradient of the component
+    # Compute the EUD gradient of the function
     ntcp_gradient = (exp(-(
-        (eud-parameter_value[0])/(sqrt(2)*prod(parameter_value[:2])))**2)
-        / sqrt(pi))
+        (eud-tolerance_dose_50)/(sqrt(2)*tolerance_dose_50*slope_parameter))
+        ** 2) / sqrt(pi))
 
-    # Initialize the component gradient
-    component_gradient = zeros((number_of_voxels,))
-
-    # Compute the gradient
-    component_gradient[full_indices] = ntcp_gradient * eud_gradient
-
-    return component_gradient
+    return ntcp_gradient * eud_gradient

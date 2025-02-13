@@ -6,7 +6,6 @@
 
 from jax import grad, jit
 import jax.numpy as jnp
-from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -24,6 +23,7 @@ class DoseMoment(DosiomicFeature):
 
         def compute_scaled_cube(array):
             """Compute the mean of the dose cube scaled by an array."""
+
             return jnp.sum((array * dose_cube)) / jnp.sum(dose_cube)
 
         # Get the dose cube from the argument
@@ -56,6 +56,7 @@ class DoseMoment(DosiomicFeature):
     @staticmethod
     def compute(coefficients, dose, *args):
         """Check the jitting status and call the computation function."""
+
         # Check if the value function has not yet been jitted
         if not DoseMoment.value_is_jitted:
 
@@ -71,6 +72,7 @@ class DoseMoment(DosiomicFeature):
     @staticmethod
     def differentiate(coefficients, dose, *args):
         """Check the jitting status and call the differentiation function."""
+
         # Check if the gradient function has not yet been jitted
         if not DoseMoment.gradient_is_jitted:
 
@@ -81,5 +83,5 @@ class DoseMoment(DosiomicFeature):
             # Set 'gradient_is_jitted' to True for one-time jitting
             DoseMoment.gradient_is_jitted = True
 
-        return lil_matrix(DoseMoment.gradient_function(
-            coefficients, dose, *args).reshape(-1))
+        return DoseMoment.gradient_function(
+            coefficients, dose, *args).reshape(-1)

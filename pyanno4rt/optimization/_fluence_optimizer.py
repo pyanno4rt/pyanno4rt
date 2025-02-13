@@ -89,7 +89,7 @@ class FluenceOptimizer():
         # Start the constructor runtime recording
         start_time = time()
 
-        # Set the objective and constraint functions
+        # Get the objective and constraint functions
         objectives, constraints = (
             hub.optimization['objectives'], hub.optimization['constraints'])
 
@@ -106,6 +106,17 @@ class FluenceOptimizer():
 
         # Initialize the backprojection by the selected modality
         backprojection = projection_map[hub.plan_configuration['modality']]()
+
+        # Check if the solver ignores any constraints
+        if len(constraints) > 0 and algorithm not in ('trust-constr', 'mumps'):
+
+            # Log a message about the ignored constraints
+            hub.logger.display_warning(
+                f"The '{algorithm}' algorithm only allows for unconstrained "
+                "optimization problems - constraints set will be ignored ...")
+
+            # Reset the constraints to the default
+            constraints = {}
 
         # Initialize the optimization problem by the selected method
         problem = method_map[method](backprojection, objectives, constraints)
@@ -138,14 +149,6 @@ class FluenceOptimizer():
             initial_fluence=initial_fluence,
             max_iter=max_iter,
             tolerance=tolerance)
-
-        # Check if the solver ignores any constraints
-        if len(constraints) > 0 and algorithm not in ('trust-constr', 'mumps'):
-
-            # Log a message about the ignored constraints
-            hub.logger.display_warning(
-                f"The '{algorithm}' algorithm only allows for unconstrained "
-                "optimization problems - constraints set will be ignored ...")
 
         # Extend the optimization dictionary in the datahub
         hub.optimization |= {

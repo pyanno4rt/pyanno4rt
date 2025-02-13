@@ -9,7 +9,6 @@ from abc import ABCMeta, abstractmethod
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import compare_dictionaries
 
 # %% Class definition
 
@@ -142,7 +141,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         self.embedding = embedding
         self.weight = float(weight)
         self.rank = rank
-        self.bounds = self.convert_bounds(bounds)
+        self.bounds = self.convert_bounds(bounds, embedding)
         self.link = [] if link is None else link
         self.identifier = identifier
         self.display = display
@@ -159,7 +158,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         Parameters
         ----------
         other : object
-            The component object to compare the instance with.
+            The object to compare the instance with.
 
         Returns
         -------
@@ -167,43 +166,8 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             Indicator for the equality of the objects.
         """
 
-        return (
-            all(self.__dict__[key] == other.__dict__[key] for key in (
-                'name', 'link', 'identifier'))
-            and compare_dictionaries(
-                self.__dict__.get('model_parameters', {}),
-                other.__dict__.get('model_parameters', {})))
-
-    def convert_bounds(
-            self,
-            bounds):
-        """
-        Convert the bounds from probabilities to function bounds.
-
-        Parameters
-        ----------
-        bounds : None or list
-            Constraint bounds for the component.
-
-        Returns
-        -------
-        list
-            Lower and upper function bounds.
-        """
-
-        # Get the (N)TCP function sign
-        sign = (-1)**('NTCP' not in self.name)
-
-        # Check if the bounds are None
-        if bounds is None:
-
-            # Return the default function bounds
-            return sorted([0.0, sign])
-
-        # Return the transformed function bounds
-        return sorted(
-            [0.0 if bounds[0] is None or bounds[0] < 0 else sign*bounds[0],
-             sign if bounds[1] is None or bounds[1] > 1 else sign*bounds[1]])
+        return all(self.__dict__[key] == other.__dict__[key] for key in (
+            'name', 'link', 'identifier'))
 
     def get_class(self):
         """
@@ -216,6 +180,41 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         """
 
         return 'RadiobiologicalComponent'
+
+    def convert_bounds(
+            self,
+            bounds,
+            embedding):
+        """
+        Convert the bounds to function bounds.
+
+        Parameters
+        ----------
+        bounds : None or list
+            Constraint bounds for the component.
+
+        embedding : {'active', 'passive'}
+            Mode of embedding for the component.
+
+        Returns
+        -------
+        list
+            Lower and upper function bounds.
+        """
+
+        # Get the (N)TCP function sign
+        sign = (-1.0)**('NTCP' not in self.name)
+
+        # Check if the bounds are None
+        if bounds is None or embedding == 'passive':
+
+            # Return the default function bounds
+            return sorted((0.0, sign))
+
+        # Return the transformed function bounds
+        return sorted(
+            (0.0 if bounds[0] is None or bounds[0] < 0 else sign*bounds[0],
+             sign if bounds[1] is None or bounds[1] > 1 else sign*bounds[1]))
 
     def get_parameter_value(self):
         """
@@ -231,17 +230,17 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
 
     def set_parameter_value(
             self,
-            *args):
+            value):
         """
         Set the value of the parameters.
 
         Parameters
         ----------
-        *args : tuple
-            Keyworded parameters. args[0] should give the value to be set.
+        value : list
+            Value to be set.
         """
 
-        self.parameter_value = args[0]
+        self.parameter_value = value
 
     def get_weight_value(self):
         """
@@ -257,26 +256,28 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
 
     def set_weight_value(
            self,
-           *args):
+           value):
         """
         Set the value of the weight.
 
         Parameters
         ----------
-        *args : tuple
-            Keyworded parameters. args[0] should give the value to be set.
+        value : float
+            Value to be set.
         """
 
-        self.weight = args[0]
+        self.weight = value
 
     @abstractmethod
     def compute_value(
             self,
+            dose,
             *args):
         """Compute the component value."""
 
     @abstractmethod
     def compute_gradient(
             self,
+            dose,
             *args):
         """Compute the component gradient."""

@@ -6,7 +6,6 @@
 
 from jax import grad, jit
 import jax.numpy as jnp
-from scipy.sparse import lil_matrix
 
 # %% Internal package import
 
@@ -21,6 +20,7 @@ class DoseGradient(DosiomicFeature):
     @staticmethod
     def function(axis, dose, *args):
         """Compute the dose gradient."""
+
         # Map the axes to their corresponding arguments
         axis_to_args = {'x': [args[1][0], 1],
                         'y': [args[1][1], 0],
@@ -37,6 +37,7 @@ class DoseGradient(DosiomicFeature):
     @staticmethod
     def compute(axis, dose, *args):
         """Check the jitting status and call the computation function."""
+
         # Check if the value function has not yet been jitted
         if not DoseGradient.value_is_jitted:
 
@@ -52,6 +53,7 @@ class DoseGradient(DosiomicFeature):
     @staticmethod
     def differentiate(axis, dose, *args):
         """Check the jitting status and call the differentiation function."""
+
         # Check if the gradient function has not yet been jitted
         if not DoseGradient.gradient_is_jitted:
 
@@ -62,5 +64,5 @@ class DoseGradient(DosiomicFeature):
             # Set 'gradient_is_jitted' to True for one-time jitting
             DoseGradient.gradient_is_jitted = True
 
-        return lil_matrix(DoseGradient.gradient_function(
-            axis, dose, *args).reshape(-1))
+        return DoseGradient.gradient_function(
+            axis, dose, *args).reshape(-1)
