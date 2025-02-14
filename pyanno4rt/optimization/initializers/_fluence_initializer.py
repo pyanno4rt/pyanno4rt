@@ -71,23 +71,24 @@ class FluenceInitializer():
             Initial fluence vector.
         """
 
-        # Map the selected initialization strategy to the methods
+        # Map the initialization strategies to the methods
         strategies = {
             'data-medoid': self.initialize_from_data,
             'target-coverage': self.initialize_from_target,
             'warm-start': self.initialize_from_reference}
 
-        # Check if warm-start initialization has been selected
-        if self.initial_strategy == 'warm-start':
+        return strategies[self.initial_strategy](self.initial_fluence_vector)
 
-            return strategies[self.initial_strategy](
-                self.initial_fluence_vector)
-
-        return strategies[self.initial_strategy]()
-
-    def initialize_from_data(self):
+    def initialize_from_data(
+            self,
+            *args):
         """
         Initialize the fluence vector with respect to data medoid points.
+
+        Parameters
+        ----------
+        *args : tuple
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -104,11 +105,11 @@ class FluenceInitializer():
             "...")
 
         # Get the datasets and feature maps from the datahub
-        sets = hub.datasets
-        maps = hub.feature_maps
+        datasets = hub.datasets
+        feature_maps = hub.feature_maps
 
         # Check if no datasets have been provided
-        if sets is None:
+        if datasets is None:
 
             # Log a message about falling back to target coverage strategy
             hub.logger.display_info(
@@ -122,11 +123,11 @@ class FluenceInitializer():
 
             # Get the columns of the dosiomic features
             columns = [
-                index for index, feat in enumerate(maps[key])
-                if maps[key][feat]['class'] == 'Dosiomics']
+                index for index, feature in enumerate(feature_maps[key])
+                if feature_maps[key][feature]['class'] == 'Dosiomics']
 
             # Extract the dosiomic feature values
-            values = sets[key]['feature_values'][:, columns]
+            values = datasets[key]['feature_values'][:, columns]
 
             # Calculate the mean and standard deviation per column
             means = mean(values, axis=0)
@@ -144,15 +145,16 @@ class FluenceInitializer():
             def pull_arms(index_set, number_of_pulls):
                 """
                 Pull the arms of the multi-armed bandit to update the \
-                scores and the pull history."""
+                scores and the pull history.
+                """
 
                 # Uniformly sample arms
                 random_arms = sample(range(number_of_samples), number_of_pulls)
 
                 # Estimate the correlated distances
-                estimates = array(
-                    [mean(norm(dataset[random_arms, :] - dataset[index, :]))
-                     for index in index_set])
+                estimates = array([
+                    mean(norm(dataset[random_arms, :] - dataset[index, :]))
+                    for index in index_set])
 
                 # Update the scores taking the pull history into account
                 scores[index_set] = (
@@ -207,7 +209,7 @@ class FluenceInitializer():
             return dataset[index_set, :]
 
         def optimize_fluence(medoids, means, deviations):
-            """Optimize the fluence vector with respect to the medoids."""
+            """Optimize the fluence vector with respect to the data medoids."""
 
             # Get the degrees of freedom from the datahub
             degrees_of_freedom = hub.dose_information['degrees_of_freedom']
@@ -216,18 +218,18 @@ class FluenceInitializer():
                 """Precompute the features and the segment doses/names."""
 
                 # Get the dose vector from the fluence
-                full_dose = (
+                dose = (
                     hub.dose_information['dose_influence_matrix']
                     @ (fluence*factor))
 
                 # Get the segments across the feature maps
-                segments = tuple(
-                    set(feature_map[feat]['segment'] for feat in feature_map)
-                    for feature_map in maps.values())
+                segments = tuple(set(
+                    feature_map[feature]['segment'] for feature in feature_map)
+                    for feature_map in feature_maps.values())
 
                 # Get the dose vectors for the segments
                 doses = tuple(
-                    (full_dose[hub.segmentation[subsegment]['resized_indices']]
+                    (dose[hub.segmentation[subsegment]['resized_indices']]
                      for subsegment in segment) for segment in segments)
 
                 # Calculate the dosiomic feature values
@@ -257,11 +259,12 @@ class FluenceInitializer():
                      for calculator, dose, segment in zip(
                              calculators, doses, segments)])
 
-                return ((2*(divide(features-means, deviations)-reference)
-                         * (1/deviations)*feature_gradient.T)
-                        @ hub.dose_information['dose_influence_matrix'])
+                return ((
+                    2*(divide(features-means, deviations)-reference)
+                    * (1/deviations)*feature_gradient.T)
+                    @ hub.dose_information['dose_influence_matrix'])
 
-            # Concatenate the medoids, mean values and standard deviations
+            # Concatenate the data medoids, mean values and standard deviations
             reference = concatenate(list(medoids))
             means = concatenate(means)
             deviations = concatenate(deviations)
@@ -270,7 +273,7 @@ class FluenceInitializer():
             dose_feature_maps = tuple(
                 {key: value for key, value in feature_map.items()
                  if feature_map[key]['class'] == 'Dosiomics'}
-                for feature_map in maps.values())
+                for feature_map in feature_maps.values())
 
             # Get the feature calculator for each dosiomic subset
             calculators = tuple(FeatureCalculator(
@@ -305,19 +308,27 @@ class FluenceInitializer():
             return fluence_result.x
 
         # Get the standardized datasets, mean vectors and standard deviations
-        subsets, means, deviations = zip(*map(get_standardized_features, sets))
+        standardized_data, means, deviations = zip(*map(
+            get_standardized_features, datasets))
 
         # Get the data medoids
-        medoids = map(get_data_medoid, subsets)
+        medoids = map(get_data_medoid, standardized_data)
 
         # Optimize the fluence by reconstructing the medoids
         initial_fluence = optimize_fluence(medoids, means, deviations)
 
         return initial_fluence
 
-    def initialize_from_target(self):
+    def initialize_from_target(
+            self,
+            *args):
         """
         Initialize the fluence vector with respect to target coverage.
+
+        Parameters
+        ----------
+        *args : tuple
+            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -337,19 +348,18 @@ class FluenceInitializer():
         dose_information = hub.dose_information
 
         def get_dose_parameters(target):
-            """Get the dose-related component parameters of a target."""
+            """Get the dose-related component parameters from a target."""
 
-            # Get the component(s) from the target
+            # Get the components from the target
             target_component = filter(None, flatten(
                 segmentation[target][key]
                 for key in ('constraint', 'objective')))
 
             # Return the dose parameters from all components
-            return (tuple(component.parameter_value[index]
-                          for index, category in enumerate(
-                                  component.parameter_category)
-                          if category == 'dose')
-                    for component in target_component)
+            return (tuple(
+                component.parameter_value[index]
+                for index, category in enumerate(component.parameter_category)
+                if category == 'dose') for component in target_component)
 
         # Get the component-assigned target segments
         targets = set(
@@ -376,7 +386,7 @@ class FluenceInitializer():
             # Log a message about non-defined target components
             hub.logger.display_info(
                 "No target objectives defined - falling back to virtual "
-                "target with total dose prescription of 30 Gy ...")
+                "target with total dose prescription of 60 Gy ...")
 
             # Get the resized indices of all target segments
             indices = hstack([
@@ -384,8 +394,8 @@ class FluenceInitializer():
                 for segment in segmentation
                 if segmentation[segment]['type'] == 'TARGET'])
 
-            # Set the maximum target dose parameter for a total dose of 30 Gy
-            max_dose = 30/dose_information['number_of_fractions']
+            # Set the maximum target dose parameter for a total dose of 60 Gy
+            max_dose = 60/dose_information['number_of_fractions']
 
         # Initialize a vector of ones
         ones_vector = ones((dose_information['degrees_of_freedom'],))
@@ -403,7 +413,7 @@ class FluenceInitializer():
 
         Parameters
         ----------
-        initial_fluence_vector : ndarray
+        initial_fluence_vector : list
             Reference fluence vector.
 
         Returns

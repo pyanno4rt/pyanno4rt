@@ -71,10 +71,10 @@ class LogisticRegressionTCP(MachineLearningComponent):
         logistic regression model.
 
     parameter_value : list
-        Value of the logistic regression model coefficients.
+        Logistic regression model coefficients.
 
     intercept_value : None or list
-        Value of the logistic regression model intercept.
+        Logistic regression model intercept.
 
     bounds : list
         See 'Parameters'. Transformed by the inverse sigmoid function.
@@ -109,32 +109,6 @@ class LogisticRegressionTCP(MachineLearningComponent):
 
         # Initialize the intercept value
         self.intercept_value = None
-
-    def get_intercept_value(self):
-        """
-        Get the value of the intercept.
-
-        Returns
-        -------
-        list
-            Value of the intercept.
-        """
-
-        return self.intercept_value
-
-    def set_intercept_value(
-            self,
-            value):
-        """
-        Set the value of the intercept.
-
-        Parameters
-        ----------
-        value : float
-            Value for the intercept.
-        """
-
-        self.intercept_value = [value]
 
     def add_model(self):
         """Add the logistic regression model to the component."""

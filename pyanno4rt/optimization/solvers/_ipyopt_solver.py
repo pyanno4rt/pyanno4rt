@@ -50,7 +50,7 @@ class IpyoptSolver():
     initial_fluence : ndarray
         Initial fluence vector.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -62,7 +62,7 @@ class IpyoptSolver():
         The object used to represent the nonlinear optimization problem.
 
     arguments : dict
-        Dictionary with the problem arguments.
+        Dictionary with the solver arguments.
     """
 
     def __init__(
@@ -76,22 +76,19 @@ class IpyoptSolver():
             upper_constraint_bounds,
             algorithm,
             initial_fluence,
-            max_iter,
+            maximum_iterations,
             tolerance):
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info(
             f"Initializing Ipyopt solver with {algorithm} algorithm ...")
 
-        # Get the callable nonlinear problem object
+        # Get the callable nonlinear problem object and its arguments
         self.nlp, self.arguments = configure_ipyopt(
             number_of_variables, number_of_constraints, problem_instance,
             lower_variable_bounds, upper_variable_bounds,
             lower_constraint_bounds, upper_constraint_bounds, algorithm,
-            max_iter, tolerance, self.callback)
-
-        # Initialize the layer indicator (for 'lexicographic' method)
-        self.layer = None
+            maximum_iterations, tolerance, self.callback)
 
     def callback(
             self,
@@ -113,7 +110,7 @@ class IpyoptSolver():
         # Set the base output string
         output_string = f"At iterate {args[1]}: f={round(args[2], 4)}"
 
-        # Log a message about the intermediate function value(s)
+        # Log a message about the intermediate function values
         Datahub().logger.display_info(output_string)
 
         return True

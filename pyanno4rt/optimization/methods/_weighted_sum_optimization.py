@@ -49,6 +49,9 @@ class WeightedSumOptimization():
     constraints : dict
         See 'Parameters'.
 
+    number_of_voxels : int
+        Number of dose voxels.
+
     tracker : dict
         Dictionary with the iteration-wise plan component values.
     """
@@ -83,7 +86,7 @@ class WeightedSumOptimization():
             fluence,
             track=True):
         """
-        Compute the weighted sum of the objective function values.
+        Compute the weighted-sum objective function value.
 
         Parameters
         ----------
@@ -96,7 +99,7 @@ class WeightedSumOptimization():
         Returns
         -------
         float
-            Weighted sum of the objective function values.
+            Weighted-sum objective function value.
         """
 
         # Get the segmentation data from the datahub

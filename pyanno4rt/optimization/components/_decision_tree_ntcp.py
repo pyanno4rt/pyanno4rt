@@ -65,7 +65,7 @@ class DecisionTreeNTCP(MachineLearningComponent):
         decision tree model.
 
     parameter_value : list
-        Value of the decision tree model parameters.
+        Decision tree model parameters.
 
     bounds : list
         See 'Parameters'.

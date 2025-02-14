@@ -51,11 +51,6 @@ class SquaredOverdosing(ConventionalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
-
-    Attributes
-    ----------
-    parameter_value : list
-        Value of the component parameters.
     """
 
     def __init__(
@@ -84,9 +79,6 @@ class SquaredOverdosing(ConventionalComponent):
             link=link,
             identifier=identifier,
             display=display)
-
-        # Set the individual parameter value
-        self.parameter_value = [float(maximum_dose)]
 
     def compute_value(
             self,

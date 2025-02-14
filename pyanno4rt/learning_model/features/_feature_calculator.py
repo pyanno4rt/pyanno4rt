@@ -210,11 +210,11 @@ class FeatureCalculator():
 
             return (
                 (0, sum(lengths[1:]))
-                 if index == 0
-                 else (sum(lengths[:index]), sum(lengths[index+1:]))
-                 if index < len(lengths)-1
-                 else (sum(lengths[:index]), 0)
-                 for index, _ in enumerate(lengths))
+                if index == 0
+                else (sum(lengths[:index]), sum(lengths[index+1:]))
+                if index < len(lengths)-1
+                else (sum(lengths[:index]), 0)
+                for index, _ in enumerate(lengths))
 
         def precompute_masks(segment):
             """Precompute the segment masks."""

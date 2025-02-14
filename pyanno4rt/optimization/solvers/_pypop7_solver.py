@@ -52,7 +52,7 @@ class PyPop7Solver():
     initial_fluence : ndarray
         Initial fluence vector.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -64,7 +64,7 @@ class PyPop7Solver():
         The object representing the optimization algorithm.
 
     arguments : dict
-        Dictionary with the function arguments.
+        Dictionary with the solver arguments.
     """
 
     def __init__(
@@ -78,7 +78,7 @@ class PyPop7Solver():
             upper_constraint_bounds,
             algorithm,
             initial_fluence,
-            max_iter,
+            maximum_iterations,
             tolerance):
 
         # Log a message about the initialization of the class
@@ -89,7 +89,7 @@ class PyPop7Solver():
         self.fun, self.arguments = configure_pypop7(
             number_of_variables, problem_instance, lower_variable_bounds,
             upper_variable_bounds, lower_constraint_bounds,
-            upper_constraint_bounds, algorithm, max_iter, tolerance)
+            upper_constraint_bounds, algorithm, maximum_iterations, tolerance)
 
     def run(
             self,

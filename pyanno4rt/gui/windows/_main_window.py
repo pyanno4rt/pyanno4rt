@@ -1865,7 +1865,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.upper_var_ledit.clear()
 
         # Set the maximum number of iterations
-        self.max_iter_sbox.setValue(optimization['max_iter'])
+        self.max_iter_sbox.setValue(optimization['maximum_iterations'])
 
         # Set the tolerance
         self.tolerance_ledit.setText(
@@ -1908,7 +1908,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.upper_var_ledit.clear()
 
         # Reset the maximum number of iterations
-        self.max_iter_sbox.setValue(self.base_optimization['max_iter'])
+        self.max_iter_sbox.setValue(
+            self.base_optimization['maximum_iterations'])
 
         # Reset the tolerance
         self.tolerance_ledit.setText(
@@ -1976,7 +1977,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             'upper_variable_bounds': (
                  None if not upper_variable_bounds
                  else loads(upper_variable_bounds)),
-            'max_iter': self.max_iter_sbox.value(),
+            'maximum_iterations': self.max_iter_sbox.value(),
             'tolerance': (
                 1e-3 if self.tolerance_ledit.text() == ''
                 else loads(self.tolerance_ledit.text()))

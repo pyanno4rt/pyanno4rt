@@ -71,7 +71,7 @@ class NaiveBayesNTCP(MachineLearningComponent):
         naive Bayes model.
 
     parameter_value : list
-        Value of the naive Bayes model parameters.
+        Naive Bayes model parameters.
 
     bounds : list
         See 'Parameters'.

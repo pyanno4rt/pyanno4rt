@@ -9,10 +9,10 @@
 # %% Function definition
 
 
-def configure_pyanno4rt(problem_instance, lower_variable_bounds,
-                        upper_variable_bounds, lower_constraint_bounds,
-                        upper_constraint_bounds, algorithm, max_iter,
-                        tolerance, callback):
+def configure_pyanno4rt(
+        problem_instance, lower_variable_bounds, upper_variable_bounds,
+        lower_constraint_bounds, upper_constraint_bounds, algorithm,
+        maximum_iterations, tolerance, callback):
     """
     Configure the pyanno4rt solver.
 
@@ -40,7 +40,7 @@ def configure_pyanno4rt(problem_instance, lower_variable_bounds,
     algorithm : str
         Label for the solution algorithm.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -56,35 +56,37 @@ def configure_pyanno4rt(problem_instance, lower_variable_bounds,
         Minimization function from the pyanno4rt library.
 
     arguments : dict
-        Dictionary with the function arguments.
+        Dictionary with the solver arguments.
     """
 
     # Set the optimization function
     fun = ...
 
     # Initialize the arguments dictionary
-    arguments = {'fun': problem_instance.objective,
-                 'grad': problem_instance.gradient,
-                 'bounds': tuple(
-                     zip(lower_variable_bounds, upper_variable_bounds)),
-                 'max_iter': max_iter,
-                 'tol': tolerance,
-                 'disp': False,
-                 'callback': callback}
+    arguments = {
+        'fun': problem_instance.objective,
+        'grad': problem_instance.gradient,
+        'bounds': tuple(
+            zip(lower_variable_bounds, upper_variable_bounds)),
+        'max_iter': maximum_iterations,
+        'tol': tolerance,
+        'disp': False,
+        'callback': callback}
 
     # Check if the algorithm is ''
     if algorithm == '':
 
-        # Update by the arguments of the '' algorithm
+        # Update by the argument dictionary
         arguments |= {}
 
         # Check if any constraints have been passed
         if len(problem_instance.constraints) > 0:
 
             # Update the arguments by the constraints object
-            arguments |= {'constraints': (
+            arguments |= {
+                'constraints': (
                         problem_instance.constraint, lower_constraint_bounds,
                         upper_constraint_bounds, problem_instance.jacobian),
-                        'cfun': problem_instance.constraint}
+                'constraint_function': problem_instance.constraint}
 
     return fun, arguments

@@ -65,7 +65,7 @@ class RandomForestTCP(MachineLearningComponent):
         random forest model.
 
     parameter_value : list
-        Value of the random forest model parameters.
+        Random forest model parameters.
 
     bounds : list
         See 'Parameters'.

@@ -13,10 +13,10 @@ from scipy.optimize import line_search
 # %% Function definition
 
 
-def configure_proxmin(problem_instance, lower_variable_bounds,
-                      upper_variable_bounds, lower_constraint_bounds,
-                      upper_constraint_bounds, algorithm, max_iter, tolerance,
-                      callback):
+def configure_proxmin(
+        problem_instance, lower_variable_bounds, upper_variable_bounds,
+        lower_constraint_bounds, upper_constraint_bounds, algorithm,
+        maximum_iterations, tolerance, callback):
     """
     Configure the Proxmin solver.
 
@@ -44,7 +44,7 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
     algorithm : str
         Label for the solution algorithm.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -60,11 +60,11 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
         Minimization function from the Proxmin library.
 
     arguments : dict
-        Dictionary with the function arguments.
+        Dictionary with the solver arguments.
     """
 
     def get_objective_gradient(X):
-        """Get the objective gradient for the current solution."""
+        """Get the objective gradient."""
 
         return problem_instance.gradient(X)
 
@@ -95,15 +95,15 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
 
         return X - step*get_objective_gradient(X)
 
-    # Convert the lower and upper variable bounds into 2D arrays
+    # Convert the lower and upper variable bounds into arrays
     lower_variable_bounds = array(lower_variable_bounds)
     upper_variable_bounds = array(upper_variable_bounds)
 
     # Initialize the arguments dictionary
-    arguments = {'e_rel': 1e-6,
-                 'max_iter': max_iter,
-                 'callback': partial(
-                     callback, objective=problem_instance.objective)}
+    arguments = {
+        'e_rel': 1e-6,
+        'max_iter': maximum_iterations,
+        'callback': partial(callback, objective=problem_instance.objective)}
 
     # Check if the algorithm is 'admm'
     if algorithm == 'admm':
@@ -111,13 +111,14 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
         # Set the optimization function
         fun = admm
 
-        # Update by the arguments of the 'admm' algorithm
-        arguments |= {'prox_f': perform_proximal_grad_step,
-                      'step_f': estimate_lipschitz,
-                      'prox_g': project_on_bounds,
-                      'step_g': None,
-                      'L': None,
-                      'e_abs': tolerance}
+        # Update the arguments dictionary
+        arguments |= {
+            'prox_f': perform_proximal_grad_step,
+            'step_f': estimate_lipschitz,
+            'prox_g': project_on_bounds,
+            'step_g': None,
+            'L': None,
+            'e_abs': tolerance}
 
     # Else, check if the algorithm is 'pgm'
     elif algorithm == 'pgm':
@@ -125,13 +126,14 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
         # Set the optimization function
         fun = pgm
 
-        # Update by the arguments of the 'pgm' algorithm
-        arguments |= {'grad': get_objective_gradient,
-                      'step': estimate_lipschitz,
-                      'prox': project_on_bounds,
-                      'accelerated': True,
-                      'backtracking': False,
-                      'f': None}
+        # Update the arguments dictionary
+        arguments |= {
+            'grad': get_objective_gradient,
+            'step': estimate_lipschitz,
+            'prox': project_on_bounds,
+            'accelerated': True,
+            'backtracking': False,
+            'f': None}
 
     # Else, check if the algorithm is 'sdmm'
     elif algorithm == 'sdmm':
@@ -139,12 +141,13 @@ def configure_proxmin(problem_instance, lower_variable_bounds,
         # Set the optimization function
         fun = sdmm
 
-        # Update by the arguments of the 'sdmm' algorithm
-        arguments |= {'prox_f': perform_proximal_grad_step,
-                      'step_f': estimate_lipschitz,
-                      'proxs_g': [project_on_bounds],
-                      'steps_g': None,
-                      'Ls': None,
-                      'e_abs': tolerance}
+        # Update the arguments dictionary
+        arguments |= {
+            'prox_f': perform_proximal_grad_step,
+            'step_f': estimate_lipschitz,
+            'proxs_g': [project_on_bounds],
+            'steps_g': None,
+            'Ls': None,
+            'e_abs': tolerance}
 
     return fun, arguments

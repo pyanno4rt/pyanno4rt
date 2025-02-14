@@ -50,7 +50,7 @@ class ProxminSolver():
     initial_fluence : ndarray
         Initial fluence vector.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -76,7 +76,7 @@ class ProxminSolver():
             upper_constraint_bounds,
             algorithm,
             initial_fluence,
-            max_iter,
+            maximum_iterations,
             tolerance):
 
         # Log a message about the initialization of the class
@@ -87,7 +87,7 @@ class ProxminSolver():
         self.fun, self.arguments = configure_proxmin(
             problem_instance, lower_variable_bounds, upper_variable_bounds,
             lower_constraint_bounds, upper_constraint_bounds, algorithm,
-            max_iter, tolerance, self.callback)
+            maximum_iterations, tolerance, self.callback)
 
     def callback(
             self,

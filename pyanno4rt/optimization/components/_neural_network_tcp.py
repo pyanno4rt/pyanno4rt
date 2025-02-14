@@ -71,7 +71,7 @@ class NeuralNetworkTCP(MachineLearningComponent):
         neural network model.
 
     parameter_value : list
-        Value of the neural network model parameters.
+        Neural network model parameters.
 
     bounds : list
         See 'Parameters'. Transformed by the inverse sigmoid function.

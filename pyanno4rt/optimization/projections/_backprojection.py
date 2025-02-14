@@ -10,13 +10,12 @@ from numpy import array, array_equal, copy
 # %% Class definition
 
 
-class BackProjection():
+class Backprojection():
     """
     Backprojection superclass.
 
-    This class provides caching attributes, methods to get/compute the dose \
-    and the fluence gradient, and abstract methods to implement projection \
-    rules within the inheriting classes.
+    This class provides a caching system, methods to get/compute dose and \
+    fluence gradient, and abstract methods to implement projection rules.
 
     Attributes
     ----------
@@ -45,17 +44,17 @@ class BackProjection():
             self,
             fluence):
         """
-        Compute the dose vector from the fluence and update the cache.
+        Compute the dose vector from the fluence vector and update the cache.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence vector.
+            Fluence vector.
 
         Returns
         -------
         ndarray
-            Values of the dose vector.
+            Dose vector.
         """
 
         # Check if the cached fluence does not resemble the input
@@ -79,12 +78,12 @@ class BackProjection():
         Parameters
         ----------
         dose_gradient : ndarray
-            Values of the dose gradient.
+            Dose gradient.
 
         Returns
         -------
         ndarray
-            Values of the fluence gradient.
+            Fluence gradient.
         """
 
         # Check if the cached dose gradient does not resemble the input
@@ -106,7 +105,7 @@ class BackProjection():
         Returns
         -------
         ndarray
-            Values of the dose vector.
+            Dose vector.
         """
 
         return self.__dose__
@@ -118,7 +117,7 @@ class BackProjection():
         Returns
         -------
         ndarray
-            Values of the fluence gradient.
+            Fluence gradient.
         """
 
         return self.__fluence_gradient__
@@ -128,17 +127,17 @@ class BackProjection():
             self,
             fluence):
         """
-        Compute the dose projection from the fluence vector.
+        Compute the dose vector from the fluence vector.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence vector.
+            Fluence vector.
 
         Returns
         -------
         ndarray
-            Values of the dose vector.
+            Dose vector.
         """
 
     @abstractmethod
@@ -146,15 +145,15 @@ class BackProjection():
             self,
             dose_gradient):
         """
-        Compute the fluence gradient projection from the dose gradient.
+        Compute the fluence gradient from the dose gradient.
 
         Parameters
         ----------
         dose_gradient : ndarray
-            Values of the dose gradient.
+            Dose gradient.
 
         Returns
         -------
         ndarray
-            Values of the fluence gradient.
+            Fluence gradient.
         """

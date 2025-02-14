@@ -265,7 +265,7 @@ class TreatmentPlan():
                     the length of the list needs to be equal to the number of \
                     decision variables)
 
-        - max_iter : int, default=500
+        - maximum_iterations : int, default=500
             Maximum number of iterations taken for the solver to converge.
 
         - tolerance : float, default=1e-3
@@ -422,7 +422,7 @@ class TreatmentPlan():
                 'lower_variable_bounds', 0),
             'upper_variable_bounds': optimization.get(
                 'upper_variable_bounds', None),
-            'max_iter': optimization.get('max_iter', 500),
+            'maximum_iterations': optimization.get('maximum_iterations', 500),
             'tolerance': optimization.get('tolerance', 1e-3)
             }
 
@@ -558,7 +558,7 @@ class TreatmentPlan():
                     'lower_variable_bounds'],
                 upper_variable_bounds=self.optimization[
                     'upper_variable_bounds'],
-                max_iter=self.optimization['max_iter'],
+                maximum_iterations=self.optimization['maximum_iterations'],
                 tolerance=self.optimization['tolerance'])
 
             # Solve the optimization problem

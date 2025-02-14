@@ -13,10 +13,10 @@ from pypop7.optimizers.es.lmmaes import LMMAES
 # %% Function definition
 
 
-def configure_pypop7(number_of_variables, problem_instance,
-                     lower_variable_bounds, upper_variable_bounds,
-                     lower_constraint_bounds, upper_constraint_bounds,
-                     algorithm, max_iter, tolerance):
+def configure_pypop7(
+        number_of_variables, problem_instance, lower_variable_bounds,
+        upper_variable_bounds, lower_constraint_bounds,
+        upper_constraint_bounds, algorithm, maximum_iterations, tolerance):
     """
     Configure the PyPop7 solver.
 
@@ -47,7 +47,7 @@ def configure_pypop7(number_of_variables, problem_instance,
     initial_fluence : ndarray
         Initial fluence vector.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -59,7 +59,7 @@ def configure_pypop7(number_of_variables, problem_instance,
         The object representing the optimization algorithm.
 
     arguments : dict
-        Dictionary with the function arguments.
+        Dictionary with the solver arguments.
     """
 
     # Compute the number of individuals
@@ -79,7 +79,8 @@ def configure_pypop7(number_of_variables, problem_instance,
                 'lower_boundary': array(lower_variable_bounds),
                 'upper_boundary': array(upper_variable_bounds)},
             'options': {
-                'max_function_evaluations': number_of_individuals*max_iter,
+                'max_function_evaluations': (
+                    number_of_individuals*maximum_iterations),
                 'early_stopping_tolerance': tolerance,
                 'seed_rng': 0,
                 'sigma': 0.3,
@@ -111,7 +112,8 @@ def configure_pypop7(number_of_variables, problem_instance,
                 'lower_boundary': array(lower_variable_bounds),
                 'upper_boundary': array(upper_variable_bounds)},
             'options': {
-                'max_function_evaluations': number_of_individuals*max_iter,
+                'max_function_evaluations': (
+                    number_of_individuals*maximum_iterations),
                 'early_stopping_tolerance': tolerance,
                 'seed_rng': 0,
                 'sigma': 0.3,

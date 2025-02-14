@@ -5,19 +5,19 @@
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.projections import BackProjection
+from pyanno4rt.optimization.projections import Backprojection
 
 # %% Class definition
 
 
-class DoseProjection(BackProjection):
+class DoseProjection(Backprojection):
     """
     Dose projection class.
 
     This class provides an implementation of the abstract forward and \
     backward projection methods in \
     :class:`~pyanno4rt.optimization.projections._backprojection.Backprojection`\
-    by a linear function with a neutral RBE value of 1.0.
+    by a linear transformation assuming a neutral RBE value of 1.0.
     """
 
     def __init__(self):
@@ -32,17 +32,17 @@ class DoseProjection(BackProjection):
             self,
             fluence):
         """
-        Compute the dose projection from the fluence vector.
+        Compute the dose vector from the fluence vector.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence vector.
+            Fluence vector.
 
         Returns
         -------
         ndarray
-            Values of the dose vector.
+            Dose vector.
         """
 
         return Datahub().dose_information['dose_influence_matrix'] @ fluence
@@ -51,18 +51,19 @@ class DoseProjection(BackProjection):
             self,
             dose_gradient):
         """
-        Compute the fluence gradient projection from the dose gradient.
+        Compute the fluence gradient from the dose gradient.
 
         Parameters
         ----------
         dose_gradient : ndarray
-            Values of the dose gradient.
+            Dose gradient.
 
         Returns
         -------
         ndarray
-            Values of the fluence gradient.
+            Fluence gradient.
         """
 
-        return (Datahub().dose_information['dose_influence_matrix'].T
-                @ dose_gradient)
+        return (
+            Datahub().dose_information['dose_influence_matrix'].T
+            @ dose_gradient)

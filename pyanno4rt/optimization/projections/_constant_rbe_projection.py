@@ -5,19 +5,19 @@
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.projections import BackProjection
+from pyanno4rt.optimization.projections import Backprojection
 
 # %% Class definition
 
 
-class ConstantRBEProjection(BackProjection):
+class ConstantRBEProjection(Backprojection):
     """
     Constant RBE projection class.
 
     This class provides an implementation of the abstract forward and \
     backward projection methods in \
     :class:`~pyanno4rt.optimization.projections._backprojection.Backprojection`\
-    by a linear function with a constant RBE value of 1.1.
+    by a linear transformation assuming a constant RBE value of 1.1.
     """
 
     def __init__(self):
@@ -33,38 +33,40 @@ class ConstantRBEProjection(BackProjection):
             self,
             fluence):
         """
-        Compute the dose projection from the fluence vector.
+        Compute the dose vector from the fluence vector.
 
         Parameters
         ----------
         fluence : ndarray
-            Values of the fluence vector.
+            Fluence vector.
 
         Returns
         -------
         ndarray
-            Values of the dose vector.
+            Dose vector.
         """
 
-        return (Datahub().dose_information['dose_influence_matrix'] @ (
+        return (
+            Datahub().dose_information['dose_influence_matrix'] @ (
                 Datahub().plan_configuration['RBE'] * fluence))
 
     def compute_fluence_gradient_result(
             self,
             dose_gradient):
         """
-        Compute the fluence gradient projection from the dose gradient.
+        Compute the fluence gradient from the dose gradient.
 
         Parameters
         ----------
         dose_gradient : ndarray
-            Values of the dose gradient.
+            Dose gradient.
 
         Returns
         -------
         ndarray
-            Values of the fluence gradient.
+            Fluence gradient.
         """
 
-        return (Datahub().dose_information['dose_influence_matrix'].T @ (
+        return (
+            Datahub().dose_information['dose_influence_matrix'].T @ (
                 Datahub().plan_configuration['RBE'] * dose_gradient))

@@ -2,10 +2,6 @@
 
 # Author: Tim Ortkamp
 
-# %% External package import
-
-from numpy import concatenate
-
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub

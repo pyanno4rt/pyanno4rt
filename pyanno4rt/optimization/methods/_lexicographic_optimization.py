@@ -109,7 +109,7 @@ class LexicographicOptimization():
             track=True,
             rank=1):
         """
-        Compute the lexicographic objective function value at a rank.
+        Compute the objective function value at a rank of the lexicography.
 
         Parameters
         ----------
@@ -125,7 +125,7 @@ class LexicographicOptimization():
         Returns
         -------
         float
-            Lexicographic objective function value.
+            Objective function value.
         """
 
         # Get the segmentation data from the datahub
@@ -190,7 +190,7 @@ class LexicographicOptimization():
             fluence,
             rank=1):
         """
-        Compute the lexicographic fluence gradient vector at a rank.
+        Compute the fluence gradient vector at a rank of the lexicography.
 
         Parameters
         ----------
@@ -246,7 +246,7 @@ class LexicographicOptimization():
             track=True,
             rank=1):
         """
-        Compute the lexicographic constraint function values at a rank.
+        Compute the constraint function values at a rank of the lexicography.
 
         Parameters
         ----------
@@ -327,7 +327,7 @@ class LexicographicOptimization():
             fluence,
             rank=1):
         """
-        Compute the lexicographic Jacobian matrix at a rank.
+        Compute the Jacobian matrix at a rank of the lexicography.
 
         Parameters
         ----------

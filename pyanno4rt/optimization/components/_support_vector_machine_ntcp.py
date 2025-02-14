@@ -60,6 +60,12 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
 
     Attributes
     ----------
+    decision_function : None or callable
+        Decision function for the fitted kernel type.
+
+    decision_gradient : None or callable
+        Decision gradient for the fitted kernel type.
+
     data_model_handler : object of class \
         :class:`~pyanno4rt.learning_model._data_model_handler.DataModelHandler`
         The object used to handle the dataset, the feature map generation and \
@@ -71,13 +77,7 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
         support vector machine model.
 
     parameter_value : list
-        Value of the primal/dual support vector machine model coefficients.
-
-    decision_function : callable
-        Decision function for the fitted kernel type.
-
-    decision_gradient : callable
-        Decision gradient for the fitted kernel type.
+        Primal/dual support vector machine model coefficients.
 
     bounds : list
         See 'Parameters'. Transformed by the inverse Platt scaling function.

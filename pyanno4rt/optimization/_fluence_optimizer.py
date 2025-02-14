@@ -35,7 +35,7 @@ class FluenceOptimizer():
     This class provides methods to optimize the fluence vector by solving the \
     inverse planning problem. It takes the configuration inputs, sets up the \
     optimization problem and the solver, and allows to compute both optimized \
-    fluence vector and optimized 3D dose cube (CT resolution).
+    fluence vector and optimized dose cube (CT resolution).
 
     Parameters
     ----------
@@ -52,8 +52,8 @@ class FluenceOptimizer():
         Initialization strategy for the fluence vector.
 
     initial_fluence_vector : None or list
-        User-defined initial fluence vector for the optimization problem, \
-        only used if initial_strategy='warm-start'.
+        User-defined initial fluence vector for the optimization problem \
+        (only used if initial_strategy='warm-start').
 
     lower_variable_bounds : None, int, float, or list
         Lower bound(s) on the decision variables.
@@ -61,7 +61,7 @@ class FluenceOptimizer():
     upper_variable_bounds : None, int, float, or list
         Upper bound(s) on the decision variables.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations taken for the solver to converge.
 
     tolerance : float
@@ -77,7 +77,7 @@ class FluenceOptimizer():
             initial_fluence_vector,
             lower_variable_bounds,
             upper_variable_bounds,
-            max_iter,
+            maximum_iterations,
             tolerance):
 
         # Initialize the datahub
@@ -147,10 +147,10 @@ class FluenceOptimizer():
             upper_constraint_bounds=constraint_bounds[1],
             algorithm=algorithm,
             initial_fluence=initial_fluence,
-            max_iter=max_iter,
+            maximum_iterations=maximum_iterations,
             tolerance=tolerance)
 
-        # Extend the optimization dictionary in the datahub
+        # Enter the optimization dictionary into the datahub
         hub.optimization |= {
             'problem': problem,
             'initializer': initializer,
@@ -545,7 +545,7 @@ class FluenceOptimizer():
             self,
             optimized_fluence):
         """
-        Compute the 3D dose cube from the optimized fluence vector.
+        Compute the dose cube from the optimized fluence vector.
 
         Parameters
         ----------
@@ -555,7 +555,7 @@ class FluenceOptimizer():
         Returns
         -------
         ndarray
-            Optimized 3D dose cube (CT resolution).
+            Optimized dose cube (CT resolution).
         """
 
         # Initialize the datahub
@@ -627,9 +627,9 @@ class FluenceOptimizer():
 
         # Log a message about the 3D dose computation
         logger.display_info(
-            "Computing 3D dose cube from optimized fluence vector ...")
+            "Computing dose cube from optimized fluence vector ...")
 
-        # Reshape the optimized dose vector to the 3D dose cube
+        # Reshape the optimized dose vector to the dose cube
         optimized_dose = optimized_dose.reshape(dose_dim, order='F')
 
         # Get the zoom factors for all cube dimensions

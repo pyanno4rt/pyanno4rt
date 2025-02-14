@@ -59,6 +59,9 @@ class LQPoissonTCP(RadiobiologicalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
+
+    number_of_fractions : int
+        Number of fractions according to the treatment scheme.
     """
 
     def __init__(
@@ -231,7 +234,7 @@ def differentiate(dose, alpha, beta, volume_parameter, number_of_fractions):
     normalized_slope = (log(2)*log(len(dose)/log(2)))/2
 
     # Compute the dose gradient of the EUD
-    eud_gradient = (
+    dose_gradient = (
         (dose**(1/volume_parameter)).sum()**(volume_parameter-1)
         * dose**(1/volume_parameter-1) / (len(dose)**volume_parameter))
 
@@ -239,7 +242,7 @@ def differentiate(dose, alpha, beta, volume_parameter, number_of_fractions):
     xi = 2*normalized_slope*(tolerance_dose_50-eud)/(tolerance_dose_50*log(2))
 
     # Compute the EUD gradient of the function
-    tcp_gradient = (
+    eud_gradient = (
         -(normalized_slope/tolerance_dose_50)*(0.5**(exp(xi)-1) * exp(xi)))
 
-    return tcp_gradient * eud_gradient
+    return eud_gradient * dose_gradient

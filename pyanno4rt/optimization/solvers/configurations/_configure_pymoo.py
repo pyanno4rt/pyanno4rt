@@ -19,11 +19,11 @@ from pymoo.util.ref_dirs import get_reference_directions
 # %% Function definition
 
 
-def configure_pymoo(number_of_variables, number_of_objectives,
-                    number_of_constraints, problem_instance,
-                    lower_variable_bounds, upper_variable_bounds,
-                    lower_constraint_bounds, upper_constraint_bounds,
-                    algorithm, initial_fluence, max_iter, tolerance):
+def configure_pymoo(
+        number_of_variables, number_of_objectives, number_of_constraints,
+        problem_instance, lower_variable_bounds, upper_variable_bounds,
+        lower_constraint_bounds, upper_constraint_bounds, algorithm,
+        initial_fluence, maximum_iterations, tolerance):
     """
     Configure the Pymoo solver.
 
@@ -62,7 +62,7 @@ def configure_pymoo(number_of_variables, number_of_objectives,
     initial_fluence : ndarray
         Initial fluence vector.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -101,7 +101,7 @@ def configure_pymoo(number_of_variables, number_of_objectives,
     # Check if the algorithm is 'NSGA3'
     if algorithm == 'NSGA3':
 
-        # Set the number of points to evaluate
+        # Set the number of evaluation points
         number_of_points = 200
 
         # Get the reference directions
@@ -110,7 +110,8 @@ def configure_pymoo(number_of_variables, number_of_objectives,
 
         # Initialize and evaluate the initial population
         initial_population = Population.new(
-            "X", 2*max(initial_fluence)*beta(
+            "X",
+            2*max(initial_fluence)*beta(
                 a=0.5, b=0.5, size=(number_of_points, number_of_variables)))
 
         # Initialize the NSGA-3 algorithm
@@ -125,7 +126,7 @@ def configure_pymoo(number_of_variables, number_of_objectives,
 
     # Initialize the termination instance
     termination = DefaultMultiObjectiveTermination(
-        xtol=1e-12, ftol=tolerance, n_max_gen=max_iter)
+        xtol=1e-12, ftol=tolerance, n_max_gen=maximum_iterations)
 
     return fun, algorithm_object, problem, termination
 
@@ -170,6 +171,12 @@ class PymooProblem(ElementwiseProblem):
         :class:`~pyanno4rt.optimization.methods._pareto_optimization.ParetoOptimization`
         See 'Parameters'.
 
+    lower_constraint_bounds : list
+        See 'Parameters'.
+
+    upper_constraint_bounds : list
+        See 'Parameters'.
+
     Notes
     -----
     Fitness evaluation is based on a modification suggested in the paper by \
@@ -188,13 +195,14 @@ class PymooProblem(ElementwiseProblem):
             upper_constraint_bounds):
 
         # Call the superclass constructor
-        super().__init__(n_var=number_of_variables,
-                         n_obj=number_of_objectives,
-                         n_ieq_constr=2*number_of_constraints,
-                         xl=array(lower_variable_bounds),
-                         xu=array(upper_variable_bounds))
+        super().__init__(
+            n_var=number_of_variables,
+            n_obj=number_of_objectives,
+            n_ieq_constr=2*number_of_constraints,
+            xl=array(lower_variable_bounds),
+            xu=array(upper_variable_bounds))
 
-        # Get the instance attributes from the argument
+        # Get the instance attributes from the arguments
         self.problem_instance = problem_instance
         self.lower_constraint_bounds = lower_constraint_bounds
         self.upper_constraint_bounds = upper_constraint_bounds
@@ -223,21 +231,22 @@ class PymooProblem(ElementwiseProblem):
             Dictionary with optional (keyworded) parameters.
         """
 
-        # Get the objective function value(s)
+        # Get the objective function values
         objective_values = self.problem_instance.objective(x)
 
         # Set the mixture parameter
         alpha = 0.5
 
-        # Add the mixture fitness values to the output dictionary
-        out['F'] = [(1-alpha)*value
-                    + (alpha/len(objective_values))*sum(objective_values)
-                    for value in objective_values]
+        # Set the mixture fitness values
+        out['F'] = [
+            (1-alpha)*value + alpha*sum(objective_values)/len(objective_values)
+            for value in objective_values]
 
-        # Get the constraint function value(s)
+        # Get the constraint function values
         constraint_values = self.problem_instance.constraint(x)
 
-        # Add the constraint values to the output dictionary
-        out['G'] = [[self.lower_constraint_bounds[index]-value,
-                     value-self.upper_constraint_bounds[index]]
-                    for index, value in enumerate(constraint_values)]
+        # Set the constraint values
+        out['G'] = [[
+            self.lower_constraint_bounds[index]-value,
+            value - self.upper_constraint_bounds[index]]
+            for index, value in enumerate(constraint_values)]

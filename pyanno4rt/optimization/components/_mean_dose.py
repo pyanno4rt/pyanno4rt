@@ -51,11 +51,6 @@ class MeanDose(ConventionalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
-
-    Attributes
-    ----------
-    parameter_value : list
-        Value of the component parameters.
     """
 
     def __init__(

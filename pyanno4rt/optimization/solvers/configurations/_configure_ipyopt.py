@@ -11,11 +11,11 @@ from numpy import array, indices
 # %% Function definition
 
 
-def configure_ipyopt(number_of_variables, number_of_constraints,
-                     problem_instance, lower_variable_bounds,
-                     upper_variable_bounds, lower_constraint_bounds,
-                     upper_constraint_bounds, algorithm, max_iter, tolerance,
-                     callback):
+def configure_ipyopt(
+        number_of_variables, number_of_constraints, problem_instance,
+        lower_variable_bounds, upper_variable_bounds, lower_constraint_bounds,
+        upper_constraint_bounds, algorithm, maximum_iterations, tolerance,
+        callback):
     """
     Configure the Ipyopt solver.
 
@@ -49,7 +49,7 @@ def configure_ipyopt(number_of_variables, number_of_constraints,
     algorithm : str
         Label for the solution algorithm.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -65,7 +65,7 @@ def configure_ipyopt(number_of_variables, number_of_constraints,
         The class used to represent the nonlinear optimization problem.
 
     arguments : dict
-        Dictionary with the problem arguments.
+        Dictionary with the solver arguments.
     """
 
     def objective(fluence):
@@ -97,13 +97,13 @@ def configure_ipyopt(number_of_variables, number_of_constraints,
     # Check if the method is 'lexicographic'
     if type(problem_instance).__name__ == 'LexicographicOptimization':
 
-        # Initialize the arguments by the multi-rank items (not implemented)
-        raise ValueError("Lexicographic optimization with ipyopt is not "
-                         "yet implemented ...")
+        # Raise an error to indicate the missing implementation
+        raise ValueError(
+            "Lexicographic optimization is not yet implemented for Ipyopt ...")
 
     else:
 
-        # Initialize the arguments of the 'mumps' algorithm
+        # Initialize the arguments dictionary
         arguments = {
             'n': number_of_variables,
             'x_l': array(lower_variable_bounds),
@@ -112,9 +112,9 @@ def configure_ipyopt(number_of_variables, number_of_constraints,
             'g_l': array(lower_constraint_bounds),
             'g_u': array(upper_constraint_bounds),
             'sparsity_indices_jac_g': tuple(
-                arr for arr in indices(
-                    (number_of_constraints, number_of_variables)
-                    ).reshape(2, -1)),
+                arr for arr in indices((
+                    number_of_constraints,
+                    number_of_variables)).reshape(2, -1)),
             'sparsity_indices_h': None,
             'eval_f': objective,
             'eval_grad_f': gradient,
@@ -135,12 +135,11 @@ def configure_ipyopt(number_of_variables, number_of_constraints,
                 'acceptable_dual_inf_tol': 1e10,
                 'acceptable_compl_inf_tol': 1e10,
                 'acceptable_obj_change_tol': tolerance,
-                'max_iter': max_iter,
+                'max_iter': maximum_iterations,
                 'mu_strategy': 'adaptive',
                 'hessian_approximation': 'limited-memory',
                 'limited_memory_max_history': 6,
                 'limited_memory_initialization': 'scalar2',
-                'linear_solver': algorithm
-                }}
+                'linear_solver': algorithm}}
 
     return nlp, arguments

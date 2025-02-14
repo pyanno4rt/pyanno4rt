@@ -66,7 +66,7 @@ class KNeighborsTCP(MachineLearningComponent):
         k-nearest neighbors model.
 
     parameter_value : list
-        Value of the k-nearest neighbors model parameters.
+        K-nearest neighbors model parameters.
 
     bounds : list
         See 'Parameters'.

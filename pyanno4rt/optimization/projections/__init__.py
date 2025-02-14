@@ -9,14 +9,14 @@ forward and backward projections between fluence and dose.
 
 # Author: Tim Ortkamp
 
-from ._backprojection import BackProjection
+from ._backprojection import Backprojection
 from ._constant_rbe_projection import ConstantRBEProjection
 from ._dose_projection import DoseProjection
 
 from ._projection_map import projection_map
 
 __all__ = [
-    'BackProjection',
+    'Backprojection',
     'ConstantRBEProjection',
     'DoseProjection',
     'projection_map']

@@ -208,13 +208,13 @@ def differentiate(dose, tolerance_dose_50, slope_parameter, volume_parameter):
     eud = ((dose**(1/volume_parameter)).sum()/len(dose))**volume_parameter
 
     # Compute the dose gradient of the EUD
-    eud_gradient = (
+    dose_gradient = (
         (dose**(1/volume_parameter)).sum()**(volume_parameter-1)
         * dose**(1/volume_parameter-1) / (len(dose)**volume_parameter))
 
     # Compute the EUD gradient of the function
-    ntcp_gradient = (exp(-(
+    eud_gradient = (exp(-(
         (eud-tolerance_dose_50)/(sqrt(2)*tolerance_dose_50*slope_parameter))
         ** 2) / sqrt(pi))
 
-    return ntcp_gradient * eud_gradient
+    return eud_gradient * dose_gradient

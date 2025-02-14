@@ -11,6 +11,7 @@ from numpy import around
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.optimization.solvers.configurations import configure_scipy
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -54,7 +55,7 @@ class SciPySolver():
     initial_fluence : ndarray
         Initial fluence vector.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -66,9 +67,12 @@ class SciPySolver():
         Minimization function from the SciPy library.
 
     arguments : dict
-        Dictionary with the function arguments.
+        Dictionary with the solver arguments.
 
-    counter : int
+    rank : None or int
+        Current rank of the lexicography.
+
+    counter : None or int
         Counter for the iterations.
     """
 
@@ -83,7 +87,7 @@ class SciPySolver():
             upper_constraint_bounds,
             algorithm,
             initial_fluence,
-            max_iter,
+            maximum_iterations,
             tolerance):
 
         # Log a message about the initialization of the class
@@ -94,9 +98,9 @@ class SciPySolver():
         self.fun, self.arguments = configure_scipy(
             problem_instance, lower_variable_bounds, upper_variable_bounds,
             lower_constraint_bounds, upper_constraint_bounds, algorithm,
-            max_iter, tolerance, self.callback)
+            maximum_iterations, tolerance, self.callback)
 
-        # Initialize the rank indicator (for 'lexicographic' method)
+        # Initialize the rank indicator
         self.rank = None
 
         # Initialize the iteration counter
@@ -115,13 +119,14 @@ class SciPySolver():
         """
 
         # Set the base output string
-        output_string = (f"At iterate {self.counter}: "
-                         f"f={round(intermediate_result['fun'], 4)}")
+        output_string = (
+            f"At iterate {self.counter}: "
+            f"f={round(intermediate_result['fun'], 4)}")
 
-        # Check if any constraints have been passed to the algorithm
+        # Check if any constraints have been passed
         if 'constraints' in self.arguments.get(self.rank, self.arguments):
 
-            # Add the constraint values to the output string
+            # Extend the output string
             output_string = (
                 f"{output_string}, "
                 f"g={around(intermediate_result['constr'][0], 4)}")
@@ -169,14 +174,14 @@ class SciPySolver():
             objectives = hub.optimization['problem'].objectives
             constraints = hub.optimization['problem'].constraints
 
-            # Loop over the argument subdictionaries
+            # Loop over the rank arguments
             for rank, arguments in self.arguments.items():
 
                 # Log a message about the lexicographic rank
                 hub.logger.display_info(
                     f"Considering lexicography at rank {rank} ...")
 
-                # Set the current rank for the callback
+                # Set the current rank
                 self.rank = rank
 
                 # Get the initial objective value
@@ -188,26 +193,26 @@ class SciPySolver():
                     f"f={round(objective_value, 4)}")
 
                 # Check if the constraint function is included
-                if 'cfun' in arguments:
+                if 'constraint_function' in arguments:
 
                     # Get the initial constraint value
-                    constraint_value = arguments.pop('cfun')(
+                    constraint_value = arguments.pop('constraint_function')(
                         initial_fluence, False)
 
-                    # Add the initial constraint value to the output string
+                    # Extend the output string
                     output_string = (
                         f"{output_string}, g={around(constraint_value, 4)}")
 
-                # Log a message about the initial function value(s)
+                # Log a message about the initial function values
                 hub.logger.display_info(output_string)
 
-                # Solve the optimization problem of the current rank
+                # Solve the optimization problem at the current rank
                 result = self.fun(x0=initial_fluence, **arguments)
 
                 # Update the initial fluence for the next rank
                 initial_fluence = result.x
 
-                # Check if the current rank is not from the final rank
+                # Check if the current rank does not equal the final rank
                 if rank != ranks[-1]:
 
                     # Get the value of the next rank
@@ -219,13 +224,14 @@ class SciPySolver():
                     # Get the constraint labels with the index positions
                     constraint_index = {
                         label: tuple(constraints[next_rank]).index(label)
-                        for label in (label for rank in prev_ranks
-                                      for label in objectives[rank])}
+                        for label in (
+                                label for rank in prev_ranks
+                                for label in objectives[rank])}
 
                     # Loop over the constraint-index pairs
                     for label, index in constraint_index.items():
 
-                        # Adapt the upper bound by the current best value
+                        # Adjust the upper bound by the current best value
                         self.arguments[next_rank]['constraints'].ub[index] = (
                             tracker[label][-1])
 
@@ -242,23 +248,22 @@ class SciPySolver():
                     f"At iterate 0: f={round(objective_value, 4)}")
 
                 # Check if the constraint function is included
-                if 'cfun' in self.arguments:
+                if 'constraint_function' in self.arguments:
 
                     # Get the initial constraint value
-                    constraint_value = self.arguments.pop('cfun')(
-                        initial_fluence, False)
+                    constraint_value = self.arguments.pop(
+                        'constraint_function')(initial_fluence, False)
 
-                    # Add the initial constraint value to the output string
+                    # Extend the output string
                     output_string = (
                         f"{output_string}, g={around(constraint_value, 4)}")
 
-                # Log a message about the initial function value(s)
+                # Log a message about the initial function values
                 Datahub().logger.display_info(output_string)
 
             # Solve the optimization problem
             result = self.fun(
                 x0=initial_fluence,
-                **{key: value for key, value in self.arguments.items()
-                   if key != 'lexicographic'})
+                **filter_dict(self.arguments, remove_keys=('lexicographic',)))
 
         return result.x, result.message

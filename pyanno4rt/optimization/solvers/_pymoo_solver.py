@@ -58,7 +58,7 @@ class PymooSolver():
     initial_fluence : ndarray
         Initial fluence vector.
 
-    max_iter : int
+    maximum_iterations : int
         Maximum number of iterations.
 
     tolerance : float
@@ -91,7 +91,7 @@ class PymooSolver():
             upper_constraint_bounds,
             algorithm,
             initial_fluence,
-            max_iter,
+            maximum_iterations,
             tolerance):
 
         # Initialize the datahub
@@ -107,8 +107,8 @@ class PymooSolver():
                 number_of_variables, len(get_all_objectives(hub.segmentation)),
                 number_of_constraints, problem_instance, lower_variable_bounds,
                 upper_variable_bounds, lower_constraint_bounds,
-                upper_constraint_bounds, algorithm, initial_fluence, max_iter,
-                tolerance))
+                upper_constraint_bounds, algorithm, initial_fluence,
+                maximum_iterations, tolerance))
 
     def run(
             self,
@@ -131,9 +131,9 @@ class PymooSolver():
         """
 
         # Solve the optimization problem
-        result = self.fun(self.problem, self.algorithm_object,
-                          self.termination, seed=1, save_history=False,
-                          verbose=False, callback=CustomCallback())
+        result = self.fun(
+            self.problem, self.algorithm_object, self.termination, seed=1,
+            save_history=False, verbose=False, callback=CustomCallback())
 
         return result.X, result.message
 
@@ -180,7 +180,7 @@ class CustomCallback(Callback):
             The object representing the solution algorithm.
         """
 
-        # Get the output string from the objective data
+        # Set the base output string
         output_string = ', '.join((
             f"{round(value, 4)} ({name})" for value, name in zip(
                 mean(algorithm.pop.get("F"), axis=0), self.objective_names)))
@@ -191,14 +191,14 @@ class CustomCallback(Callback):
             # Get the mean values for each constraint
             values = mean(algorithm.pop.get("G"), axis=0)
 
-            # Get the constraint value string
+            # Get the additional string
             add_string = ', '.join((
                 f"{[round(values[i], 4), round(values[i+1], 4)]} ({name})"
                 for i, name in enumerate(self.constraint_names)))
 
-            # Add the constraint value string to the output string
+            # Extend the output string
             output_string = f"{output_string}, {add_string}"
 
-        # Log a message about the intermediate mean objective function values
+        # Log a message about the intermediate mean component values
         Datahub().logger.display_info(
             f"At generation {algorithm.n_gen}: {output_string}")
