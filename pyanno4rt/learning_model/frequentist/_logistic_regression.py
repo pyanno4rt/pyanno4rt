@@ -62,14 +62,28 @@ class LogisticRegressionModel(MachineLearningModel):
         hp_space = {
             'regularization': hp.choice(
                 'regularization', [
-                    {'penalty': None},
-                    *[{'penalty': norm, 'C': hp.uniform(
-                        f'C_{norm}', tune_space['C'][0], tune_space['C'][1])}
-                      if norm != 'elasticnet' else
-                      {'penalty': 'elasticnet', 'l1_ratio': 0.5,
+                    {'penalty': None,
+                     'solver': hp.choice(
+                         'solver_None',
+                         ['lbfgs', 'newton-cg', 'newton-cholesky', 'sag'])},
+                    *[{'penalty': norm,
+                       'solver': hp.choice(
+                           f'solver_{norm}',
+                           ['liblinear', 'saga'] if norm == 'l1'
+                           else [
+                               'lbfgs', 'liblinear', 'newton-cg',
+                               'newton-cholesky', 'sag', 'saga']),
                        'C': hp.uniform(
-                           f'C_{norm}', tune_space['C'][0], tune_space['C'][1]
-                           )}
+                           f'C_{norm}', tune_space['C'][0], tune_space['C'][1])
+                       }
+                      if norm != 'elasticnet' else
+                      {'penalty': 'elasticnet',
+                       'l1_ratio': 0.5,
+                       'solver': hp.choice(
+                           f'solver_{norm}', ['saga']),
+                       'C': hp.uniform(
+                           f'C_{norm}', tune_space['C'][0], tune_space['C'][1])
+                       }
                       for norm in tune_space['penalty']]
                     ]),
             'tol': hp.choice('tol', tune_space['tol']),
@@ -108,7 +122,8 @@ class LogisticRegressionModel(MachineLearningModel):
         else:
 
             # Get the regularization parameters directly
-            regularization = {key: proposal[key] for key in ('C', 'penalty')}
+            regularization = {key: proposal.get(key) for key in (
+                'penalty', 'solver', 'l1_ratio', 'C')}
 
         # Build the hyperparameter dictionary
         hyperparameters = {
@@ -119,11 +134,10 @@ class LogisticRegressionModel(MachineLearningModel):
             'intercept_scaling': 1,
             'class_weight': proposal['class_weight'],
             'random_state': 42,
-            'solver': 'saga',
             'max_iter': 10**6,
             'verbose': 0,
             'warm_start': False,
-            'n_jobs': -1}
+            'n_jobs': -1 if regularization['solver'] != 'liblinear' else 1}
 
         return hyperparameters
 
