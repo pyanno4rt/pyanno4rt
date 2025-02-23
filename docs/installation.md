@@ -44,8 +44,8 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> proxmin (>=0.6.12) </li>
 	<li> absl-py (>=2.1.0) </li>
 	<li> pydicom (>=3.0.1) </li>
-	<li> scikit-image (>=0.25.1) </li>
-	<li> h5py (>=3.12.1) </li>
+	<li> scikit-image (>=0.25.2) </li>
+	<li> h5py (>=3.13.0) </li>
 	<li> pandas (>=2.2.3) </li>
 	<li> jax (>=0.5.0) </li>
 	<li> jaxlib (>=0.5.0) </li>

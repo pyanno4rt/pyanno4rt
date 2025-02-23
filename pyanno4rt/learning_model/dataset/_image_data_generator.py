@@ -50,9 +50,7 @@ class ImageDataGenerator():
         self.model_label = model_label
         self.model_folder_path = model_folder_path
 
-    def generate(
-            self,
-            *args):
+    def generate(self):
         """
         Generate the data information.
 
@@ -68,8 +66,7 @@ class ImageDataGenerator():
         """
 
         # Get the configuration file path
-        configuration_path = ''.join(
-            (self.model_folder_path, '/configuration.json'))
+        configuration_path = f'{self.model_folder_path}/configuration.json'
 
         # Generate the data information dictionary
         data_information = {

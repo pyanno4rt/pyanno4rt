@@ -10,7 +10,7 @@ from functools import partial
 from itertools import compress, tee
 from numpy import array, logical_and, seterr, vstack, where, zeros
 from pandas import read_csv
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import RepeatedStratifiedKFold
 
 # %% Internal package import
 
@@ -29,8 +29,7 @@ class TabularDataGenerator():
     """
     Tabular dataset generation class.
 
-    This class provides methods to load, decompose, modulate and binarize a \
-    tabular base dataset.
+    This class provides methods to set up a tabular base dataset.
 
     Parameters
     ----------
@@ -38,7 +37,7 @@ class TabularDataGenerator():
         Label for the machine learning model.
 
     data_path : str
-        Path to the data set used for fitting the machine learning model.
+        Path to the dataset used for fitting the machine learning model.
 
     data_columns : dict
         Dictionary with the column information on features and label.
@@ -47,8 +46,16 @@ class TabularDataGenerator():
         Number of splits for the stratified cross-validation within each \
         model hyperparameter optimization step.
 
+    tune_repeats : int
+        Number of repeats for the stratified cross-validation within each \
+        model hyperparameter optimization step.
+
     oof_splits : int
         Number of splits for the stratified cross-validation within the \
+        out-of-folds model evaluation step.
+
+    oof_repeats : int
+        Number of repeats for the stratified cross-validation within the \
         out-of-folds model evaluation step.
 
     Attributes
@@ -65,7 +72,13 @@ class TabularDataGenerator():
     tune_splits : int
         See 'Parameters'.
 
+    tune_repeats : int
+        See 'Parameters'.
+
     oof_splits : int
+        See 'Parameters'.
+
+    oof_repeats : int
         See 'Parameters'.
     """
 
@@ -75,7 +88,9 @@ class TabularDataGenerator():
             data_path,
             data_columns,
             tune_splits,
-            oof_splits):
+            tune_repeats,
+            oof_splits,
+            oof_repeats):
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info(
@@ -87,7 +102,9 @@ class TabularDataGenerator():
         self.data_path = data_path
         self.data_columns = data_columns
         self.tune_splits = tune_splits
+        self.tune_repeats = tune_repeats
         self.oof_splits = oof_splits
+        self.oof_repeats = oof_repeats
 
     def generate(self):
         """
@@ -107,11 +124,11 @@ class TabularDataGenerator():
         # Initialize the datahub
         hub = Datahub()
 
-        # Decompose the base tabular dataset and the meta information
+        # Decompose the base tabular dataset
         data_information = self.decompose(
             read_csv(self.data_path), self.data_columns)
 
-        # Check if a time-after-radiotherapy variable has been passed
+        # Check if a time variable has been passed
         if data_information['time_variable_name']:
 
             # Modulate the data information
@@ -122,16 +139,17 @@ class TabularDataGenerator():
 
         # Add the fold numbers
         data_information = self.add_fold_numbers(
-            data_information, self.tune_splits, self.oof_splits)
+            data_information, self.tune_splits, self.tune_repeats,
+            self.oof_splits, self.oof_repeats)
 
         # Enter the data information dictionary into the datahub
         hub.datasets |= {self.model_label: data_information}
 
-        # Generate the feature map
+        # Generate the feature map dictionary
         feature_map_dict = self.create_map(
             data_information['feature_definitions'])
 
-        # Enter the feature map into the datahub
+        # Enter the feature map dictionary into the datahub
         hub.feature_maps |= {self.model_label: feature_map_dict}
 
         return data_information, feature_map_dict
@@ -163,15 +181,17 @@ class TabularDataGenerator():
             "variable ...")
 
         # Get the meta information for the features
-        feature_meta = {key: value for key, value in data_columns.items()
-                        if value['type'] == 'feature'}
+        feature_meta = {
+            label: data for label, data in data_columns.items()
+            if data['type'] == 'feature'}
 
         # Get the meta information for the label
-        label_meta = {key: value for key, value in data_columns.items()
-                      if value['type'] == 'label'}
+        label_meta = {
+            label: data for label, data in data_columns.items()
+            if data['type'] == 'label'}
 
         # Get the variable names
-        feature_names = list(feature_meta.keys())
+        feature_names = list(feature_meta)
         label_name = next(iter(label_meta))
         time_variable_name = label_meta[label_name]['time_variable']
 
@@ -184,8 +204,9 @@ class TabularDataGenerator():
             {'raw_data': data_frame,
              'feature_names': list(features.columns),
              'feature_values': features.values,
-             'feature_scales': [feature_meta[feature]['scale']
-                                for feature in list(features.columns)],
+             'feature_scales': [
+                 feature_meta[feature]['scale']
+                 for feature in list(features.columns)],
              'label_name': label_name,
              'label_values': data_frame[label_name].values,
              'label_bounds': label_meta[label_name].get('bounds', [1, 1]),
@@ -198,10 +219,11 @@ class TabularDataGenerator():
                 for key in list(features.columns)
                 if feature_meta[key]['value'] is not None}}
             | {'feature_definitions': {
-                key: {'segment': feature_meta[key]['segment'],
-                      'function': feature_meta[key]['function'],
-                      'argument': feature_meta[key]['argument'],
-                      'value': feature_meta[key]['value']}
+                key: {
+                    'segment': feature_meta[key]['segment'],
+                    'function': feature_meta[key]['function'],
+                    'argument': feature_meta[key]['argument'],
+                    'value': feature_meta[key]['value']}
                 for key in list(features.columns)}})
 
     def modulate(
@@ -237,31 +259,34 @@ class TabularDataGenerator():
             labels = data_information['label_values']
 
             # Get a boolean mask indicating interior samples per patient
-            interior_mask = tee(
-                (logical_and(bounds[0]*365/12 <= times[index_set],
-                             bounds[1]*365/12 > times[index_set]).reshape(-1)
-                 for index_set in index_sets), 2)
+            interior_mask = tee((
+                logical_and(
+                    bounds[0]*365/12 <= times[indices],
+                    bounds[1]*365/12 > times[indices]).reshape(-1)
+                for indices in index_sets), 2)
 
             # Get the label values from the interior samples per patient
-            interior_labels = (labels[list(compress(value[0], value[1]))]
-                               for value in zip(index_sets, interior_mask[0]))
+            interior_labels = (
+                labels[list(compress(value[0], value[1]))]
+                for value in zip(index_sets, interior_mask[0]))
 
             # Get the mean interior label value per patient
-            interior_means = replace_nan(
-                (numerator/denominator for numerator, denominator in zip(
+            interior_means = replace_nan((
+                numerator/denominator for numerator, denominator in zip(
                     map(sum, interior_labels), map(sum, interior_mask[1]))),
                 0.0)
 
             return array(list(map(custom_round, interior_means)))
 
         # Map the label viewpoints to the time bounds
-        viewpoints = {'early': ((0,), (6,)),
-                      'late': ((6,), (15,)),
-                      'long-term': ((15,), (24,)),
-                      'longitudinal': ((), ()),
-                      'profile': (range(24), range(1, 25))}
+        viewpoints = {
+            'early': ((0,), (6,)),
+            'late': ((6,), (15,)),
+            'long-term': ((15,), (24,)),
+            'longitudinal': ((), ()),
+            'profile': (range(24), range(1, 25))}
 
-        # Check if the label viewpoint is 'longitudinal'
+        # Check if the label viewpoint is not 'longitudinal'
         if data_information['label_viewpoint'] != 'longitudinal':
 
             # Get the mapping between patient features and sample indices
@@ -276,10 +301,10 @@ class TabularDataGenerator():
                 partial(squeeze_labels, index_sets=patient_map.values()),
                 zip(*viewpoints[data_information['label_viewpoint']])))).T
 
-            # Check if the label values are single
+            # Check if a single label value is used
             if data_information['label_values'].shape[1] == 1:
 
-                # Reshape the label values into 1D
+                # Reshape the label values
                 data_information['label_values'] = (
                     data_information['label_values'].reshape(-1))
 
@@ -305,9 +330,8 @@ class TabularDataGenerator():
             Dictionary with the decomposed data information.
 
         label_bounds : list
-            Bounds for the label values to binarize into positive (value lies \
-            inside the bounds) and negative class (value lies outside the \
-            bounds).
+            Bounds for the label values to binarize into positive (value \
+            inside the bounds) and negative class (value outside the bounds).
 
         Returns
         -------
@@ -339,7 +363,9 @@ class TabularDataGenerator():
             self,
             data_information,
             tune_splits,
-            oof_splits):
+            tune_repeats,
+            oof_splits,
+            oof_repeats):
         """
         Add the stratified cross-validation fold numbers.
 
@@ -352,8 +378,16 @@ class TabularDataGenerator():
             Number of splits for the stratified cross-validation within each \
             model hyperparameter optimization step.
 
+        tune_repeats : int
+            Number of repeats for the stratified cross-validation within each \
+            model hyperparameter optimization step.
+
         oof_splits : int
             Number of splits for the stratified cross-validation within the \
+            out-of-folds model evaluation step.
+
+        oof_repeats : int
+            Number of repeats for the stratified cross-validation within the \
             out-of-folds model evaluation step.
 
         Returns
@@ -366,34 +400,48 @@ class TabularDataGenerator():
         Datahub().logger.display_info(
             "Adding fold numbers for stratified cross validation ...")
 
-        def get_folds(number_of_splits):
+        def get_folds(number_of_splits, number_of_repeats):
             """Get the fold numbers for a number of splits."""
 
             # Clamp the number of splits
-            number_of_splits = min(
+            clamped_n_splits = min(
                 number_of_splits, sum(data_information['label_values']))
 
             # Initialize the stratified k-fold cross-validator
-            cross_validator = StratifiedKFold(
-                n_splits=number_of_splits, random_state=4, shuffle=True)
+            cross_validator = RepeatedStratifiedKFold(
+                n_splits=5 if clamped_n_splits == 1 else clamped_n_splits,
+                n_repeats=number_of_repeats, random_state=42)
+
+            # Get the stratification splits
+            splits = tuple(cross_validator.split(
+                data_information['feature_values'],
+                data_information['label_values']))
+
+            # Divide the splits into chunks (for each repeat)
+            chunks = [
+                splits[index:index+number_of_splits] for index in range(
+                    0, clamped_n_splits*number_of_repeats, clamped_n_splits)]
 
             # Initialize the fold numbers
-            folds = zeros(data_information['label_values'].shape)
+            folds = zeros((
+                len(data_information['label_values']), number_of_repeats))
 
-            # Loop over the cross-validation splits
-            for number, (_, validation_index) in enumerate(
-                    cross_validator.split(data_information['feature_values'],
-                                          data_information['label_values'])):
+            # Loop over the chunks
+            for column, chunk in enumerate(chunks):
 
-                # Enter the fold number for the current validation set
-                folds[validation_index] = int(number)
+                # Loop over the chunk splits
+                for number, (_, validation_index) in enumerate(chunk):
+
+                    # Enter the fold number for the validation set repetition
+                    folds[validation_index, column] = (
+                        int(number) if number_of_splits != 1 else 1)
 
             return folds
 
         # Add the fold numbers to the data information
         data_information |= {
-            'tune_folds': get_folds(tune_splits),
-            'oof_folds': get_folds(oof_splits),
+            'tune_folds': get_folds(tune_splits, tune_repeats),
+            'oof_folds': get_folds(oof_splits, oof_repeats),
             'number_of_samples': data_information['feature_values'].shape[0]}
 
         return data_information
@@ -408,7 +456,7 @@ class TabularDataGenerator():
         ----------
         definitions : dict
             Dictionary with the mappings of feature names, segments and \
-            string functions.
+            calculation functions.
 
         Returns
         -------
@@ -417,32 +465,33 @@ class TabularDataGenerator():
             computation/differentiation functions.
         """
 
-        def get_single_definition(key):
+        def get_single_definition(label):
             """Get the mapping for a single definition."""
 
-            # Get the feature definition as string
-            definition = feature_map.get(definitions[key]['function'])
+            # Get the calculation function
+            function = feature_map.get(definitions[label]['function'])
 
-            # Get the argument of the feature definition
-            args = definitions[key]['argument']
+            # Get the function argument
+            args = definitions[label]['argument']
 
-            # Check if a definition and no value have been passed
-            if definition and not definitions[key]['value']:
+            # Check if a function but no value have been passed
+            if function and not definitions[label]['value']:
 
                 # Return the dosiomic/radiomic feature map
-                return {key: {
-                    'segment': definitions[key]['segment'],
-                    'class': definition.feature_class,
-                    'computation': (
-                        methods[args is None](definition.compute, args)),
-                    'differentiation': (
-                        methods[args is None](definition.differentiate, args)
-                        if definition.feature_class == 'Dosiomics' else None)}}
+                return {
+                    label: {
+                        'segment': definitions[label]['segment'],
+                        'class': function.feature_class,
+                        'computation': (
+                            methods[args is None](function.compute, args)),
+                        'differentiation': (
+                            methods[args is None](function.differentiate, args)
+                            if function.feature_class == 'Dosiomics'
+                            else None)}}
 
-            else:
-
-                # Return the static feature map
-                return {key: {
+            # Return the static feature map
+            return {
+                label: {
                     'segment': None,
                     'class': 'Statics',
                     'computation': None,
@@ -451,6 +500,7 @@ class TabularDataGenerator():
         # Create a boolean mapping to the internal functions
         methods = {True: identity, False: partial}
 
-        return {key: value
-                for item in map(get_single_definition, definitions.keys())
-                for key, value in item.items()}
+        return {
+            label: data
+            for definition in map(get_single_definition, (*definitions,))
+            for label, data in definition.items()}

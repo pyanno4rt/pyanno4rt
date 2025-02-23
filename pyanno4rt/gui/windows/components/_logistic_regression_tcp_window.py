@@ -130,7 +130,9 @@ class LogisticRegressionTCPWindow(
             'tune_eval_sbox': sbox,
             'tune_score_cbox': cbox,
             'tune_splits_sbox': sbox,
+            'tune_repeats_sbox': sbox,
             'oof_splits_sbox': sbox,
+            'oof_repeats_sbox': sbox,
             'graphs_cbox': cbox,
             'kpi_cbox': cbox,
             'identifier_ledit': ledit,
@@ -142,8 +144,8 @@ class LogisticRegressionTCPWindow(
                 'segment_cbox', 'type_cbox', 'embedding_cbox',
                 'segment_link_cbox', 'rank_sbox', 'penalty_cbox',
                 'class_weight_cbox', 'tune_eval_sbox', 'tune_score_cbox',
-                'tune_splits_sbox', 'oof_splits_sbox', 'graphs_cbox',
-                'kpi_cbox'):
+                'tune_splits_sbox', 'tune_repeats_sbox', 'oof_splits_sbox',
+                'oof_repeats_sbox', 'graphs_cbox', 'kpi_cbox'):
 
             # Install the custom event filter
             getattr(self, box).installEventFilter(parent)
@@ -373,9 +375,11 @@ class LogisticRegressionTCPWindow(
         # Loop over the fields with 'setValue' method
         for key, value in {
                 'rank_sbox': rank,
+                'tune_eval_sbox': model_parameters.get('tune_evaluations', 50),
                 'tune_splits_sbox': model_parameters.get('tune_splits', 5),
+                'tune_repeats_sbox': model_parameters.get('tune_repeats', 1),
                 'oof_splits_sbox': model_parameters.get('oof_splits', 5),
-                'tune_eval_sbox': model_parameters.get('tune_evaluations', 50)
+                'oof_repeats_sbox': model_parameters.get('oof_repeats', 1)
                 }.items():
 
             # Set the value
@@ -453,9 +457,11 @@ class LogisticRegressionTCPWindow(
             'tune_evaluations': self.tune_eval_sbox.value(),
             'tune_score': self.tune_score_cbox.currentText(),
             'tune_splits': self.tune_splits_sbox.value(),
+            'tune_repeats': self.tune_repeats_sbox.value(),
             'inspect_model': self.inspect_model_check.isChecked(),
             'evaluate_model': self.evaluate_model_check.isChecked(),
             'oof_splits': self.oof_splits_sbox.value(),
+            'oof_repeats': self.oof_repeats_sbox.value(),
             'write_features': self.write_features_check.isChecked(),
             'display_options': {
                 'graphs': self.graphs_cbox.currentData(),

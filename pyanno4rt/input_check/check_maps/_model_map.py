@@ -34,7 +34,7 @@ model_map = {
         partial(check_type, types={True: (type(None), str), False: str}),
         partial(check_regular_extension, extensions=('.csv',)),
         partial(check_regular_extension_directory, extensions=(
-            'jpg', 'npy', 'npz', 'png'), no_directory=('.csv',))
+            '.jpg', '.npy', '.npz', '.png'), no_directory=('.csv',))
         ),
     'data_columns': (
         partial(check_type, types={True: (type(None), dict), False: dict}),
@@ -111,7 +111,11 @@ model_map = {
         ),
     'tune_splits': (
         partial(check_type, types=int),
-        partial(check_value, reference=1, sign='>')
+        partial(check_value, reference=1, sign='>=')
+        ),
+    'tune_repeats': (
+        partial(check_type, types=int),
+        partial(check_value, reference=1, sign='>=')
         ),
     'inspect_model': (
         partial(check_type, types=bool),
@@ -121,7 +125,11 @@ model_map = {
         ),
     'oof_splits': (
         partial(check_type, types=int),
-        partial(check_value, reference=1, sign='>')
+        partial(check_value, reference=1, sign='>=')
+        ),
+    'oof_repeats': (
+        partial(check_type, types=int),
+        partial(check_value, reference=1, sign='>=')
         ),
     'write_features': (
         partial(check_type, types=bool),

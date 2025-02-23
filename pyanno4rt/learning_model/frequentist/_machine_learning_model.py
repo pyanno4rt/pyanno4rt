@@ -11,7 +11,7 @@ from pickle import dump, load
 from abc import ABCMeta, abstractmethod
 from functools import partial
 from hyperopt import fmin, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
-from numpy import array, empty, where
+from numpy import array, where, zeros
 from sklearn.metrics import roc_auc_score
 
 # %% Internal package import
@@ -205,8 +205,9 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         # Get the machine learning model and its hyperparameters
         self.preprocessor, self.prediction_model, self.hyperparameters = (
-            self.get_model(self.configuration['feature_values'],
-                           self.configuration['label_values']))
+            self.get_model(
+                self.configuration['feature_values'],
+                self.configuration['label_values']))
 
         # Check if the model has been updated or not yet registered
         if self.updated_model or self.model_label not in hub.model_instances:
@@ -229,9 +230,10 @@ class MachineLearningModel(metaclass=ABCMeta):
                 self.inspector = ModelInspector(model_label)
 
                 # Inspect the model
-                self.inspect(self.configuration['feature_values'],
-                             self.configuration['label_values'],
-                             self.configuration['oof_folds'])
+                self.inspect(
+                    self.configuration['feature_values'],
+                    self.configuration['label_values'],
+                    self.configuration['oof_folds'])
 
             # Check if the model should be evaluated
             if evaluate_model:
@@ -240,8 +242,9 @@ class MachineLearningModel(metaclass=ABCMeta):
                 self.evaluator = ModelEvaluator(model_label)
 
                 # Evaluate the model
-                self.evaluate(self.configuration['feature_values'],
-                              self.configuration['label_values'])
+                self.evaluate(
+                    self.configuration['feature_values'],
+                    self.configuration['label_values'])
 
         # Update the display options in the datahub
         hub.model_instances[self.model_label]['display_options'] = (
@@ -419,8 +422,21 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         # Log a message about the hyperparameter tuning
         hub.logger.display_info(
-            'Starting Bayesian hyperparameter search for '
-            f'"{self.model_label}" ...')
+            'Performing Bayesian hyperparameter search for '
+            f'"{self.model_label}" with '
+            f'{len(set(self.configuration["tune_folds"][:, 0]))}-fold '
+            'cross-validation and '
+            f'{self.configuration["tune_folds"].shape[1]} repeat(s) ...')
+
+        # Define the output string function
+        def log_trial(step, trials):
+            """Log the result of a single trial."""
+
+            hub.logger.display_info(
+                f'Tuning hyperparameters for "{self.model_label}" '
+                f'({step}/{self.configuration["tune_evaluations"]}) '
+                '- best loss: '
+                f'{round(min(filter(None, trials.losses())), 4)} ...')
 
         def objective(proposal, trials, space):
             """Compute the objective function for a set of hyperparameters."""
@@ -429,20 +445,23 @@ class MachineLearningModel(metaclass=ABCMeta):
                 """Compute the score for a single train-validation split."""
 
                 # Get the training and validation split
-                split = [features[indices[0]], labels[indices[0]],
-                         features[indices[1]], labels[indices[1]]]
+                split = [
+                    features[indices[0]], labels[indices[0]],
+                    features[indices[1]], labels[indices[1]]]
 
                 # Fit and transform the training and validation data
-                split = [*preprocessor.fit_transform(split[0], split[1]),
-                         *preprocessor.transform(split[2], split[3])]
+                split = [
+                    *preprocessor.fit_transform(split[0], split[1]),
+                    *preprocessor.transform(split[2], split[3])]
 
                 # Get the model fit
                 prediction_model = self.get_model_fit(
                     split[0], split[1], hyperparameters)
 
                 # Compute the training and validation scores
-                scores = [-scorers[self.configuration['tune_score']](
-                    labels, self.predict(features, prediction_model))
+                scores = [
+                    -scorers[self.configuration['tune_score']](
+                        labels, self.predict(features, prediction_model))
                     for features, labels in (split[:2], split[2:])]
 
                 return max(scores)
@@ -454,11 +473,15 @@ class MachineLearningModel(metaclass=ABCMeta):
                 if trial['result']['status'] == STATUS_OK:
 
                     # Filter the trial values
-                    values = {key: value[0] for key, value
-                              in trial['misc']['vals'].items() if value}
+                    values = {
+                        key: value[0] for key, value
+                        in trial['misc']['vals'].items() if value}
 
                     # Check if the proposed set equals the trial set
                     if proposal == space_eval(space, values):
+
+                        # Log a message about the tuning status
+                        log_trial(self.step, trials)
 
                         # Increment the step variable
                         self.step += 1
@@ -469,30 +492,31 @@ class MachineLearningModel(metaclass=ABCMeta):
             # Get the hyperparameter set
             hyperparameters = self.get_hyperparameter_set(proposal)
 
+            # Get the tune folds
+            folds = self.configuration['tune_folds']
+
             # Compute the objective function value (score) across all folds
-            fold_scores = map(compute_fold_score, (
+            rep_scores = (max(map(compute_fold_score, (
                 (training_indices, validation_indices)
                 for training_indices, validation_indices in (
-                    (where(self.configuration['tune_folds'] != number),
-                     where(self.configuration['tune_folds'] == number))
-                    for number in set(self.configuration['tune_folds']))))
+                    (where(folds[:, index] != number),
+                     where(folds[:, index] == number))
+                    for number in set(folds[:, index]) if number != 0))))
+                for index in range(folds.shape[1]))
 
             # Check if the first evaluation step has been passed
             if self.step > 0:
 
                 # Log a message about the tuning status
-                hub.logger.display_info(
-                    f'Tuning hyperparameters for "{self.model_label}" '
-                    f'({self.step}/{self.configuration["tune_evaluations"]}) '
-                    '- best loss: '
-                    f'{round(min(filter(None, trials.losses())), 4)} ...')
+                log_trial(self.step, trials)
 
             # Increment the step variable
             self.step += 1
 
-            return {'loss': max(fold_scores),
-                    'params': hyperparameters,
-                    'status': STATUS_OK}
+            return {
+                'loss': max(rep_scores),
+                'params': hyperparameters,
+                'status': STATUS_OK}
 
         # Initialize the data preprocessor
         preprocessor = DataPreprocessor(self.preprocessing_steps, False)
@@ -595,20 +619,23 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         # Log a message about the out-of-folds prediction
         Datahub().logger.display_info(
-            f'Performing {len(set(self.configuration["oof_folds"]))}-fold '
-            'cross-validation to yield out-of-folds predictions for '
-            f'"{self.model_label}" ...')
+            f'Performing {len(set(self.configuration["oof_folds"][:, 0]))}'
+            '-fold cross-validation with '
+            f'{self.configuration["oof_folds"].shape[1]} repeat(s) to yield '
+            f'out-of-folds predictions for "{self.model_label}" ...')
 
         def compute_fold_labels(indices):
             """Compute the out-of-folds labels for a single fold."""
 
             # Get the training and validation split
-            split = [features[indices[0]], labels[indices[0]],
-                     features[indices[1]]]
+            split = [
+                features[indices[0]], labels[indices[0]],
+                features[indices[1]]]
 
             # Fit and transform the training and validation data
-            split = [*preprocessor.fit_transform(split[0], split[1]),
-                     preprocessor.transform(split[2])[0]]
+            split = [
+                *preprocessor.fit_transform(split[0], split[1]),
+                preprocessor.transform(split[2])[0]]
 
             # Get the model fit
             prediction_model = self.get_model_fit(
@@ -617,24 +644,28 @@ class MachineLearningModel(metaclass=ABCMeta):
             return (indices[1], self.predict(split[2], prediction_model))
 
         # Initialize the out-of-folds label prediction array
-        oof_prediction = empty((len(labels),))
+        oof_prediction = zeros((len(labels),))
 
         # Initialize the data preprocessor
         preprocessor = DataPreprocessor(self.preprocessing_steps, False)
 
-        # Compute the returns across all folds
-        fold_returns = map(compute_fold_labels, (
+        # Get the out-of-folds numbers
+        folds = self.configuration['oof_folds']
+
+        # Compute the returns across all repeats
+        rep_returns = (map(compute_fold_labels, (
             (training_indices, validation_indices)
             for training_indices, validation_indices in (
-                (where(self.configuration['tune_folds'] != number),
-                 where(self.configuration['tune_folds'] == number))
-                for number in set(self.configuration['tune_folds']))))
+                (where(folds[:, index] != number),
+                 where(folds[:, index] == number))
+                for index in range(folds.shape[1])
+                for number in set(folds[:, index])))))
 
-        # Loop over the fold returns
-        for fold_indices, fold_labels in fold_returns:
+        # Loop over the returns
+        for fold_indices, fold_labels in rep_returns:
 
             # Insert the fold labels at the fold indices
-            oof_prediction[fold_indices] = fold_labels
+            oof_prediction[fold_indices] += fold_labels/folds.shape[1]
 
         return oof_prediction
 
@@ -689,9 +720,10 @@ class MachineLearningModel(metaclass=ABCMeta):
 
             # Compute the model evaluation results
             self.evaluator.compute(
-                labels, (self.predict(self.preprocessed_features,
-                                      self.prediction_model),
-                         self.predict_oof(features, labels)))
+                labels, (
+                    self.predict(
+                        self.preprocessed_features, self.prediction_model),
+                    self.predict_oof(features, labels)))
 
     def set_file_paths(
             self,
@@ -783,8 +815,9 @@ class MachineLearningModel(metaclass=ABCMeta):
             configuration = jload(file)
 
         # Loop over specific keys
-        for key in ('feature_values', 'label_values', 'time_variable_values',
-                    'tune_folds', 'oof_folds'):
+        for key in (
+                'feature_values', 'label_values', 'time_variable_values',
+                'tune_folds', 'oof_folds'):
 
             # Convert the value list into an array
             configuration[key] = array(configuration[key])
@@ -811,8 +844,9 @@ class MachineLearningModel(metaclass=ABCMeta):
         if include_model_data:
 
             # Loop over specific keys
-            for key in ('feature_values', 'label_values',
-                        'time_variable_values', 'tune_folds', 'oof_folds'):
+            for key in (
+                    'feature_values', 'label_values', 'time_variable_values',
+                    'tune_folds', 'oof_folds'):
 
                 # Check if the key value is not a list
                 if not isinstance(configuration[key], list):
@@ -823,8 +857,9 @@ class MachineLearningModel(metaclass=ABCMeta):
         else:
 
             # Loop over specific keys
-            for key in ('feature_values', 'label_values',
-                        'time_variable_values', 'tune_folds', 'oof_folds'):
+            for key in (
+                    'feature_values', 'label_values', 'time_variable_values',
+                    'tune_folds', 'oof_folds'):
 
                 # Set the values to None
                 configuration[key] = None

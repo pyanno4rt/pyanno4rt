@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from os import listdir
 from os.path import isdir
 
 # %% Internal package import
@@ -20,8 +21,8 @@ class DataModelHandler():
     """
     Data & learning model handling class.
 
-    This class implements methods to handle the integration of the base \
-    dataset and the feature (re-)calculation.
+    This class implements methods to handle the import of the base dataset \
+    and the feature (re)calculation.
 
     Parameters
     ----------
@@ -32,7 +33,7 @@ class DataModelHandler():
         Path to a folder for loading an external model.
 
     data_path : None or str
-        Path to the data set used for fitting the machine learning model.
+        Path to the dataset used for fitting the machine learning model.
 
     data_columns : dict
         Dictionary with the column information on features and label.
@@ -41,8 +42,16 @@ class DataModelHandler():
         Number of splits for the stratified cross-validation within each \
         hyperparameter optimization step.
 
+    tune_repeats : int
+        Number of repeats for the stratified cross-validation within each \
+        hyperparameter optimization step.
+
     oof_splits : int
         Number of splits for the stratified cross-validation within the \
+        out-of-folds evaluation step.
+
+    oof_repeats : int
+        Number of repeats for the stratified cross-validation within the \
         out-of-folds evaluation step.
 
     write_features : bool
@@ -64,7 +73,7 @@ class DataModelHandler():
 
     feature_calculator : object of class \
         :class:`~pyanno4rt.learning_model.features._feature_calculator.FeatureCalculator`
-        The object used to (re-)calculate the feature values and gradients.
+        The object used to (re)calculate the feature values and gradients.
     """
 
     def __init__(
@@ -74,16 +83,18 @@ class DataModelHandler():
             data_path,
             data_columns,
             tune_splits,
+            tune_repeats,
             oof_splits,
+            oof_repeats,
             write_features):
 
         # Initialize the datahub
         hub = Datahub()
 
         # Loop over the model-related datahub attributes
-        for attribute in ('datasets', 'feature_maps', 'model_instances',
-                          'model_inspections', 'model_evaluations',
-                          'model_outcomes'):
+        for attribute in (
+                'datasets', 'feature_maps', 'model_instances',
+                'model_inspections', 'model_evaluations', 'model_outcomes'):
 
             # Check if the attribute has not been initialized yet
             if not getattr(hub, attribute):
@@ -112,17 +123,24 @@ class DataModelHandler():
                 data_path=data_path,
                 data_columns=data_columns,
                 tune_splits=tune_splits,
-                oof_splits=oof_splits)
+                tune_repeats=tune_repeats,
+                oof_splits=oof_splits,
+                oof_repeats=oof_repeats)
 
-        # Check if the data path leads to an image folder
-        elif isdir(data_path):
+        # Check if the data path leads to a folder
+        elif isdir(data_path) and all(
+                any(file.endswith(extension) for extension in (
+                    '.jpg', '.npy', '.npz', '.png'))
+                for file in listdir(data_path)):
 
             # Initialize the image dataset generator
             self.data_generator = ImageDataGenerator(
                 model_label=model_label,
                 model_folder_path=model_folder_path)
-            raise ValueError("Image-based data generation has not been "
-                             "implemented yet ...")
+
+            # Raise an error to indicate the missing implementation
+            raise ValueError(
+                "Image-based data generation has not been implemented yet ...")
 
         # Initialize the feature calculator
         self.feature_calculator = FeatureCalculator(write_features)
@@ -157,6 +175,7 @@ class DataModelHandler():
 
         else:
 
-            # Log a message about the non-writing of the feature history
-            hub.logger.display_info("Feature history has not been written for "
-                                    f"'{self.model_label}' ...")
+            # Log a message about the missing feature history
+            hub.logger.display_info(
+                "Feature history has not been written for "
+                f"'{self.model_label}' ...")

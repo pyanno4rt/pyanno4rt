@@ -41,7 +41,7 @@ class Whitening():
             self,
             method='zca'):
 
-        # Get the whitening method from the arguments
+        # Get the instance attributes from the arguments
         self.method = method
 
         # Initialize the means and the whitening matrix
@@ -81,8 +81,9 @@ class Whitening():
         centered_features = features-self.means
 
         # Compute the covariance matrix
-        covariance_matrix = ((centered_features.T @ centered_features)
-                             / centered_features.shape[0])
+        covariance_matrix = ((
+            centered_features.T @ centered_features)
+            / centered_features.shape[0])
 
         # Compute the eigenvalues and eigenvectors of the covariance matrix
         eigenvalues, eigenvectors = eig(covariance_matrix)

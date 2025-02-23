@@ -72,7 +72,7 @@ optimization_map = {
         partial(check_type, types=(type(None), int, float, list)),
         partial(check_value, reference=0, sign='>='),
         ),
-    'max_iter': (
+    'maximum_iterations': (
         partial(check_type, types=int),
         partial(check_value, reference=0, sign='>')
         ),

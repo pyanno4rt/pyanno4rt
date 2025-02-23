@@ -21,9 +21,9 @@ from pyanno4rt.learning_model.preprocessing import DataPreprocessor
 # %% Function definition
 
 
-def permutation_importances(model_label, model_instance, hyperparameters,
-                            features, labels, preprocessing_steps,
-                            number_of_repeats, oof_folds):
+def permutation_importances(
+        model_label, model_instance, hyperparameters, features, labels,
+        preprocessing_steps, number_of_repeats, oof_folds):
     """
     Compute the permutation importances.
 
@@ -64,12 +64,14 @@ def permutation_importances(model_label, model_instance, hyperparameters,
         """Compute the out-of-folds importances for a single fold."""
 
         # Get the training and validation split
-        split = [features[indices[0]], labels[indices[0]],
-                 features[indices[1]], labels[indices[1]]]
+        split = [
+            features[indices[0]], labels[indices[0]],
+            features[indices[1]], labels[indices[1]]]
 
         # Fit and transform the training and validation data
-        split = [*preprocessor.fit_transform(split[0], split[1]),
-                 *preprocessor.transform(split[2], split[3])]
+        split = [
+            *preprocessor.fit_transform(split[0], split[1]),
+            *preprocessor.transform(split[2], split[3])]
 
         # Check if the model is a scikit-learn classifier
         if type(model_instance).__name__ in (
@@ -115,10 +117,8 @@ def permutation_importances(model_label, model_instance, hyperparameters,
                         verbose=0)
                     ],
                 class_weight={
-                    label: (2*len(split[1])
-                            / sum(split[1] == label))
-                    for label in (0, 1)}
-                )
+                    label: 2*len(split[1])/sum(split[1] == label)
+                    for label in (0, 1)})
 
         # Compute the permutation importance for the validation split
         importance = permutation_importance(
@@ -172,17 +172,20 @@ def permutation_importances(model_label, model_instance, hyperparameters,
     # Initialize the data preprocessor
     preprocessor = DataPreprocessor(preprocessing_steps, verbose=False)
 
-    # Compute the training permutation importance
-    training_importance = permutation_importance(
+    # Compute the training permutation importances
+    training_importances = permutation_importance(
         model_instance, *preprocessor.fit_transform(features, labels),
         scoring=score, n_repeats=number_of_repeats, random_state=42)
 
-    # Compute the out-of-folds permutation importance
-    fold_importances = tuple(map(compute_fold_importances, (
+    # Compute the out-of-folds permutation importances
+    oof_importances = tuple(map(compute_fold_importances, (
         (training_indices, validation_indices)
         for training_indices, validation_indices in (
-                (where(oof_folds != number), where(oof_folds == number))
-                for number in set(oof_folds)))))
+                (where(oof_folds[:, index] != number),
+                 where(oof_folds[:, index] == number))
+                for index in range(oof_folds.shape[1])
+                for number in set(oof_folds[:, index])))))
 
-    return {'Training': training_importance['importances'].T,
-            'Out-of-folds': vstack(fold_importances)}
+    return {
+        'Training': training_importances['importances'].T,
+        'Out-of-folds': vstack(oof_importances)}

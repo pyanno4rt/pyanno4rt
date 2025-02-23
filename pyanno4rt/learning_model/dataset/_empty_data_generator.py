@@ -77,8 +77,7 @@ class EmptyDataGenerator():
         hub = Datahub()
 
         # Get the configuration file path
-        configuration_path = ''.join(
-            (self.model_folder_path, '/configuration.json'))
+        configuration_path = f'{self.model_folder_path}/configuration.json'
 
         # Open a file stream
         with open(configuration_path, 'r', encoding='utf-8') as file:
@@ -102,10 +101,19 @@ class EmptyDataGenerator():
             }
 
         # Loop over the feature definitions
-        for key, value in data_information['feature_definitions'].items():
+        for label, data in data_information['feature_definitions'].items():
 
-            # Replace the segment name by the data columns dictionary
-            value['segment'] = self.data_columns[key]['segment']
+            # Check if the feature label is represented by the data columns
+            if label in self.data_columns:
+
+                # Replace the segment name by the data columns dictionary
+                data['segment'] = self.data_columns[label]['segment']
+
+            else:
+
+                # Ask for user input on the feature segment
+                data['segment'] = input(
+                    f'Please specify the segment for the feature {label}: ')
 
         # Enter the data information dictionary into the datahub
         hub.datasets |= {self.model_label: data_information}
@@ -114,7 +122,7 @@ class EmptyDataGenerator():
         feature_map_dict = self.create_map(
             data_information['feature_definitions'])
 
-        # Enter the feature map into the datahub
+        # Enter the feature map dictionary into the datahub
         hub.feature_maps |= {self.model_label: feature_map_dict}
 
         return data_information, feature_map_dict
@@ -129,7 +137,7 @@ class EmptyDataGenerator():
         ----------
         definitions : dict
             Dictionary with the mappings of feature names, segments and \
-            string functions.
+            calculation functions.
 
         Returns
         -------
@@ -138,32 +146,33 @@ class EmptyDataGenerator():
             computation/differentiation functions.
         """
 
-        def get_single_definition(key):
+        def get_single_definition(label):
             """Get the mapping for a single definition."""
 
-            # Get the feature definition as string
-            definition = feature_map.get(definitions[key]['function'])
+            # Get the calculation function
+            function = feature_map.get(definitions[label]['function'])
 
-            # Get the argument of the feature definition
-            args = definitions[key]['argument']
+            # Get the function argument
+            args = definitions[label]['argument']
 
-            # Check if a definition and no value have been passed
-            if definition and not definitions[key]['value']:
+            # Check if a function but no value have been passed
+            if function and not definitions[label]['value']:
 
                 # Return the dosiomic/radiomic feature map
-                return {key: {
-                    'segment': definitions[key]['segment'],
-                    'class': definition.feature_class,
-                    'computation': (
-                        methods[args is None](definition.compute, args)),
-                    'differentiation': (
-                        methods[args is None](definition.differentiate, args)
-                        if definition.feature_class == 'Dosiomics' else None)}}
+                return {
+                    label: {
+                        'segment': definitions[label]['segment'],
+                        'class': function.feature_class,
+                        'computation': (
+                            methods[args is None](function.compute, args)),
+                        'differentiation': (
+                            methods[args is None](function.differentiate, args)
+                            if function.feature_class == 'Dosiomics'
+                            else None)}}
 
-            else:
-
-                # Return the static feature map
-                return {key: {
+            # Return the static feature map
+            return {
+                label: {
                     'segment': None,
                     'class': 'Statics',
                     'computation': None,
@@ -172,6 +181,7 @@ class EmptyDataGenerator():
         # Create a boolean mapping to the internal functions
         methods = {True: identity, False: partial}
 
-        return {key: value
-                for item in map(get_single_definition, definitions.keys())
-                for key, value in item.items()}
+        return {
+            label: data
+            for definition in map(get_single_definition, (*definitions,))
+            for label, data in definition.items()}

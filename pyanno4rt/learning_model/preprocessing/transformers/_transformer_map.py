@@ -10,6 +10,7 @@ from pyanno4rt.learning_model.preprocessing.transformers import (
 # %% Map definition
 
 
-transformer_map = {'Identity': Identity,
-                   'StandardScaler': StandardScaler,
-                   'Whitening': Whitening}
+transformer_map = {
+    'Identity': Identity,
+    'StandardScaler': StandardScaler,
+    'Whitening': Whitening}

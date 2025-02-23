@@ -81,6 +81,10 @@ class MachineLearningComponent(metaclass=ABCMeta):
             Number of splits for the stratified cross-validation within each \
             hyperparameter optimization step.
 
+        - tune_repeats : int, default=1
+            Number of repeats for the stratified cross-validation within each \
+            hyperparameter optimization step.
+
         - inspect_model : bool, default=False
             Indicator for the inspection of the machine learning model.
 
@@ -89,6 +93,10 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
         - oof_splits : int, default=5
             Number of splits for the stratified cross-validation within the \
+            out-of-folds evaluation step.
+
+        - oof_repeats : int, default=1
+            Number of repeats for the stratified cross-validation within the \
             out-of-folds evaluation step.
 
         - write_features : bool, default=False
@@ -236,9 +244,11 @@ class MachineLearningComponent(metaclass=ABCMeta):
             'tune_evaluations': model_parameters.get('tune_evaluations', 50),
             'tune_score': model_parameters.get('tune_score', 'Logloss'),
             'tune_splits': model_parameters.get('tune_splits', 5),
+            'tune_repeats': model_parameters.get('tune_repeats', 1),
             'inspect_model': model_parameters.get('inspect_model', False),
             'evaluate_model': model_parameters.get('evaluate_model', False),
             'oof_splits': model_parameters.get('oof_splits', 5),
+            'oof_repeats': model_parameters.get('oof_repeats', 1),
             'write_features': model_parameters.get('write_features', False),
             'display_options': model_parameters.get(
                 'display_options', {

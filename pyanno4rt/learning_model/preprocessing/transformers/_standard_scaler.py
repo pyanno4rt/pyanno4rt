@@ -117,8 +117,8 @@ class StandardScaler():
         """
 
         return array(
-            [(features[:, index]-self.means[index])/self.deviations[index]
-             for index in range(features.shape[1])]).T, labels
+           [(features[:, index]-self.means[index])/self.deviations[index]
+            for index in range(features.shape[1])]).T, labels
 
     def compute_gradient(
             self,

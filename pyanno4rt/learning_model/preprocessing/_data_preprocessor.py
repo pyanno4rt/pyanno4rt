@@ -93,11 +93,11 @@ class DataPreprocessor():
             Transformed values of the input labels.
         """
 
-        # Loop over the preprocessing algorithms
-        for algorithm in self.steps.values():
+        # Loop over the preprocessing steps
+        for step in self.steps.values():
 
             # Transform the features and labels
-            features, labels = algorithm.transform(features, labels)
+            features, labels = step.transform(features, labels)
 
         return features, labels
 
@@ -125,14 +125,14 @@ class DataPreprocessor():
             Transformed values of the input labels.
         """
 
-        # Loop over the preprocessing algorithms
-        for algorithm in self.steps.values():
+        # Loop over the preprocessing steps
+        for step in self.steps.values():
 
             # Fit the algorithm
-            algorithm.fit(features, labels)
+            step.fit(features, labels)
 
             # Transform the features and labels
-            features, labels = algorithm.transform(features, labels)
+            features, labels = step.transform(features, labels)
 
         return features, labels
 

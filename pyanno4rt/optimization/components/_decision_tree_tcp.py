@@ -115,7 +115,9 @@ class DecisionTreeTCP(MachineLearningComponent):
             data_path=self.model_parameters['data_path'],
             data_columns=self.model_parameters['data_columns'],
             tune_splits=self.model_parameters['tune_splits'],
+            tune_repeats=self.model_parameters['tune_repeats'],
             oof_splits=self.model_parameters['oof_splits'],
+            oof_repeats=self.model_parameters['oof_repeats'],
             write_features=self.model_parameters['write_features'])
 
         # Integrate the model-related classes

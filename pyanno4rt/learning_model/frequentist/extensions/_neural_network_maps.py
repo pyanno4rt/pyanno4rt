@@ -11,10 +11,12 @@ from tensorflow.keras.optimizers import Adam, Ftrl, SGD
 # %% Map definitions
 
 
-loss_map = {'BCE': BinaryCrossentropy,
-            'FocalBCE': BinaryFocalCrossentropy,
-            'KLD': KLDivergence}
+loss_map = {
+    'BCE': BinaryCrossentropy,
+    'FocalBCE': BinaryFocalCrossentropy,
+    'KLD': KLDivergence}
 
-optimizer_map = {'Adam': Adam,
-                 'Ftrl': Ftrl,
-                 'SGD': SGD}
+optimizer_map = {
+    'Adam': Adam,
+    'Ftrl': Ftrl,
+    'SGD': SGD}
