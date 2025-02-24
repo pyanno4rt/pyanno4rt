@@ -83,7 +83,7 @@
 			<li> 7 customizable internal model classes (decision tree, k-nearest neighbors, logistic regression, naive Bayes, neural network, random forest, support vector machine)
 				<ul> 
 					<li> Individual preprocessing, inspection and evaluation units </li>  
-					<li> Adjustable hyperparameter tuning via sequential model-based optimization (SMBO) with robust k-fold cross-validation </li> 
+					<li> Adjustable hyperparameter tuning via sequential model-based optimization (SMBO) with (repeated) stratified train-validation-split or k-fold cross-validation for robustification </li> 
 					<li> Out-of-folds prediction for generalization assessment </li>
 				</ul>
 			</li>

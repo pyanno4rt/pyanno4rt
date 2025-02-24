@@ -6,10 +6,8 @@
 
 from IPython import get_ipython
 from matplotlib.pyplot import get_current_fig_manager, subplots
-from numpy import repeat
-from pandas import DataFrame, melt
+from pandas import DataFrame
 from seaborn import boxplot as sns_boxplot
-from seaborn import color_palette
 
 # %% Internal package import
 
@@ -60,15 +58,10 @@ class PermutationImportancePlotterMPL():
 
     def view(self):
         """Open the full-screen view on the permutation importance plot."""
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the plot opening
-        hub.logger.display_info("Opening model permutation importance plot "
-                                "...")
 
         def create_subtitle(figure, grid, title):
             """Create a subtitle for the plot row."""
+
             # Add the grid to the subplot
             row = figure.add_subplot(grid)
 
@@ -81,21 +74,29 @@ class PermutationImportancePlotterMPL():
             # Hide the axis
             row.axis('off')
 
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Log a message about the plot opening
+        hub.logger.display_info(
+            "Opening model permutation importance plot ...")
+
         # Get the inspection data
-        data = tuple((key,
-                      DataFrame(
-                          data=value['permutation_importance']['Training'],
-                          columns=hub.datasets[key]['feature_names']),
-                      DataFrame(
-                          data=value['permutation_importance']['Out-of-folds'],
-                          columns=hub.datasets[key]['feature_names']))
-                     for key, value in hub.model_inspections.items()
-                     if any(component.model_parameters['model_label'] == key
-                            for component in (
-                                    get_machine_learning_constraints(
-                                        hub.segmentation)
-                                    + get_machine_learning_objectives(
-                                        hub.segmentation))))
+        data = tuple((
+            key,
+            value['permutation_importance']['score'],
+            DataFrame(
+                data=value['permutation_importance']['Training'],
+                columns=hub.datasets[key]['feature_names']),
+            DataFrame(
+                data=value['permutation_importance']['Out-of-folds'],
+                columns=hub.datasets[key]['feature_names']))
+            for key, value in hub.model_inspections.items()
+            if any(component.model_parameters['model_label'] == key
+                   for component in (
+                           get_machine_learning_constraints(hub.segmentation)
+                           + get_machine_learning_objectives(hub.segmentation))
+                   ))
 
         # Unzip the data into the separate elements
         data_zipped = list(zip(*data))
@@ -106,23 +107,17 @@ class PermutationImportancePlotterMPL():
             for key, value in hub.datasets.items())
 
         # Preprocess the training permutation importances
-        data_zipped[1] = tuple(dataframe.reindex(
+        data_zipped[2] = tuple(dataframe.reindex(
             dataframe.mean().sort_values(ascending=False).index,
             axis=1).iloc[:, :number_to_display[i]]
-            for i, dataframe in enumerate(data_zipped[1]))
-
-        # Get the number of permutation repetitions from the training set
-        number_of_repeats = tuple(len(dataframe)
-                                  for dataframe in data_zipped[1])
-
-        # Preprocess the validation permutation importances
-        data_zipped[2] = tuple(
-            melt(dataframe.reindex(
-                dataframe.mean().sort_values(ascending=False).index,
-                axis=1).iloc[:, :number_to_display[i]].assign(
-                    fold=repeat([1, 2, 3, 4, 5], number_of_repeats[i])),
-                'fold', var_name='feature', value_name='importance')
             for i, dataframe in enumerate(data_zipped[2]))
+
+        # Preprocess the out-of-folds permutation importances
+        data_zipped[3] = tuple(
+            dataframe.reindex(
+                dataframe.mean().sort_values(ascending=False).index,
+                axis=1).iloc[:, :number_to_display[i]]
+            for i, dataframe in enumerate(data_zipped[3]))
 
         # Loop over the number of inspected models
         for i, _ in enumerate(data_zipped[0]):
@@ -131,18 +126,16 @@ class PermutationImportancePlotterMPL():
             figure, axis = subplots(nrows=2, ncols=1, figsize=(14, 8))
 
             # Plot the training permutation importance boxplots
-            sns_boxplot(data=data_zipped[1][i], ax=axis[0])
+            sns_boxplot(data=data_zipped[2][i], ax=axis[0])
 
-            # Plot the validation permutation importance boxplots
-            sns_boxplot(data=data_zipped[2][i], x='feature', y='importance',
-                        hue='fold', palette=color_palette(n_colors=5),
-                        ax=axis[1])
+            # Plot the out-of-folds permutation importance boxplots
+            sns_boxplot(data=data_zipped[3][i], ax=axis[1])
 
             for j in range(0, 2):
 
                 # Set x- and y-label
                 axis[j].set_xlabel("Feature", fontsize=11)
-                axis[j].set_ylabel("Importance value", fontsize=11)
+                axis[j].set_ylabel(f"Δ {data_zipped[1][j]}", fontsize=11)
 
                 # Change the tick label sizes for both axes
                 axis[j].tick_params(axis='both', which='major', labelsize=9)
@@ -155,8 +148,9 @@ class PermutationImportancePlotterMPL():
 
                 # Specify the grid with a subgrid
                 axis[j].grid(which='major', color='lightgray', linewidth=0.8)
-                axis[j].grid(which='minor', color='lightgray', linestyle=':',
-                             linewidth=0.5)
+                axis[j].grid(
+                    which='minor', color='lightgray', linestyle=':',
+                    linewidth=0.5)
                 axis[j].minorticks_on()
 
                 # Hide the axis behind the boxplots
@@ -164,10 +158,11 @@ class PermutationImportancePlotterMPL():
 
             # Create the subtitles for the plot rows
             for k, subset in enumerate(('Training', 'Out-of-folds')):
-                axis[k].set_title("".join((data_zipped[0][i], " (",
-                                           subset, ")", ": top-{} features"
-                                           .format(number_to_display[i]))),
-                                  fontweight='semibold', pad=20)
+                axis[k].set_title(
+                    "".join((
+                        data_zipped[0][i], " (", subset, ")",
+                        ": top-{} features".format(number_to_display[i]))),
+                    fontweight='semibold', pad=20)
 
             # Apply a tight layout to the figure
             figure.tight_layout()
@@ -176,8 +171,8 @@ class PermutationImportancePlotterMPL():
             figure_manager = get_current_fig_manager()
 
             # Set the window title
-            figure_manager.set_window_title("pyanno4rt - permutation "
-                                            "importance boxplots")
+            figure_manager.set_window_title(
+                "pyanno4rt - permutation importance boxplots")
 
             # Show the plot in screen size
             figure_manager.window.showMaximized()

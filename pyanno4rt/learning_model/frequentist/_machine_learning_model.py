@@ -221,7 +221,7 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         # Check if a non-empty dataset has been passed
         if all(self.configuration[key] is not None for key in (
-                'feature_values', 'label_values', 'oof_folds')):
+                'feature_values', 'label_values', 'oof_folds', 'tune_score')):
 
             # Check if the model should be inspected
             if inspect_model:
@@ -232,8 +232,7 @@ class MachineLearningModel(metaclass=ABCMeta):
                 # Inspect the model
                 self.inspect(
                     self.configuration['feature_values'],
-                    self.configuration['label_values'],
-                    self.configuration['oof_folds'])
+                    self.configuration['label_values'])
 
             # Check if the model should be evaluated
             if evaluate_model:
@@ -672,8 +671,7 @@ class MachineLearningModel(metaclass=ABCMeta):
     def inspect(
             self,
             features,
-            labels,
-            oof_folds):
+            labels):
         """
         Inspect the machine learning model.
 
@@ -684,9 +682,6 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         labels : ndarray
             Values of the input labels.
-
-        oof_folds : ndarray
-            Out-of-fold split numbers.
         """
 
         # Check if the model should be first-time/repeatedly inspected
@@ -696,7 +691,8 @@ class MachineLearningModel(metaclass=ABCMeta):
             # Compute the model inspection results
             self.inspector.compute(
                 self.prediction_model, self.hyperparameters, features, labels,
-                self.preprocessing_steps, 30, oof_folds)
+                self.preprocessing_steps, 30, self.configuration['oof_folds'],
+                self.configuration['tune_score'])
 
     def evaluate(
             self,

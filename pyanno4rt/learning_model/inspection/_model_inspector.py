@@ -50,7 +50,8 @@ class ModelInspector():
             labels,
             preprocessing_steps,
             number_of_repeats,
-            oof_folds):
+            oof_folds,
+            tune_score):
         """
         Compute the inspection results.
 
@@ -77,10 +78,15 @@ class ModelInspector():
 
         oof_folds : ndarray
             Out-of-fold split numbers.
+
+        tune_score : {'AUC', 'Brier score', 'Logloss'}
+            Scoring function for the evaluation of the hyperparameter set \
+            candidates.
         """
 
         # Enter the permutation importances into the datahub
         Datahub().model_inspections[self.model_label] = {
             'permutation_importance': permutation_importances(
                 self.model_label, model_instance, hyperparameters, features,
-                labels, preprocessing_steps, number_of_repeats, oof_folds)}
+                labels, preprocessing_steps, number_of_repeats, oof_folds,
+                tune_score)}

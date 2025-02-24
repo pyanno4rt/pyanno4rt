@@ -16,6 +16,7 @@ from tensorflow.keras.models import clone_model
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.frequentist.extensions import (
     loss_map, optimizer_map)
+from pyanno4rt.learning_model.losses import loss_map as score_loss_map
 from pyanno4rt.learning_model.preprocessing import DataPreprocessor
 
 # %% Function definition
@@ -23,7 +24,7 @@ from pyanno4rt.learning_model.preprocessing import DataPreprocessor
 
 def permutation_importances(
         model_label, model_instance, hyperparameters, features, labels,
-        preprocessing_steps, number_of_repeats, oof_folds):
+        preprocessing_steps, number_of_repeats, oof_folds, tune_score):
     """
     Compute the permutation importances.
 
@@ -53,6 +54,10 @@ def permutation_importances(
 
     oof_folds : ndarray
         Out-of-fold split numbers.
+
+    tune_score : {'AUC', 'Brier score', 'Logloss'}
+        Scoring function for the evaluation of the hyperparameter set \
+        candidates.
 
     Returns
     -------
@@ -163,19 +168,31 @@ def permutation_importances(
                 predicted_labels = model_instance.predict(
                     features, verbose=0)[:, 0]
 
-        return roc_auc_score(true_labels, predicted_labels)
-
-    # Log a message about the permutation importance computation
-    Datahub().logger.display_info(
-        f'Computing permutation importances for "{model_label}" ...')
+        return scorers[tune_score](true_labels, predicted_labels)
 
     # Initialize the data preprocessor
     preprocessor = DataPreprocessor(preprocessing_steps, verbose=False)
 
+    # Map the score labels to the score functions
+    scorers = {'AUC': roc_auc_score, **score_loss_map}
+
+    # Log a message about the training permutation importance computation
+    Datahub().logger.display_info(
+        f'Computing training importances for "{model_label}" with '
+        f'{number_of_repeats} permutations ...')
+
     # Compute the training permutation importances
     training_importances = permutation_importance(
         model_instance, *preprocessor.fit_transform(features, labels),
-        scoring=score, n_repeats=number_of_repeats, random_state=42)
+        scoring=score, n_repeats=number_of_repeats, random_state=42)[
+            'importances'].T
+
+    # Log a message about the out-of-folds permutation importance computation
+    Datahub().logger.display_info(
+        f'Computing out-of-folds importances for "{model_label}" with '
+        f'{number_of_repeats} permutations for '
+        f'{len(set(oof_folds[:, 0]))} splits and {oof_folds.shape[1]} '
+        'repeats ...')
 
     # Compute the out-of-folds permutation importances
     oof_importances = tuple(map(compute_fold_importances, (
@@ -187,5 +204,6 @@ def permutation_importances(
                 for number in set(oof_folds[:, index])))))
 
     return {
-        'Training': training_importances['importances'].T,
-        'Out-of-folds': vstack(oof_importances)}
+        'Training': training_importances,
+        'Out-of-folds': vstack(oof_importances),
+        'score': tune_score}
