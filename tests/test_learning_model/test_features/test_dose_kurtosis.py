@@ -55,5 +55,4 @@ def test_dose_kurtosis_differentiate(dose, dimension, indices, expected):
 
     # Assert the equality between actual and expected outcome
     assert allclose(
-        DoseKurtosis.differentiate(dose, dimension, indices).toarray()[0],
-        expected)
+        DoseKurtosis.differentiate(dose, dimension, indices), expected)

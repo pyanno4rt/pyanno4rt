@@ -56,5 +56,4 @@ def test_dose_deviation_differentiate(dose, dimension, indices, expected):
 
     # Assert the equality between actual and expected outcome
     assert allclose(
-        DoseDeviation.differentiate(dose, dimension, indices).toarray(),
-        expected)
+        DoseDeviation.differentiate(dose, dimension, indices), expected)

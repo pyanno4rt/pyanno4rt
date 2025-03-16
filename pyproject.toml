@@ -11,7 +11,6 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Intended Audience :: Education",
-  "Intended Audience :: Healthcare Industry",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Programming Language :: Python :: 3.10",
@@ -29,7 +28,7 @@ include = "pyanno4rt"
 
 [tool.poetry.dependencies]
 python = ">=3.10, <3.12"
-numpy = ">=2.0.2"
+numpy = ">=2.1.3"
 ipyopt = ">=0.12.9"
 proxmin = ">=0.6.12"
 absl-py = ">=2.1.0"
@@ -37,19 +36,19 @@ pydicom = ">=3.0.1"
 scikit-image = ">=0.25.2"
 h5py = ">=3.13.0"
 pandas = ">=2.2.3"
-jax = ">=0.5.0"
-jaxlib = ">=0.5.0"
+jax = ">=0.5.2"
+jaxlib = ">=0.5.1"
 numba = ">=0.61.0"
 scikit-learn = ">=1.6.1"
-tensorflow = ">=2.18.0"
+tensorflow = ">=2.19.0"
 tensorflow-io-gcs-filesystem = "0.31.0"
 hyperopt = ">=0.2.7"
 pymoo = ">=0.6.1.3"
 pyqt5-qt5 = "5.15.2"
 pyqt5 = "5.15.10"
 pyqtgraph = ">=0.13.7"
-ipython = ">=8.32.0"
-matplotlib = ">=3.10.0"
+ipython = ">=8.34.0"
+matplotlib = ">=3.10.1"
 seaborn = ">=0.13.2"
 pypop7 = ">=0.0.82"
 
@@ -62,7 +61,7 @@ sphinx = ">=8.1.3"
 sphinx-rtd-theme = ">=3.0.2"
 sphinx-autoapi = "3.0.0"
 myst-nb = ">=1.2.0"
-pytest = ">=8.3.4"
+pytest = ">=8.3.5"
 pytest-cov = ">=6.0.0"
 coveralls = ">=4.0.1"
 sphinx-copybutton = ">=0.5.2"

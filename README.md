@@ -166,7 +166,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 
 <ul>
 	<li> python (>=3.10, <3.12)
-	<li> numpy (>=2.0.2) </li>
+	<li> numpy (>=2.1.3) </li>
 	<li> ipyopt (>=0.12.9) </li>
 	<li> proxmin (>=0.6.12) </li>
 	<li> absl-py (>=2.1.0) </li>
@@ -174,19 +174,19 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> scikit-image (>=0.25.2) </li>
 	<li> h5py (>=3.13.0) </li>
 	<li> pandas (>=2.2.3) </li>
-	<li> jax (>=0.5.0) </li>
-	<li> jaxlib (>=0.5.0) </li>
+	<li> jax (>=0.5.2) </li>
+	<li> jaxlib (>=0.5.1) </li>
 	<li> numba (>=0.61.0) </li>
 	<li> scikit-learn (>=1.6.1) </li>
-	<li> tensorflow (>=2.18.0) </li>
+	<li> tensorflow (>=2.19.0) </li>
 	<li> tensorflow-io-gcs-filesystem (==0.31.0) </li>
 	<li> hyperopt (>=0.2.7) </li>
 	<li> pymoo (>=0.6.1.3) </li>
 	<li> pyqt5-qt5 (==5.15.2) </li>
 	<li> pyqt5 (==5.15.10) </li>
 	<li> pyqtgraph (>=0.13.7) </li>
-	<li> ipython (>=8.32.0) </li>
-	<li> matplotlib (>=3.10.0) </li>
+	<li> ipython (>=8.34.0) </li>
+	<li> matplotlib (>=3.10.1) </li>
 	<li> seaborn (>=0.13.2) </li>
 	<li> pypop7 (>=0.0.82) </li>
 </ul>

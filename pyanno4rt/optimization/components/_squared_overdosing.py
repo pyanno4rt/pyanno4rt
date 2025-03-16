@@ -29,6 +29,9 @@ class SquaredOverdosing(ConventionalComponent):
     maximum_dose : int or float
         Maximum value for the dose.
 
+    component_type : {'objective', 'constraint'}, default='objective'
+        Type of the component.
+
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
         value is computed and tracked, but not considered in the optimization \
@@ -56,7 +59,8 @@ class SquaredOverdosing(ConventionalComponent):
     def __init__(
             self,
             segment,
-            maximum_dose=None,
+            maximum_dose,
+            component_type='objective',
             embedding='active',
             weight=1.0,
             rank=1,
@@ -69,6 +73,7 @@ class SquaredOverdosing(ConventionalComponent):
         super().__init__(
             name='Squared Overdosing',
             segment=segment,
+            component_type=component_type,
             parameter_name=('maximum_dose',),
             parameter_category=('dose',),
             parameter_value=(maximum_dose,),

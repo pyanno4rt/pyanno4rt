@@ -54,5 +54,4 @@ def test_dose_skewness_differentiate(dose, dimension, indices, expected):
 
     # Assert the equality between actual and expected outcome
     assert allclose(
-        DoseSkewness.differentiate(dose, dimension, indices).toarray()[0],
-        expected)
+        DoseSkewness.differentiate(dose, dimension, indices), expected)

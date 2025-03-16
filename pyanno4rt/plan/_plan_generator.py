@@ -89,50 +89,38 @@ class PlanGenerator():
         def set_component(component, segment, category, base_dict):
             """Set the component by its segment and type assignment."""
 
-            # Get the instance from the component map
-            instance = component_map[component['function']](
-                segment, **component['parameters'])
-
             # Check if verbose is True
             if verbose:
 
-                # Log a message about setting the instance
+                # Log a message about setting the component
                 logger.display_info(
-                    f"Setting {category} '{instance.name}' for "
-                    f"{[segment]+instance.link} ...")
+                    f"Setting {category} '{component.name}' for "
+                    f"{[segment]+component.link} ...")
 
-            # Get the instance key for the base dictionary
-            instance_key = '-'.join(filter(
-                None, (f"{[segment]+instance.link}", instance.name,
-                       instance.identifier)))
+            # Get the component key for the base dictionary
+            component_key = '-'.join(filter(
+                None, (f"{[segment]+component.link}", component.name,
+                       component.identifier)))
 
-            # Check if the instance is already included in the base dictionary
-            if instance_key not in base_dict:
+            # Check if the component is already included in the base dictionary
+            if component_key not in base_dict:
 
                 # Add the instance to the base dictionary
-                base_dict[instance_key] = {
-                    'segments': [segment]+instance.link,
-                    'instance': instance}
+                base_dict[component_key] = {
+                    'segments': [segment]+component.link,
+                    'instance': component}
 
                 # Check if no instance has been set yet
                 if not segmentation[segment][category]:
 
                     # Add the instance to the segment
-                    segmentation[segment][category] = instance
+                    segmentation[segment][category] = component
 
                 else:
 
-                    # Check if the component is a list
-                    if isinstance(segmentation[segment][category], list):
-
-                        # Append the instance
-                        segmentation[segment][category].append(instance)
-
-                    else:
-
-                        # Make a list and add the instance
-                        segmentation[segment][category] = [
-                            segmentation[segment][category], instance]
+                    # Make a list and add the instance
+                    segmentation[segment][category] = [
+                        segmentation[segment][category], component]
 
         # Initialize the datahub
         hub = Datahub()
@@ -160,38 +148,21 @@ class PlanGenerator():
         bases = {'objective': objectives, 'constraint': constraints}
 
         # Loop over the segments in the components dictionary
-        for segment in self.components:
+        for component in self.components:
 
-            # Check if the segment holds a list of components
-            if isinstance(self.components[segment], list):
+            # Get the segment and component type
+            segment, category = component.segment, component.component_type
 
-                # Loop over the component list
-                for element in self.components[segment]:
+            # Get the base dictionary
+            base_dict = bases[category]
 
-                    # Get the category and component
-                    category, component = element.values()
-
-                    # Get the base dictionary
-                    base_dict = bases[category]
-
-                    # Set the component
-                    set_component(component, segment, category, base_dict)
-
-            else:
-
-                # Get the category and component
-                category, component = self.components[segment].values()
-
-                # Get the base dictionary
-                base_dict = bases[category]
-
-                # Set the component
-                set_component(component, segment, category, base_dict)
+            # Set the component
+            set_component(component, segment, category, base_dict)
 
         # Loop over the constraints
         for constraint in constraints.values():
 
-            # Get the constraint object
+            # Get the constraint instance
             instance = constraint['instance']
 
             # Set the weight to the default

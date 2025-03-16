@@ -54,5 +54,4 @@ def test_dose_mean_differentiate(dose, dimension, indices, expected):
 
     # Assert the equality between actual and expected outcome
     assert array_equal(
-        DoseMean.differentiate(dose, dimension, indices).toarray()[0],
-        expected)
+        DoseMean.differentiate(dose, dimension, indices), expected)

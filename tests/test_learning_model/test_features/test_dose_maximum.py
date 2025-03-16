@@ -56,5 +56,4 @@ def test_dose_maximum_differentiate(dose, dimension, indices, expected):
 
     # Assert the equality between actual and expected outcome
     assert array_equal(
-        DoseMaximum.differentiate(dose, dimension, indices).toarray()[0],
-        expected)
+        DoseMaximum.differentiate(dose, dimension, indices), expected)

@@ -17,14 +17,14 @@ from pyanno4rt.learning_model.features._dose_energy import sigmoid
 
 # Define the argument sets
 @mark.parametrize(
-    'value, multiplier, summand, expected',
-    [(0, 0, 0, 0.5), ([0, 0], 10, 0, [0.5, 0.5])],
-    ids=['single', 'multi'])
-def test_sigmoid_energy(value, multiplier, summand, expected):
+    'value, expected',
+    [(0, 0.5)],
+    ids=['single'])
+def test_sigmoid_energy(value, expected):
     """Test the 'sigmoid' function."""
 
     # Assert the equality between actual and expected outcome
-    assert sigmoid(value, multiplier, summand) == expected
+    assert sigmoid(value) == expected
 
 
 # Define the argument sets.

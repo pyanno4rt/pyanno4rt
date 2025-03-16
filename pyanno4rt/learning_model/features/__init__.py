@@ -3,8 +3,8 @@ Features module.
 
 ==================================================================
 
-The module aims to provide methods and classes to handle the features of the \
-base data set, i.e., feature definition and (re-)calculation.
+The module aims to provide methods and classes to handle the dosiomic and \
+radiomic input features, including feature definitions and (re)calculation.
 """
 
 # Author: Tim Ortkamp

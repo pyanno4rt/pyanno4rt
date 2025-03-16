@@ -12,8 +12,7 @@ from pandas import read_csv
 # %% Internal package import
 
 from pyanno4rt.input_check.check_maps import (
-    component_map, configuration_map, evaluation_map, model_display_map,
-    model_map, optimization_map, top_level_map, tune_space_map)
+    component_map, model_display_map, model_map, tune_space_map)
 from pyanno4rt.tools import load_segments_from_path
 
 # %% Class definition
@@ -57,8 +56,7 @@ class InputChecker():
 
         # Get all available check maps
         check_maps = (
-            component_map, configuration_map, evaluation_map, model_map,
-            model_display_map, optimization_map, top_level_map, tune_space_map)
+            component_map, model_map, model_display_map, tune_space_map)
 
         # Get all parameter names
         parameter_names = set().union(*check_maps)

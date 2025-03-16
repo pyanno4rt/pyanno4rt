@@ -5,6 +5,7 @@
 # %% External package import
 
 from math import pi
+
 import jax.numpy as jnp
 
 # %% Internal package import
@@ -20,8 +21,26 @@ class SegmentSphericity(RadiomicFeature):
     """Segment sphericity feature class."""
 
     @staticmethod
-    def compute(mask, spacing):
-        """Compute the sphericity."""
+    def compute(
+            mask,
+            spacing):
+        """
+        Compute the segment sphericity.
+
+        Parameters
+        ----------
+        mask : ndarray
+            Binary mask for the segment.
+
+        spacing : ndarray
+            Spacing of the dose grid.
+
+        Returns
+        -------
+        object of class :class:`~jaxlib.xla_extension.ArrayImpl`
+            Segment sphericity.
+        """
+
         # Compute the segment area
         area = SegmentArea.compute(mask, spacing)
 

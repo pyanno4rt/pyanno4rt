@@ -19,14 +19,43 @@ class DoseKurtosis(DosiomicFeature):
 
     @staticmethod
     def function(dose):
-        """Compute the kurtosis."""
+        """
+        Compute the dose kurtosis.
 
-        return 1/len(dose) * jnp.sum(
-            jnp.power(dose-jnp.mean(dose), 4)) / jnp.power(jnp.std(dose), 4)
+        Parameters
+        ----------
+        dose : ndarray
+            Dose array.
+
+        Returns
+        -------
+        object of class :class:`~jaxlib.xla_extension.ArrayImpl`
+            Dose kurtosis value.
+        """
+
+        return (
+            jnp.sum((dose-jnp.mean(dose))**4) / (jnp.std(dose)**4 * len(dose)))
 
     @staticmethod
-    def compute(dose, *args):
-        """Check the jitting status and call the computation function."""
+    def compute(
+            dose,
+            *args):
+        """
+        Check the jitting status and call the value function.
+
+        Parameters
+        ----------
+        dose : ndarray
+            Dose array.
+
+        *args : tuple
+            Tuple with optional (non-keyworded) parameters.
+
+        Returns
+        -------
+        object of class :class:`~jaxlib.xla_extension.ArrayImpl`
+            Dose kurtosis value.
+        """
 
         # Check if the value function has not yet been jitted
         if not DoseKurtosis.value_is_jitted:
@@ -34,23 +63,40 @@ class DoseKurtosis(DosiomicFeature):
             # Perform the jitting
             DoseKurtosis.value_function = jit(DoseKurtosis.function)
 
-            # Set 'value_is_jitted' to True for one-time jitting
+            # Set 'value_is_jitted' to True
             DoseKurtosis.value_is_jitted = True
 
         return DoseKurtosis.value_function(dose)
 
     @staticmethod
-    def differentiate(dose, *args):
-        """Check the jitting status and call the differentiation function."""
+    def differentiate(
+            dose,
+            *args):
+        """
+        Check the jitting status and call the gradient function.
 
-        # Check if the value function has not yet been jitted
+        Parameters
+        ----------
+        dose : ndarray
+            Dose array.
+
+        *args : tuple
+            Tuple with optional (non-keyworded) parameters.
+
+        Returns
+        -------
+        object of class :class:`~jaxlib.xla_extension.ArrayImpl`
+            Dose kurtosis gradient.
+        """
+
+        # Check if the gradient function has not yet been jitted
         if not DoseKurtosis.gradient_is_jitted:
 
             # Perform the jitting
-            DoseKurtosis.gradient_function = jit(
-                grad(DoseKurtosis.function, argnums=0))
+            DoseKurtosis.gradient_function = jit(grad(
+                DoseKurtosis.function, argnums=0))
 
-            # Set 'gradient_is_jitted' to True for one-time jitting
+            # Set 'gradient_is_jitted' to True
             DoseKurtosis.gradient_is_jitted = True
 
         return DoseKurtosis.gradient_function(dose)

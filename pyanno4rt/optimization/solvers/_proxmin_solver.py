@@ -87,7 +87,7 @@ class ProxminSolver():
         self.fun, self.arguments = configure_proxmin(
             problem_instance, lower_variable_bounds, upper_variable_bounds,
             lower_constraint_bounds, upper_constraint_bounds, algorithm,
-            maximum_iterations, tolerance, self.callback)
+            initial_fluence, maximum_iterations, tolerance, self.callback)
 
     def callback(
             self,

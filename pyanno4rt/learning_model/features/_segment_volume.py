@@ -17,6 +17,24 @@ class SegmentVolume(RadiomicFeature):
     """Segment volume feature class."""
 
     @staticmethod
-    def compute(mask, spacing):
-        """Compute the volume."""
+    def compute(
+            mask,
+            spacing):
+        """
+        Compute the segment volume.
+
+        Parameters
+        ----------
+        mask : ndarray
+            Binary mask for the segment.
+
+        spacing : ndarray
+            Spacing of the dose grid.
+
+        Returns
+        -------
+        object of class :class:`~jaxlib.xla_extension.ArrayImpl`
+            Segment volume.
+        """
+
         return jnp.sum(mask) * jnp.prod(spacing)

@@ -2,12 +2,16 @@
 
 # Author: Tim Ortkamp
 
+# %% External package import
+
+from functools import partial
+
 # %% Internal package import
 
 # Functional classes
+from pyanno4rt.base import Configuration, Optimization, Evaluation
 from pyanno4rt.logging import Logger
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.input_check import InputChecker
 
 # Treatment plan configuration
 from pyanno4rt.patient import PatientLoader
@@ -25,8 +29,10 @@ from pyanno4rt.evaluation import DosimetricsEvaluator
 from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
+from pyanno4rt.input_check.check_functions import check_type
 from pyanno4rt.tools import (
-    apply, get_machine_learning_constraints, get_machine_learning_objectives)
+    apply, filter_dict, get_machine_learning_constraints,
+    get_machine_learning_objectives)
 
 # %% Class definition
 
@@ -42,290 +48,31 @@ class TreatmentPlan():
 
     Parameters
     ----------
-    configuration : dict
-        Dictionary with the treatment plan configuration parameters.
+    configuration : object of class \
+        :class:`~pyanno4rt.base._configuration.Configuration`
+        The object used to handle the plan configuration parameters.
 
-        - label : str
-            Unique identifier for the treatment plan.
+    optimization : object of class \
+        :class:`~pyanno4rt.base._optimization.Optimization`
+        The object used to handle the plan optimization parameters.
 
-            .. note:: Uniqueness of the label is important because it \
-                prevents overwriting processes between different treatment \
-                plan instances by isolating their datahubs, logging channels \
-                and general storage paths.
-            .. note:: Changing the label of a treatment plan instance will \
-                automatically create a new singleton datahub object. To \
-                prevent memory issues, keep the label unchanged if possible, \
-                once set!
-
-        - min_log_level : {'debug', 'info', 'warning', 'error, 'critical'}, \
-                           default='info'
-            Minimum logging level.
-
-        - modality : {'photon', 'proton'}
-            Treatment modality, needs to be consistent with the dose \
-            calculation inputs.
-
-            .. note:: If the modality is 'photon', \
-                :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
-                with neutral RBE of 1.0 is automatically applied, whereas for \
-                the modality 'proton', \
-                :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`\
-                with constant RBE of 1.1 is used.
-
-        - number_of_fractions : int, default=30
-            Number of fractions according to the treatment scheme.
-
-        - imaging_path : str
-            Path to the CT and segmentation data.
-
-            .. note:: It is assumed that CT and segmentation data are \
-                included in a single file (.mat or .p) or a series of files \
-                (.dcm), whose content follows the pyanno4rt data structure.
-
-        - dose_matrix_path : str
-            Path to the dose-influence matrix file (.mat, .npy or .npz).
-
-        - dose_resolution : list
-            Size of the dose grid in [`mm`] per dimension, needs to be \
-            consistent with the dose calculation inputs.
-
-    optimization : dict
-        Dictionary with the treatment plan optimization parameters.
-
-        - components : dict
-            Optimization components for each segment of interest, i.e., \
-            objective functions and constraints.
-
-            .. note:: The declaration scheme for a single component is
-
-                {<segment>: {'type': <1>, 'instance': {'function': <2>, \
-                                                       'parameters': <3>}
-
-                - <1>: 'objective' or 'constraint'
-                - <2>: component label (see note below)
-                - <3> parameter dictionary for the component (see the \
-                  component classes for details)
-
-                Multiple objectives and/or constraints can be assigned by \
-                passing a list of dictionaries for each segment of interest.
-
-                The following components are currently available:
-
-                - 'Decision Tree NTCP' \
-                    :class:`~pyanno4rt.optimization.components._decision_tree_ntcp.DecisionTreeNTCP`
-                - 'Decision Tree TCP' \
-                    :class:`~pyanno4rt.optimization.components._decision_tree_tcp.DecisionTreeTCP`
-                - 'Dose Uniformity' \
-                    :class:`~pyanno4rt.optimization.components._dose_uniformity.DoseUniformity`
-                - 'Equivalent Uniform Dose' \
-                    :class:`~pyanno4rt.optimization.components._equivalent_uniform_dose.EquivalentUniformDose`
-                - 'K-Nearest Neighbors NTCP' \
-                    :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_ntcp.KNeighborsNTCP`
-                - 'K-Nearest Neighbors TCP' \
-                    :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_tcp.KNeighborsTCP`
-                - 'Logistic Regression NTCP' \
-                    :class:`~pyanno4rt.optimization.components._logistic_regression_ntcp.LogisticRegressionNTCP`
-                - 'Logistic Regression TCP' \
-                    :class:`~pyanno4rt.optimization.components._logistic_regression_tcp.LogisticRegressionTCP`
-                - 'LQ Poisson TCP' \
-                    :class:`~pyanno4rt.optimization.components._lq_poisson_tcp.LQPoissonTCP`
-                - 'Lyman-Kutcher-Burman NTCP' \
-                    :class:`~pyanno4rt.optimization.components._lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
-                - 'Maximum DVH' \
-                    :class:`~pyanno4rt.optimization.components._maximum_dvh.MaximumDVH`
-                - 'Mean Dose' \
-                    :class:`~pyanno4rt.optimization.components._mean_dose.MeanDose`
-                - 'Minimum DVH' \
-                    :class:`~pyanno4rt.optimization.components._minimum_dvh.MinimumDVH`
-                - 'Naive Bayes NTCP' \
-                    :class:`~pyanno4rt.optimization.components._naive_bayes_ntcp.NaiveBayesNTCP`
-                - 'Naive Bayes TCP' \
-                    :class:`~pyanno4rt.optimization.components._naive_bayes_tcp.NaiveBayesTCP`
-                - 'Neural Network NTCP' \
-                    :class:`~pyanno4rt.optimization.components._neural_network_ntcp.NeuralNetworkNTCP`
-                - 'Neural Network TCP' \
-                    :class:`~pyanno4rt.optimization.components._neural_network_tcp.NeuralNetworkTCP`
-                - 'Random Forest NTCP' \
-                    :class:`~pyanno4rt.optimization.components._random_forest_ntcp.RandomForestNTCP`
-                - 'Random Forest TCP' \
-                    :class:`~pyanno4rt.optimization.components._random_forest_tcp.RandomForestTCP`
-                - 'Squared Deviation' \
-                    :class:`~pyanno4rt.optimization.components._squared_deviation.SquaredDeviation`
-                - 'Squared Overdosing' \
-                    :class:`~pyanno4rt.optimization.components._squared_overdosing.SquaredOverdosing`
-                - 'Squared Underdosing' \
-                    :class:`~pyanno4rt.optimization.components._squared_underdosing.SquaredUnderdosing`
-                - 'Support Vector Machine NTCP' \
-                    :class:`~pyanno4rt.optimization.components._support_vector_machine_ntcp.SupportVectorMachineNTCP`
-                - 'Support Vector Machine TCP' \
-                    :class:`~pyanno4rt.optimization.components._support_vector_machine_tcp.SupportVectorMachineTCP`
-
-        - method : {'lexicographic', 'pareto', 'weighted-sum'}, \
-            default='weighted-sum'
-            Single- or multi-criteria optimization method, see the classes \
-            :class:`~pyanno4rt.optimization.methods._lexicographic_optimization.LexicographicOptimization`\
-            :class:`~pyanno4rt.optimization.methods._pareto_optimization.ParetoOptimization`\
-            :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`.
-
-            - 'lexicographic' : sequential optimization based on a \
-                preference order
-            - 'pareto' : parallel optimization based on the criterion of \
-                pareto optimality
-            - 'weighted-sum' : parallel optimization based on a weighted-sum \
-                scalarization of the objective function
-
-        - solver : {'ipyopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}, \
-            default='scipy'
-            Python package to be used for solving the optimization problem, \
-            see the classes \
-            :class:`~pyanno4rt.optimization.solvers._proxmin_solver.IpyoptSolver`\
-            :class:`~pyanno4rt.optimization.solvers._proxmin_solver.ProxminSolver`\
-            :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
-            :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
-            :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`.
-
-            - 'ipyopt': interior-point algorithms provided by Ipyopt
-            - 'proxmin' : proximal algorithms provided by Proxmin
-            - 'pymoo' : multi-objective algorithms provided by Pymoo
-            - 'pypop7': population-based algorithms provided by PyPop7
-            - 'scipy' : local algorithms provided by SciPy
-
-            .. note:: The 'lexicographic' method currently only works with \
-                'scipy', while the 'pareto' method only works with 'pymoo'.
-
-        - algorithm : str
-            Solution algorithm from the chosen solver:
-
-            - solver='ipyopt': {'mumps'}, default='mumps'
-
-                - 'mumps': multifrontal massively parallel sparse direct solver
-
-            - solver='proxmin' : {'admm', 'pgm', 'sdmm'}, default='pgm'
-
-                - 'admm' : alternating direction method of multipliers
-                - 'pgm' : proximal gradient method
-                - 'sdmm' : simultaneous direction method of multipliers
-
-            - solver='pymoo' : {'NSGA3'}, default='NSGA3'
-
-                - 'NSGA3' : non-dominated sorting genetic algorithm III
-
-            - solver='pypop7' : {'LMCMA', 'LMMAES'}, default='LMCMA'
-
-                - 'LMCMA' : limited-memory covariance matrix adaptation
-                - 'LMMAES' : limited-memory matrix adaptation evolution \
-                    strategy
-
-            - solver='scipy' : {'L-BFGS-B', 'TNC', 'trust-constr'}, \
-                default='L-BFGS-B'
-
-                - 'L-BFGS-B' : bounded limited memory \
-                    Broyden-Fletcher-Goldfarb-Shanno method
-                - 'TNC' : truncated Newton method
-                - 'trust-constr' : trust-region constrained method
-
-            .. note:: Constraints are currently only supported by 'mumps', \
-                'NSGA3' and 'trust-constr'.
-
-        - initial_strategy : {'data-medoid', 'target-coverage', \
-                              'warm-start'}, default='target-coverage'
-            Initialization strategy for the fluence vector (see the class \
-            :class:`~pyanno4rt.optimization.initializers._fluence_initializer.FluenceInitializer`).
-
-            - 'data-medoid' : fluence vector initialization with respect to \
-                data medoid points
-            - 'target-coverage' : fluence vector initialization with respect \
-                to tumor coverage
-            - 'warm-start' : fluence vector initialization with respect to a \
-                reference optimal point
-
-            .. note:: Data-medoid initialization works best for a single \
-                dataset or multiple datasets with a high degree of \
-                similarity. Otherwise, the initial fluence vector may lose \
-                its individual representativeness.
-
-        - initial_fluence_vector : None or list, default=None
-            User-defined initial fluence vector for the optimization problem, \
-            only used if initial_strategy='warm-start' (see the class \
-            :class:`~pyanno4rt.optimization.initializers._fluence_initializer.FluenceInitializer`).
-
-        - lower_variable_bounds : None, int, float, or list, default=0
-            Lower bound(s) on the decision variables.
-
-        - upper_variable_bounds : None, int, float, or list, default=None
-            Upper bound(s) on the decision variables.
-
-        .. note:: There are two options to set lower and upper bounds for the \
-            variables:
-
-                1) Passing a single numeric value translates into uniform \
-                    bounds across all variables (where None for the lower \
-                    and/or upper bound indicates infinity bounds)
-                2) Passing a list translates into non-uniform bounds (here, \
-                    the length of the list needs to be equal to the number of \
-                    decision variables)
-
-        - maximum_iterations : int, default=500
-            Maximum number of iterations taken for the solver to converge.
-
-        - tolerance : float, default=1e-3
-            Precision goal for the objective function value.
-
-    evaluation : None or dict, default=None
-        Dictionary with the treatment plan evaluation parameters.
-
-        - dvh_type : {'cumulative', 'differential'}, default=cumulative'
-            Type of DVH to be evaluated.
-
-        - number_of_points : int, default=1000
-            Number of (evenly-spaced) points for which to evaluate the DVH.
-
-        - reference_volume : list, default=[2, 5, 50, 95, 98]
-            Reference volumes for which to evaluate the inverse DVH values.
-
-        - reference_dose : list, default=[]
-            Reference dose values for which to evaluate the DVH values.
-
-            .. note:: If the default value is used, reference dose \
-                levels will be determined automatically.
-
-        - display_segments : list, default=[]
-            Names of the segmented structures to be displayed.
-
-            .. note:: If the default value is used, all segments will \
-                be displayed.
-
-        - display_metrics : list, default=[]
-            Names of the plan evaluation metrics to be displayed.
-
-            .. note:: If the default value is used, all metrics will be \
-                displayed.
-
-                The following metrics are currently available:
-
-                - 'mean': mean dose
-                - 'std': standard deviation of the dose
-                - 'max': maximum dose
-                - 'min': minimum dose
-                - 'Dx': dose quantile(s) for level x (reference_volume)
-                - 'Vx': volume quantile(s) for level x (reference_dose)
-                - 'CI': conformity index
-                - 'HI': homogeneity index
+    evaluation : object of class \
+        :class:`~pyanno4rt.base._evaluation.Evaluation`
+        The object used to handle the plan evaluation parameters.
 
     Attributes
     ----------
-    configuration : dict
+    configuration : object of class \
+        :class:`~pyanno4rt.base._configuration.Configuration`
         See 'Parameters'.
 
-    optimization : dict
+    optimization : object of class \
+        :class:`~pyanno4rt.base._optimization.Optimization`
         See 'Parameters'.
 
-    evaluation : dict
+    evaluation : object of class \
+        :class:`~pyanno4rt.base._evaluation.Evaluation`
         See 'Parameters'.
-
-    input_checker : object of class \
-        :class:`~pyanno4rt.input_check._input_checker.InputChecker`
-        The object used to approve the input dictionaries.
 
     logger : None or object of class \
         :class:`~pyanno4rt.logging._logger.Logger`
@@ -374,79 +121,21 @@ class TreatmentPlan():
             self,
             configuration,
             optimization,
-            evaluation=None):
+            evaluation):
 
-        # Check if the evaluation dictionary has not been specified
-        if evaluation is None:
+        # Check the input arguments
+        self.check(filter_dict(vars(), remove_keys=('self',)))
 
-            # Initialize the evaluation dictionary to its default
-            evaluation = {}
-
-        # Initialize the input checker
-        self.input_checker = InputChecker()
-
-        # Approve the input types
-        self.input_checker.approve({
-            'configuration': configuration,
-            'optimization': optimization,
-            'evaluation': evaluation})
-
-        # Initialize the configuration parameter dictionary
-        self.configuration = {
-            'label': configuration.get('label'),
-            'min_log_level': configuration.get('min_log_level', 'info'),
-            'modality': configuration.get('modality'),
-            'number_of_fractions': configuration.get(
-                'number_of_fractions', 30),
-            'imaging_path': configuration.get('imaging_path'),
-            'dose_matrix_path': configuration.get('dose_matrix_path'),
-            'dose_resolution': configuration.get('dose_resolution')
-            }
-
-        # Initialize the optimization parameter dictionary
-        self.optimization = {
-            'components': optimization.get('components'),
-            'method': optimization.get('method', 'weighted-sum'),
-            'solver': optimization.get('solver', 'scipy'),
-            'algorithm': optimization.get(
-                'algorithm',
-                'pgm' if optimization.get('solver') == 'proxmin'
-                else 'NSGA3' if optimization.get('solver') == 'pymoo'
-                else 'LMCMA' if optimization.get('solver') == 'pypop7'
-                else 'L-BFGS-B'),
-            'initial_strategy': optimization.get(
-                'initial_strategy', 'target-coverage'),
-            'initial_fluence_vector': optimization.get(
-                'initial_fluence_vector', None),
-            'lower_variable_bounds': optimization.get(
-                'lower_variable_bounds', 0),
-            'upper_variable_bounds': optimization.get(
-                'upper_variable_bounds', None),
-            'maximum_iterations': optimization.get('maximum_iterations', 500),
-            'tolerance': optimization.get('tolerance', 1e-3)
-            }
-
-        # Initialize the treatment plan evaluation dictionary
-        self.evaluation = {
-            'dvh_type': evaluation.get('dvh_type', 'cumulative'),
-            'number_of_points': evaluation.get('number_of_points', 1000),
-            'reference_volume': evaluation.get(
-                'reference_volume', [2, 5, 50, 95, 98]),
-            'reference_dose': evaluation.get('reference_dose', []),
-            'display_segments': evaluation.get('display_segments', []),
-            'display_metrics': evaluation.get('display_metrics', [])
-            }
-
-        # Approve the input values
-        apply(
-            self.input_checker.approve,
-            (self.configuration, self.optimization, self.evaluation))
+        # Initialize the plan parameter dictionaries
+        self.configuration = configuration.to_dict()
+        self.optimization = optimization.to_dict()
+        self.evaluation = evaluation.to_dict()
 
         # Initialize the instance attributes
         self.logger = Logger(
             self.configuration['label'], self.configuration['min_log_level'])
         self.datahub = Datahub(
-            self.configuration['label'], self.input_checker, self.logger)
+            self.configuration['label'], None, self.logger)
         self.patient_loader = None
         self.plan_generator = None
         self.dose_info_generator = None
@@ -496,8 +185,8 @@ class TreatmentPlan():
 
         # Check if the plan has not been configured yet
         if any(getattr(self, attribute) is None for attribute in (
-                'logger', 'datahub', 'input_checker', 'patient_loader',
-                'plan_generator', 'dose_info_generator')):
+                'logger', 'datahub', 'patient_loader', 'plan_generator',
+                'dose_info_generator')):
 
             # Log a message about the non-configured plan
             self.logger.display_error(
@@ -527,8 +216,8 @@ class TreatmentPlan():
 
         # Check if the plan has not been configured yet
         if any(getattr(self, attribute) is None for attribute in (
-                'logger', 'datahub', 'input_checker', 'patient_loader',
-                'plan_generator', 'dose_info_generator')):
+                'logger', 'datahub', 'patient_loader', 'plan_generator',
+                'dose_info_generator')):
 
             # Log a message about the non-configured plan
             self.logger.display_error(
@@ -660,9 +349,6 @@ class TreatmentPlan():
             If any update key is not included in the input dictionaries.
         """
 
-        # Approve the key-value pairs
-        self.input_checker.approve(key_value_pairs)
-
         # Loop over the items of the update dictionary
         for key, value in key_value_pairs.items():
 
@@ -707,3 +393,35 @@ class TreatmentPlan():
                     f"The update dictionary key '{key}' is not part of "
                     "the configuration, optimization or evaluation "
                     "dictionary!")
+
+    def get_check_map(self):
+        """Get the check map."""
+
+        return {
+            'configuration': (partial(check_type, types=Configuration),),
+            'optimization': (partial(check_type, types=Optimization),),
+            'evaluation': (partial(check_type, types=Evaluation),)}
+
+    def check(
+            self,
+            input_dictionary):
+        """
+        Check the items of an input dictionary.
+
+        Parameters
+        ----------
+        input_dictionary : dict
+            Dictionary with the mappings between parameter names and values.
+        """
+
+        # Get the check map
+        check_map = self.get_check_map()
+
+        # Loop over the dictionary items
+        for key, value in input_dictionary.items():
+
+            # Loop over the check functions
+            for function in check_map[key]:
+
+                # Run the check function
+                function(key, value)

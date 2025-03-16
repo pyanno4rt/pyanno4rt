@@ -49,5 +49,4 @@ def test_dose_nvoxels_differentiate(dose, dimension, indices, expected):
 
     # Assert the equality between actual and expected outcome
     assert array_equal(
-        DoseNVoxels.differentiate(dose, dimension, indices).toarray()[0],
-        expected)
+        DoseNVoxels.differentiate(dose, dimension, indices), expected)

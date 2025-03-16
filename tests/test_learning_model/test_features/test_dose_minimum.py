@@ -54,5 +54,4 @@ def test_dose_minimum_differentiate(dose, dimension, indices, expected):
 
     # Assert the equality between actual and expected outcome
     assert array_equal(
-        DoseMinimum.differentiate(dose, dimension, indices).toarray()[0],
-        expected)
+        DoseMinimum.differentiate(dose, dimension, indices), expected)

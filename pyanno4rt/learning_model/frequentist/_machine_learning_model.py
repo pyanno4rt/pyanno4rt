@@ -13,6 +13,7 @@ from functools import partial
 from hyperopt import fmin, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
 from numpy import array, where, zeros
 from sklearn.metrics import roc_auc_score
+from statistics import mean
 
 # %% Internal package import
 
@@ -463,7 +464,7 @@ class MachineLearningModel(metaclass=ABCMeta):
                         labels, self.predict(features, prediction_model))
                     for features, labels in (split[:2], split[2:])]
 
-                return max(scores)
+                return mean(scores)
 
             # Loop over the past trials
             for trial in trials:
@@ -495,7 +496,7 @@ class MachineLearningModel(metaclass=ABCMeta):
             folds = self.configuration['tune_folds']
 
             # Compute the objective function value (score) across all folds
-            rep_scores = (max(map(compute_fold_score, (
+            rep_scores = (mean(map(compute_fold_score, (
                 (training_indices, validation_indices)
                 for training_indices, validation_indices in (
                     (where(folds[:, index] != number),
@@ -513,7 +514,7 @@ class MachineLearningModel(metaclass=ABCMeta):
             self.step += 1
 
             return {
-                'loss': max(rep_scores),
+                'loss': mean(rep_scores),
                 'params': hyperparameters,
                 'status': STATUS_OK}
 

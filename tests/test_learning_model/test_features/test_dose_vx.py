@@ -50,5 +50,4 @@ def test_dose_vx_differentiate(level, dose, dimension, indices, expected):
 
     # Assert the equality between actual and expected outcome
     assert array_equal(
-        DoseVx.differentiate(level, dose, dimension, indices).toarray()[0],
-        expected)
+        DoseVx.differentiate(level, dose, dimension, indices), expected)
