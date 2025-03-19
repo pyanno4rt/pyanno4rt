@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from copy import deepcopy
 from numpy import array
 from tensorflow import cast, float64, GradientTape
 
@@ -13,7 +14,7 @@ from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model import DataModelHandler
 from pyanno4rt.learning_model.frequentist import NeuralNetworkModel
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import inverse_sigmoid
+from pyanno4rt.tools import filter_dict, inverse_sigmoid
 
 # %% Class definition
 
@@ -34,6 +35,9 @@ class NeuralNetworkTCP(MachineLearningComponent):
         Dictionary with the data handling & learning model parameters, see \
         the class
         :class:`~pyanno4rt.optimization.components._machine_learning_component_class.MachineLearningComponentClass`.
+
+    component_type : {'constraint', 'objective'}, default='objective'
+        Type of the component.
 
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
@@ -60,6 +64,9 @@ class NeuralNetworkTCP(MachineLearningComponent):
 
     Attributes
     ----------
+    arguments : dict
+        Dictionary with the component input arguments (for serialization).
+
     data_model_handler : object of class \
         :class:`~pyanno4rt.learning_model._data_model_handler.DataModelHandler`
         The object used to handle the dataset, the feature map generation and \
@@ -81,6 +88,7 @@ class NeuralNetworkTCP(MachineLearningComponent):
             self,
             segment,
             model_parameters,
+            component_type='objective',
             embedding='active',
             weight=1.0,
             rank=1,
@@ -93,6 +101,7 @@ class NeuralNetworkTCP(MachineLearningComponent):
         super().__init__(
             name='Neural Network TCP',
             segment=segment,
+            component_type=component_type,
             parameter_name=('(weight, bias)',),
             parameter_category=('parameter',),
             model_parameters=model_parameters,
@@ -103,6 +112,23 @@ class NeuralNetworkTCP(MachineLearningComponent):
             link=link,
             identifier=identifier,
             display=display)
+
+        # Set the input arguments
+        self.arguments = filter_dict(
+            locals(), remove_keys=('self', '__class__'))
+
+    def to_dict(self):
+        """Return the component input dictionary."""
+
+        # Get the parameter dictionary
+        dictionary = deepcopy(self.arguments)
+
+        # Serialize the data columns
+        dictionary['model_parameters']['data_columns'] = [
+            item.to_dict()
+            for item in dictionary['model_parameters']['data_columns']]
+
+        return {'Neural Network TCP': dictionary}
 
     def add_model(self):
         """Add the neural network model to the component."""

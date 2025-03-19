@@ -12,7 +12,7 @@ from scipy.sparse import csr_matrix, load_npz
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.input_check.check_functions import check_dose_matrix
+from pyanno4rt.input_check import check_dose_matrix
 from pyanno4rt.tools import arange_with_endpoint
 
 # %% Class definition

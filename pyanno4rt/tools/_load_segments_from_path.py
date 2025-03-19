@@ -8,7 +8,7 @@ from os.path import splitext
 
 # %% Internal package import
 
-from pyanno4rt.patient.import_functions import (
+from pyanno4rt.patient import (
     read_data_from_dcm, read_data_from_mat, read_data_from_p)
 
 # %% Function definition

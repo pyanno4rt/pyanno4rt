@@ -3,8 +3,7 @@ Logging module.
 
 ==================================================================
 
-This module aims to provide methods and classes to configure an instance of \
-the logger.
+This module aims to provide methods and classes to implement a logging system.
 """
 
 # Author: Tim Ortkamp

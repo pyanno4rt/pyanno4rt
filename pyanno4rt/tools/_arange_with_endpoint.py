@@ -11,7 +11,7 @@ from numpy import arange, concatenate
 
 def arange_with_endpoint(start, stop, step):
     """
-    Return evenly spaced values within an interval, including the endpoint.
+    Return evenly-spaced values within an interval, including the endpoint.
 
     Parameters
     ----------
@@ -27,7 +27,7 @@ def arange_with_endpoint(start, stop, step):
     Returns
     -------
     ndarray
-        Array of evenly spaced values.
+        Array of evenly-spaced values.
     """
 
     # Run the common arange function

@@ -1,14 +1,15 @@
-"""Plan configuration information."""
+"""Configuration handler."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
+from os.path import abspath
 from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.input_check.check_functions import (
+from pyanno4rt.input_check import (
     check_length, check_regular_extension, check_regular_extension_directory,
     check_subtype, check_type, check_value, check_value_in_set)
 from pyanno4rt.tools import filter_dict
@@ -18,28 +19,23 @@ from pyanno4rt.tools import filter_dict
 
 class Configuration():
     """
-    Plan configuration information class.
+    Configuration handler class.
 
-    This class provides methods to set, validate and serialize the \
-    configuration parameters of the treatment plan.
+    This class provides methods to handle the configuration parameters of a \
+    treatment plan.
 
     Parameters
     ----------
     label : str
-        Unique identifier for the treatment plan.
+        Label for the treatment plan.
 
-        .. note:: Uniqueness of the label is important because it \
-            prevents overwriting processes between different treatment \
-            plan instances by isolating their datahubs, logging channels \
-            and general storage paths.
-        .. note:: Changing the label of a treatment plan instance will \
-            automatically create a new singleton datahub object. To \
-            prevent memory issues, keep the label unchanged if possible, \
-            once set!
+        .. note:: To prevent overwriting processes, choose a unique label for \
+            each treatment plan!
+        .. note:: To prevent memory issues, keep the label unchanged if \
+            possible, once set!
 
     modality : {'photon', 'proton'}
-        Treatment modality, needs to be consistent with the dose \
-        calculation inputs.
+        Treatment modality.
 
         .. note:: If the modality is 'photon', \
             :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
@@ -53,14 +49,13 @@ class Configuration():
 
         .. note:: It is assumed that CT and segmentation data are \
             included in a single file (.mat or .p) or a series of files \
-            (.dcm), whose content follows the pyanno4rt data structure.
+            (.dcm).
 
     dose_matrix_path : str
         Path to the dose-influence matrix file (.mat, .npy or .npz).
 
     dose_resolution : list
-        Size of the dose grid in [`mm`] per dimension, needs to be \
-        consistent with the dose calculation inputs.
+        Size of the dose grid in [`mm`] per dimension.
 
     min_log_level : {'debug', 'info', 'warning', 'error, 'critical'}, \
                      default='info'
@@ -103,14 +98,21 @@ class Configuration():
             min_log_level='info',
             number_of_fractions=30):
 
+        # Get the input arguments
+        inputs = filter_dict(vars(), remove_keys=('self',))
+
         # Check the input arguments
-        self.check(filter_dict(vars(), remove_keys=('self',)))
+        self.check(inputs)
 
         # Loop over the input arguments
-        for key, value in filter_dict(vars(), remove_keys=('self',)).items():
+        for key, value in inputs.items():
 
             # Set the attribute
             setattr(self, key, value)
+
+        # Convert the paths into absolute values
+        self.imaging_path = abspath(self.imaging_path)
+        self.dose_matrix_path = abspath(self.dose_matrix_path)
 
     def to_dict(self):
         """Return the configuration parameter dictionary."""
@@ -119,19 +121,21 @@ class Configuration():
 
     def check(
             self,
-            input_dictionary):
+            inputs):
         """
-        Check the items of an input dictionary.
+        Check the input arguments.
 
         Parameters
         ----------
-        input_dictionary : dict
-            Dictionary with the mappings between parameter names and values.
+        inputs : dict
+            Dictionary with the input arguments.
         """
 
         # Get the check map
         check_map = {
-            'label': (partial(check_type, types=str),),
+            'label': (
+                partial(check_type, types=str),
+                partial(check_length, reference=1, sign='>=')),
             'min_log_level': (
                 partial(check_type, types=str),
                 partial(check_value_in_set, options=(
@@ -141,7 +145,7 @@ class Configuration():
                 partial(check_value_in_set, options=('photon', 'proton'))),
             'number_of_fractions': (
                 partial(check_type, types=int),
-                partial(check_value, reference=0, sign='>')),
+                partial(check_value, reference=1, sign='>=')),
             'imaging_path': (
                 partial(check_type, types=str),
                 partial(check_regular_extension, extensions=('.mat', '.p')),
@@ -155,10 +159,10 @@ class Configuration():
                 partial(check_type, types=list),
                 partial(check_subtype, types=(int, float)),
                 partial(check_length, reference=3, sign='=='),
-                partial(check_value, reference=0, sign='>', is_vector=True))}
+                partial(check_value, reference=1, sign='>=', is_vector=True))}
 
-        # Loop over the dictionary items
-        for key, value in input_dictionary.items():
+        # Loop over the inputs
+        for key, value in inputs.items():
 
             # Loop over the check functions
             for function in check_map[key]:

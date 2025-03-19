@@ -16,7 +16,7 @@ def get_objective_segments(segmentation):
     Parameters
     ----------
     segmentation : dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
 
     Returns
     -------

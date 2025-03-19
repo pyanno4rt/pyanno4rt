@@ -43,8 +43,12 @@ from ._segment_eigenmax import SegmentEigenmax
 # Import the feature calculator
 from ._feature_calculator import FeatureCalculator
 
-# Import the feature map
+# Import the feature and type map
 from ._feature_map import feature_map
+
+# Import the input feature and label classes
+from ._feature import Feature
+from ._label import Label
 
 __all__ = [
     'DosiomicFeature',
@@ -74,4 +78,6 @@ __all__ = [
     'SegmentEigenmax',
     'SegmentEigenvalues',
     'FeatureCalculator',
-    'feature_map']
+    'feature_map',
+    'Feature',
+    'Label']

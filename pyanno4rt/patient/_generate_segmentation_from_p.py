@@ -12,12 +12,12 @@ def generate_segmentation_from_p(data):
     Parameters
     ----------
     data : dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
 
     Returns
     -------
     dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
     """
 
     return dict(sorted(data.items()))

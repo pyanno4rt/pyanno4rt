@@ -10,6 +10,7 @@ from numpy import concatenate, ones
 # %% Internal package import
 
 from pyanno4rt.optimization.components import ConventionalComponent
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -28,6 +29,9 @@ class MeanDose(ConventionalComponent):
 
     target_dose : int or float
         Target value for the dose.
+
+    component_type : {'constraint', 'objective'}, default='objective'
+        Type of the component.
 
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
@@ -51,12 +55,18 @@ class MeanDose(ConventionalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
+
+    Attributes
+    ----------
+    arguments : dict
+        Dictionary with the component input arguments (for serialization).
     """
 
     def __init__(
             self,
             segment,
-            target_dose=None,
+            target_dose,
+            component_type='objective',
             embedding='active',
             weight=1.0,
             rank=1,
@@ -69,6 +79,7 @@ class MeanDose(ConventionalComponent):
         super().__init__(
             name='Mean Dose',
             segment=segment,
+            component_type=component_type,
             parameter_name=('target_dose',),
             parameter_category=('dose',),
             parameter_value=(target_dose,),
@@ -79,6 +90,15 @@ class MeanDose(ConventionalComponent):
             link=link,
             identifier=identifier,
             display=display)
+
+        # Set the input arguments
+        self.arguments = filter_dict(
+            locals(), remove_keys=('self', '__class__'))
+
+    def to_dict(self):
+        """Return the component input dictionary."""
+
+        return {'Mean Dose': self.arguments}
 
     def compute_value(
             self,

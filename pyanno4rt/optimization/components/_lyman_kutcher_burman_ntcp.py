@@ -11,6 +11,7 @@ from numpy import concatenate, exp
 # %% Internal package import
 
 from pyanno4rt.optimization.components import RadiobiologicalComponent
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -36,6 +37,9 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
     volume_parameter : int or float
         Dose-volume effect parameter.
 
+    component_type : {'constraint', 'objective'}, default='objective'
+        Type of the component.
+
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
         value is computed and tracked, but not considered in the optimization \
@@ -58,14 +62,20 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
+
+    Attributes
+    ----------
+    arguments : dict
+        Dictionary with the component input arguments (for serialization).
     """
 
     def __init__(
             self,
             segment,
-            tolerance_dose_50=None,
-            slope_parameter=None,
-            volume_parameter=None,
+            tolerance_dose_50,
+            slope_parameter,
+            volume_parameter,
+            component_type='objective',
             embedding='active',
             weight=1.0,
             rank=1,
@@ -78,6 +88,7 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
         super().__init__(
             name='Lyman-Kutcher-Burman NTCP',
             segment=segment,
+            component_type=component_type,
             parameter_name=(
                 'tolerance_dose_50', 'slope_parameter', 'volume_parameter'),
             parameter_category=('dose', 'coefficient', 'coefficient'),
@@ -90,6 +101,15 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
             link=link,
             identifier=identifier,
             display=display)
+
+        # Set the input arguments
+        self.arguments = filter_dict(
+            locals(), remove_keys=('self', '__class__'))
+
+    def to_dict(self):
+        """Return the component input dictionary."""
+
+        return {'Lyman-Kutcher-Burman NTCP': self.arguments}
 
     def compute_value(
             self,

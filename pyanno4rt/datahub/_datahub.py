@@ -18,9 +18,8 @@ class Datahub():
     *args : tuple
         Tuple with optional (non-keyworded) parameters. The element args[0]
         refers to the treatment plan label, while args[1] is a \
-        :class:`~pyanno4rt.logging._logger.Logger` object and args[2] \
-        is an :class:`~pyanno4rt.input_check._input_checker.InputChecker` \
-        object. Only required for (re-)instantiating a datahub.
+        :class:`~pyanno4rt.logging._logger.Logger` object. Only required for \
+        (re-)instantiating a datahub.
 
     Attributes
     ----------
@@ -31,10 +30,6 @@ class Datahub():
     label : None or str
         Label of the current active treatment plan instance.
 
-    input_checker : None or object of class \
-        :class:`~pyanno4rt.input_check._input_checker.InputChecker`
-        The object used to approve the input dictionaries.
-
     logger : None or object of class \
         :class:`~pyanno4rt.logging._logger.Logger`
         The object used to print and store logging messages.
@@ -43,7 +38,7 @@ class Datahub():
         Dictionary with information on the CT images.
 
     segmentation : None or dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
 
     plan_configuration : None or dict
         Dictionary with information on the plan configuration.
@@ -85,15 +80,14 @@ class Datahub():
 
     dose_histogram : None or dict
         Dictionary with information on the cumulative or differential \
-        dose-volume histogram for each segmented structure.
+        dose-volume histogram for each segment.
 
     dosimetrics : None or dict
-        Dictionary with information on the dosimetrics for each segmented \
-        structure.
+        Dictionary with information on the dosimetrics for each segment.
 
     state : int
-        A state variable describing the current stage of the plan datahub \
-        (0=initialized, 1=configured, 2=modeled, 3=optimized, 4=evaluated).
+        State encoding for the datahub (0=initialized, 1=configured, \
+        2=modeled, 3=optimized, 4=evaluated).
     """
 
     # Initialize the datahub instances dictionary
@@ -101,7 +95,6 @@ class Datahub():
 
     # Initialize the information units
     label = None
-    input_checker = None
     logger = None
     computed_tomography = None
     segmentation = None
@@ -165,11 +158,8 @@ class Datahub():
             # Set the instance and the class label to the same value
             self.label = Datahub.label = args[0]
 
-            # Set the input checking object
-            self.input_checker = args[1]
-
             # Set the logging object
-            self.logger = args[2]
+            self.logger = args[1]
 
             # Log a message about the initialization of the class
             self.logger.display_info("Initializing datahub ...")

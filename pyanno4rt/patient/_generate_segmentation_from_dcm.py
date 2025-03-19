@@ -25,7 +25,7 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
     ----------
     data : object of class :class:`pydicom.dataset.FileDataset`
         The :class:`pydicom.dataset.FileDataset` object with information on \
-        the segmented structures.
+        the segments.
 
     ct_slices : tuple
         Tuple of :class:`pydicom.dataset.FileDataset` objects with \
@@ -37,7 +37,7 @@ def generate_segmentation_from_dcm(data, ct_slices, computed_tomography):
     Returns
     -------
     dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
 
     Raises
     ------

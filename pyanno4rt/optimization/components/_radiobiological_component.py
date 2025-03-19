@@ -5,10 +5,13 @@
 # %% External package import
 
 from abc import ABCMeta, abstractmethod
+from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.input_check import (
+    check_length, check_subtype, check_type, check_value, check_value_in_set)
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -24,6 +27,9 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
 
     segment : str
         Name of the segment associated with the component.
+
+    component_type : {'constraint', 'objective'}
+        Type of the component.
 
     parameter_name : tuple
         Name of the component parameters.
@@ -65,6 +71,9 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
     segment : str
         See 'Parameters'.
 
+    component_type : {'constraint', 'objective'}
+        See 'Parameters'.
+
     parameter_name : tuple
         See 'Parameters'.
 
@@ -103,6 +112,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             self,
             name,
             segment,
+            component_type,
             parameter_name,
             parameter_category,
             parameter_value,
@@ -114,27 +124,15 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             identifier,
             display):
 
-        # Get the class arguments
-        class_arguments = locals()
-
-        # Loop over non-required local keys
-        for key in ('self', 'parameter_value'):
-
-            # Remove the key from the class arguments dictionary
-            class_arguments.pop(key)
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Check the class attributes
-        hub.input_checker.approve(class_arguments)
-
-        # Check the component parameters
-        hub.input_checker.approve(dict(zip(parameter_name, parameter_value)))
+        # Check the input arguments
+        self.check(
+            filter_dict(locals(), remove_keys=('self', 'parameter_value'))
+            | dict(zip(parameter_name, parameter_value)))
 
         # Set the instance attributes from the class arguments
         self.name = name
         self.segment = segment
+        self.component_type = component_type
         self.parameter_name = parameter_name
         self.parameter_category = parameter_category
         self.parameter_value = list(map(float, parameter_value))
@@ -167,7 +165,79 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         """
 
         return all(self.__dict__[key] == other.__dict__[key] for key in (
-            'name', 'link', 'identifier'))
+            'name', 'segment', 'component_type', 'link', 'identifier'))
+
+    def check(
+            self,
+            inputs):
+        """
+        Check the input arguments.
+
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the mappings between argument names and values.
+        """
+
+        # Get the check map
+        check_map = {
+            'name': (
+                partial(check_type, types=str),),
+            'segment': (
+                partial(check_type, types=str),),
+            'component_type': (
+                partial(check_type, types=str),
+                partial(
+                    check_value_in_set, options=('objective', 'constraint'))),
+            'parameter_name': (
+                partial(check_type, types=tuple),
+                partial(check_subtype, types=str)),
+            'parameter_category': (
+                partial(check_type, types=tuple),
+                partial(check_subtype, types=str)),
+            'embedding': (
+                partial(check_type, types=str),
+                partial(check_value_in_set, options=('active', 'passive'))),
+            'weight': (
+                partial(check_type, types=(int, float)),
+                partial(check_value, reference=0, sign='>')),
+            'rank': (
+                partial(check_type, types=int),
+                partial(check_value, reference=0, sign='>')),
+            'bounds': (
+                partial(check_type, types=(type(None), list)),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=(type(None), int, float))),
+            'link': (
+                partial(check_type, types=(type(None), list)),
+                partial(check_subtype, types=str)),
+            'identifier': (
+                partial(check_type, types=(type(None), str)),),
+            'display': (
+                partial(check_type, types=bool),),
+            'tolerance_dose_50': (
+                partial(check_type, types=(int, float)),
+                partial(check_value, reference=0, sign='>=')),
+            'volume_parameter': (
+                partial(check_type, types=(int, float)),),
+            'slope_parameter': (
+                partial(check_type, types=(int, float)),),
+            'alpha': (
+                partial(check_type, types=(int, float)),),
+            'beta': (
+                partial(check_type, types=(int, float)),),
+            'number_of_fractions': (
+                partial(check_type, types=int),
+                partial(check_value, reference=0, sign='>')),}
+
+        # Loop over the dictionary items
+        for key, value in inputs.items():
+
+            # Loop over the check functions
+            for function in check_map[key]:
+
+                # Run the check function
+                function(key, value)
 
     def get_class(self):
         """

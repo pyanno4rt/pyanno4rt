@@ -11,17 +11,17 @@ from pyanno4rt.tools import flatten
 
 def get_conventional_objectives(segmentation):
     """
-    Get a tuple with all set conventional objective functions.
+    Get a tuple with the conventional objective functions.
 
     Parameters
     ----------
     segmentation : dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
 
     Returns
     -------
     tuple
-        Tuple with all set conventional objective functions.
+        Tuple with the conventional objective functions.
     """
 
     return tuple(objective for objective in flatten(

@@ -1,4 +1,4 @@
-"""Plan evaluation information."""
+"""Evaluation handler."""
 
 # Author: Tim Ortkamp
 
@@ -8,7 +8,7 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.input_check.check_functions import (
+from pyanno4rt.input_check import (
     check_subtype, check_type, check_value, check_value_in_set)
 from pyanno4rt.tools import filter_dict
 
@@ -17,10 +17,10 @@ from pyanno4rt.tools import filter_dict
 
 class Evaluation():
     """
-    Plan evaluation information class.
+    Evaluation handler class.
 
-    This class provides methods to set, validate and serialize the evaluation \
-    parameters of the treatment plan.
+    This class provides methods to handle the evaluation parameters of a \
+    treatment plan.
 
     Parameters
     ----------
@@ -28,7 +28,7 @@ class Evaluation():
         Type of DVH to be evaluated.
 
     number_of_points : int, default=1000
-        Number of (evenly-spaced) points for which to evaluate the DVH.
+        Number of (evenly-spaced) DVH evaluation points.
 
     reference_volume : list, default=[2, 5, 50, 95, 98]
         Reference volumes for which to evaluate the inverse DVH values.
@@ -36,29 +36,27 @@ class Evaluation():
     reference_dose : list, default=[]
         Reference dose values for which to evaluate the DVH values.
 
-        .. note:: If the default value is used, reference dose \
-            levels will be determined automatically.
+        .. note:: If the default value is used, reference dose levels will be \
+            determined automatically.
 
     display_segments : list, default=[]
-        Names of the segmented structures to be displayed.
+        Names of the segments to be displayed.
 
-        .. note:: If the default value is used, all segments will \
-            be displayed.
+        .. note:: If the default value is used, all segments will be displayed.
 
     display_metrics : list, default=[]
-        Names of the plan evaluation metrics to be displayed.
+        Names of the evaluation metrics to be displayed.
 
-        .. note:: If the default value is used, all metrics will be \
-            displayed.
+        .. note:: If the default value is used, all metrics will be displayed.
 
-            The following metrics are currently available:
+            Currently available:
 
             - 'mean': mean dose
             - 'std': standard deviation of the dose
             - 'max': maximum dose
             - 'min': minimum dose
-            - 'Dx': dose quantile(s) for level x (reference_volume)
-            - 'Vx': volume quantile(s) for level x (reference_dose)
+            - 'Dx': dose quantile(s) for level x (-> reference_volume)
+            - 'Vx': volume quantile(s) for level x (-> reference_dose)
             - 'CI': conformity index
             - 'HI': homogeneity index
 
@@ -92,30 +90,33 @@ class Evaluation():
             display_segments=[],
             display_metrics=[]):
 
+        # Get the input arguments
+        inputs = filter_dict(vars(), remove_keys=('self',))
+
         # Check the input arguments
-        self.check(filter_dict(vars(), remove_keys=('self',)))
+        self.check(inputs)
 
         # Loop over the input arguments
-        for key, value in filter_dict(vars(), remove_keys=('self',)).items():
+        for key, value in inputs.items():
 
             # Set the attribute
             setattr(self, key, value)
 
     def to_dict(self):
-        """Return the attribute dictionary."""
+        """Return the evaluation parameter dictionary."""
 
         return vars(self)
 
     def check(
             self,
-            input_dictionary):
+            inputs):
         """
-        Check the items of an input dictionary.
+        Check the input arguments.
 
         Parameters
         ----------
-        input_dictionary : dict
-            Dictionary with the mappings between parameter names and values.
+        inputs : dict
+            Dictionary with the input arguments.
         """
 
         # Get the check map
@@ -136,7 +137,7 @@ class Evaluation():
                     'cumulative', 'differential'))),
             'number_of_points': (
                 partial(check_type, types=int),
-                partial(check_value, reference=0, sign='>')),
+                partial(check_value, reference=1, sign='>=')),
             'display_metrics': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=str),
@@ -146,8 +147,8 @@ class Evaluation():
                 partial(check_type, types=list),
                 partial(check_subtype, types=str))}
 
-        # Loop over the dictionary items
-        for key, value in input_dictionary.items():
+        # Loop over the inputs
+        for key, value in inputs.items():
 
             # Loop over the check functions
             for function in check_map[key]:

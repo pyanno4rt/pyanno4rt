@@ -10,8 +10,8 @@ from numpy import concatenate, exp
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.optimization.components import RadiobiologicalComponent
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -37,6 +37,12 @@ class LQPoissonTCP(RadiobiologicalComponent):
     volume_parameter : int or float
         Dose-volume effect parameter.
 
+    number_of_fractions : int
+        Number of fractions according to the treatment scheme.
+
+    component_type : {'constraint', 'objective'}, default='objective'
+        Type of the component.
+
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
         value is computed and tracked, but not considered in the optimization \
@@ -60,16 +66,20 @@ class LQPoissonTCP(RadiobiologicalComponent):
     display : bool, default=True
         Indicator for the display of the component.
 
-    number_of_fractions : int
-        Number of fractions according to the treatment scheme.
+    Attributes
+    ----------
+    arguments : dict
+        Dictionary with the component input arguments (for serialization).
     """
 
     def __init__(
             self,
             segment,
-            alpha=None,
-            beta=None,
-            volume_parameter=None,
+            alpha,
+            beta,
+            volume_parameter,
+            number_of_fractions,
+            component_type='objective',
             embedding='active',
             weight=1.0,
             rank=1,
@@ -82,9 +92,13 @@ class LQPoissonTCP(RadiobiologicalComponent):
         super().__init__(
             name='LQ Poisson TCP',
             segment=segment,
-            parameter_name=('alpha', 'beta', 'volume_parameter'),
-            parameter_category=('coefficient', 'coefficient', 'coefficient'),
-            parameter_value=(alpha, beta, volume_parameter),
+            component_type=component_type,
+            parameter_name=(
+                'alpha', 'beta', 'volume_parameter', 'number_of_fractions'),
+            parameter_category=(
+                'coefficient', 'coefficient', 'coefficient', 'coefficient'),
+            parameter_value=(
+                alpha, beta, volume_parameter, number_of_fractions),
             embedding=embedding,
             weight=weight,
             rank=rank,
@@ -93,9 +107,14 @@ class LQPoissonTCP(RadiobiologicalComponent):
             identifier=identifier,
             display=display)
 
-        # Get the number of fractions
-        self.number_of_fractions = Datahub().dose_information[
-            'number_of_fractions']
+        # Set the input arguments
+        self.arguments = filter_dict(
+            locals(), remove_keys=('self', '__class__'))
+
+    def to_dict(self):
+        """Return the component input dictionary."""
+
+        return {'LQ Poisson TCP': self.arguments}
 
     def compute_value(
             self,
@@ -118,7 +137,7 @@ class LQPoissonTCP(RadiobiologicalComponent):
             Function value.
         """
 
-        return compute(dose, *self.parameter_value, self.number_of_fractions)
+        return compute(dose, *self.parameter_value)
 
     def compute_gradient(
             self,
@@ -141,8 +160,7 @@ class LQPoissonTCP(RadiobiologicalComponent):
             Gradient vector.
         """
 
-        return differentiate(
-            dose, *self.parameter_value, self.number_of_fractions)
+        return differentiate(dose, *self.parameter_value)
 
 
 @njit

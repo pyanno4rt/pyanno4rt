@@ -2,14 +2,10 @@
 
 # Author: Tim Ortkamp
 
-# %% External package import
-
-from functools import partial
-
 # %% Internal package import
 
 # Functional classes
-from pyanno4rt.base import Configuration, Optimization, Evaluation
+from pyanno4rt.base import Configuration, Evaluation, Optimization
 from pyanno4rt.logging import Logger
 from pyanno4rt.datahub import Datahub
 
@@ -29,10 +25,9 @@ from pyanno4rt.evaluation import DosimetricsEvaluator
 from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
-from pyanno4rt.input_check.check_functions import check_type
+from pyanno4rt.input_check import check_type
 from pyanno4rt.tools import (
-    apply, filter_dict, get_machine_learning_constraints,
-    get_machine_learning_objectives)
+    apply, get_machine_learning_constraints, get_machine_learning_objectives)
 
 # %% Class definition
 
@@ -42,9 +37,7 @@ class TreatmentPlan():
     Base treatment plan class.
 
     This class enables configuration, optimization, evaluation, and \
-    visualization of individual IMRT treatment plans. It therefore provides a \
-    simple, but extensive interface using input dictionaries for the \
-    different parameter groups.
+    visualization of individual IMRT treatment plans.
 
     Parameters
     ----------
@@ -124,18 +117,19 @@ class TreatmentPlan():
             evaluation):
 
         # Check the input arguments
-        self.check(filter_dict(vars(), remove_keys=('self',)))
+        check_type('configuration', configuration, Configuration)
+        check_type('optimization', optimization, Optimization)
+        check_type('evaluation', evaluation, Evaluation)
 
-        # Initialize the plan parameter dictionaries
-        self.configuration = configuration.to_dict()
-        self.optimization = optimization.to_dict()
-        self.evaluation = evaluation.to_dict()
+        # Initialize the plan parameter attributes
+        self.configuration = configuration
+        self.optimization = optimization
+        self.evaluation = evaluation
 
         # Initialize the instance attributes
         self.logger = Logger(
-            self.configuration['label'], self.configuration['min_log_level'])
-        self.datahub = Datahub(
-            self.configuration['label'], None, self.logger)
+            self.configuration.label, self.configuration.min_log_level)
+        self.datahub = Datahub(self.configuration.label, self.logger)
         self.patient_loader = None
         self.plan_generator = None
         self.dose_info_generator = None
@@ -145,31 +139,31 @@ class TreatmentPlan():
         self.visualizer = None
 
     def configure(self):
-        """Initialize the internal classes and process the input data."""
+        """Initialize the configuration classes and process the input data."""
 
         # Reset the treatment plan label in the datahub
-        Datahub.label = self.configuration['label']
+        Datahub.label = self.configuration.label
 
         # Initialize the patient loader
         self.patient_loader = PatientLoader(
-            imaging_path=self.configuration['imaging_path'])
+            imaging_path=self.configuration.imaging_path)
 
         # Load the patient data
         self.patient_loader.load()
 
         # Initialize the plan generator
         self.plan_generator = PlanGenerator(
-            modality=self.configuration['modality'],
-            components=self.optimization['components'])
+            modality=self.configuration.modality,
+            components=self.optimization.components)
 
         # Generate the plan information
         self.plan_generator.generate()
 
         # Initialize the dose information generator
         self.dose_info_generator = DoseInfoGenerator(
-            number_of_fractions=self.configuration['number_of_fractions'],
-            dose_matrix_path=self.configuration['dose_matrix_path'],
-            dose_resolution=self.configuration['dose_resolution'])
+            number_of_fractions=self.configuration.number_of_fractions,
+            dose_matrix_path=self.configuration.dose_matrix_path,
+            dose_resolution=self.configuration.dose_resolution)
 
         # Generate the dose information
         self.dose_info_generator.generate()
@@ -178,10 +172,10 @@ class TreatmentPlan():
         self.datahub.state = 1
 
     def model(self):
-        """Set up the machine learning outcome prediction models."""
+        """Add the machine learning outcome models to the components."""
 
         # Reset the treatment plan label in the datahub
-        Datahub.label = self.configuration['label']
+        Datahub.label = self.configuration.label
 
         # Check if the plan has not been configured yet
         if any(getattr(self, attribute) is None for attribute in (
@@ -206,10 +200,10 @@ class TreatmentPlan():
             self.datahub.state = 2
 
     def optimize(self):
-        """Solve the inverse planning problem."""
+        """Initialize the optimization classes and solve the problem."""
 
         # Reset the treatment plan label in the datahub
-        Datahub.label = self.configuration['label']
+        Datahub.label = self.configuration.label
 
         # Get the segmentation dictionary
         segmentation = Datahub().segmentation
@@ -230,25 +224,22 @@ class TreatmentPlan():
 
             # Log a message about the non-modeled components
             self.logger.display_error(
-                "Please set up the machine learning models before "
-                "optimization!")
+                "Please add the machine learning models before optimization!")
 
         else:
 
             # Initialize the fluence optimizer
             self.fluence_optimizer = FluenceOptimizer(
-                method=self.optimization['method'],
-                solver=self.optimization['solver'],
-                algorithm=self.optimization['algorithm'],
-                initial_strategy=self.optimization['initial_strategy'],
-                initial_fluence_vector=self.optimization[
-                    'initial_fluence_vector'],
-                lower_variable_bounds=self.optimization[
-                    'lower_variable_bounds'],
-                upper_variable_bounds=self.optimization[
-                    'upper_variable_bounds'],
-                maximum_iterations=self.optimization['maximum_iterations'],
-                tolerance=self.optimization['tolerance'])
+                method=self.optimization.method,
+                solver=self.optimization.solver,
+                algorithm=self.optimization.algorithm,
+                initial_strategy=self.optimization.initial_strategy,
+                initial_fluence_vector=(
+                    self.optimization.initial_fluence_vector),
+                lower_variable_bounds=self.optimization.lower_variable_bounds,
+                upper_variable_bounds=self.optimization.upper_variable_bounds,
+                maximum_iterations=self.optimization.maximum_iterations,
+                tolerance=self.optimization.tolerance)
 
             # Solve the optimization problem
             self.fluence_optimizer.solve()
@@ -260,7 +251,7 @@ class TreatmentPlan():
         """Initialize the evaluation classes and compute the plan metrics."""
 
         # Reset the treatment plan label in the datahub
-        Datahub.label = self.configuration['label']
+        Datahub.label = self.configuration.label
 
         # Check if the plan has not been optimized yet
         if (getattr(self, 'fluence_optimizer') is None
@@ -274,16 +265,16 @@ class TreatmentPlan():
 
             # Initialize the DVH class
             self.dose_histogram = DVHEvaluator(
-                dvh_type=self.evaluation['dvh_type'],
-                number_of_points=self.evaluation['number_of_points'],
-                display_segments=self.evaluation['display_segments'])
+                dvh_type=self.evaluation.dvh_type,
+                number_of_points=self.evaluation.number_of_points,
+                display_segments=self.evaluation.display_segments)
 
             # Initialize the dosimetrics class
             self.dosimetrics = DosimetricsEvaluator(
-                reference_volume=self.evaluation['reference_volume'],
-                reference_dose=self.evaluation['reference_dose'],
-                display_segments=self.evaluation['display_segments'],
-                display_metrics=self.evaluation['display_metrics'])
+                reference_volume=self.evaluation.reference_volume,
+                reference_dose=self.evaluation.reference_dose,
+                display_segments=self.evaluation.display_segments,
+                display_metrics=self.evaluation.display_metrics)
 
             # Compute the dose-volume histogram from the optimized dose
             self.dose_histogram.evaluate(
@@ -300,7 +291,7 @@ class TreatmentPlan():
             self,
             parent=None):
         """
-        Initialize the visualization interface and launch it.
+        Initialize and launch the visualization interface.
 
         Parameters
         ----------
@@ -311,7 +302,7 @@ class TreatmentPlan():
         """
 
         # Reset the treatment plan label in the datahub
-        Datahub.label = self.configuration['label']
+        Datahub.label = self.configuration.label
 
         # Initialize the visualization interface
         self.visualizer = Visualizer(parent=parent)
@@ -320,10 +311,10 @@ class TreatmentPlan():
         self.visualizer.launch()
 
     def compose(self):
-        """Compose the treatment plan by cycling the entire workflow."""
+        """Compose the treatment plan by cycling the workflow."""
 
         # Reset the treatment plan label in the datahub
-        Datahub.label = self.configuration['label']
+        Datahub.label = self.configuration.label
 
         # Cycle the workflow
         self.configure()
@@ -334,29 +325,27 @@ class TreatmentPlan():
 
     def update(
             self,
-            key_value_pairs):
+            inputs):
         """
-        Update the input dictionaries by specific key-value pairs.
+        Update the treatment plan by the input dictionary.
 
         Parameters
         ----------
-        key_value_pairs : dict
-            Dictionary with the keys and values to update.
-
-        Raises
-        ------
-        KeyError
-            If any update key is not included in the input dictionaries.
+        inputs : dict
+            Dictionary with the update parameter(s).
         """
 
         # Loop over the items of the update dictionary
-        for key, value in key_value_pairs.items():
+        for key, value in inputs.items():
 
-            # Check if the key is in the configuration dictionary
-            if key in self.configuration:
+            # Check if the key is in the configuration object
+            if hasattr(self.configuration, key):
 
-                # Override the configuration parameter value
-                self.configuration[key] = value
+                # Check the configuration update
+                self.configuration.check({key: value})
+
+                # Update the configuration parameter value
+                self.configuration.key = value
 
                 # Check if the key is 'min_log_level'
                 if key == 'min_log_level':
@@ -365,10 +354,13 @@ class TreatmentPlan():
                     self.logger.change_log_levels(value)
 
             # Else, check if the key is in the optimization dictionary
-            elif key in self.optimization:
+            elif hasattr(self.optimization, key):
 
-                # Override the optimization parameter value
-                self.optimization[key] = value
+                # Check the optimization update
+                self.optimization.check({key: value})
+
+                # Update the optimization parameter value
+                self.optimization.key = value
 
                 # Check if the key is 'components'
                 if key == 'components' and self.plan_generator is not None:
@@ -381,47 +373,17 @@ class TreatmentPlan():
                         verbose=False)
 
             # Else, check if the key is in the evaluation dictionary
-            elif key in self.evaluation:
+            elif hasattr(self.evaluation, key):
 
-                # Override the evaluation parameter value
-                self.evaluation[key] = value
+                # Check the evaluation update
+                self.evaluation.check({key: value})
+
+                # Update the evaluation parameter value
+                self.evaluation.key = value
 
             else:
 
-                # Log a message about the key error
-                self.logger.display_error(
-                    f"The update dictionary key '{key}' is not part of "
-                    "the configuration, optimization or evaluation "
-                    "dictionary!")
-
-    def get_check_map(self):
-        """Get the check map."""
-
-        return {
-            'configuration': (partial(check_type, types=Configuration),),
-            'optimization': (partial(check_type, types=Optimization),),
-            'evaluation': (partial(check_type, types=Evaluation),)}
-
-    def check(
-            self,
-            input_dictionary):
-        """
-        Check the items of an input dictionary.
-
-        Parameters
-        ----------
-        input_dictionary : dict
-            Dictionary with the mappings between parameter names and values.
-        """
-
-        # Get the check map
-        check_map = self.get_check_map()
-
-        # Loop over the dictionary items
-        for key, value in input_dictionary.items():
-
-            # Loop over the check functions
-            for function in check_map[key]:
-
-                # Run the check function
-                function(key, value)
+                # Log a message about the missing key
+                self.logger.display_warning(
+                    f"The update parameter '{key}' is not part of the "
+                    "treatment plan and will be ignored!")

@@ -28,16 +28,16 @@ class DosimetricsEvaluator():
     Parameters
     ----------
     reference_volume : list
-        Reference volumes for which to evaluate the inverse DVH indicators.
+        Reference volumes for which to evaluate the inverse DVH values.
 
     reference_dose : list
-        Reference dose values for which to evaluate the DVH indicators.
+        Reference dose values for which to evaluate the DVH values.
 
     display_segments : list
-        Names of the segmented structures to be displayed.
+        Names of the segments to be displayed.
 
     display_metrics : list
-        Names of the metrics to be displayed.
+        Names of the evaluation metrics to be displayed.
 
     Attributes
     ----------
@@ -103,7 +103,7 @@ class DosimetricsEvaluator():
         Parameters
         ----------
         dose_cube : ndarray
-            3D array with the dose values (CT resolution).
+            Array with the dose values (CT resolution).
         """
 
         # Initialize the datahub

@@ -28,10 +28,10 @@ class DVHEvaluator():
         Type of DVH to be evaluated.
 
     number_of_points : int
-        Number of (evenly-spaced) points for which to evaluate the DVH.
+        Number of (evenly-spaced) DVH evaluation points.
 
     display_segments : list
-        Names of the segmented structures to be displayed.
+        Names of the segments to be displayed.
 
     Attributes
     ----------
@@ -81,7 +81,7 @@ class DVHEvaluator():
         Parameters
         ----------
         dose_cube : ndarray
-            3D array with the dose values (CT resolution).
+            Array with the dose values (CT resolution).
         """
 
         def get_evaluation_points():

@@ -10,6 +10,7 @@ from numpy import clip, concatenate
 # %% Internal package import
 
 from pyanno4rt.optimization.components import ConventionalComponent
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -29,7 +30,7 @@ class SquaredOverdosing(ConventionalComponent):
     maximum_dose : int or float
         Maximum value for the dose.
 
-    component_type : {'objective', 'constraint'}, default='objective'
+    component_type : {'constraint', 'objective'}, default='objective'
         Type of the component.
 
     embedding : {'active', 'passive'}, default='active'
@@ -54,6 +55,11 @@ class SquaredOverdosing(ConventionalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
+
+    Attributes
+    ----------
+    arguments : dict
+        Dictionary with the component input arguments (for serialization).
     """
 
     def __init__(
@@ -84,6 +90,15 @@ class SquaredOverdosing(ConventionalComponent):
             link=link,
             identifier=identifier,
             display=display)
+
+        # Set the input arguments
+        self.arguments = filter_dict(
+            locals(), remove_keys=('self', '__class__'))
+
+    def to_dict(self):
+        """Return the component input dictionary."""
+
+        return {'Squared Overdosing': self.arguments}
 
     def compute_value(
             self,

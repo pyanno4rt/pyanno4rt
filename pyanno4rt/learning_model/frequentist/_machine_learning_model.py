@@ -4,9 +4,9 @@
 
 # %% External package import
 
-from json import dump as jdump, load as jload
+from json import dumps as jdumps, load as jload
 from os.path import exists
-from pickle import dump, load
+from pickle import dumps, load
 
 from abc import ABCMeta, abstractmethod
 from functools import partial
@@ -319,9 +319,9 @@ class MachineLearningModel(metaclass=ABCMeta):
 
                 # Get the preprocessor, prediction model and hyperparameters
                 preprocessor, prediction_model, hyperparameters = (
-                    self.read_preprocessor_from_file(),
-                    self.read_model_from_file(),
-                    self.read_hyperparameters_from_file())
+                    self.import_preprocessor(),
+                    self.import_model(),
+                    self.import_hyperparameters())
 
                 # Check if the features and labels are not None
                 if features is not None and labels is not None:
@@ -741,9 +741,9 @@ class MachineLearningModel(metaclass=ABCMeta):
                  'preprocessor.sav', 'model.sav', 'configuration.json',
                  'hyperparameters.json'))
 
-    def read_preprocessor_from_file(self):
+    def import_preprocessor(self):
         """
-        Read the data preprocessor from the preprocessor file path.
+        Import the data preprocessor from the preprocessor file path.
 
         Returns
         -------
@@ -760,40 +760,29 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         return load(open(self.preprocessor_path, 'rb'))
 
-    def write_preprocessor_to_file(
-            self,
-            preprocessor):
+    def export_preprocessor(self):
         """
-        Write the data preprocessor to the preprocessor file path.
+        Export the data preprocessor to a bytes-like object.
 
-        Parameters
-        ----------
-        preprocessor : object of class \
-            :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
-            The object used to build the preprocessing pipeline, transform \
-            the data, and return the input gradients of the preprocessing \
-            algorithms.
+        Returns
+        -------
+        bytes
+            Bytes-like preprocessor object.
         """
 
-        # Open a file stream
-        with open(self.preprocessor_path, 'wb') as file:
-
-            # Dump the preprocessor to the preprocessor file path
-            dump(preprocessor, file)
+        return dumps(self.preprocessor)
 
     @abstractmethod
-    def read_model_from_file(self):
-        """Read the machine learning model from the model file path."""
+    def import_model(self):
+        """Import the machine learning model from the model file path."""
 
     @abstractmethod
-    def write_model_to_file(
-            self,
-            prediction_model):
-        """Write the machine learning model to the model file path."""
+    def export_model(self):
+        """Export the machine learning model to a bytes-like object."""
 
-    def read_configuration_from_file(self):
+    def import_configuration(self):
         """
-        Read the configuration dictionary from the configuration file path.
+        Import the configuration dictionary from the configuration file path.
 
         Returns
         -------
@@ -821,20 +810,21 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         return configuration
 
-    def write_configuration_to_file(
+    def export_configuration(
             self,
-            configuration,
             include_model_data=False):
         """
-        Write the configuration dictionary to the configuration file path.
+        Export the configuration dictionary to a JSON string.
 
         Parameters
         ----------
-        configuration : dict
-            Dictionary with information on the model configuration.
-
         include_model_data : bool, default=False
             Indicator for the storage of the outcome model-related dataset(s).
+
+        Returns
+        -------
+        str
+            JSON string of the configuration dictionary.
         """
 
         # Check if the model data should be included
@@ -842,37 +832,38 @@ class MachineLearningModel(metaclass=ABCMeta):
 
             # Loop over specific keys
             for key in (
-                    'feature_values', 'label_values', 'time_variable_values',
+                'feature_values', 'label_values', 'time_variable_values',
                     'tune_folds', 'oof_folds'):
 
                 # Check if the key value is not a list
-                if not isinstance(configuration[key], list):
+                if not isinstance(self.configuration[key], list):
 
                     # Convert the array into a list
-                    configuration[key] = configuration[key].tolist()
+                    self.configuration[key] = self.configuration[key].tolist()
 
         else:
 
             # Loop over specific keys
             for key in (
-                    'feature_values', 'label_values', 'time_variable_values',
+                'feature_values', 'label_values', 'time_variable_values',
                     'tune_folds', 'oof_folds'):
 
                 # Set the values to None
-                configuration[key] = None
+                self.configuration[key] = None
 
-        # Open a file stream
-        with open(self.configuration_path, 'w', encoding='utf-8') as file:
+        return jdumps(self.configuration, sort_keys=False, indent=4)
 
-            # Dump the dictionary to the file path
-            jdump(configuration, file, sort_keys=False, indent=4)
-
-    def read_hyperparameters_from_file(
+    def import_hyperparameters(
             self,
             verbose=True):
         """
-        Read the machine learning model hyperparameters from the \
+        Import the machine learning model hyperparameters from the \
         hyperparameter file path.
+
+        Parameters
+        ----------
+        verbose : bool
+            Indicator for logging output messages.
 
         Returns
         -------
@@ -889,21 +880,14 @@ class MachineLearningModel(metaclass=ABCMeta):
 
         return jload(open(self.hyperparameter_path, 'r', encoding='utf-8'))
 
-    def write_hyperparameters_to_file(
-            self,
-            hyperparameters):
+    def export_hyperparameters(self):
         """
-        Write the machine learning model hyperparameters to the \
-        hyperparameter file path.
+        Export the machine learning model hyperparameters to a JSON string.
 
-        Parameters
-        ----------
-        hyperparameters : dict
-            Dictionary with the values of the hyperparameters.
+        Returns
+        -------
+        str
+            JSON string of the hyperparameter dictionary.
         """
 
-        # Open a file stream
-        with open(self.hyperparameter_path, 'w', encoding='utf-8') as file:
-
-            # Dump the dictionary to the file path
-            jdump(hyperparameters, file, sort_keys=False, indent=4)
+        return jdumps(self.hyperparameters, sort_keys=False, indent=4)

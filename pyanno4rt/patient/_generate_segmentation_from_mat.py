@@ -12,12 +12,12 @@ def generate_segmentation_from_mat(data):
     Parameters
     ----------
     data : ndarray
-        Array with information on the segmented structures.
+        Array with information on the segments.
 
     Returns
     -------
     dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
     """
 
     # Build a multi-layer tuple with the values for the dictionary

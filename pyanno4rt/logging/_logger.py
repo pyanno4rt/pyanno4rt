@@ -30,7 +30,7 @@ class Logger():
     Attributes
     ----------
     logger : object of class :class:`~logging.Logger`
-        The external object used to interface the logging methods.
+        The object used to interface the logging methods.
     """
 
     def __init__(
@@ -49,7 +49,7 @@ class Logger():
                 f'Python {python_version()} ...')
 
             # Log a message about the warranty clause
-            self.display_info(
+            self.display_warning(
                 'pyanno4rt is an open-source package and NOT a medical '
                 'product. It is provided "as-is", without warranty of any '
                 'kind, and intended for research and education only ...')
@@ -75,7 +75,7 @@ class Logger():
             and the object streams.
         """
 
-        # Map the values of 'min_log_level' to the logging levels of the module
+        # Map the values of 'min_log_level' to the logging levels
         levels = {
             'debug': DEBUG,
             'info': INFO,
@@ -138,7 +138,7 @@ class Logger():
             and the object streams.
         """
 
-        # Map the values of 'min_log_level' to the logging levels of the module
+        # Map the values of 'min_log_level' to the logging levels
         levels = {
             'debug': DEBUG,
             'info': INFO,
@@ -173,7 +173,7 @@ class Logger():
             Optional display parameters.
         """
 
-        # Map the values of 'level' to the logging methods of the attribute
+        # Map the values of 'level' to the logging methods
         logging_methods = {
             'debug': self.logger.debug,
             'info': self.logger.info,

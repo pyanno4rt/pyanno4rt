@@ -13,6 +13,7 @@ from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning_model.dataset import (
     EmptyDataGenerator, ImageDataGenerator, TabularDataGenerator)
 from pyanno4rt.learning_model.features import FeatureCalculator
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -35,8 +36,9 @@ class DataModelHandler():
     data_path : None or str
         Path to the dataset used for fitting the machine learning model.
 
-    data_columns : dict
-        Dictionary with the column information on features and label.
+    data_columns : list
+        List of :class:`~pyanno4rt.learning_model.features._feature.Feature` \
+        and :class:`~pyanno4rt.learning_model.features._label.Label` objects.
 
     tune_splits : int
         Number of splits for the stratified cross-validation within each \
@@ -112,7 +114,12 @@ class DataModelHandler():
             self.data_generator = EmptyDataGenerator(
                 model_label=model_label,
                 model_folder_path=model_folder_path,
-                data_columns=data_columns)
+                data_columns={
+                    value['column']: (
+                        {'type': key.lower()}
+                        | filter_dict(value, remove_keys=('column',)))
+                    for item in data_columns
+                    for key, value in item.to_dict().items()})
 
         # Check if the data path leads to a tabular file
         elif data_path.endswith('.csv'):
@@ -121,7 +128,12 @@ class DataModelHandler():
             self.data_generator = TabularDataGenerator(
                 model_label=model_label,
                 data_path=data_path,
-                data_columns=data_columns,
+                data_columns={
+                    value['column']: (
+                        {'type': key.lower()}
+                        | filter_dict(value, remove_keys=('column',)))
+                    for item in data_columns
+                    for key, value in item.to_dict().items()},
                 tune_splits=tune_splits,
                 tune_repeats=tune_repeats,
                 oof_splits=oof_splits,

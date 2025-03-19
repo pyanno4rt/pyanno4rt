@@ -10,7 +10,7 @@ from math import inf
 
 # %% Internal package import
 
-from pyanno4rt.input_check.check_functions import (
+from pyanno4rt.input_check import (
     check_length, check_subtype, check_type, check_value, check_value_in_set)
 from pyanno4rt.tools import filter_dict
 
@@ -29,7 +29,7 @@ class ConventionalComponent(metaclass=ABCMeta):
     segment : str
         Name of the segment associated with the component.
 
-    component_type : {'objective', 'constraint'}
+    component_type : {'constraint', 'objective'}
         Type of the component.
 
     parameter_name : tuple
@@ -72,7 +72,7 @@ class ConventionalComponent(metaclass=ABCMeta):
     segment : str
         See 'Parameters'.
 
-    component_type : {'objective', 'constraint'}
+    component_type : {'constraint', 'objective'}
         See 'Parameters'.
 
     parameter_name : tuple
@@ -168,12 +168,24 @@ class ConventionalComponent(metaclass=ABCMeta):
         return all(self.__dict__[key] == other.__dict__[key] for key in (
             'name', 'segment', 'component_type', 'link', 'identifier'))
 
-    def get_check_map(self):
-        """Get the check map."""
+    def check(
+            self,
+            inputs):
+        """
+        Check the input arguments.
 
-        return {
-            'name': (partial(check_type, types=str),),
-            'segment': (partial(check_type, types=str),),
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the mappings between argument names and values.
+        """
+
+        # Get the check map
+        check_map = {
+            'name': (
+                partial(check_type, types=str),),
+            'segment': (
+                partial(check_type, types=str),),
             'component_type': (
                 partial(check_type, types=str),
                 partial(
@@ -200,8 +212,10 @@ class ConventionalComponent(metaclass=ABCMeta):
             'link': (
                 partial(check_type, types=(type(None), list)),
                 partial(check_subtype, types=str)),
-            'identifier': (partial(check_type, types=(type(None), str)),),
-            'display': (partial(check_type, types=bool),),
+            'identifier': (
+                partial(check_type, types=(type(None), str)),),
+            'display': (
+                partial(check_type, types=bool),),
             'target_eud': (
                 partial(check_type, types=(int, float)),
                 partial(check_value, reference=0, sign='>=')),
@@ -214,39 +228,15 @@ class ConventionalComponent(metaclass=ABCMeta):
                 partial(check_type, types=(int, float)),
                 partial(check_value, reference=0, sign='>='),
                 partial(check_value, reference=100, sign='<=')),
-            'exponents': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float))),
             'maximum_dose': (
                 partial(check_type, types=(int, float)),
                 partial(check_value, reference=0, sign='>=')),
             'minimum_dose': (
                 partial(check_type, types=(int, float)),
-                partial(check_value, reference=0, sign='>=')),
-            'tolerance_dose_50': (
-                partial(check_type, types=(int, float)),
-                partial(check_value, reference=0, sign='>=')),
-            'slope_parameter': (partial(check_type, types=(int, float)),),
-            'alpha': (partial(check_type, types=(int, float)),),
-            'beta': (partial(check_type, types=(int, float)),)}
-
-    def check(
-            self,
-            input_dictionary):
-        """
-        Check the items of an input dictionary.
-
-        Parameters
-        ----------
-        input_dictionary : dict
-            Dictionary with the mappings between parameter names and values.
-        """
-
-        # Get the check map
-        check_map = self.get_check_map()
+                partial(check_value, reference=0, sign='>='))}
 
         # Loop over the dictionary items
-        for key, value in input_dictionary.items():
+        for key, value in inputs.items():
 
             # Loop over the check functions
             for function in check_map[key]:
@@ -349,6 +339,10 @@ class ConventionalComponent(metaclass=ABCMeta):
         """
 
         self.weight = value
+
+    @abstractmethod
+    def to_dict(self):
+        """Return the component input dictionary."""
 
     @abstractmethod
     def compute_value(

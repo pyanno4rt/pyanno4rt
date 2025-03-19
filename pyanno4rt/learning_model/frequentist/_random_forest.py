@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from pickle import dump, load
+from pickle import dumps, load
 
 from hyperopt import hp
 from sklearn.ensemble import RandomForestClassifier
@@ -230,9 +230,9 @@ class RandomForestModel(MachineLearningModel):
         # Else, return an array with label predictions
         return predictor.predict_proba(features)[:, 1]
 
-    def read_model_from_file(self):
+    def import_model(self):
         """
-        Read the random forest model from the model file path.
+        Import the random forest model from the model file path.
 
         Returns
         -------
@@ -246,21 +246,14 @@ class RandomForestModel(MachineLearningModel):
 
         return load(open(self.model_path, 'rb'))
 
-    def write_model_to_file(
-            self,
-            prediction_model):
+    def export_model(self):
         """
-        Write the random forest model to the model file path.
+        Export the random forest model to a bytes-like object.
 
-        Parameters
-        ----------
-        prediction_model : object of class \
-            :class:`~sklearn.ensemble.RandomForestClassifier`
-            The object used to represent the prediction model.
+        Returns
+        -------
+        bytes
+            Bytes-like model object.
         """
 
-        # Open a file stream
-        with open(self.model_path, 'wb') as file:
-
-            # Dump the model to the model file path
-            dump(prediction_model, file)
+        return dumps(self.prediction_model)

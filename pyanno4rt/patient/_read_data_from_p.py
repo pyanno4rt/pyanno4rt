@@ -24,7 +24,7 @@ def read_data_from_p(path):
         Dictionary with information on the CT slices.
 
     dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
     """
 
     # Open a file stream

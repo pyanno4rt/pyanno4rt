@@ -11,17 +11,17 @@ from pyanno4rt.tools import flatten
 
 def get_machine_learning_objectives(segmentation):
     """
-    Get a tuple with all set machine learning model-based objective functions.
+    Get a tuple with the machine learning model-based objective functions.
 
     Parameters
     ----------
     segmentation : dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
 
     Returns
     -------
     tuple
-        Tuple with all set machine learning model-based objective functions.
+        Tuple with the machine learning model-based objective functions.
     """
 
     return tuple(objective for objective in flatten(

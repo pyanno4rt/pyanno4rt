@@ -9,8 +9,7 @@ from os.path import splitext
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.patient.import_functions import (
-    import_from_dcm, import_from_mat, import_from_p)
+from pyanno4rt.patient import import_from_dcm, import_from_mat, import_from_p
 
 # %% Class definition
 
@@ -20,8 +19,7 @@ class PatientLoader():
     Patient loading class.
 
     This class provides methods to load patient data from different input \
-    formats and generate the computed tomography (CT) and segmentation \
-    dictionaries.
+    formats and generate the CT and segmentation dictionaries.
 
     Parameters
     ----------

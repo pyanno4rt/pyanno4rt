@@ -10,6 +10,7 @@ from numpy import concatenate
 # %% Internal package import
 
 from pyanno4rt.optimization.components import ConventionalComponent
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -31,6 +32,9 @@ class EquivalentUniformDose(ConventionalComponent):
 
     volume_parameter : int or float
         Dose-volume effect parameter.
+
+    component_type : {'constraint', 'objective'}, default='objective'
+        Type of the component.
 
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
@@ -54,13 +58,19 @@ class EquivalentUniformDose(ConventionalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
+
+    Attributes
+    ----------
+    arguments : dict
+        Dictionary with the component input arguments (for serialization).
     """
 
     def __init__(
             self,
             segment,
-            target_eud=None,
-            volume_parameter=None,
+            target_eud,
+            volume_parameter,
+            component_type='objective',
             embedding='active',
             weight=1.0,
             rank=1,
@@ -73,6 +83,7 @@ class EquivalentUniformDose(ConventionalComponent):
         super().__init__(
             name='Equivalent Uniform Dose',
             segment=segment,
+            component_type=component_type,
             parameter_name=('target_eud', 'volume_parameter'),
             parameter_category=('dose', 'parameter'),
             parameter_value=(target_eud, volume_parameter),
@@ -83,6 +94,15 @@ class EquivalentUniformDose(ConventionalComponent):
             link=link,
             identifier=identifier,
             display=display)
+
+        # Set the input arguments
+        self.arguments = filter_dict(
+            locals(), remove_keys=('self', '__class__'))
+
+    def to_dict(self):
+        """Return the component input dictionary."""
+
+        return {'Equivalent Uniform Dose': self.arguments}
 
     def compute_value(
             self,

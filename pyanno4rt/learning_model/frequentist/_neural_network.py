@@ -390,9 +390,9 @@ class NeuralNetworkModel(MachineLearningModel):
                  'preprocessor.sav', 'model.h5', 'configuration.json',
                  'hyperparameters.json'))
 
-    def read_model_from_file(self):
+    def import_model(self):
         """
-        Read the neural network model from the model file path.
+        Import the neural network model from the model file path.
 
         Returns
         -------
@@ -412,7 +412,7 @@ class NeuralNetworkModel(MachineLearningModel):
                             for i, _ in enumerate(file))
 
         # Read the configuration from the file
-        configuration = self.read_configuration_from_file()
+        configuration = self.import_configuration()
 
         # Get the number of input features
         input_shape = len(configuration['feature_names'])
@@ -432,7 +432,7 @@ class NeuralNetworkModel(MachineLearningModel):
         self.configuration['bias'] = configuration['bias']
 
         # Read the hyperparameters from the file
-        hyperparameters = self.read_hyperparameters_from_file(verbose=False)
+        hyperparameters = self.import_hyperparameters(verbose=False)
 
         # Build the network architecture
         prediction_model = self.build_network(
@@ -449,26 +449,23 @@ class NeuralNetworkModel(MachineLearningModel):
 
         return prediction_model
 
-    def write_model_to_file(
-            self,
-            prediction_model):
+    def export_model(self):
         """
-        Write the neural network model to the model file path.
+        Export the neural network model to a bytes-like object.
 
-        Parameters
-        ----------
-        prediction_model : object of class `Functional`
-            The object used to represent the prediction model.
+        Returns
+        -------
+        object of class :class:`~h5py._hl.files.File`
+            Bytes-like model object.
         """
-
-        # Get the network weights
-        weights = prediction_model.get_weights()
 
         # Open a file stream
-        with File(self.model_path, 'w') as file:
+        with File.in_memory() as file:
 
             # Loop over the weights
-            for i, weight in enumerate(weights):
+            for i, weight in enumerate(self.prediction_model.get_weights()):
 
                 # Create a dataset
                 file.create_dataset(''.join(('weight', str(i))), data=weight)
+
+            return file

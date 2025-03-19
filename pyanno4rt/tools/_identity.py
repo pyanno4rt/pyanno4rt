@@ -15,8 +15,7 @@ def identity(value, *args):
         Value to be returned.
 
     *args : tuple
-        Tuple with optional (non-keyworded) parameters (only needed for \
-        compatibility).
+        Tuple with optional (non-keyworded) parameters (for compatibility).
 
     Returns
     -------

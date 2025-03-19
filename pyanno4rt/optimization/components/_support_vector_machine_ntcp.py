@@ -2,6 +2,10 @@
 
 # Author: Tim Ortkamp
 
+# %% External package import
+
+from copy import deepcopy
+
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
@@ -12,7 +16,7 @@ from pyanno4rt.learning_model.frequentist.extensions import (
     sigmoid_decision_function, linear_decision_gradient,
     poly_decision_gradient, rbf_decision_gradient, sigmoid_decision_gradient)
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import inverse_sigmoid
+from pyanno4rt.tools import filter_dict, inverse_sigmoid
 
 # %% Class definition
 
@@ -34,6 +38,9 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
         Dictionary with the data handling & learning model parameters, see \
         the class
         :class:`~pyanno4rt.optimization.components._machine_learning_component_class.MachineLearningComponentClass`.
+
+    component_type : {'constraint', 'objective'}, default='objective'
+        Type of the component.
 
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
@@ -60,6 +67,9 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
 
     Attributes
     ----------
+    arguments : dict
+        Dictionary with the component input arguments (for serialization).
+
     decision_function : None or callable
         Decision function for the fitted kernel type.
 
@@ -87,6 +97,7 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
             self,
             segment,
             model_parameters,
+            component_type='objective',
             embedding='active',
             weight=1.0,
             rank=1,
@@ -99,6 +110,7 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
         super().__init__(
             name='Support Vector Machine NTCP',
             segment=segment,
+            component_type=component_type,
             parameter_name=('w/alpha',),
             parameter_category=('coefficient',),
             model_parameters=model_parameters,
@@ -110,8 +122,25 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
             identifier=identifier,
             display=display)
 
+        # Set the input arguments
+        self.arguments = filter_dict(
+            locals(), remove_keys=('self', '__class__'))
+
         # Initialize the decision function/gradient
         self.decision_function, self.decision_gradient = None, None
+
+    def to_dict(self):
+        """Return the component input dictionary."""
+
+        # Get the parameter dictionary
+        dictionary = deepcopy(self.arguments)
+
+        # Serialize the data columns
+        dictionary['model_parameters']['data_columns'] = [
+            item.to_dict()
+            for item in dictionary['model_parameters']['data_columns']]
+
+        return {'Support Vector Machine NTCP': dictionary}
 
     def add_model(self):
         """Add the support vector machine model to the component."""

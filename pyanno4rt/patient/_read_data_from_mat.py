@@ -24,7 +24,7 @@ def read_data_from_mat(path):
         Dictionary with information on the CT slices.
 
     ndarray
-        Array with information on the segmented structures.
+        Array with information on the segments.
     """
 
     # Load the MATLAB file

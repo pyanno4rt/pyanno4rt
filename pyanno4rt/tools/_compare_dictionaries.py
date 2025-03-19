@@ -15,7 +15,7 @@ from pyanno4rt.tools import filter_dict
 
 def compare_dictionaries(reference_dict, compare_dict, ignore_keys=None):
     """
-    Compare two dictionaries by their keys and values (including numpy arrays).
+    Compare two dictionaries by their keys and values (including arrays).
 
     Parameters
     ----------
@@ -59,7 +59,7 @@ def compare_dictionaries(reference_dict, compare_dict, ignore_keys=None):
             # Return false
             return False
 
-        # Check if the value is a numpy array
+        # Check if the value is an array
         if isinstance(reference, ndarray):
 
             # Check if the arrays are not equal

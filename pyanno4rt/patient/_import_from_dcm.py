@@ -4,12 +4,10 @@
 
 # %% Internal package import
 
-from pyanno4rt.patient.import_functions._generate_ct_from_dcm import (
-    generate_ct_from_dcm)
-from pyanno4rt.patient.import_functions._generate_segmentation_from_dcm import (
+from pyanno4rt.patient._generate_ct_from_dcm import generate_ct_from_dcm
+from pyanno4rt.patient._generate_segmentation_from_dcm import (
     generate_segmentation_from_dcm)
-from pyanno4rt.patient.import_functions._read_data_from_dcm import (
-    read_data_from_dcm)
+from pyanno4rt.patient._read_data_from_dcm import read_data_from_dcm
 
 # %% Function definition
 
@@ -29,7 +27,7 @@ def import_from_dcm(path):
         Dictionary with information on the CT images.
 
     dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
     """
 
     # Read the CT and segmentation data

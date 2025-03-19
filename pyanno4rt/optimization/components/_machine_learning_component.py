@@ -5,11 +5,23 @@
 # %% External package import
 
 from abc import ABCMeta, abstractmethod
+from functools import partial
+from os.path import abspath
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import compare_dictionaries
+from pyanno4rt.input_check import (
+    check_key_in_dict, check_length, check_path, check_regular_extension,
+    check_regular_extension_directory, check_subtype, check_type,
+    check_value, check_value_in_set)
+from pyanno4rt.learning_model.frequentist.extensions import (
+    loss_map, optimizer_map)
+from pyanno4rt.learning_model.losses import loss_map as mloss_map
+from pyanno4rt.learning_model.preprocessing.cleaners import cleaner_map
+from pyanno4rt.learning_model.preprocessing.reducers import reducer_map
+from pyanno4rt.learning_model.preprocessing.samplers import sampler_map
+from pyanno4rt.learning_model.preprocessing.transformers import transformer_map
+from pyanno4rt.tools import compare_dictionaries, filter_dict
 
 # %% Class definition
 
@@ -25,6 +37,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
     segment : str
         Name of the segment associated with the component.
+
+    component_type : {'constraint', 'objective'}
+        Type of the component.
 
     parameter_name : tuple
         Name of the component parameters.
@@ -44,8 +59,10 @@ class MachineLearningComponent(metaclass=ABCMeta):
         - data_path : str
             Path to the data set used for fitting the machine learning model.
 
-        - data_columns : dict
-            Dictionary with the column information on features and label.
+        - data_columns : list
+            List of :class:`~pyanno4rt.learning_model.features._feature.Feature` \
+            and :class:`~pyanno4rt.learning_model.features._label.Label` \
+            objects.
 
         - preprocessing_steps : list, default=['Identity']
             Sequence of labels associated with preprocessing algorithms to \
@@ -141,6 +158,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
     segment : str
         See 'Parameters'.
 
+    component_type : {'constraint', 'objective'}
+        See 'Parameters'.
+
     parameter_name : tuple
         See 'Parameters'.
 
@@ -149,6 +169,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
     parameter_value : list
         Value of the component parameters.
+
+    model_parameters : dict
+        See 'Parameters'.
 
     embedding : {'active', 'passive'}
         See 'Parameters'.
@@ -171,9 +194,6 @@ class MachineLearningComponent(metaclass=ABCMeta):
     display : bool
         See 'Parameters'.
 
-    model_parameters : dict
-        See 'Parameters'.
-
     data_model_handler : None
         Initial variable for the object used to handle the dataset, the \
         feature map generation and the feature (re-)calculation.
@@ -190,6 +210,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
             self,
             name,
             segment,
+            component_type,
             parameter_name,
             parameter_category,
             model_parameters,
@@ -201,36 +222,20 @@ class MachineLearningComponent(metaclass=ABCMeta):
             identifier,
             display):
 
-        # Get the class arguments
-        class_arguments = locals()
-
-        # Remove the 'self'-key from the class arguments dictionary
-        class_arguments.pop('self')
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Check the class attributes
-        hub.input_checker.approve(class_arguments)
+        # Check the input arguments
+        self.check(
+            filter_dict(locals(), remove_keys=('self',))
+            | model_parameters
+            | model_parameters['tune_space']
+            | model_parameters['display_options'])
 
         # Set the instance attributes from the class arguments
         self.name = name
         self.segment = segment
+        self.component_type = component_type
         self.parameter_name = parameter_name
         self.parameter_category = parameter_category
         self.parameter_value = []
-        self.embedding = embedding
-        self.weight = float(weight)
-        self.rank = rank
-        self.bounds = (
-            (0.0, 1.0) if bounds is None or embedding == 'passive' else (
-                0.0 if bounds[0] is None else float(bounds[0]),
-                1.0 if bounds[1] is None else float(bounds[1])))
-        self.link = [] if link is None else link
-        self.identifier = identifier
-        self.display = display
-
-        # Set the model parameters
         self.model_parameters = {
             'model_label': model_parameters.get('model_label'),
             'model_folder_path': model_parameters.get('model_folder_path'),
@@ -258,15 +263,30 @@ class MachineLearningComponent(metaclass=ABCMeta):
                         'Cohen Kappa', 'Hamming loss', 'Jaccard score',
                         'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']})
             }
+        self.embedding = embedding
+        self.weight = float(weight)
+        self.rank = rank
+        self.bounds = (
+            (0.0, 1.0) if bounds is None or embedding == 'passive' else (
+                0.0 if bounds[0] is None else float(bounds[0]),
+                1.0 if bounds[1] is None else float(bounds[1])))
+        self.link = [] if link is None else link
+        self.identifier = identifier
+        self.display = display
 
-        # Check the model parameters
-        hub.input_checker.approve(self.model_parameters)
+        # Check if the model folder path is not None
+        if model_parameters['model_folder_path'] is not None:
 
-        # Check the tune space
-        hub.input_checker.approve(self.model_parameters['tune_space'])
+            # Convert the model folder path into the absolute value
+            model_parameters['model_folder_path'] = abspath(
+                model_parameters['model_folder_path'])
 
-        # Check the model display options
-        hub.input_checker.approve(self.model_parameters['display_options'])
+        # Check if the data path is not None
+        if model_parameters['data_path'] is not None:
+
+            # Convert the data path into the absolute value
+            model_parameters['data_path'] = abspath(
+                model_parameters['data_path'])
 
         # Initialize the data model handler and the outcome model
         self.data_model_handler = None
@@ -294,10 +314,316 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
         return (
             all(self.__dict__[key] == other.__dict__[key] for key in (
-                'name', 'link', 'identifier'))
+                'name', 'segment', 'component_type', 'link', 'identifier'))
             and compare_dictionaries(
                 self.__dict__.get('model_parameters', {}),
                 other.__dict__.get('model_parameters', {})))
+
+    def check(
+            self,
+            inputs):
+        """
+        Check the input arguments.
+
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the mappings between argument names and values.
+        """
+
+        # Get the check map
+        check_map = {
+            'name': (
+                partial(check_type, types=str),),
+            'segment': (
+                partial(check_type, types=str),),
+            'component_type': (
+                partial(check_type, types=str),
+                partial(
+                    check_value_in_set, options=('constraint', 'objective'))),
+            'parameter_name': (
+                partial(check_type, types=tuple),
+                partial(check_subtype, types=str)),
+            'parameter_category': (
+                partial(check_type, types=tuple),
+                partial(check_subtype, types=str)),
+            'model_parameters': (
+                partial(check_type, types=(type(None), dict)),),
+            'embedding': (
+                partial(check_type, types=str),
+                partial(check_value_in_set, options=('active', 'passive'))),
+            'weight': (
+                partial(check_type, types=(int, float)),
+                partial(check_value, reference=0, sign='>')),
+            'rank': (
+                partial(check_type, types=int),
+                partial(check_value, reference=0, sign='>')),
+            'bounds': (
+                partial(check_type, types=(type(None), list)),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=(type(None), int, float))),
+            'link': (
+                partial(check_type, types=(type(None), list)),
+                partial(check_subtype, types=str)),
+            'identifier': (
+                partial(check_type, types=(type(None), str)),),
+            'display': (
+                partial(check_type, types=bool),),
+            'model_label': (
+                partial(check_type, types=str),),
+            'model_folder_path': (
+                partial(check_type, types=(type(None), str)),
+                partial(check_path)),
+            'data_path': (
+                partial(check_type, types={
+                    True: (type(None), str), False: str},
+                    type_condition=isinstance(
+                        inputs.get('model_folder_path'), str)),
+                partial(check_regular_extension, extensions=('.csv',)),
+                partial(check_regular_extension_directory, extensions=(
+                    '.jpg', '.npy', '.npz', '.png'), no_directory=('.csv',))),
+            'data_columns': (
+                partial(check_type, types={
+                    True: (type(None), list), False: list},
+                    type_condition=isinstance(
+                        inputs.get('model_folder_path'), str)),
+                partial(check_length, reference=2, sign='>=')),
+            'preprocessing_steps': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=str),
+                partial(check_value_in_set, options=tuple(
+                    {**cleaner_map, **reducer_map, **sampler_map,
+                     **transformer_map}))),
+            'architecture': (
+                partial(check_type, types=str),
+                partial(check_value_in_set, options=(
+                    'vanilla', 'vanilla input-convex'))),
+            'max_hidden_layers': (
+                partial(check_type, types=int),
+                partial(check_value, reference=0, sign='>=')),
+            'tune_space': (
+                partial(check_type, types=dict),),
+            'tune_evaluations': (
+                partial(check_type, types=int),
+                partial(check_value, reference=0, sign='>')),
+            'tune_score': (
+                partial(check_type, types=str),
+                partial(check_value_in_set, options=tuple(('AUC', *mloss_map)))
+                ),
+            'tune_splits': (
+                partial(check_type, types=int),
+                partial(check_value, reference=1, sign='>=')),
+            'tune_repeats': (
+                partial(check_type, types=int),
+                partial(check_value, reference=1, sign='>=')),
+            'inspect_model': (
+                partial(check_type, types=bool),),
+            'evaluate_model': (
+                partial(check_type, types=bool),),
+            'oof_splits': (
+                partial(check_type, types=int),
+                partial(check_value, reference=1, sign='>=')),
+            'oof_repeats': (
+                partial(check_type, types=int),
+                partial(check_value, reference=1, sign='>=')),
+            'write_features': (
+                partial(check_type, types=bool),),
+            'display_options': (
+                partial(check_type, types=dict),
+                partial(check_key_in_dict, keys=('graphs', 'kpis'))),
+            'criterion': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=('entropy', 'gini'))),
+            'splitter': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=('best', 'random'))),
+            'max_depth': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'min_samples_split': (
+                partial(check_type, types=list),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=float),
+                partial(check_value, reference=0, sign='>=', is_vector=True),
+                partial(check_value, reference=1, sign='<=', is_vector=True)),
+            'min_samples_leaf': (
+                partial(check_type, types=list),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=float),
+                partial(check_value, reference=0, sign='>=', is_vector=True),
+                partial(check_value, reference=1, sign='<=', is_vector=True)),
+            'min_weight_fraction_leaf': (
+                partial(check_type, types=list),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=float),
+                partial(check_value, reference=0, sign='>=', is_vector=True),
+                partial(check_value, reference=1, sign='<=', is_vector=True)),
+            'max_features': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'class_weight': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=(None, 'balanced'))),
+            'ccp_alpha': (
+                partial(check_type, types=list),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=float),
+                partial(check_value, reference=0, sign='>=', is_vector=True),
+                partial(check_value, reference=1, sign='<=', is_vector=True)),
+            'n_neighbors': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'weights': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=('distance', 'uniform'))),
+            'leaf_size': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'p': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'C': (
+                partial(check_type, types=list),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=(int, float)),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'penalty': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=(
+                    'l1', 'l2', 'elasticnet'))),
+            'tol': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=(int, float)),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'priors': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=(list, type(None)))),
+            'var_smoothing': (
+                partial(check_type, types=list),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=(int, float)),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'input_neuron_number': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'input_activation': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=(
+                    'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
+                    'softplus', 'swish'))),
+            'hidden_neuron_number': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'hidden_activation': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=(
+                    'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
+                    'softplus', 'swish'))),
+            'input_dropout_rate': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=(int, float)),
+                partial(check_value, reference=0, sign='>=', is_vector=True)),
+            'hidden_dropout_rate': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=(int, float)),
+                partial(check_value, reference=0, sign='>=', is_vector=True)),
+            'batch_size': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'learning_rate': (
+                partial(check_type, types=list),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=(int, float)),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'optimizer': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=tuple(optimizer_map))),
+            'loss': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=tuple(loss_map))),
+            'n_estimators': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'bootstrap': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=(False, True))),
+            'warm_start': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=(False, True))),
+            'kernel': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=(
+                    'linear', 'rbf', 'poly', 'sigmoid'))),
+            'degree': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=int),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'gamma': (
+                partial(check_type, types=list),
+                partial(check_length, reference=2, sign='=='),
+                partial(check_subtype, types=(int, float)),
+                partial(check_value, reference=0, sign='>', is_vector=True)),
+            'graphs': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=(
+                    'AUC-ROC', 'AUC-PR', 'F1'))),
+            'kpis': (
+                partial(check_type, types=list),
+                partial(check_value_in_set, options=(
+                    'Logloss', 'Brier score', 'Subset accuracy',
+                    'Cohen Kappa', 'Hamming loss', 'Jaccard score',
+                    'Precision', 'Recall', 'F1 score', 'MCC', 'AUC')))}
+
+        # Check if the data path is None
+        if inputs['data_path'] is None:
+
+            # Reduce the check map for the data path
+            check_map['data_path'] = (check_map['data_path'][0],)
+
+        # Check if the data columns are None
+        if inputs['data_columns'] is None:
+
+            # Reduce the check map for the data columns
+            check_map['data_columns'] = (check_map['data_columns'][0],)
+
+        # Loop over the dictionary keys
+        for key, value in inputs.items():
+
+            # Loop over the check functions
+            for function in check_map[key]:
+
+                # Run the check function
+                function(key, value)
+
+            # Check if the key is 'data_column' and not None
+            if key == 'data_columns' and value is not None:
+
+                # Check if no feature has been passed
+                if sum([type(item).__name__ == 'Feature'
+                        for item in inputs['data_columns']]) == 0:
+
+                    # Raise an error to indicate missing features
+                    raise ValueError(
+                        "The treatment plan parameter 'data_columns' does not "
+                        "contain at least one item of type 'Feature'!")
+
+                # Check if not exactly one label has been passed
+                if sum([type(item).__name__ == 'Label'
+                        for item in inputs['data_columns']]) != 1:
+
+                    # Raise an error to indicate a non-unique label
+                    raise ValueError(
+                        "The treatment plan parameter 'data_columns' does not "
+                        "contain exactly one item of type 'Label'!")
 
     def get_class(self):
         """

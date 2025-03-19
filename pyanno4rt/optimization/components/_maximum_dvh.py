@@ -10,6 +10,7 @@ from numpy import concatenate, logical_or, quantile, sort
 # %% Internal package import
 
 from pyanno4rt.optimization.components import ConventionalComponent
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -31,6 +32,9 @@ class MaximumDVH(ConventionalComponent):
 
     quantile_volume : int or float
         Volume level at which to evaluate the dose quantile.
+
+    component_type : {'constraint', 'objective'}, default='objective'
+        Type of the component.
 
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
@@ -54,13 +58,19 @@ class MaximumDVH(ConventionalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
+
+    Attributes
+    ----------
+    arguments : dict
+        Dictionary with the component input arguments (for serialization).
     """
 
     def __init__(
             self,
             segment,
-            target_dose=None,
-            quantile_volume=None,
+            target_dose,
+            quantile_volume,
+            component_type='objective',
             embedding='active',
             weight=1.0,
             rank=1,
@@ -73,6 +83,7 @@ class MaximumDVH(ConventionalComponent):
         super().__init__(
             name='Maximum DVH',
             segment=segment,
+            component_type=component_type,
             parameter_name=('target_dose', 'quantile_volume'),
             parameter_category=('dose', 'volume'),
             parameter_value=(target_dose, quantile_volume),
@@ -86,6 +97,15 @@ class MaximumDVH(ConventionalComponent):
 
         # Convert the quantile volume to a relative number
         self.parameter_value[1] /= 100
+
+        # Set the input arguments
+        self.arguments = filter_dict(
+            locals(), remove_keys=('self', '__class__'))
+
+    def to_dict(self):
+        """Return the component input dictionary."""
+
+        return {'Maximum DVH': self.arguments}
 
     def compute_value(
             self,

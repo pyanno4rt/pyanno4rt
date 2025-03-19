@@ -11,6 +11,7 @@ from numpy import concatenate
 # %% Internal package import
 
 from pyanno4rt.optimization.components import ConventionalComponent
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -26,6 +27,9 @@ class DoseUniformity(ConventionalComponent):
     ----------
     segment : str
         Name of the segment associated with the component.
+
+    component_type : {'constraint', 'objective'}, default='objective'
+        Type of the component.
 
     embedding : {'active', 'passive'}, default='active'
         Mode of embedding for the component. In 'passive' mode, the component \
@@ -49,11 +53,17 @@ class DoseUniformity(ConventionalComponent):
 
     display : bool, default=True
         Indicator for the display of the component.
+
+    Attributes
+    ----------
+    arguments : dict
+        Dictionary with the component input arguments (for serialization).
     """
 
     def __init__(
             self,
             segment,
+            component_type='objective',
             embedding='active',
             weight=1.0,
             rank=1,
@@ -66,6 +76,7 @@ class DoseUniformity(ConventionalComponent):
         super().__init__(
             name='Dose Uniformity',
             segment=segment,
+            component_type=component_type,
             parameter_name=(),
             parameter_category=(),
             parameter_value=(),
@@ -76,6 +87,15 @@ class DoseUniformity(ConventionalComponent):
             link=link,
             identifier=identifier,
             display=display)
+
+        # Set the input arguments
+        self.arguments = filter_dict(
+            locals(), remove_keys=('self', '__class__'))
+
+    def to_dict(self):
+        """Return the component input dictionary."""
+
+        return {'Dose Uniformity': self.arguments}
 
     def compute_value(
             self,

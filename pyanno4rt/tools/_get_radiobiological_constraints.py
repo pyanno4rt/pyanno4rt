@@ -11,17 +11,17 @@ from pyanno4rt.tools import flatten
 
 def get_radiobiological_constraints(segmentation):
     """
-    Get a tuple with the set radiobiological model-based constraint functions.
+    Get a tuple with the radiobiological model-based constraint functions.
 
     Parameters
     ----------
     segmentation : dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
 
     Returns
     -------
     tuple
-        Tuple with the set radiobiological model-based constraint functions.
+        Tuple with the radiobiological model-based constraint functions.
     """
 
     return tuple(constraint for constraint in flatten(

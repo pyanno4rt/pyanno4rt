@@ -9,7 +9,6 @@ from math import inf
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.components import component_map
 
 # %% Class definition
 

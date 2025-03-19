@@ -4,12 +4,9 @@
 
 # %% External package import
 
-from os import mkdir
-from os.path import abspath, exists, splitext
-from shutil import copy
-
-from json import dump
-from numpy import save
+from json import dumps
+from os.path import abspath, splitext
+from zipfile import ZipFile
 
 # %% Internal package import
 
@@ -18,46 +15,82 @@ from pyanno4rt.tools import apply, get_machine_learning_objectives
 # %% Function definition
 
 
-def snapshot(instance, path, include_patient_data=False,
-             include_dose_matrix=False, include_model_data=False,
-             include_optimum=False):
+def snapshot(
+        instance, path, include_patient_data=False, include_dose_matrix=False,
+        include_model_data=False, include_optimum=False):
     """
     Take a snapshot of a treatment plan.
 
     Parameters
     ----------
-    instance : object of class from :mod:`~pyanno4rt.base`
-        The base treatment plan class from which to take a snapshot.
+    instance : object of class \
+        :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
+        The object from which to take a snapshot.
 
     path : str
-        Directory path for the snapshot (folder).
-
-        .. note:: If the specified path does not reference an existing \
-            folder, one is created automatically.
+        Directory path for the snapshot (archive).
 
     include_patient_data : bool, default=False
         Indicator for the storage of the external patient data, i.e., \
-        computed tomography and segmentation data.
+        CT and segmentation data.
 
     include_dose_matrix : bool, default=False
         Indicator for the storage of the dose-influence matrix.
 
     include_model_data : bool, default=False
-        Indicator for the storage of the outcome model-related dataset(s).
+        Indicator for the storage of the outcome model-related datasets.
 
     include_optimum : bool, default=False
-        Indicator for the storage of the optimized fluence.
+        Indicator for the storage of the optimized fluence array.
 
     Raises
     ------
     AttributeError
-        If the treatment plan instance has not been configured yet.
+        If the treatment plan has not been configured and optimized yet.
     """
 
+    def export_model_files(data):
+        """Export the machine learning model data files."""
+
+        # Get the model object
+        model = data[2]
+
+        # Set the model file paths to the ZIP file
+        model.set_file_paths(f'{snap_path}.p4rt')
+
+        # Write the configuration to the ZIP file
+        zip_file.writestr(
+            f'{data[1]}/configuration.json',
+            data=model.export_configuration(include_model_data))
+
+        # Write the hyperparameters to the ZIP file
+        zip_file.writestr(
+            f'{data[1]}/hyperparameters.json',
+            data=model.export_hyperparameters())
+
+        # Write the prediction model to the ZIP file
+        zip_file.writestr(
+            f'{data[1]}/model.'
+            f'{"h5" if "Neural Network" in data[0] else "sav"}',
+            data=model.export_model())
+
+        # Write the preprocessor to the ZIP file
+        zip_file.writestr(
+            f'{data[1]}/preprocessor.sav', data=model.export_preprocessor())
+
+        # Check if the model data should be saved and exists
+        if include_model_data and data[3] is not None:
+
+            # Get the file extension
+            _, extension = splitext(data[3])
+
+            # Write the model data to the ZIP file
+            zip_file.write(data[3], f'{data[1]}/model_data{extension}')
+
     # Check if any required attribute is missing
-    if (any(getattr(instance, attribute) is None for attribute in
-            ('logger', 'datahub', 'input_checker', 'patient_loader',
-             'plan_generator', 'dose_info_generator', 'fluence_optimizer'))
+    if (any(getattr(instance, attribute) is None for attribute in (
+            'logger', 'datahub', 'patient_loader', 'plan_generator',
+            'dose_info_generator', 'fluence_optimizer'))
             or instance.datahub.state < 3):
 
         # Raise an error to indicate a missing attribute
@@ -65,160 +98,67 @@ def snapshot(instance, path, include_patient_data=False,
             "Please configure and optimize the treatment plan before taking a "
             "snapshot!")
 
-    def dict_path_to_absolute(search_key, dictionary):
-        """Search a path key and convert the value into an absolute path."""
-
-        # Loop over the dictionary items
-        for key, value in dictionary.items():
-
-            # Check if the current key has been searched
-            if key == search_key:
-
-                # Check if the value is None
-                if value is not None:
-
-                    # Convert the path into an absolute value
-                    dictionary[key] = abspath(value)
-
-            # Else, check if the value is a dictionary
-            elif isinstance(value, dict):
-
-                # Loop recursively over the function output
-                dict_path_to_absolute(search_key, value)
-
-            # Else, check if the value is a list
-            elif isinstance(value, list):
-
-                # Loop over the list elements
-                for element in value:
-
-                    # Check if the list element is a dictionary
-                    if isinstance(element, dict):
-
-                        # Loop recursively over the function output
-                        dict_path_to_absolute(search_key, element)
-
-        return dictionary
-
-    def save_ml_model(data):
-        """Create and save the machine learning model data files."""
-
-        # Build the model folder path
-        model_path = f'{snap_path}/{data[0]}'
-
-        # Check if the model folder does not yet exist
-        if not exists(model_path):
-
-            # Create a new folder for the model files
-            mkdir(model_path)
-
-        # Get the model object
-        model = data[1]
-
-        # Set the file path to the current location
-        model.set_file_paths(model_path)
-
-        # Write the preprocessor to a file
-        model.write_preprocessor_to_file(model.preprocessor)
-
-        # Write the prediction model to a file
-        model.write_model_to_file(model.prediction_model)
-
-        # Write the configuration to a file
-        model.write_configuration_to_file(
-            model.configuration, include_model_data)
-
-        # Write the hyperparameters to a file
-        model.write_hyperparameters_to_file(model.hyperparameters)
-
-        # Check if the model data should be saved and exists
-        if include_model_data and data[2] is not None:
-
-            # Get the file extension
-            _, extension = splitext(data[2])
-
-            # Copy the raw data set into a new file
-            copy(data[2], f'{model_path}/model_data{extension}')
-
     # Build the snapshot folder path
-    snap_path = abspath(f"{path}/{instance.configuration['label']}")
-
-    # Check if the folder path does not already exists
-    if not exists(snap_path):
-
-        # Create a new folder for the instance files
-        mkdir(snap_path)
+    snap_path = abspath(f"{path}/{instance.configuration.label}")
 
     # Build a joint dictionary for the plan inputs
     input_dictionaries = {
-        'configuration': instance.configuration,
-        'optimization': instance.optimization,
-        'evaluation': instance.evaluation}
+        'configuration': instance.configuration.to_dict(),
+        'optimization': instance.optimization.to_dict(),
+        'evaluation': instance.evaluation.to_dict()}
 
     # Get the machine learning model data
     ml_model_data = tuple(
-        (objective.model.model_label, objective.model,
+        (objective.name, objective.model.model_label, objective.model,
          objective.model_parameters.get('data_path'))
         for objective in get_machine_learning_objectives(
                 instance.datahub.segmentation))
 
-    # Check if machine learning model data exists
-    if len(ml_model_data) > 0:
+    # Open a stream to a ZIP file
+    with ZipFile(f'{snap_path}.p4rt', mode="w") as zip_file:
 
-        # Convert the data file paths into absolute paths
-        input_dictionaries['optimization'] = dict_path_to_absolute(
-            'data_path', input_dictionaries['optimization'])
+        # Write the input parameter dictionary to the ZIP file
+        zip_file.writestr(
+            'input_parameters.json',
+            data=dumps(input_dictionaries, sort_keys=False, indent=4))
 
-    # Loop over the configuration path variables
-    for key in ('imaging_path', 'dose_matrix_path'):
+        # Write the log file to the ZIP file
+        zip_file.writestr(
+            f'{instance.datahub.label}.log',
+            data=instance.logger.logger.handlers[1].stream.getvalue())
 
-        # Convert the paths into absolute paths
-        input_dictionaries['configuration'] = dict_path_to_absolute(
-            key, input_dictionaries['configuration'])
+        # Export the data for the machine learning model(s)
+        apply(export_model_files, ml_model_data)
 
-    # Open a file stream
-    with open(f'{snap_path}/input_parameters.json', 'w',
-              encoding='utf-8') as file:
+        # Check if the patient data should be saved
+        if include_patient_data:
 
-        # Dump the input dictionaries to the file
-        dump(input_dictionaries, file, sort_keys=False, indent=4)
+            # Get the file extension
+            _, extension = splitext(instance.configuration.imaging_path)
 
-    # Get the object stream value from the logger
-    stream_value = instance.logger.logger.handlers[1].stream.getvalue()
+            # Write the patient data to the ZIP file
+            zip_file.write(
+                instance.configuration.imaging_path,
+                f'patient_data{extension}')
 
-    # Open a file stream
-    with open(f'{snap_path}/{instance.datahub.label}.log', 'w',
-              encoding='utf-8') as file:
+        # Check if the dose-influence matrix should be saved
+        if include_dose_matrix:
 
-        # Print the stream value to the file
-        print(stream_value, file=file)
+            # Get the file extension
+            _, extension = splitext(instance.configuration.dose_matrix_path)
 
-    # Save the data for the machine learning model(s)
-    apply(save_ml_model, ml_model_data)
+            # Write the dose-influence matrix to the ZIP file
+            zip_file.write(
+                instance.configuration.dose_matrix_path,
+                f'dose_influence_matrix{extension}')
 
-    # Check if the patient data should be saved
-    if include_patient_data:
+        # Check if the optimized fluence array should be saved
+        if include_optimum:
 
-        # Get the file extension
-        _, extension = splitext(instance.configuration['imaging_path'])
+            # Write the optimized fluence array to the ZIP file
+            zip_file.writestr(
+                'optimized_fluence.npy',
+                data=instance.datahub.optimization['optimized_fluence'])
 
-        # Copy the input file into a new file
-        copy(instance.configuration['imaging_path'],
-             f'{snap_path}/patient_data{extension}')
-
-    # Check if the dose influence matrix data should be saved
-    if include_dose_matrix:
-
-        # Get the file extension
-        _, extension = splitext(instance.configuration['dose_path'])
-
-        # Copy the input file into a new file
-        copy(instance.configuration['dose_path'],
-             f'{snap_path}/dose_influence_matrix{extension}')
-
-    # Check if the optimized fluence should be saved
-    if include_optimum:
-
-        # Save the optimized fluence to a new file
-        save(f'{snap_path}/optimized_fluence.npy',
-             instance.datahub.optimization['optimized_fluence'])
+        # Test the integrity of the ZIP file
+        zip_file.testzip()

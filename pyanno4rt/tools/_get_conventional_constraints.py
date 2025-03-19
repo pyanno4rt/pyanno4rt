@@ -11,17 +11,17 @@ from pyanno4rt.tools import flatten
 
 def get_conventional_constraints(segmentation):
     """
-    Get a tuple with all set conventional constraint functions.
+    Get a tuple with the conventional constraint functions.
 
     Parameters
     ----------
     segmentation : dict
-        Dictionary with information on the segmented structures.
+        Dictionary with information on the segments.
 
     Returns
     -------
     tuple
-        Tuple with all set conventional constraint functions.
+        Tuple with the conventional constraint functions.
     """
 
     return tuple(constraint for constraint in flatten(
