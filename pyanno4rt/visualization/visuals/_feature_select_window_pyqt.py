@@ -7,10 +7,12 @@
 from numpy import array, ceil
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QMainWindow,
-                             QSizePolicy, QVBoxLayout, QWidget)
-from pyqtgraph import (mkPen, PlotWidget, setConfigOptions, TableWidget,
-                       InfiniteLine, SignalProxy)
+from PyQt5.QtWidgets import (
+    QComboBox, QHBoxLayout, QLabel, QMainWindow, QSizePolicy, QVBoxLayout,
+    QWidget)
+from pyqtgraph import (
+    mkPen, PlotWidget, setConfigOptions, TableWidget, InfiniteLine,
+    SignalProxy)
 from pyqtgraph.Qt import QtGui
 
 # %% Internal package import

@@ -7,7 +7,7 @@
 from IPython import get_ipython
 from itertools import tee
 from matplotlib.pyplot import get_current_fig_manager, subplots
-from numpy import array, ceil, divide
+from numpy import ceil, divide
 
 # %% Internal package import
 

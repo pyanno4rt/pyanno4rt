@@ -38,8 +38,6 @@ from ._squared_underdosing import SquaredUnderdosing
 from ._support_vector_machine_ntcp import SupportVectorMachineNTCP
 from ._support_vector_machine_tcp import SupportVectorMachineTCP
 
-from ._component_map import component_map
-
 __all__ = [
     'ConventionalComponent',
     'DecisionTreeNTCP',
@@ -67,5 +65,4 @@ __all__ = [
     'SquaredOverdosing',
     'SquaredUnderdosing',
     'SupportVectorMachineNTCP',
-    'SupportVectorMachineTCP',
-    'component_map']
+    'SupportVectorMachineTCP']

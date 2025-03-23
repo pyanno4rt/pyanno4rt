@@ -9,7 +9,7 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.input_check import (
+from pyanno4rt.checking import (
     check_length, check_regular_extension, check_regular_extension_directory,
     check_subtype, check_type, check_value, check_value_in_set)
 from pyanno4rt.tools import filter_dict

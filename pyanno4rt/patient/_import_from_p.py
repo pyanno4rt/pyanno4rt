@@ -4,10 +4,9 @@
 
 # %% Internal package import
 
-from pyanno4rt.patient._generate_ct_from_p import generate_ct_from_p
-from pyanno4rt.patient._generate_segmentation_from_p import (
-    generate_segmentation_from_p)
-from pyanno4rt.patient._read_data_from_p import read_data_from_p
+from pyanno4rt.patient import generate_ct_from_p
+from pyanno4rt.patient import generate_segmentation_from_p
+from pyanno4rt.patient import read_data_from_p
 
 # %% Function definition
 

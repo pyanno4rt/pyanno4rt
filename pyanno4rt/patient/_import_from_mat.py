@@ -5,9 +5,8 @@
 # %% Internal package import
 
 from pyanno4rt.patient import generate_ct_from_mat
-from pyanno4rt.patient._generate_segmentation_from_mat import (
-    generate_segmentation_from_mat)
-from pyanno4rt.patient._read_data_from_mat import read_data_from_mat
+from pyanno4rt.patient import generate_segmentation_from_mat
+from pyanno4rt.patient import read_data_from_mat
 
 # %% Function definition
 

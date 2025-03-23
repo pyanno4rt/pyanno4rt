@@ -10,17 +10,11 @@ from os.path import abspath
 
 # %% Internal package import
 
-from pyanno4rt.input_check import (
+from pyanno4rt.checking import (
     check_key_in_dict, check_length, check_path, check_regular_extension,
     check_regular_extension_directory, check_subtype, check_type,
     check_value, check_value_in_set)
-from pyanno4rt.learning_model.frequentist.extensions import (
-    loss_map, optimizer_map)
-from pyanno4rt.learning_model.losses import loss_map as mloss_map
-from pyanno4rt.learning_model.preprocessing.cleaners import cleaner_map
-from pyanno4rt.learning_model.preprocessing.reducers import reducer_map
-from pyanno4rt.learning_model.preprocessing.samplers import sampler_map
-from pyanno4rt.learning_model.preprocessing.transformers import transformer_map
+import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import compare_dictionaries, filter_dict
 
 # %% Class definition
@@ -60,7 +54,8 @@ class MachineLearningComponent(metaclass=ABCMeta):
             Path to the data set used for fitting the machine learning model.
 
         - data_columns : list
-            List of :class:`~pyanno4rt.learning_model.features._feature.Feature` \
+            List of \
+                :class:`~pyanno4rt.learning_model.features._feature.Feature` \
             and :class:`~pyanno4rt.learning_model.features._label.Label` \
             objects.
 
@@ -391,9 +386,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
             'preprocessing_steps': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=str),
-                partial(check_value_in_set, options=tuple(
-                    {**cleaner_map, **reducer_map, **sampler_map,
-                     **transformer_map}))),
+                partial(check_value_in_set, options=tuple(maps.TRANSFORMERS))),
             'architecture': (
                 partial(check_type, types=str),
                 partial(check_value_in_set, options=(
@@ -408,8 +401,8 @@ class MachineLearningComponent(metaclass=ABCMeta):
                 partial(check_value, reference=0, sign='>')),
             'tune_score': (
                 partial(check_type, types=str),
-                partial(check_value_in_set, options=tuple(('AUC', *mloss_map)))
-                ),
+                partial(check_value_in_set, options=tuple(
+                    ('AUC', *maps.LOSSES)))),
             'tune_splits': (
                 partial(check_type, types=int),
                 partial(check_value, reference=1, sign='>=')),
@@ -545,10 +538,10 @@ class MachineLearningComponent(metaclass=ABCMeta):
                 partial(check_value, reference=0, sign='>', is_vector=True)),
             'optimizer': (
                 partial(check_type, types=list),
-                partial(check_value_in_set, options=tuple(optimizer_map))),
+                partial(check_value_in_set, options=tuple(maps.NN_OPTS))),
             'loss': (
                 partial(check_type, types=list),
-                partial(check_value_in_set, options=tuple(loss_map))),
+                partial(check_value_in_set, options=tuple(maps.NN_LOSSES))),
             'n_estimators': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=int),

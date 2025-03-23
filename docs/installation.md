@@ -42,13 +42,13 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> numpy (>=2.1.3) </li>
 	<li> ipyopt (>=0.12.9) </li>
 	<li> proxmin (>=0.6.12) </li>
-	<li> absl-py (>=2.1.0) </li>
+	<li> absl-py (>=2.2.0) </li>
 	<li> pydicom (>=3.0.1) </li>
 	<li> scikit-image (>=0.25.2) </li>
 	<li> h5py (>=3.13.0) </li>
 	<li> pandas (>=2.2.3) </li>
-	<li> jax (>=0.5.2) </li>
-	<li> jaxlib (>=0.5.1) </li>
+	<li> jax (>=0.5.3) </li>
+	<li> jaxlib (>=0.5.3) </li>
 	<li> numba (>=0.61.0) </li>
 	<li> scikit-learn (>=1.6.1) </li>
 	<li> tensorflow (>=2.19.0) </li>

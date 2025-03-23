@@ -9,10 +9,9 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.input_check import (
+from pyanno4rt.checking import (
     check_length, check_subtype, check_type, check_value, check_value_in_set)
-from pyanno4rt.optimization.components import component_map
-from pyanno4rt.optimization.methods import method_map
+import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import filter_dict
 
 # %% Class definition
@@ -238,7 +237,7 @@ class Optimization():
             item.to_dict() for item in dictionary['components']]
 
         return dictionary
-        
+
     def check(
             self,
             inputs):
@@ -256,10 +255,10 @@ class Optimization():
             'components': (
                 partial(check_type, types=list),
                 partial(check_length, reference=1, sign='>='),
-                partial(check_subtype, types=tuple(component_map.values()))),
+                partial(check_subtype, types=tuple(maps.COMPONENTS.values()))),
             'method': (
                 partial(check_type, types=str),
-                partial(check_value_in_set, options=tuple(method_map))),
+                partial(check_value_in_set, options=tuple(maps.METHODS))),
             'solver': (
                 partial(check_type, types=str),
                 partial(check_value_in_set, options={

@@ -25,7 +25,7 @@ from pyanno4rt.evaluation import DosimetricsEvaluator
 from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
-from pyanno4rt.input_check import check_type
+from pyanno4rt.checking import check_type
 from pyanno4rt.tools import (
     apply, get_machine_learning_constraints, get_machine_learning_objectives)
 

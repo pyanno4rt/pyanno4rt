@@ -10,8 +10,8 @@ from numpy import array, dot
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model import DataModelHandler
-from pyanno4rt.learning_model.frequentist import LogisticRegressionModel
+from pyanno4rt.learning import DataModelHandler
+from pyanno4rt.learning.logistic import LogisticRegressionModel
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict, inverse_sigmoid
 

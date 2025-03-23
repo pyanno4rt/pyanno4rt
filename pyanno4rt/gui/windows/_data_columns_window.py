@@ -18,7 +18,7 @@ from pyanno4rt.gui.compilations.data_columns_window import (
     Ui_data_columns_window)
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, sbox, tbutton_composer)
-from pyanno4rt.learning_model.features import feature_map
+import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import apply, string_to_numeric
 
 # %% Class definition
@@ -557,7 +557,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
         # Add the combo box for the feature function
         add_combo_box(
-            items=[''] + list(feature_map.keys()),
+            items=[''] + list(maps.FEATURES),
             current_text=(
                 '' if not parameters['function'] else parameters['function']),
             row=index,

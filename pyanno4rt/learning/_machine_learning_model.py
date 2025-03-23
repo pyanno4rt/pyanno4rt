@@ -1,0 +1,893 @@
+"""Machine learning model superclass."""
+
+# Author: Tim Ortkamp
+
+# %% External package import
+
+from json import dumps as jdumps, load as jload
+from os.path import exists
+from pickle import dumps, load
+from statistics import mean
+
+from abc import ABCMeta, abstractmethod
+from functools import partial
+from hyperopt import fmin, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
+from numpy import array, where, zeros
+from sklearn.metrics import roc_auc_score
+
+# %% Internal package import
+
+from pyanno4rt.datahub import Datahub
+import pyanno4rt.learning._maps as maps
+from pyanno4rt.learning.evaluation import ModelEvaluator
+from pyanno4rt.learning.inspection import ModelInspector
+from pyanno4rt.learning.preprocessing import DataPreprocessor
+from pyanno4rt.tools import compare_dictionaries
+
+# %% Class definition
+
+
+class MachineLearningModel(metaclass=ABCMeta):
+    """
+    Machine learning model superclass.
+
+    Parameters
+    ----------
+    model_label : str
+        Label for the model.
+
+    model_folder_path : None or str
+        Path to a folder for loading an external model.
+
+    dataset : dict
+        Dictionary with the base data information.
+
+    preprocessing_steps : list
+        Sequence of labels associated with preprocessing algorithms to \
+        preprocess the input features.
+
+    tune_space : dict
+        Internal search space for the Bayesian hyperparameter optimization.
+
+    hp_space : dict
+        Hyperopt search space for the Bayesian hyperparameter optimization.
+
+    tune_evaluations : int
+        Number of evaluation steps (trials) for the Bayesian \
+        hyperparameter optimization.
+
+    tune_score : {'AUC', 'Brier score', 'Logloss'}
+        Scoring function for the evaluation of the hyperparameter set \
+        candidates.
+
+    inspect_model : bool
+        Indicator for the inspection of the model.
+
+    evaluate_model : bool
+        Indicator for the evaluation of the model.
+
+    display_options : dict
+        Dictionary with the graph and KPI display options.
+
+    architecture : None or {'vanilla', 'vanilla-input-convex'}, default=None
+        Type of architecture (only used in neural networks).
+
+    max_hidden_layers : None or int, default=None
+        Maximum number of hidden layers (only used in neural networks).
+
+    Attributes
+    ----------
+    model_label : str
+        See 'Parameters'.
+
+    model_folder_path : None or str
+        See 'Parameters'.
+
+    preprocessing_steps : list
+        See 'Parameters'.
+
+    preprocessor_path : None or str
+        Path for storing and retrieving the data preprocessor.
+
+    model_path : None or str
+        Path for storing and retrieving the model.
+
+    configuration_path : None or str
+        Path for storing and retrieving the configuration dictionary.
+
+    hyperparameter_path : None or str
+        Path for storing and retrieving the hyperparameter dictionary.
+
+    configuration : dict
+        Dictionary with information on the model configuration.
+
+    hp_space : dict
+        See 'Parameters'.
+
+    step : int
+        Counter variable for the tuning evaluations.
+
+    updated_model : bool
+        Indicator for the update status of the model.
+
+    preprocessor : object of class \
+        :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
+        The object used to build the preprocessing pipeline, transform the \
+        data, and return the input gradients of the preprocessing algorithms.
+
+    preprocessed_features : None or ndarray
+        Values of the preprocessed input features.
+
+    preprocessed_labels : None or ndarray
+        Values of the preprocessed input labels.
+
+    prediction_model : object
+        The object used to represent the prediction model.
+
+    hyperparameters : dict
+        Dictionary with the values of the hyperparameters.
+
+    inspector : object of class \
+        :class:`~pyanno4rt.learning_model.inspection._model_inspector.ModelInspector`
+        The object used to inspect the model.
+
+    evaluator : object of class \
+        :class:`~pyanno4rt.learning_model.evaluation._model_evaluator.ModelEvaluator`
+        The object used to evaluate the model.
+    """
+
+    def __init__(
+            self,
+            model_label,
+            model_folder_path,
+            dataset,
+            preprocessing_steps,
+            tune_space,
+            hp_space,
+            tune_evaluations,
+            tune_score,
+            inspect_model,
+            evaluate_model,
+            display_options,
+            architecture=None,
+            max_hidden_layers=None):
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Get the instance attributes from the arguments
+        self.model_label, self.model_folder_path, self.preprocessing_steps = (
+            model_label, model_folder_path, preprocessing_steps)
+
+        # Initialize the file paths
+        (self.preprocessor_path, self.model_path, self.configuration_path,
+         self.hyperparameter_path) = (None, None, None, None)
+
+        # Build the configuration dictionary with the modeling information
+        self.configuration = {
+            'feature_names': dataset['feature_names'],
+            'feature_values': dataset.get('feature_values'),
+            'feature_scales': dataset['feature_scales'],
+            'label_name': dataset['label_name'],
+            'label_values': dataset.get('label_values'),
+            'label_viewpoint': dataset['label_viewpoint'],
+            'label_bounds': dataset['label_bounds'],
+            'time_variable_name': dataset.get('time_variable_name'),
+            'time_variable_values': dataset.get('time_variable_values'),
+            'feature_statics': dataset['feature_statics'],
+            'feature_definitions': dataset['feature_definitions'],
+            'tune_folds': dataset.get('tune_folds'),
+            'oof_folds': dataset.get('oof_folds'),
+            'number_of_samples': dataset.get('number_of_samples'),
+            'preprocessing_steps': preprocessing_steps,
+            'architecture': architecture,
+            'max_hidden_layers': max_hidden_layers,
+            'tune_space': tune_space,
+            'tune_evaluations': tune_evaluations,
+            'tune_score': tune_score}
+
+        # Add the label bias to the configuration dictionary
+        if dataset.get('label_values') is not None:
+            self.configuration['bias'] = (
+                sum(dataset['label_values'] == 1)
+                / sum(dataset['label_values'] == 0))
+
+        # Get the hyperopt search space
+        self.hp_space = hp_space
+
+        # Initialize the step counter for the hyperparameter search
+        self.step = None
+
+        # Initialize the boolean flag to indicate model updates
+        self.updated_model = False
+
+        # Initialize the preprocessed features and labels
+        self.preprocessed_features, self.preprocessed_labels = (None, None)
+
+        # Get the machine learning model and its hyperparameters
+        self.preprocessor, self.prediction_model, self.hyperparameters = (
+            self.get_model(
+                self.configuration['feature_values'],
+                self.configuration['label_values']))
+
+        # Check if the model has been updated or not yet registered
+        if self.updated_model or self.model_label not in hub.model_instances:
+
+            # Add the model instance to the datahub
+            hub.model_instances[self.model_label] = {
+                'preprocessor': self.preprocessor,
+                'prediction_model': self.prediction_model,
+                'configuration': self.configuration,
+                'hyperparameters': self.hyperparameters}
+
+        # Check if a non-empty dataset has been passed
+        if all(self.configuration[key] is not None for key in (
+                'feature_values', 'label_values', 'oof_folds', 'tune_score')):
+
+            # Check if the model should be inspected
+            if inspect_model:
+
+                # Initialize the model inspector
+                self.inspector = ModelInspector(model_label)
+
+                # Inspect the model
+                self.inspect(
+                    self.configuration['feature_values'],
+                    self.configuration['label_values'])
+
+            # Check if the model should be evaluated
+            if evaluate_model:
+
+                # Initialize the model evaluator
+                self.evaluator = ModelEvaluator(model_label)
+
+                # Evaluate the model
+                self.evaluate(
+                    self.configuration['feature_values'],
+                    self.configuration['label_values'])
+
+        # Update the display options in the datahub
+        hub.model_instances[self.model_label]['display_options'] = (
+            display_options)
+
+    def preprocess(
+            self,
+            features):
+        """
+        Preprocess the feature vector.
+
+        Parameters
+        ----------
+        features : ndarray
+            Array of feature values.
+
+        Returns
+        -------
+        ndarray
+            Array of transformed feature values.
+        """
+
+        return self.preprocessor.transform(features)[0]
+
+    def get_model(
+            self,
+            features,
+            labels):
+        """
+        Get the machine learning model and its hyperparameters by reading \
+        from the model folder path, the datahub, or by (re-)training.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
+            The object used to build the preprocessing pipeline, transform \
+            the data, and return the input gradients of the preprocessing \
+            algorithms.
+
+        object
+            The object used to represent the prediction model.
+
+        dict
+            Dictionary with the values of the hyperparameters.
+        """
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Check if the model files can be loaded from a folder path
+        if self.model_folder_path:
+
+            # Set the model file paths
+            self.set_file_paths(self.model_folder_path)
+
+            # Check if all file paths exist
+            if all(exists(path) for path in (
+                self.preprocessor_path, self.model_path,
+                    self.configuration_path, self.hyperparameter_path)):
+
+                # Set the update flag to False
+                self.updated_model = False
+
+                # Get the preprocessor, prediction model and hyperparameters
+                preprocessor, prediction_model, hyperparameters = (
+                    self.import_preprocessor(),
+                    self.import_model(),
+                    self.import_hyperparameters())
+
+                # Check if the features and labels are not None
+                if features is not None and labels is not None:
+
+                    # Preprocess the features and labels
+                    self.preprocessed_features, self.preprocessed_labels = (
+                        preprocessor.fit_transform(features, labels))
+
+                return preprocessor, prediction_model, hyperparameters
+
+        # Else, check if the model files can be loaded from the datahub
+        elif (self.model_label in hub.model_instances and compare_dictionaries(
+                self.configuration,
+                hub.model_instances[self.model_label]['configuration'],
+                ignore_keys=('feature_statics', 'feature_definitions'))):
+
+            # Set the update flag to False
+            self.updated_model = False
+
+            # Log messages about the model file reading
+            hub.logger.display_info(
+                f'Reading "{self.model_label}" preprocessor from datahub ...')
+            hub.logger.display_info(
+                f'Reading "{self.model_label}" model from datahub ...')
+            hub.logger.display_info(
+                f'Reading "{self.model_label}" hyperparameters from datahub '
+                '...')
+
+            # Read the model files
+            preprocessor, prediction_model, hyperparameters = (
+                hub.model_instances[self.model_label]['preprocessor'],
+                hub.model_instances[self.model_label]['prediction_model'],
+                hub.model_instances[self.model_label]['hyperparameters'])
+
+            # Check if the features and labels are not None
+            if features is not None and labels is not None:
+
+                # Preprocess the features and labels
+                self.preprocessed_features, self.preprocessed_labels = (
+                    preprocessor.fit_transform(features, labels))
+
+            return preprocessor, prediction_model, hyperparameters
+
+        # Initialize the data preprocessor
+        preprocessor = DataPreprocessor(self.preprocessing_steps)
+
+        # Fit and transform the input features and labels
+        self.preprocessed_features, self.preprocessed_labels = (
+            preprocessor.fit_transform(features, labels))
+
+        # (Re-)train the prediction model
+        prediction_model, hyperparameters = self.train(features, labels)
+
+        # Set the update flag to True
+        self.updated_model = True
+
+        return preprocessor, prediction_model, hyperparameters
+
+    @abstractmethod
+    def get_hyperparameter_set(
+            self,
+            proposal):
+        """Get the hyperparameter set."""
+
+    @abstractmethod
+    def get_model_fit(
+            self,
+            features,
+            labels,
+            hyperparameters):
+        """Get the machine learning model fit."""
+
+    def tune_hyperparameters(
+            self,
+            features,
+            labels):
+        """
+        Tune the hyperparameters of the machine learning model via sequential \
+        model-based optimization using tree-structured Parzen estimators and \
+        robust evaluation using stratified k-fold cross-validation.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+
+        Returns
+        -------
+        tuned_hyperparameters : dict
+            Dictionary with the values of the tuned hyperparameters.
+        """
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Log a message about the hyperparameter tuning
+        hub.logger.display_info(
+            'Performing Bayesian hyperparameter search for '
+            f'"{self.model_label}" with '
+            f'{len(set(self.configuration["tune_folds"][:, 0]))}-fold '
+            'cross-validation and '
+            f'{self.configuration["tune_folds"].shape[1]} repeat(s) ...')
+
+        # Define the output string function
+        def log_trial(step, trials):
+            """Log the result of a single trial."""
+
+            hub.logger.display_info(
+                f'Tuning hyperparameters for "{self.model_label}" '
+                f'({step}/{self.configuration["tune_evaluations"]}) '
+                '- best loss: '
+                f'{round(min(filter(None, trials.losses())), 4)} ...')
+
+        def objective(proposal, trials, space):
+            """Compute the objective function for a set of hyperparameters."""
+
+            def compute_fold_score(indices):
+                """Compute the score for a single train-validation split."""
+
+                # Get the training and validation split
+                split = [
+                    features[indices[0]], labels[indices[0]],
+                    features[indices[1]], labels[indices[1]]]
+
+                # Fit and transform the training and validation data
+                split = [
+                    *preprocessor.fit_transform(split[0], split[1]),
+                    *preprocessor.transform(split[2], split[3])]
+
+                # Get the model fit
+                prediction_model = self.get_model_fit(
+                    split[0], split[1], hyperparameters)
+
+                # Compute the training and validation scores
+                scores = [
+                    -scorers[self.configuration['tune_score']](
+                        labels, self.predict(features, prediction_model))
+                    for features, labels in (split[:2], split[2:])]
+
+                return mean(scores)
+
+            # Loop over the past trials
+            for trial in trials:
+
+                # Check if the trial has been accepted
+                if trial['result']['status'] == STATUS_OK:
+
+                    # Filter the trial values
+                    values = {
+                        key: value[0] for key, value
+                        in trial['misc']['vals'].items() if value}
+
+                    # Check if the proposed set equals the trial set
+                    if proposal == space_eval(space, values):
+
+                        # Log a message about the tuning status
+                        log_trial(self.step, trials)
+
+                        # Increment the step variable
+                        self.step += 1
+
+                        # Return an error status
+                        return {'status': STATUS_FAIL}
+
+            # Get the hyperparameter set
+            hyperparameters = self.get_hyperparameter_set(proposal)
+
+            # Get the tune folds
+            folds = self.configuration['tune_folds']
+
+            # Compute the objective function value (score) across all folds
+            rep_scores = (mean(map(compute_fold_score, (
+                (training_indices, validation_indices)
+                for training_indices, validation_indices in (
+                    (where(folds[:, index] != number),
+                     where(folds[:, index] == number))
+                    for number in set(folds[:, index]) if number != 0))))
+                for index in range(folds.shape[1]))
+
+            # Check if the first evaluation step has been passed
+            if self.step > 0:
+
+                # Log a message about the tuning status
+                log_trial(self.step, trials)
+
+            # Increment the step variable
+            self.step += 1
+
+            return {
+                'loss': mean(rep_scores),
+                'params': hyperparameters,
+                'status': STATUS_OK}
+
+        # Initialize the data preprocessor
+        preprocessor = DataPreprocessor(self.preprocessing_steps, False)
+
+        # Map the score labels to the score functions
+        scorers = {'AUC': roc_auc_score, **maps.LOSSES}
+
+        # Initialize the step variable
+        self.step = 0
+
+        # Generate a trials object for the evaluation history
+        bayes_trials = Trials()
+
+        # Run the hyperparameter tuning algorithm
+        tuned_hyperparameters = fmin(
+            fn=partial(objective, trials=bayes_trials, space=self.hp_space),
+            space=self.hp_space,
+            algo=tpe.suggest,
+            max_evals=self.configuration['tune_evaluations'],
+            trials=bayes_trials,
+            return_argmin=False,
+            verbose=False,
+            show_progressbar=False)
+
+        # Log a message about the tuning status
+        hub.logger.display_info(
+            f'Completed hyperparameter tuning for "{self.model_label}" '
+            f'({self.step}/{self.configuration["tune_evaluations"]}) '
+            '- best loss: '
+            f'{round(min(filter(None, bayes_trials.losses())), 4)} ...')
+
+        return tuned_hyperparameters
+
+    def train(
+            self,
+            features,
+            labels):
+        """
+        Train the machine learning model.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+
+        Returns
+        -------
+        prediction_model : object
+            The object used to represent the prediction model.
+
+        hyperparameters : dict
+            Dictionary with the values of the model hyperparameters.
+        """
+
+        # Log a message about the model fitting
+        Datahub().logger.display_info(
+            f'Fitting the model "{self.model_label}" to the data ...')
+
+        # Get the hyperparameter set
+        hyperparameters = self.get_hyperparameter_set(
+            self.tune_hyperparameters(features, labels))
+
+        # Get the model fit
+        prediction_model = self.get_model_fit(
+            self.preprocessed_features, self.preprocessed_labels,
+            hyperparameters)
+
+        return prediction_model, hyperparameters
+
+    @abstractmethod
+    def predict(
+            self,
+            features,
+            predictor):
+        """Predict the label values."""
+
+    def predict_oof(
+            self,
+            features,
+            labels):
+        """
+        Predict the out-of-folds (OOF) labels.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+
+        Returns
+        -------
+        ndarray
+            Array with the out-of-folds label predictions.
+        """
+
+        # Log a message about the out-of-folds prediction
+        Datahub().logger.display_info(
+            f'Performing {len(set(self.configuration["oof_folds"][:, 0]))}'
+            '-fold cross-validation with '
+            f'{self.configuration["oof_folds"].shape[1]} repeat(s) to yield '
+            f'out-of-folds predictions for "{self.model_label}" ...')
+
+        def compute_fold_labels(indices):
+            """Compute the out-of-folds labels for a single fold."""
+
+            # Get the training and validation split
+            split = [
+                features[indices[0]], labels[indices[0]],
+                features[indices[1]]]
+
+            # Fit and transform the training and validation data
+            split = [
+                *preprocessor.fit_transform(split[0], split[1]),
+                preprocessor.transform(split[2])[0]]
+
+            # Get the model fit
+            prediction_model = self.get_model_fit(
+                split[0], split[1], self.hyperparameters)
+
+            return (indices[1], self.predict(split[2], prediction_model))
+
+        # Initialize the out-of-folds label prediction array
+        oof_prediction = zeros((len(labels),))
+
+        # Initialize the data preprocessor
+        preprocessor = DataPreprocessor(self.preprocessing_steps, False)
+
+        # Get the out-of-folds numbers
+        folds = self.configuration['oof_folds']
+
+        # Compute the returns across all repeats
+        rep_returns = (map(compute_fold_labels, (
+            (training_indices, validation_indices)
+            for training_indices, validation_indices in (
+                (where(folds[:, index] != number),
+                 where(folds[:, index] == number))
+                for index in range(folds.shape[1])
+                for number in set(folds[:, index])))))
+
+        # Loop over the returns
+        for fold_indices, fold_labels in rep_returns:
+
+            # Insert the fold labels at the fold indices
+            oof_prediction[fold_indices] += fold_labels/folds.shape[1]
+
+        return oof_prediction
+
+    def inspect(
+            self,
+            features,
+            labels):
+        """
+        Inspect the machine learning model.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+        """
+
+        # Check if the model should be first-time/repeatedly inspected
+        if (self.model_label not in Datahub().model_inspections
+                or self.updated_model):
+
+            # Compute the model inspection results
+            self.inspector.compute(
+                self.prediction_model, self.hyperparameters, features, labels,
+                self.preprocessing_steps, 30, self.configuration['oof_folds'],
+                self.configuration['tune_score'])
+
+    def evaluate(
+            self,
+            features,
+            labels):
+        """
+        Evaluate the machine learning model.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+        """
+
+        # Check if the model should be first-time/repeatedly evaluated
+        if (self.model_label not in Datahub().model_evaluations
+                or self.updated_model):
+
+            # Compute the model evaluation results
+            self.evaluator.compute(
+                labels, (
+                    self.predict(
+                        self.preprocessed_features, self.prediction_model),
+                    self.predict_oof(features, labels)))
+
+    def set_file_paths(
+            self,
+            base_path):
+        """
+        Set the paths for model, configuration and hyperparameter files.
+
+        Parameters
+        ----------
+        base_path : str
+            Base path from which to access the model files.
+        """
+
+        # Set the file paths
+        (self.preprocessor_path, self.model_path, self.configuration_path,
+         self.hyperparameter_path) = (
+             f'{base_path}/{filename}' for filename in (
+                 'preprocessor.sav', 'model.sav', 'configuration.json',
+                 'hyperparameters.json'))
+
+    def import_preprocessor(self):
+        """
+        Import the data preprocessor from the preprocessor file path.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
+            The object used to build the preprocessing pipeline, transform \
+            the data, and return the input gradients of the preprocessing \
+            algorithms.
+        """
+
+        # Log a message about the preprocessor file reading
+        Datahub().logger.display_info(
+            f'Reading "{self.model_label}" preprocessor from file ...')
+
+        return load(open(self.preprocessor_path, 'rb'))
+
+    def export_preprocessor(self):
+        """
+        Export the data preprocessor to a bytes-like object.
+
+        Returns
+        -------
+        bytes
+            Bytes-like preprocessor object.
+        """
+
+        return dumps(self.preprocessor)
+
+    @abstractmethod
+    def import_model(self):
+        """Import the machine learning model from the model file path."""
+
+    @abstractmethod
+    def export_model(self):
+        """Export the machine learning model to a bytes-like object."""
+
+    def import_configuration(self):
+        """
+        Import the configuration dictionary from the configuration file path.
+
+        Returns
+        -------
+        dict
+            Dictionary with information on the model configuration.
+        """
+
+        # Log a message about the configuration file reading
+        Datahub().logger.display_info(
+            f'Reading "{self.model_label}" configuration from file ...')
+
+        # Open a file stream
+        with open(self.configuration_path, 'r', encoding='utf-8') as file:
+
+            # Load the configuration
+            configuration = jload(file)
+
+        # Loop over specific keys
+        for key in (
+                'feature_values', 'label_values', 'time_variable_values',
+                'tune_folds', 'oof_folds'):
+
+            # Convert the value list into an array
+            configuration[key] = array(configuration[key])
+
+        return configuration
+
+    def export_configuration(
+            self,
+            include_model_data=False):
+        """
+        Export the configuration dictionary to a JSON string.
+
+        Parameters
+        ----------
+        include_model_data : bool, default=False
+            Indicator for the storage of the outcome model-related dataset(s).
+
+        Returns
+        -------
+        str
+            JSON string of the configuration dictionary.
+        """
+
+        # Check if the model data should be included
+        if include_model_data:
+
+            # Loop over specific keys
+            for key in (
+                'feature_values', 'label_values', 'time_variable_values',
+                    'tune_folds', 'oof_folds'):
+
+                # Check if the key value is not a list
+                if not isinstance(self.configuration[key], list):
+
+                    # Convert the array into a list
+                    self.configuration[key] = self.configuration[key].tolist()
+
+        else:
+
+            # Loop over specific keys
+            for key in (
+                'feature_values', 'label_values', 'time_variable_values',
+                    'tune_folds', 'oof_folds'):
+
+                # Set the values to None
+                self.configuration[key] = None
+
+        return jdumps(self.configuration, sort_keys=False, indent=4)
+
+    def import_hyperparameters(
+            self,
+            verbose=True):
+        """
+        Import the machine learning model hyperparameters from the \
+        hyperparameter file path.
+
+        Parameters
+        ----------
+        verbose : bool
+            Indicator for logging output messages.
+
+        Returns
+        -------
+        dict
+            Dictionary with the values of the hyperparameters.
+        """
+
+        # Check if a message should be printed
+        if verbose:
+
+            # Log a message about the parameter file reading
+            Datahub().logger.display_info(
+                f'Reading "{self.model_label}" hyperparameters from file ...')
+
+        return jload(open(self.hyperparameter_path, 'r', encoding='utf-8'))
+
+    def export_hyperparameters(self):
+        """
+        Export the machine learning model hyperparameters to a JSON string.
+
+        Returns
+        -------
+        str
+            JSON string of the hyperparameter dictionary.
+        """
+
+        return jdumps(self.hyperparameters, sort_keys=False, indent=4)

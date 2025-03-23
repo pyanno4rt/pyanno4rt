@@ -4,10 +4,9 @@
 
 # %% Internal package import
 
-from pyanno4rt.patient._generate_ct_from_dcm import generate_ct_from_dcm
-from pyanno4rt.patient._generate_segmentation_from_dcm import (
-    generate_segmentation_from_dcm)
-from pyanno4rt.patient._read_data_from_dcm import read_data_from_dcm
+from pyanno4rt.patient import generate_ct_from_dcm
+from pyanno4rt.patient import generate_segmentation_from_dcm
+from pyanno4rt.patient import read_data_from_dcm
 
 # %% Function definition
 

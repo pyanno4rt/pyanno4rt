@@ -18,9 +18,7 @@ from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, sbox, tbutton_composer, tbutton_data_window)
 from pyanno4rt.gui.windows import DataColumnsWindow
-from pyanno4rt.learning_model.frequentist.extensions._neural_network_maps import (
-    loss_map, optimizer_map)
-from pyanno4rt.learning_model.losses import loss_map as mloss_map
+import pyanno4rt.learning._maps as maps
 
 # %% Class definition
 
@@ -73,7 +71,7 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
         # Loop over the checkable combo boxes with their parameters
         for box, parameters in {
                 'segment_link_cbox': (
-                    426, list(self.parent.segments.keys()), False,
+                    426, list(self.parent.segments), False,
                     'segment_link_layout'),
                 'input_activation_cbox': (
                     191, ['elu', 'gelu', 'leaky_relu', 'linear', 'relu',
@@ -84,9 +82,9 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
                           'softmax', 'softplus', 'swish'],
                     True, 'hidden_activation_layout'),
                 'optimizer_cbox': (
-                    191, list(optimizer_map.keys()), True, 'optimizer_layout'),
+                    191, list(maps.NN_OPTS), True, 'optimizer_layout'),
                 'loss_cbox': (
-                    191, list(loss_map.keys()), True, 'loss_layout'),
+                    191, list(maps.NN_LOSSES), True, 'loss_layout'),
                 'graphs_cbox': (
                     261, ['AUC-ROC', 'AUC-PR', 'F1'], True, 'graphs_layout'),
                 'kpi_cbox': (
@@ -108,11 +106,11 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
             getattr(self, parameters[3]).addWidget(combo_box)
 
         # Add the segment items to the segment combo box
-        self.segment_cbox.addItems(list(self.parent.segments.keys()))
+        self.segment_cbox.addItems(list(self.parent.segments))
         self.segment_cbox.setCurrentIndex(-1)
 
         # Add the losses to the tune score combo box
-        self.tune_score_cbox.addItems(['AUC'] + list(mloss_map.keys()))
+        self.tune_score_cbox.addItems(['AUC'] + list(maps.LOSSES))
         self.tune_score_cbox.model().sort(0)
         self.tune_score_cbox.setCurrentText('Logloss')
 

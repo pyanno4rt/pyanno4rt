@@ -16,9 +16,7 @@ from scipy.ndimage import zoom
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.optimization.initializers import FluenceInitializer
-from pyanno4rt.optimization.projections import projection_map
-from pyanno4rt.optimization.methods import method_map
-from pyanno4rt.optimization.solvers import solver_map
+import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import (
    apply, flatten, get_constraint_segments, get_machine_learning_constraints,
    get_machine_learning_objectives, get_radiobiological_constraints,
@@ -105,7 +103,7 @@ class FluenceOptimizer():
             objectives | constraints)
 
         # Initialize the backprojection by the selected modality
-        backprojection = projection_map[hub.plan_configuration['modality']]()
+        backprojection = maps.PROJECTIONS[hub.plan_configuration['modality']]()
 
         # Check if the solver ignores any constraints
         if len(constraints) > 0 and algorithm not in ('trust-constr', 'mumps'):
@@ -119,7 +117,7 @@ class FluenceOptimizer():
             constraints = {}
 
         # Initialize the optimization problem by the selected method
-        problem = method_map[method](backprojection, objectives, constraints)
+        problem = maps.METHODS[method](backprojection, objectives, constraints)
 
         # Initialize the fluence initializer
         initializer = FluenceInitializer(
@@ -137,7 +135,7 @@ class FluenceOptimizer():
             method, problem.constraints)
 
         # Initialize the solver object by the selected solver
-        solver_object = solver_map[solver](
+        solver_object = maps.SOLVERS[solver](
             number_of_variables=len(initial_fluence),
             number_of_constraints=len(constraints),
             problem_instance=problem,

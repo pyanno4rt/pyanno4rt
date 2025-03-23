@@ -32,11 +32,9 @@ from pyanno4rt.gui.windows import (
     CompareWindow, InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow,
     SplashScreenWindow, TreeWindow)
 from pyanno4rt.gui.windows.components import component_window_map
+import pyanno4rt.optimization._maps as maps
 from pyanno4rt.optimization.components import (
-    ConventionalComponent, component_map, MachineLearningComponent,
-    RadiobiologicalComponent)
-from pyanno4rt.optimization.methods import method_map
-from pyanno4rt.optimization.solvers import solver_map
+    ConventionalComponent, MachineLearningComponent, RadiobiologicalComponent)
 from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, get_machine_learning_constraints,
     get_machine_learning_objectives, load_list_from_file,
@@ -134,12 +132,12 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.tab_dvh_layout.insertWidget(0, self.dvh_widget)
 
         # Add the optimization methods to the method combo box
-        self.method_cbox.addItems(list(method_map.keys()))
+        self.method_cbox.addItems(list(maps.METHODS))
         self.method_cbox.model().sort(0)
         self.method_cbox.setCurrentText('weighted-sum')
 
         # Add the solvers to the solver combo box
-        self.solver_cbox.addItems(list(solver_map.keys()))
+        self.solver_cbox.addItems(list(maps.SOLVERS))
         self.solver_cbox.model().sort(0)
         self.solver_cbox.setCurrentText('scipy')
         self.update_by_solver()
@@ -1305,7 +1303,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         ml_menu = menu.addMenu('Machine Learning')
 
         # Loop over the component map items
-        for label, component in component_map.items():
+        for label, component in maps.COMPONENTS.items():
 
             # Check if the component is of conventional type
             if issubclass(component, ConventionalComponent):

@@ -11,8 +11,8 @@ from tensorflow import cast, float64, GradientTape
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model import DataModelHandler
-from pyanno4rt.learning_model.frequentist import NeuralNetworkModel
+from pyanno4rt.learning import DataModelHandler
+from pyanno4rt.learning.neural_network import NeuralNetworkModel
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict, inverse_sigmoid
 

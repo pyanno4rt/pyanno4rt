@@ -35,7 +35,7 @@
 	<li> <b>Individual configuration and management of treatment plan instances</b>
 		<br>
 		<ul> 
-			<li> Dictionary-based plan generation </li>
+			<li> Class-based plan generation </li>
 			<li> Dedicated logging channels and singleton datahubs </li>
 			<li> Automatic input checks to preserve the integrity </li>
 			<li> Snapshot/copycat functionality for storage and retrieval </li>
@@ -83,11 +83,11 @@
 		<br>
 		<ul> 
 			<li> Dataset import, handling and preprocessing </li>
-			<li> 24-type feature catalogue for iterative (re)calculation to support model integration into optimization </li>
+			<li> 24-type feature catalogue for iterative (re)calculation </li>
 			<li> 7 customizable internal model classes (decision tree, k-nearest neighbors, logistic regression, naive Bayes, neural network, random forest, support vector machine)
 				<ul> 
 					<li> Individual preprocessing, inspection and evaluation units </li>  
-					<li> Adjustable hyperparameter tuning via sequential model-based optimization (SMBO) with (repeated) stratified train-validation-split or k-fold cross-validation for robustification </li> 
+					<li> Adjustable hyperparameter tuning via sequential model-based optimization (SMBO) with (repeated) stratified train-validation-split or k-fold cross-validation </li> 
 					<li> Out-of-folds prediction for generalization assessment </li>
 				</ul>
 			</li>
@@ -113,7 +113,7 @@
 					<li> CT/Dose preview </li>
 				</ul>
 			</li>
-			<li> Extendable visualization suite using Matplotlib and PyQt5
+			<li> Extendable PyQt5/Matplotlib visualization suite
 				<ul> 
 					<li> Optimization problem analysis </li> 
 					<li> Data-driven model review </li>
@@ -169,13 +169,13 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> numpy (>=2.1.3) </li>
 	<li> ipyopt (>=0.12.9) </li>
 	<li> proxmin (>=0.6.12) </li>
-	<li> absl-py (>=2.1.0) </li>
+	<li> absl-py (>=2.2.0) </li>
 	<li> pydicom (>=3.0.1) </li>
 	<li> scikit-image (>=0.25.2) </li>
 	<li> h5py (>=3.13.0) </li>
 	<li> pandas (>=2.2.3) </li>
-	<li> jax (>=0.5.2) </li>
-	<li> jaxlib (>=0.5.1) </li>
+	<li> jax (>=0.5.3) </li>
+	<li> jaxlib (>=0.5.3) </li>
 	<li> numba (>=0.61.0) </li>
 	<li> scikit-learn (>=1.6.1) </li>
 	<li> tensorflow (>=2.19.0) </li>

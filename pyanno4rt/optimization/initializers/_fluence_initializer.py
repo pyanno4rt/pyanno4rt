@@ -18,7 +18,7 @@ from scipy.sparse import hstack as shstack
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model.features import FeatureCalculator
+from pyanno4rt.learning.features import FeatureCalculator
 from pyanno4rt.tools import (
     flatten, get_constraint_segments, get_objective_segments)
 

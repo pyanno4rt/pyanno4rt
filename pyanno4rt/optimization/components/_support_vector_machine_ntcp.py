@@ -9,12 +9,12 @@ from copy import deepcopy
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model import DataModelHandler
-from pyanno4rt.learning_model.frequentist import SupportVectorMachineModel
-from pyanno4rt.learning_model.frequentist.extensions import (
+from pyanno4rt.learning import DataModelHandler
+from pyanno4rt.learning.svm import (
     linear_decision_function, poly_decision_function, rbf_decision_function,
     sigmoid_decision_function, linear_decision_gradient,
-    poly_decision_gradient, rbf_decision_gradient, sigmoid_decision_gradient)
+    poly_decision_gradient, rbf_decision_gradient, sigmoid_decision_gradient,
+    SupportVectorMachineModel)
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict, inverse_sigmoid
 

@@ -9,8 +9,8 @@ from copy import deepcopy
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model import DataModelHandler
-from pyanno4rt.learning_model.frequentist import KNeighborsModel
+from pyanno4rt.learning import DataModelHandler
+from pyanno4rt.learning.neighbors import KNeighborsModel
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict
 

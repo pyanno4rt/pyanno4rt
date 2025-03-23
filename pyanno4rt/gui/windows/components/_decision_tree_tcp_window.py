@@ -17,7 +17,7 @@ from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, sbox, tbutton_composer, tbutton_data_window)
 from pyanno4rt.gui.windows import DataColumnsWindow
-from pyanno4rt.learning_model.losses import loss_map
+import pyanno4rt.learning._maps as maps
 
 # %% Class definition
 
@@ -69,7 +69,7 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
         # Loop over the checkable combo boxes with their parameters
         for box, parameters in {
                 'segment_link_cbox': (
-                    426, list(self.parent.segments.keys()), False,
+                    426, list(self.parent.segments), False,
                     'segment_link_layout'),
                 'criterion_cbox': (
                     181, ['gini', 'entropy'], True, 'criterion_layout'),
@@ -98,11 +98,11 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
             getattr(self, parameters[3]).addWidget(combo_box)
 
         # Add the segment items to the segment combo box
-        self.segment_cbox.addItems(list(self.parent.segments.keys()))
+        self.segment_cbox.addItems(list(self.parent.segments))
         self.segment_cbox.setCurrentIndex(-1)
 
         # Add the losses to the tune score combo box
-        self.tune_score_cbox.addItems(['AUC'] + list(loss_map.keys()))
+        self.tune_score_cbox.addItems(['AUC'] + list(maps.LOSSES))
         self.tune_score_cbox.model().sort(0)
         self.tune_score_cbox.setCurrentText('Logloss')
 

@@ -12,8 +12,8 @@ from scipy.special import logsumexp
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning_model import DataModelHandler
-from pyanno4rt.learning_model.frequentist import NaiveBayesModel
+from pyanno4rt.learning import DataModelHandler
+from pyanno4rt.learning.naive_bayes import NaiveBayesModel
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict
 

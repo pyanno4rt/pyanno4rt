@@ -13,6 +13,12 @@
 [![GitHub Contributors](https://img.shields.io/github/contributors/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/graphs/contributors)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+<p align="center">
+<img src="https://github.com/pyanno4rt/pyanno4rt/blob/develop/logo/logo_white.png?raw=true" alt="logo" width="600">
+</p>
+
+<h3 align='center'>Python-based Advanced Numerical Nonlinear Optimization for Radiotherapy</h3>
+
 ---
 
 # General information
@@ -31,7 +37,7 @@
 	<li> <b>Individual configuration and management of treatment plan instances</b>
 		<br>
 		<ul> 
-			<li> Dictionary-based plan generation </li>
+			<li> Class-based plan generation </li>
 			<li> Dedicated logging channels and singleton datahubs </li>
 			<li> Automatic input checks to preserve the integrity </li>
 			<li> Snapshot/copycat functionality for storage and retrieval </li>
@@ -57,7 +63,7 @@
 			<li> Optimization methods
 				<ul> 
 					<li> Lexicographic method </li> 
-					<li> Pareto analysis /li> 
+					<li> Pareto analysis </li> 
 					<li> Weighted-sum method
 				</ul>
 			</li>
@@ -79,11 +85,11 @@
 		<br>
 		<ul> 
 			<li> Dataset import, handling and preprocessing </li>
-			<li> 24-type feature catalogue for iterative (re)calculation to support model integration into optimization </li>
+			<li> 24-type feature catalogue for iterative (re)calculation </li>
 			<li> 7 customizable internal model classes (decision tree, k-nearest neighbors, logistic regression, naive Bayes, neural network, random forest, support vector machine)
 				<ul> 
 					<li> Individual preprocessing, inspection and evaluation units </li>  
-					<li> Adjustable hyperparameter tuning via sequential model-based optimization (SMBO) with (repeated) stratified train-validation-split or k-fold cross-validation for robustification </li> 
+					<li> Adjustable hyperparameter tuning via sequential model-based optimization (SMBO) with (repeated) stratified train-validation-split or k-fold cross-validation </li> 
 					<li> Out-of-folds prediction for generalization assessment </li>
 				</ul>
 			</li>
@@ -109,7 +115,7 @@
 					<li> CT/Dose preview </li>
 				</ul>
 			</li>
-			<li> Extendable visualization suite using Matplotlib and PyQt5
+			<li> Extendable PyQt5/Matplotlib visualization suite
 				<ul> 
 					<li> Optimization problem analysis </li> 
 					<li> Data-driven model review </li>
