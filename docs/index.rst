@@ -8,6 +8,6 @@
    installation.md
    development.md
    help_support.md
-   example.ipynb
-   templates.ipynb
+   examples
+   templates
    autoapi/index

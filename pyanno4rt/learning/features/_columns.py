@@ -105,14 +105,6 @@ class Feature():
 
         # Get the check functions for the function argument
         check_argument = {
-            'Dx': (
-                partial(check_type, types=(int, float)),
-                partial(check_value, reference=0, sign='>'),
-                partial(check_value, reference=100, sign='<')),
-            'Vx': (
-                partial(check_type, types=(int, float)),
-                partial(check_value, reference=0, sign='>'),
-                partial(check_value, reference=100, sign='<')),
             'Dose Gradient': (
                 partial(check_type, types=str),
                 partial(check_value_in_set, options=('x', 'y', 'z'))),
@@ -126,6 +118,14 @@ class Feature():
                     'x1of2', 'x2of2', 'x1of3', 'x2of3', 'x3of3', 'y1of2',
                     'y2of2', 'y1of3', 'y2of3', 'y3of3', 'z1of2', 'z2of2',
                     'z1of3', 'z2of3', 'z3of3'))),
+            'Dx': (
+                partial(check_type, types=(int, float)),
+                partial(check_value, reference=0, sign='>'),
+                partial(check_value, reference=100, sign='<')),
+            'Vx': (
+                partial(check_type, types=(int, float)),
+                partial(check_value, reference=0, sign='>'),
+                partial(check_value, reference=100, sign='<')),
             'other': (
                 partial(check_type, types=type(None)),)}
 

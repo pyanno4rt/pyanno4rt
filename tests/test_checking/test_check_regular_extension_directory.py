@@ -34,12 +34,13 @@ def test_check_regular_extension_directory_valid():
      ('label', './tests/extra_files/load_list_from_file/list.json', ('.txt',),
       NotADirectoryError)],
     ids=['single-set', 'multi-set', 'invalid directory'])
-def test_check_regular_extension_directory_invalid(label, data, extensions,
-                                                   expected):
+def test_check_regular_extension_directory_invalid(
+        label, data, extensions, expected):
     """
     Test the 'check_regular_extension_directory' function with invalid input.
     """
 
     # Assert the raise of an error exception
     with raises(expected):
-        check_regular_extension_directory(label, data, extensions, ('.mat', '.p'))
+        check_regular_extension_directory(
+            label, data, extensions, ('.mat', '.p'))

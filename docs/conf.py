@@ -15,11 +15,14 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../'))
 
+from myst_sphinx_gallery import FilesConfig, GalleryThumbnailConfig, __version__
+
 # -- Project information -----------------------------------------------------
 
 project = 'pyanno4rt'
 copyright = '2024, Karlsruhe Institute of Technology'
 author = 'Tim Ortkamp'
+release = f"v{__version__}"
 
 # -- General configuration ---------------------------------------------------
 
@@ -29,6 +32,7 @@ author = 'Tim Ortkamp'
 extensions = [
     'autoapi.extension',
     'myst_nb',
+    'myst_sphinx_gallery',
     'sphinx_copybutton',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
@@ -45,6 +49,47 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# -- Gallery configuration -------------------------------------------------
+
+myst_sphinx_gallery_files_config = FilesConfig(
+    named_config={
+        "example_tg119_code": GalleryThumbnailConfig(
+            thumbnail_strategy="first",
+            notebook_thumbnail_strategy="code",
+            default_thumbnail_file="_static/tg119_dose.png"
+            ),
+        "example_tg119_ui": GalleryThumbnailConfig(
+            thumbnail_strategy="first",
+            notebook_thumbnail_strategy="code",
+            default_thumbnail_file="_static/tg119_dose.png"
+            ),
+        "components": GalleryThumbnailConfig(
+            thumbnail_strategy="first",
+            notebook_thumbnail_strategy="code",
+            default_thumbnail_file="_static/tg119_dose.png"
+            ),
+        "data_columns": GalleryThumbnailConfig(
+            thumbnail_strategy="first",
+            notebook_thumbnail_strategy="code",
+            default_thumbnail_file="_static/tg119_dose.png"
+            )
+        },
+    files_config={
+        "example_tg119_code": [
+            "/example_tg119_code.ipynb"
+            ],
+        "example_tg119_ui": [
+            "/example_tg119_ui.ipynb"
+            ],
+        "components": [
+            "/components.ipynb"
+            ],
+        "data_columns": [
+            "/data_columns.ipynb"
+            ]
+        }
+    )
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -52,9 +97,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 #
 html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
-    'logo_only': True,
-    'display_version': True
-}
+    'logo_only': True
+    }
 html_logo = '../logo/logo_white.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -92,14 +136,9 @@ autoapi_options = [
 ]
 
 autoapi_ignore = [
-    '*/_component_map.py', '*/_component_window_map.py',
-    '*/_configuration_map.py', '*/_evaluation_map.py', '*/_feature_map.py',
-    '*/_model_display_map.py', '*/_model_map.py', '*/_optimization_map.py',
-    '*/_top_level_map.py', '*/_tune_space_map.py', '*/_neural_network_maps.py',
-    '*/_loss_map.py', '*/_cleaner_map.py', '*/_reducer_map.py',
-    '*/_sampler_map.py', '*/_transformer_map.py', '*/_method_map.py',
-    '*/_projection_map.py', '*/_solver_map.py', '*/_custom_styles.py',
-    '*/compare_window.py', '*/data_columns_window.py', '*/info_window.py',
+    '*/resources_rc.py', '*/_maps.py', '*/_component_window_map.py',
+    '*/_custom_styles.py', '*/compare_window.py',
+    '*/data_columns_window.py', '*/info_window.py',
     '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py',
     '*/settings_window.py', '*/splash_screen_window.py', '*/text_window.py',
     '*/tree_window.py', '*/decision_tree_ntcp_window.py',

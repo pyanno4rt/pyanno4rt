@@ -29,7 +29,8 @@ def test_segment_eigenvalue(mask, spacing, expected):
     """Test the 'SegmentEigenvalues.compute' method."""
 
     # Assert the equality between actual and expected outcome
-    assert allclose(sort(SegmentEigenvalues.compute(mask, spacing)[0]),
-                    sort(expected[0]), atol=1e-6)
-    assert array_equal(SegmentEigenvalues.compute(mask, spacing)[1],
-                       expected[1])
+    assert allclose(
+        sort(SegmentEigenvalues.compute(mask, spacing)[0]), sort(expected[0]),
+        atol=1e-6)
+    assert array_equal(
+        SegmentEigenvalues.compute(mask, spacing)[1], expected[1])

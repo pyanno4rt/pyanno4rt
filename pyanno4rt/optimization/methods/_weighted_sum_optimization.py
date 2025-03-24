@@ -23,7 +23,7 @@ class WeightedSumOptimization():
     features a component tracker and implements the respective objective, \
     gradient, constraint and constraint Jacobian functions.
 
-    Parameters`
+    Parameters
     ----------
     backprojection : object of class
     :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
