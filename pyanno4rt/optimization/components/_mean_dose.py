@@ -166,7 +166,10 @@ def compute(dose, target_dose):
         Function value.
     """
 
-    return (concatenate(dose) - target_dose)**2
+    # Concatenate the dose arrays
+    dose = concatenate(dose)
+
+    return (sum(dose)/len(dose) - target_dose)**2
 
 
 @njit

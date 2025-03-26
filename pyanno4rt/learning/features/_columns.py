@@ -17,20 +17,17 @@ from pyanno4rt.tools import filter_dict
 # %% Class definitions
 
 
-class Feature():
+class DynamicFeature():
     """
-    Input feature class.
+    Dynamic input feature class.
 
-    This class provides methods to set, validate and serialize an input \
-    feature for the learning models.
+    This class provides methods to set, validate and serialize a dynamic \
+    input feature for the learning models.
 
     Parameters
     ----------
     column : str
         Name of the data column.
-
-    scale : {'metric', 'nominal', 'ordinal'}
-        Feature scale.
 
     segment : None or str
         Segment associated with the feature.
@@ -38,18 +35,15 @@ class Feature():
     function : None or str
         Name of the (re)calculation function.
 
-    argument : None, int, float or str
+    argument : None, int, float or str, default=None
         Additional function argument.
 
-    value : None, int, float or str
-        Static feature value.
+    scale : {'metric', 'nominal', 'ordinal'}, default='metric'
+        Feature scale.
 
     Attributes
     ----------
     column : str
-        See 'Parameters'.
-
-    scale : {'metric', 'nominal', 'ordinal'}
         See 'Parameters'.
 
     segment : None or str
@@ -61,18 +55,17 @@ class Feature():
     argument : None, int, float or str
         See 'Parameters'.
 
-    value : None, int, float or str
+    scale : {'metric', 'nominal', 'ordinal'}
         See 'Parameters'.
     """
 
     def __init__(
             self,
             column,
-            scale,
             segment,
             function,
-            argument,
-            value):
+            argument=None,
+            scale='metric'):
 
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
@@ -133,23 +126,105 @@ class Feature():
         check_map = {
             'column': (
                 partial(check_type, types=str),),
-            'scale': (
-                partial(check_type, types=str),
-                partial(check_value_in_set, options=(
-                    'metric', 'nominal', 'ordinal'))),
             'segment': (
-                partial(
-                    check_type, types={True: type(None), False: str},
-                    type_condition=inputs['function'] is None),),
+                partial(check_type, types=str),),
             'function': (
-                partial(check_type, types=(type(None), str)),
+                partial(check_type, types=str),
                 partial(check_value_in_set, options=tuple(maps.FEATURES))),
             'argument': check_argument[
                 inputs['function'] if inputs['function'] in (
                     'Dx', 'Vx', 'Dose Gradient', 'Dose Moment',
                     'Dose Subvolume') else 'other'],
+            'scale': (
+                partial(check_type, types=str),
+                partial(check_value_in_set, options=(
+                    'metric', 'nominal', 'ordinal')))}
+
+        # Loop over the dictionary items
+        for key, value in inputs.items():
+
+            # Loop over the check functions
+            for function in check_map[key]:
+
+                # Run the check function
+                function(key, value)
+
+
+class StaticFeature():
+    """
+    Static input feature class.
+
+    This class provides methods to set, validate and serialize a static input \
+    feature for the learning models.
+
+    Parameters
+    ----------
+    column : str
+        Name of the data column.
+
+    value : None, int, float or str
+        Static feature value.
+
+    scale : {'metric', 'nominal', 'ordinal'}, default='metric'
+        Feature scale.
+
+    Attributes
+    ----------
+    column : str
+        See 'Parameters'.
+
+    value : None, int, float or str
+        See 'Parameters'.
+
+    scale : {'metric', 'nominal', 'ordinal'}
+        See 'Parameters'.
+    """
+
+    def __init__(
+            self,
+            column,
+            value,
+            scale='metric'):
+
+        # Get the input arguments
+        inputs = filter_dict(vars(), remove_keys=('self',))
+
+        # Check the input arguments
+        self.check(inputs)
+
+        # Loop over the input arguments
+        for item in inputs.items():
+
+            # Set the attribute
+            setattr(self, *item)
+
+    def to_dict(self):
+        """Return the object dictionary."""
+
+        return {'Feature': vars(self)}
+
+    def check(
+            self,
+            inputs):
+        """
+        Check the input arguments.
+
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the mappings between argument names and values.
+        """
+
+        # Get the check map
+        check_map = {
+            'column': (
+                partial(check_type, types=str),),
             'value': (
-                partial(check_type, types=(type(None), int, float, str)),)}
+                partial(check_type, types=(int, float, str)),),
+            'scale': (
+                partial(check_type, types=str),
+                partial(check_value_in_set, options=(
+                    'metric', 'nominal', 'ordinal')))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

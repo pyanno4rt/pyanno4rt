@@ -26,7 +26,7 @@ class KNeighborsModel(MachineLearningModel):
     performance of a k-nearest neighbors model.
 
     See the machine learning model template class \
-        :class:`~pyanno4rt.learning_model.frequentist._machine_learning_model.MachineLearningModel`
+        :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
 
     .. note:: Currently, the hyperparameter search space for the k-nearest \

@@ -77,7 +77,7 @@ class Optimization():
     solver : {'ipyopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}, default='scipy'
         Python package to be used for solving the optimization problem, \
         see the classes \
-        :class:`~pyanno4rt.optimization.solvers._proxmin_solver.IpyoptSolver`\
+        :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
         :class:`~pyanno4rt.optimization.solvers._proxmin_solver.ProxminSolver`\
         :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
         :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\

@@ -27,7 +27,7 @@ class RandomForestModel(MachineLearningModel):
     performance of a random forest model.
 
     See the machine learning model template class \
-        :class:`~pyanno4rt.learning_model.frequentist._machine_learning_model.MachineLearningModel`
+        :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
 
     .. note:: Currently, the hyperparameter search space for the random \
@@ -186,7 +186,7 @@ class RandomForestModel(MachineLearningModel):
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning_model.frequentist.extensions._optimizable_random_forest.OptimizableRandomForest`
+            :class:`~pyanno4rt.learning.forest._optimizable_random_forest.OptimizableRandomForest`
             The object used to represent the optimization model.
         """
 

@@ -68,12 +68,12 @@ class LogisticRegressionNTCP(MachineLearningComponent):
         Dictionary with the component input arguments (for serialization).
 
     data_model_handler : object of class \
-        :class:`~pyanno4rt.learning_model._data_model_handler.DataModelHandler`
+        :class:`~pyanno4rt.learning._data_model_handler.DataModelHandler`
         The object used to handle the dataset, the feature map generation and \
         the feature (re-)calculation.
 
     model : object of class \
-        :class:`~pyanno4rt.learning_model.frequentist._logistic_regression.LogisticRegressionModel`
+        :class:`~pyanno4rt.learning.logistic._logistic_regression.LogisticRegressionModel`
         The object used to preprocess, tune, train, inspect and evaluate the \
         logistic regression model.
 

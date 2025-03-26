@@ -215,16 +215,12 @@ class TabularDataGenerator():
              'time_variable_values': (
                  data_frame[filter(None, [time_variable_name])].values)}
             | {'feature_statics': {
-                key: feature_meta[key]['value']
-                for key in list(features.columns)
-                if feature_meta[key]['value'] is not None}}
+                key: value['value'] for key, value in feature_meta.items()
+                if value.get('value') is not None}}
             | {'feature_definitions': {
-                key: {
-                    'segment': feature_meta[key]['segment'],
-                    'function': feature_meta[key]['function'],
-                    'argument': feature_meta[key]['argument'],
-                    'value': feature_meta[key]['value']}
-                for key in list(features.columns)}})
+                key: {attribute: value.get(attribute) for attribute in (
+                    'segment', 'function', 'argument', 'value')}
+                for key, value in feature_meta.items()}})
 
     def modulate(
             self,

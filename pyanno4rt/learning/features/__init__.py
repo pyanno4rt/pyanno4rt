@@ -44,7 +44,7 @@ from ._segment_eigenmax import SegmentEigenmax
 from ._feature_calculator import FeatureCalculator
 
 # Import the input column classes and the mapping dictionary
-from ._columns import Feature, Label
+from ._columns import DynamicFeature, Label, StaticFeature
 
 __all__ = [
     'DosiomicFeature',
@@ -74,6 +74,7 @@ __all__ = [
     'SegmentEigenmax',
     'SegmentEigenvalues',
     'FeatureCalculator',
-    'Feature',
+    'DynamicFeature',
+    'StaticFeature',
     'FEATURES',
     'Label']

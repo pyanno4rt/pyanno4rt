@@ -21,7 +21,7 @@ class OptimizableRandomForest():
     random forest classifier. It exploits the pre-fitted structure of the \
     classifier to express the probability prediction function as the mean \
     prediction function value of all \
-        :class:`~pyanno4rt.learning_model.frequentist._optimizable_decision_tree.OptimizableDecisionTree`
+        :class:`~pyanno4rt.learning.tree._optimizable_decision_tree.OptimizableDecisionTree`
     objects from the subtrees, and approximates an input "gradient" as the \
     mean minimum input feature shift required to improve the prediction value.
 

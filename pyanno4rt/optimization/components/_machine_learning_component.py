@@ -55,9 +55,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
         - data_columns : list
             List of \
-                :class:`~pyanno4rt.learning_model.features._feature.Feature` \
-            and :class:`~pyanno4rt.learning_model.features._label.Label` \
-            objects.
+            :class:`~pyanno4rt.learning.features._columns.DynamicFeature` \
+            or :class:`~pyanno4rt.learning.features._columns.StaticFeature` \
+            and :class:`~pyanno4rt.learning.features._columns.Label` objects.
 
         - preprocessing_steps : list, default=['Identity']
             Sequence of labels associated with preprocessing algorithms to \
@@ -66,11 +66,11 @@ class MachineLearningComponent(metaclass=ABCMeta):
             The following preprocessing steps are currently available:
 
             - 'Identity' \
-                :class:`~pyanno4rt.learning_model.preprocessing.transformers._identity.Identity`
+                :class:`~pyanno4rt.learning.preprocessing._identity.Identity`
             - 'StandardScaler' \
-                :class:`~pyanno4rt.learning_model.preprocessing.transformers._standard_scaler.StandardScaler`
+                :class:`~pyanno4rt.learning.preprocessing._standard_scaler.StandardScaler`
             - 'Whitening' \
-                :class:`~pyanno4rt.learning_model.preprocessing.transformers._whitening.Whitening`
+                :class:`~pyanno4rt.learning.preprocessing._whitening.Whitening`
 
         - architecture : {'vanilla-input-convex', 'vanilla'}, default='vanilla'
             Type of architecture for the neural network model.
@@ -601,13 +601,15 @@ class MachineLearningComponent(metaclass=ABCMeta):
             if key == 'data_columns' and value is not None:
 
                 # Check if no feature has been passed
-                if sum([type(item).__name__ == 'Feature'
+                if sum([type(item).__name__ in (
+                        'DynamicFeature', 'StaticFeature')
                         for item in inputs['data_columns']]) == 0:
 
                     # Raise an error to indicate missing features
                     raise ValueError(
                         "The treatment plan parameter 'data_columns' does not "
-                        "contain at least one item of type 'Feature'!")
+                        "contain at least one item of type 'DynamicFeature' "
+                        "or 'StaticFeature'!")
 
                 # Check if not exactly one label has been passed
                 if sum([type(item).__name__ == 'Label'

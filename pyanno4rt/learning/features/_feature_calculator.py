@@ -208,13 +208,14 @@ class FeatureCalculator():
             lengths = tuple(
                 len(index) for index in self.inputs['indices'].values())
 
-            return (
+            return (tuple(
                 (0, sum(lengths[1:]))
                 if index == 0
                 else (sum(lengths[:index]), sum(lengths[index+1:]))
                 if index < len(lengths)-1
                 else (sum(lengths[:index]), 0)
                 for index, _ in enumerate(lengths))
+                + ((0, sum(lengths)),))
 
         def precompute_masks(segment):
             """Precompute the segment masks."""
@@ -260,7 +261,7 @@ class FeatureCalculator():
 
             # Add the precomputed gradient paddings to the input dictionary
             self.inputs['paddings'] = dict(
-                zip(segment, precompute_paddings()))
+                zip(segment+[None], precompute_paddings()))
 
         # Check if the segment masks have not been computed yet
         if (self.inputs['masks'] is None
@@ -503,16 +504,21 @@ class FeatureCalculator():
                     fromiter(dose_information['resolution'].values(), float),
                     masks[1])[indices]
 
-            def get_default_gradient(_, segment):
-                """Return a default gradient for non-dosiomic features."""
+            def get_radiomic_gradient(_, segment):
+                """Get the gradient of a radiomic feature."""
 
                 return zeros((len(self.inputs['indices'][segment]),))
+
+            def get_static_gradient(_, __):
+                """Get the gradient of a static feature."""
+
+                return zeros((0,))
 
             # Map the feature types to the get functions
             get_functions = {
                 'Dosiomics': get_dosiomic_gradient,
-                'Radiomics': get_default_gradient,
-                'Statics': get_default_gradient}
+                'Radiomics': get_radiomic_gradient,
+                'Statics': get_static_gradient}
 
             # Run the specific get function to retrieve the feature gradient
             feature_gradient = (

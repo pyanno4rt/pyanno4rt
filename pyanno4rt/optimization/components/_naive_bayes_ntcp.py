@@ -69,12 +69,12 @@ class NaiveBayesNTCP(MachineLearningComponent):
         Dictionary with the component input arguments (for serialization).
 
     data_model_handler : object of class \
-        :class:`~pyanno4rt.learning_model._data_model_handler.DataModelHandler`
+        :class:`~pyanno4rt.learning._data_model_handler.DataModelHandler`
         The object used to handle the dataset, the feature map generation and \
         the feature (re-)calculation.
 
     model : object of class \
-        :class:`~pyanno4rt.learning_model.frequentist._naive_bayes.NaiveBayesModel`
+        :class:`~pyanno4rt.learning.naive_bayes._naive_bayes.NaiveBayesModel`
         The object used to preprocess, tune, train, inspect and evaluate the \
         naive Bayes model.
 

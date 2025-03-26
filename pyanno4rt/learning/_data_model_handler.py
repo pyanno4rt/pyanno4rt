@@ -37,8 +37,9 @@ class DataModelHandler():
         Path to the dataset used for fitting the machine learning model.
 
     data_columns : list
-        List of :class:`~pyanno4rt.learning_model.features._feature.Feature` \
-        and :class:`~pyanno4rt.learning_model.features._label.Label` objects.
+        List of :class:`~pyanno4rt.learning.features._columns.DynamicFeature` \
+        or :class:`~pyanno4rt.learning.features._columns.StaticFeature` \
+        and :class:`~pyanno4rt.learning.features._columns.Label` objects.
 
     tune_splits : int
         Number of splits for the stratified cross-validation within each \
@@ -69,12 +70,12 @@ class DataModelHandler():
         See 'Parameters'.
 
     data_generator : object of class \
-        :class:`~pyanno4rt.learning_model.dataset._empty_data_generator.EmptyDataGenerator`\
-        :class:`~pyanno4rt.learning_model.dataset._tabular_data_generator.TabularDataGenerator`
+        :class:`~pyanno4rt.learning.dataset._empty_data_generator.EmptyDataGenerator`\
+        :class:`~pyanno4rt.learning.dataset._tabular_data_generator.TabularDataGenerator`
         The object used to handle the base dataset.
 
     feature_calculator : object of class \
-        :class:`~pyanno4rt.learning_model.features._feature_calculator.FeatureCalculator`
+        :class:`~pyanno4rt.learning.features._feature_calculator.FeatureCalculator`
         The object used to (re)calculate the feature values and gradients.
     """
 

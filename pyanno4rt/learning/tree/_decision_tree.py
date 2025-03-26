@@ -27,7 +27,7 @@ class DecisionTreeModel(MachineLearningModel):
     performance of a decision tree model.
 
     See the machine learning model template class \
-        :class:`~pyanno4rt.learning_model.frequentist._machine_learning_model.MachineLearningModel`
+        :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
 
     .. note:: Currently, the hyperparameter search space for the decision \
@@ -176,7 +176,7 @@ class DecisionTreeModel(MachineLearningModel):
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning_model.frequentist.extensions._optimizable_decision_tree.OptimizableDecisionTree`
+            :class:`~pyanno4rt.learning.tree._optimizable_decision_tree.OptimizableDecisionTree`
             The object used to represent the optimization model.
         """
 

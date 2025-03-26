@@ -111,7 +111,7 @@ class MachineLearningModel(metaclass=ABCMeta):
         Indicator for the update status of the model.
 
     preprocessor : object of class \
-        :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
+        :class:`~pyanno4rt.learning.preprocessing._data_preprocessor.DataPreprocessor`
         The object used to build the preprocessing pipeline, transform the \
         data, and return the input gradients of the preprocessing algorithms.
 
@@ -128,11 +128,11 @@ class MachineLearningModel(metaclass=ABCMeta):
         Dictionary with the values of the hyperparameters.
 
     inspector : object of class \
-        :class:`~pyanno4rt.learning_model.inspection._model_inspector.ModelInspector`
+        :class:`~pyanno4rt.learning.inspection._model_inspector.ModelInspector`
         The object used to inspect the model.
 
     evaluator : object of class \
-        :class:`~pyanno4rt.learning_model.evaluation._model_evaluator.ModelEvaluator`
+        :class:`~pyanno4rt.learning.evaluation._model_evaluator.ModelEvaluator`
         The object used to evaluate the model.
     """
 
@@ -288,7 +288,7 @@ class MachineLearningModel(metaclass=ABCMeta):
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
+            :class:`~pyanno4rt.learning.preprocessing._data_preprocessor.DataPreprocessor`
             The object used to build the preprocessing pipeline, transform \
             the data, and return the input gradients of the preprocessing \
             algorithms.
@@ -748,7 +748,7 @@ class MachineLearningModel(metaclass=ABCMeta):
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning_model.preprocessing._data_preprocessor.DataPreprocessor`
+            :class:`~pyanno4rt.learning.preprocessing._data_preprocessor.DataPreprocessor`
             The object used to build the preprocessing pipeline, transform \
             the data, and return the input gradients of the preprocessing \
             algorithms.

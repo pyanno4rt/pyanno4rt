@@ -20,9 +20,9 @@ class ParetoOptimization():
 
     Parameters
     ----------
-    backprojection : object of class
-    :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
-    :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
+    backprojection : object of class \
+        :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
+        :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
         The object representing the type of backprojection.
 
     objectives : dict
@@ -33,9 +33,9 @@ class ParetoOptimization():
 
     Attributes
     ----------
-    backprojection : object of class
-    :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
-    :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
+    backprojection : object of class \
+        :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
+        :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
         See 'Parameters'.
 
     objectives : dict
