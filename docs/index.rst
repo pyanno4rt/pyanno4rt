@@ -9,5 +9,4 @@
    development.md
    help_support.md
    examples
-   templates
    autoapi/index

@@ -4,14 +4,30 @@
 Examples
 ========
 
-This gallery demonstrates the core functionality of **pyanno4rt**.
+This is a gallery of examples showcasing how *pyanno4rt* can be used. Here we provide Jupyter notebooks to introduce the core functionalities of the code-based and the UI-based interfaces, and also deliver code snippets for essential parts of *pyanno4rt* treatment plans.
 
-TG-119
-======
+Code-based interface
+====================
 .. base-gallery::
-    :caption: TG-119
+    :caption: Code-based interface
 
-    /example_tg119_code
-    /example_tg119_ui
+    tg119_conv_code
+    tg119_ml_code
+
+UI-based interface
+==================
+.. base-gallery::
+    :caption: UI-based interface
+
+    tg119_conv_ui
+    tg119_ml_ui
+
+Snippets
+========
+.. base-gallery::
+    :caption: Snippets
+
+    snippets_components
+    snippets_columns
 
    

@@ -115,9 +115,29 @@ class Configuration():
         self.dose_matrix_path = abspath(self.dose_matrix_path)
 
     def to_dict(self):
-        """Return the configuration parameter dictionary."""
+        """Serialize the object into a dictionary."""
 
         return vars(self)
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the object from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the configuration parameters.
+
+        Returns
+        -------
+        object of class :class:`~pyanno4rt.base._configuration.Configuration`
+            The object used to handle the plan configuration parameters.
+        """
+
+        return cls(**dictionary)
 
     def check(
             self,

@@ -5,3 +5,4 @@ myst-nb==1.2.0
 sphinx-copybutton==0.5.2
 sphinx-last-updated-by-git==0.3.8
 sphinx-favicon==1.0.1
+myst-sphinx-gallery==0.3.0

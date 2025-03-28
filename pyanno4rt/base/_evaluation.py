@@ -103,9 +103,29 @@ class Evaluation():
             setattr(self, key, value)
 
     def to_dict(self):
-        """Return the evaluation parameter dictionary."""
+        """Serialize the object into a dictionary."""
 
         return vars(self)
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the object from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the evaluation parameters.
+
+        Returns
+        -------
+        object of class :class:`~pyanno4rt.base._evaluation.Evaluation`
+            The object used to handle the plan evaluation parameters.
+        """
+
+        return cls(**dictionary)
 
     def check(
             self,

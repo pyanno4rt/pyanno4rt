@@ -5,9 +5,7 @@
 # %% External package import
 
 from os import listdir, walk
-from os.path import basename
 
-from itertools import product
 from json import load
 from numpy import load as npload
 
@@ -24,8 +22,8 @@ def copycat(base_class, path, ignore_optimum=False):
 
     Parameters
     ----------
-    base_class : class from :mod:`~pyanno4rt.base`
-        The base treatment plan class from which to create an instance.
+    base_class : :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
+        The base class from which to create an instance.
 
     path : str
         Directory path of the snapshot.
@@ -35,57 +33,30 @@ def copycat(base_class, path, ignore_optimum=False):
 
     Returns
     -------
-    object of class from :mod:`~pyanno4rt.base`
-        The instantiated base treatment plan object.
+    object of class :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
+        The object used to represent the treatment plan.
     """
 
-    def add_model_paths(inputs):
-        """Add the model folder and data path to each model component."""
+    def update_paths(inputs):
+        """Update the model folder and data path for a component."""
 
-        def edit(component):
-            """Edit a single component."""
+        # Get the model path and the component
+        path, component = inputs
 
-            # Get the component instance
-            instance = component['instance']
+        # Update the model path
+        component.model_parameters.model_folder_path = path
 
-            # Check if the instance has model parameters and if the model
-            # label is equal to the folder name
-            if ('model_parameters' in instance['parameters']
-                    and instance['parameters']['model_parameters'][
-                        'model_label'] == basename(inputs[0])):
+        # Reset the data path
+        component.model_parameters.data_path = None
 
-                # Overwrite the model folder path
-                instance['parameters']['model_parameters'][
-                    'model_folder_path'] = inputs[0]
+        # Loop over the model path files
+        for filename in listdir(path):
 
-                # Set the model data path to None
-                instance['parameters']['model_parameters'][
-                    'data_path'] = None
+            # Check if the data file exists
+            if 'model_data' in filename:
 
-                # Loop over the model path files
-                for filename in listdir(inputs[0]):
-
-                    # Check if the model data file exists
-                    if 'model_data' in filename:
-
-                        # Overwrite the model data path
-                        instance['parameters']['model_parameters'][
-                            'data_path'] = f'{inputs[0]}/{filename}'
-
-        # Get the component
-        component = treatment_plan.optimization['components'][inputs[1]]
-
-        # Check if the component is a list
-        if isinstance(component, list):
-
-            # Apply the editing function to each element in the component
-            apply(edit, component)
-
-        # Else, check if the component is a dictionary
-        elif isinstance(component, dict):
-
-            # Edit the component
-            edit(component)
+                # Update the data path
+                component.model_parameters.data_path = f'{path}/{filename}'
 
     # Open a file stream
     with open(f'{path}/input_parameters.json', 'r', encoding='utf-8') as file:
@@ -99,29 +70,32 @@ def copycat(base_class, path, ignore_optimum=False):
         # Check if the current file holds the patient data
         if 'patient_data' in filename:
 
-            # Overwrite the imaging path
+            # Update the imaging path
             input_parameters['configuration']['imaging_path'] = (
                 f'{path}/{filename}')
 
         # Check if the current file holds the dose influence matrix
         elif 'dose_influence_matrix' in filename:
 
-            # Overwrite the dose path
-            input_parameters['configuration']['dose_path'] = (
+            # Update the dose path
+            input_parameters['configuration']['dose_matrix_path'] = (
                 f'{path}/{filename}')
 
-    # Initialize the treatment plan instance from the input parameters
+    # Initialize the treatment plan instance
     treatment_plan = base_class(**input_parameters)
 
-    # Get the model folder paths
-    model_paths = (f'{path}/{folder_name}' for folder_name in tuple(
-        next(walk(path))[1]))
+    # Get the folder/model links
+    links = (
+        (f'{path}/{folder_name}', next(
+            component for component in treatment_plan.optimization.components
+            if (hasattr(component, 'model_parameters')
+                and component.model_parameters.model_label == folder_name)))
+        for folder_name in tuple(next(walk(path))[1]))
 
     # Add the model folder and data paths
-    apply(add_model_paths,
-          product(model_paths, (*treatment_plan.optimization['components'],)))
+    apply(update_paths, links)
 
-    # Check if the optimized fluence file exists
+    # Check if the optimized fluence file exists and should not be ignored
     if 'optimized_fluence.npy' in listdir(path) and not ignore_optimum:
 
         # Load the optimized fluence array

@@ -342,7 +342,14 @@ class ConventionalComponent(metaclass=ABCMeta):
 
     @abstractmethod
     def to_dict(self):
-        """Return the component input dictionary."""
+        """Serialize the component into a dictionary."""
+
+    @classmethod
+    @abstractmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """Deserialize the component from a dictionary."""
 
     @abstractmethod
     def compute_value(

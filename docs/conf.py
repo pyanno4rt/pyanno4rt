@@ -15,7 +15,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../'))
 
-from myst_sphinx_gallery import FilesConfig, GalleryThumbnailConfig, __version__
+from myst_sphinx_gallery import GalleryConfig, ThumbnailConfig, __version__
 
 # -- Project information -----------------------------------------------------
 
@@ -51,43 +51,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Gallery configuration -------------------------------------------------
 
-myst_sphinx_gallery_files_config = FilesConfig(
-    named_config={
-        "example_tg119_code": GalleryThumbnailConfig(
-            thumbnail_strategy="first",
-            notebook_thumbnail_strategy="code",
-            default_thumbnail_file="_static/tg119_dose.png"
-            ),
-        "example_tg119_ui": GalleryThumbnailConfig(
-            thumbnail_strategy="first",
-            notebook_thumbnail_strategy="code",
-            default_thumbnail_file="_static/tg119_dose.png"
-            ),
-        "components": GalleryThumbnailConfig(
-            thumbnail_strategy="first",
-            notebook_thumbnail_strategy="code",
-            default_thumbnail_file="_static/tg119_dose.png"
-            ),
-        "data_columns": GalleryThumbnailConfig(
-            thumbnail_strategy="first",
-            notebook_thumbnail_strategy="code",
-            default_thumbnail_file="_static/tg119_dose.png"
-            )
-        },
-    files_config={
-        "example_tg119_code": [
-            "/example_tg119_code.ipynb"
-            ],
-        "example_tg119_ui": [
-            "/example_tg119_ui.ipynb"
-            ],
-        "components": [
-            "/components.ipynb"
-            ],
-        "data_columns": [
-            "/data_columns.ipynb"
-            ]
-        }
+myst_sphinx_gallery_config = GalleryConfig(
+    thumbnail_strategy="first",
+    notebook_thumbnail_strategy="code",
+    default_thumbnail_file="_static/android-chrome-512x512.png"
     )
 
 # -- Options for HTML output -------------------------------------------------
@@ -225,4 +192,5 @@ rst_prolog = """
 # Related custom CSS
 html_css_files = [
     'css/custom.css',
+    'css/gallery.css'
 ]

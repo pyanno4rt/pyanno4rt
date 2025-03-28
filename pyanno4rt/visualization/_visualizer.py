@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
                   (not hasattr(hub.optimization['problem'], 'tracker')
                    or all(value == [] for value
                           in hub.optimization['problem'].tracker.values()))))
-                 or all(objective.model_parameters['write_features'] is False
+                 or all(objective.model_parameters.write_features is False
                         for objective in ml_components))
                     and subclass.name == 'features_plotter'):
                 button.setEnabled(False)

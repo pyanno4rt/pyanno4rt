@@ -92,7 +92,7 @@ class PermutationImportancePlotterMPL():
                 data=value['permutation_importance']['Out-of-folds'],
                 columns=hub.datasets[key]['feature_names']))
             for key, value in hub.model_inspections.items()
-            if any(component.model_parameters['model_label'] == key
+            if any(component.model_parameters.model_label == key
                    for component in (
                            get_machine_learning_constraints(hub.segmentation)
                            + get_machine_learning_objectives(hub.segmentation))

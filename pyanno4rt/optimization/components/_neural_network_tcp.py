@@ -11,7 +11,7 @@ from tensorflow import cast, float64, GradientTape
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning import DataModelHandler
+from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.neural_network import NeuralNetworkModel
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict, inverse_sigmoid
@@ -31,10 +31,9 @@ class NeuralNetworkTCP(MachineLearningComponent):
     segment : str
         Name of the segment associated with the component.
 
-    model_parameters : dict
-        Dictionary with the data handling & learning model parameters, see \
-        the class
-        :class:`~pyanno4rt.optimization.components._machine_learning_component_class.MachineLearningComponentClass`.
+    model_parameters : object of class \
+        :class:`~pyanno4rt.learning._model_parameters.ModelParameters`
+        The object used to represent the learning model parameters.
 
     component_type : {'constraint', 'objective'}, default='objective'
         Type of the component.
@@ -118,17 +117,41 @@ class NeuralNetworkTCP(MachineLearningComponent):
             locals(), remove_keys=('self', '__class__'))
 
     def to_dict(self):
-        """Return the component input dictionary."""
+        """Serialize the component into a dictionary."""
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
 
-        # Serialize the data columns
-        dictionary['model_parameters']['data_columns'] = [
-            item.to_dict()
-            for item in dictionary['model_parameters']['data_columns']]
+        # Serialize the model parameters
+        dictionary['model_parameters'] = (
+            dictionary['model_parameters'].to_dict())
 
         return {'Neural Network TCP': dictionary}
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the component from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the component parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.optimization.components._neural_network_tcp.NeuralNetworkTCP`
+            The object used to handle the component parameters.
+        """
+
+        # Deserialize the model parameters
+        dictionary['model_parameters'] = ModelParameters.from_dict(
+            dictionary['model_parameters'])
+
+        return cls(**dictionary)
 
     def add_model(self):
         """Add the neural network model to the component."""
@@ -138,38 +161,38 @@ class NeuralNetworkTCP(MachineLearningComponent):
 
         # Log a message about the model addition
         hub.logger.display_info(
-            f"Adding {self.model_parameters['architecture']} neural network "
+            f"Adding {self.model_parameters.architecture} neural network "
             f"model for '{self.name}' ...")
 
         # Initialize the data model handler
         self.data_model_handler = DataModelHandler(
-            model_label=self.model_parameters['model_label'],
-            model_folder_path=self.model_parameters['model_folder_path'],
-            data_path=self.model_parameters['data_path'],
-            data_columns=self.model_parameters['data_columns'],
-            tune_splits=self.model_parameters['tune_splits'],
-            tune_repeats=self.model_parameters['tune_repeats'],
-            oof_splits=self.model_parameters['oof_splits'],
-            oof_repeats=self.model_parameters['oof_repeats'],
-            write_features=self.model_parameters['write_features'])
+            model_label=self.model_parameters.model_label,
+            model_folder_path=self.model_parameters.model_folder_path,
+            data_path=self.model_parameters.data_path,
+            data_columns=self.model_parameters.data_columns,
+            tune_splits=self.model_parameters.tune_splits,
+            tune_repeats=self.model_parameters.tune_repeats,
+            oof_splits=self.model_parameters.oof_splits,
+            oof_repeats=self.model_parameters.oof_repeats,
+            write_features=self.model_parameters.write_features)
 
         # Integrate the model-related classes
         self.data_model_handler.integrate()
 
         # Initialize the neural network model
         self.model = NeuralNetworkModel(
-            model_label=self.model_parameters['model_label'],
-            model_folder_path=self.model_parameters['model_folder_path'],
-            dataset=hub.datasets[self.model_parameters['model_label']],
-            preprocessing_steps=self.model_parameters['preprocessing_steps'],
-            architecture=self.model_parameters['architecture'],
-            max_hidden_layers=self.model_parameters['max_hidden_layers'],
-            tune_space=self.model_parameters['tune_space'],
-            tune_evaluations=self.model_parameters['tune_evaluations'],
-            tune_score=self.model_parameters['tune_score'],
-            inspect_model=self.model_parameters['inspect_model'],
-            evaluate_model=self.model_parameters['evaluate_model'],
-            display_options=self.model_parameters['display_options'])
+            model_label=self.model_parameters.model_label,
+            model_folder_path=self.model_parameters.model_folder_path,
+            dataset=hub.datasets[self.model_parameters.model_label],
+            preprocessing_steps=self.model_parameters.preprocessing,
+            architecture=self.model_parameters.architecture,
+            max_hidden_layers=self.model_parameters.max_hidden_layers,
+            tune_space=self.model_parameters.tune_space,
+            tune_evaluations=self.model_parameters.tune_evaluations,
+            tune_score=self.model_parameters.tune_score,
+            inspect_model=self.model_parameters.inspect,
+            evaluate_model=self.model_parameters.evaluate,
+            display_options=self.model_parameters.display_options)
 
         # Get the neural network model parameters
         self.parameter_value = list(

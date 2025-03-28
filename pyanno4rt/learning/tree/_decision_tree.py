@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from pickle import dumps, load
+from pickle import dump, load
 
 from hyperopt import hp
 from sklearn.tree import DecisionTreeClassifier
@@ -221,7 +221,7 @@ class DecisionTreeModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the decision tree model from the model file path.
+        Import the decision tree model.
 
         Returns
         -------
@@ -237,12 +237,10 @@ class DecisionTreeModel(MachineLearningModel):
 
     def export_model(self):
         """
-        Export the decision tree model to a byte-like object.
+        Export the decision tree model."""
 
-        Returns
-        -------
-        bytes
-            Bytes-like model object.
-        """
+        # Open a file stream
+        with open(self.model_path, 'wb') as file:
 
-        return dumps(self.prediction_model)
+            # Dump the model
+            dump(self.prediction_model, file)

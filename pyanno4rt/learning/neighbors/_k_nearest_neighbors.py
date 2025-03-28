@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from pickle import dumps, load
+from pickle import dump, load
 
 from hyperopt import hp
 from sklearn.neighbors import KNeighborsClassifier
@@ -166,7 +166,7 @@ class KNeighborsModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the k-nearest neighbors model from the model file path.
+        Import the k-nearest neighbors model.
 
         Returns
         -------
@@ -181,13 +181,10 @@ class KNeighborsModel(MachineLearningModel):
         return load(open(self.model_path, 'rb'))
 
     def export_model(self):
-        """
-        Export the k-nearest neighbors model to a bytes-like object.
+        """Export the k-nearest neighbors model."""
 
-        Returns
-        -------
-        bytes
-            Bytes-like model object.
-        """
+        # Open a file stream
+        with open(self.model_path, 'wb') as file:
 
-        return dumps(self.prediction_model)
+            # Dump the model
+            dump(self.prediction_model, file)

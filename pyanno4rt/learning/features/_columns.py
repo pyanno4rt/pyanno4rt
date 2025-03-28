@@ -80,9 +80,30 @@ class DynamicFeature():
             setattr(self, *item)
 
     def to_dict(self):
-        """Return the object dictionary."""
+        """Serialize the feature into a dictionary."""
 
-        return {'Feature': vars(self)}
+        return {'Dynamic Feature': vars(self)}
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the feature from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the feature parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.features._columns.DynamicFeature`
+            The object used to handle the feature parameters.
+        """
+
+        return cls(**dictionary)
 
     def check(
             self,
@@ -199,9 +220,30 @@ class StaticFeature():
             setattr(self, *item)
 
     def to_dict(self):
-        """Return the object dictionary."""
+        """Serialize the feature into a dictionary."""
 
-        return {'Feature': vars(self)}
+        return {'Static Feature': vars(self)}
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the feature from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the feature parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.features._columns.StaticFeature`
+            The object used to handle the feature parameters.
+        """
+
+        return cls(**dictionary)
 
     def check(
             self,
@@ -293,9 +335,30 @@ class Label():
             setattr(self, *item)
 
     def to_dict(self):
-        """Return the attribute dictionary."""
+        """Serialize the label into a dictionary."""
 
         return {'Label': vars(self)}
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the label from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the label parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.features._columns.Label`
+            The object used to handle the label parameters.
+        """
+
+        return cls(**dictionary)
 
     def check(
             self,

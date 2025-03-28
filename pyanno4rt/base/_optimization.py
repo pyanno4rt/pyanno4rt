@@ -32,30 +32,51 @@ class Optimization():
 
         Currently available:
 
-        - :class:`~pyanno4rt.optimization.components._decision_tree_ntcp.DecisionTreeNTCP`
-        - :class:`~pyanno4rt.optimization.components._decision_tree_tcp.DecisionTreeTCP`
-        - :class:`~pyanno4rt.optimization.components._dose_uniformity.DoseUniformity`
-        - :class:`~pyanno4rt.optimization.components._equivalent_uniform_dose.EquivalentUniformDose`
-        - :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_ntcp.KNeighborsNTCP`
-        - :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_tcp.KNeighborsTCP`
-        - :class:`~pyanno4rt.optimization.components._logistic_regression_ntcp.LogisticRegressionNTCP`
-        - :class:`~pyanno4rt.optimization.components._logistic_regression_tcp.LogisticRegressionTCP`
-        - :class:`~pyanno4rt.optimization.components._lq_poisson_tcp.LQPoissonTCP`
-        - :class:`~pyanno4rt.optimization.components._lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._decision_tree_ntcp.DecisionTreeNTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._decision_tree_tcp.DecisionTreeTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._dose_uniformity.DoseUniformity`
+        - \
+            :class:`~pyanno4rt.optimization.components._equivalent_uniform_dose.EquivalentUniformDose`
+        - \
+            :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_ntcp.KNeighborsNTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_tcp.KNeighborsTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._logistic_regression_ntcp.LogisticRegressionNTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._logistic_regression_tcp.LogisticRegressionTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._lq_poisson_tcp.LQPoissonTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
         - :class:`~pyanno4rt.optimization.components._maximum_dvh.MaximumDVH`
         - :class:`~pyanno4rt.optimization.components._mean_dose.MeanDose`
         - :class:`~pyanno4rt.optimization.components._minimum_dvh.MinimumDVH`
-        - :class:`~pyanno4rt.optimization.components._naive_bayes_ntcp.NaiveBayesNTCP`
-        - :class:`~pyanno4rt.optimization.components._naive_bayes_tcp.NaiveBayesTCP`
-        - :class:`~pyanno4rt.optimization.components._neural_network_ntcp.NeuralNetworkNTCP`
-        - :class:`~pyanno4rt.optimization.components._neural_network_tcp.NeuralNetworkTCP`
-        - :class:`~pyanno4rt.optimization.components._random_forest_ntcp.RandomForestNTCP`
-        - :class:`~pyanno4rt.optimization.components._random_forest_tcp.RandomForestTCP`
-        - :class:`~pyanno4rt.optimization.components._squared_deviation.SquaredDeviation`
-        - :class:`~pyanno4rt.optimization.components._squared_overdosing.SquaredOverdosing`
-        - :class:`~pyanno4rt.optimization.components._squared_underdosing.SquaredUnderdosing`
-        - :class:`~pyanno4rt.optimization.components._support_vector_machine_ntcp.SupportVectorMachineNTCP`
-        - :class:`~pyanno4rt.optimization.components._support_vector_machine_tcp.SupportVectorMachineTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._naive_bayes_ntcp.NaiveBayesNTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._naive_bayes_tcp.NaiveBayesTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._neural_network_ntcp.NeuralNetworkNTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._neural_network_tcp.NeuralNetworkTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._random_forest_ntcp.RandomForestNTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._random_forest_tcp.RandomForestTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._squared_deviation.SquaredDeviation`
+        - \
+            :class:`~pyanno4rt.optimization.components._squared_overdosing.SquaredOverdosing`
+        - \
+            :class:`~pyanno4rt.optimization.components._squared_underdosing.SquaredUnderdosing`
+        - \
+            :class:`~pyanno4rt.optimization.components._support_vector_machine_ntcp.SupportVectorMachineNTCP`
+        - \
+            :class:`~pyanno4rt.optimization.components._support_vector_machine_tcp.SupportVectorMachineTCP`
 
         .. note:: To prevent overwriting processes, make use of the \
             identifier argument for components of the same type!
@@ -227,7 +248,7 @@ class Optimization():
             setattr(self, key, value)
 
     def to_dict(self):
-        """Return the optimization parameter dictionary."""
+        """Serialize the object into a dictionary."""
 
         # Get the parameter dictionary
         dictionary = deepcopy(vars(self))
@@ -237,6 +258,32 @@ class Optimization():
             item.to_dict() for item in dictionary['components']]
 
         return dictionary
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the object from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the optimization parameters.
+
+        Returns
+        -------
+        object of class :class:`~pyanno4rt.base._optimization.Optimization`
+            The object used to handle the plan optimization parameters.
+        """
+
+        # Deserialize the components
+        dictionary['components'] = [
+            maps.COMPONENTS[key].from_dict(value)
+            for item in dictionary['components']
+            for key, value in item.items()]
+
+        return cls(**dictionary)
 
     def check(
             self,

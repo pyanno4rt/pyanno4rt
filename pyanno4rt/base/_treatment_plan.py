@@ -42,15 +42,15 @@ class TreatmentPlan():
     Parameters
     ----------
     configuration : object of class \
-        :class:`~pyanno4rt.base._configuration.Configuration`
+        :class:`~pyanno4rt.base._configuration.Configuration` or dict
         The object used to handle the plan configuration parameters.
 
     optimization : object of class \
-        :class:`~pyanno4rt.base._optimization.Optimization`
+        :class:`~pyanno4rt.base._optimization.Optimization` or dict
         The object used to handle the plan optimization parameters.
 
     evaluation : object of class \
-        :class:`~pyanno4rt.base._evaluation.Evaluation`
+        :class:`~pyanno4rt.base._evaluation.Evaluation` or dict
         The object used to handle the plan evaluation parameters.
 
     Attributes
@@ -106,7 +106,7 @@ class TreatmentPlan():
     Example
     -------
     Our Read the Docs page (https://pyanno4rt.readthedocs.io/en/latest/) \
-    features a step-by-step example for the application of this class. You \
+    features step-by-step examples for the application of the package. You \
     will also find code templates there, e.g. for the optimization components.
     """
 
@@ -117,14 +117,24 @@ class TreatmentPlan():
             evaluation):
 
         # Check the input arguments
-        check_type('configuration', configuration, Configuration)
-        check_type('optimization', optimization, Optimization)
-        check_type('evaluation', evaluation, Evaluation)
+        check_type('configuration', configuration, (dict, Configuration))
+        check_type('optimization', optimization, (dict, Optimization))
+        check_type('evaluation', evaluation, (dict, Evaluation))
 
-        # Initialize the plan parameter attributes
-        self.configuration = configuration
-        self.optimization = optimization
-        self.evaluation = evaluation
+        # Initialize the plan configuration attribute
+        self.configuration = (
+            configuration if not isinstance(configuration, dict)
+            else Configuration.from_dict(configuration))
+
+        # Initialize the plan optimization attribute
+        self.optimization = (
+            optimization if not isinstance(optimization, dict)
+            else Optimization.from_dict(optimization))
+
+        # Initialize the plan evaluation attribute
+        self.evaluation = (
+            evaluation if not isinstance(evaluation, dict)
+            else Evaluation.from_dict(evaluation))
 
         # Initialize the instance attributes
         self.logger = Logger(

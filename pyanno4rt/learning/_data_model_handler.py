@@ -117,7 +117,7 @@ class DataModelHandler():
                 model_folder_path=model_folder_path,
                 data_columns={
                     value['column']: (
-                        {'type': key.lower()}
+                        {'type': key}
                         | filter_dict(value, remove_keys=('column',)))
                     for item in data_columns
                     for key, value in item.to_dict().items()})
@@ -131,7 +131,7 @@ class DataModelHandler():
                 data_path=data_path,
                 data_columns={
                     value['column']: (
-                        {'type': key.lower()}
+                        {'type': key}
                         | filter_dict(value, remove_keys=('column',)))
                     for item in data_columns
                     for key, value in item.to_dict().items()},

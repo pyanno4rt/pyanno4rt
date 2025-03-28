@@ -183,12 +183,12 @@ class TabularDataGenerator():
         # Get the meta information for the features
         feature_meta = {
             label: data for label, data in data_columns.items()
-            if data['type'] == 'feature'}
+            if 'Feature' in data['type']}
 
         # Get the meta information for the label
         label_meta = {
             label: data for label, data in data_columns.items()
-            if data['type'] == 'label'}
+            if data['type'] == 'Label'}
 
         # Get the variable names
         feature_names = list(feature_meta)

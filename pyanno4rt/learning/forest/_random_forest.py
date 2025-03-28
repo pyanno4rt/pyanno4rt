@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from pickle import dumps, load
+from pickle import dump, load
 
 from hyperopt import hp
 from sklearn.ensemble import RandomForestClassifier
@@ -231,7 +231,7 @@ class RandomForestModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the random forest model from the model file path.
+        Import the random forest model.
 
         Returns
         -------
@@ -246,13 +246,10 @@ class RandomForestModel(MachineLearningModel):
         return load(open(self.model_path, 'rb'))
 
     def export_model(self):
-        """
-        Export the random forest model to a bytes-like object.
+        """Export the random forest model."""
 
-        Returns
-        -------
-        bytes
-            Bytes-like model object.
-        """
+        # Open a file stream
+        with open(self.model_path, 'wb') as file:
 
-        return dumps(self.prediction_model)
+            # Dump the model
+            dump(self.prediction_model, file)

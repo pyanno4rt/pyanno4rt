@@ -7,14 +7,12 @@
 from h5py import File
 from hyperopt import hp
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.losses import (
-    BinaryCrossentropy, BinaryFocalCrossentropy, KLDivergence)
-from tensorflow.keras.optimizers import Adam, Ftrl, SGD
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import MachineLearningModel
+from pyanno4rt.learning._maps import NN_LOSSES, NN_OPTS
 from pyanno4rt.learning.neural_network import (
     build_vanilla_iocnn, build_vanilla_nn)
 
@@ -237,7 +235,7 @@ class NeuralNetworkModel(MachineLearningModel):
         optimization_model.compile(
             optimizer=NN_OPTS[self.hyperparameters['optimizer']](
                 learning_rate=self.hyperparameters['learning_rate']),
-            loss=NN_LOSSES[self.hyperparameters['loss']])
+            loss=NN_LOSSES[self.hyperparameters['loss']]())
 
         # Set the network weights
         optimization_model.set_weights(self.prediction_model.get_weights())
@@ -394,7 +392,7 @@ class NeuralNetworkModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the neural network model from the model file path.
+        Import the neural network model.
 
         Returns
         -------
@@ -444,7 +442,7 @@ class NeuralNetworkModel(MachineLearningModel):
         prediction_model.compile(
             optimizer=NN_OPTS[hyperparameters['optimizer']](
                 learning_rate=hyperparameters['learning_rate']),
-            loss=NN_LOSSES[hyperparameters['loss']])
+            loss=NN_LOSSES[hyperparameters['loss']]())
 
         # Set the network weights
         prediction_model.set_weights(weights)
@@ -452,36 +450,13 @@ class NeuralNetworkModel(MachineLearningModel):
         return prediction_model
 
     def export_model(self):
-        """
-        Export the neural network model to a bytes-like object.
-
-        Returns
-        -------
-        object of class :class:`~h5py._hl.files.File`
-            Bytes-like model object.
-        """
+        """Export the neural network model."""
 
         # Open a file stream
-        with File.in_memory() as file:
+        with File(self.model_path, 'w') as file:
 
             # Loop over the weights
             for i, weight in enumerate(self.prediction_model.get_weights()):
 
                 # Create a dataset
                 file.create_dataset(''.join(('weight', str(i))), data=weight)
-
-            return file
-
-
-# %% Map definitions
-
-
-NN_LOSSES = {
-    'BCE': BinaryCrossentropy,
-    'FocalBCE': BinaryFocalCrossentropy,
-    'KLD': KLDivergence}
-
-NN_OPTS = {
-    'Adam': Adam,
-    'Ftrl': Ftrl,
-    'SGD': SGD}

@@ -83,7 +83,7 @@ class MetricsGraphsPlotterMPL():
                       value['auc_roc'],
                       value['f1'])
                      for key, value in hub.model_evaluations.items()
-                     if any(component.model_parameters['model_label'] == key
+                     if any(component.model_parameters.model_label == key
                             for component in (
                                     get_machine_learning_constraints(
                                         hub.segmentation)

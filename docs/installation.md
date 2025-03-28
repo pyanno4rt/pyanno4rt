@@ -7,8 +7,8 @@ You can install the latest distribution via:
 ```bash
 pip install pyanno4rt
 ```
-
 <br>
+
 <h3>Source code</h3>
 
 You can check the latest source code via:
@@ -16,25 +16,25 @@ You can check the latest source code via:
 ```bash
 git clone https://github.com/pyanno4rt/pyanno4rt.git
 ```
-
 <br>
+
 <h3>Usage</h3>
 
-pyanno4rt has two main classes which provide a code-based and a UI-based interface:  <br><br>
+*pyanno4rt* has two main classes which provide a code-based and a UI-based interface:
 
-<i>Base class import for CLI/IDE</i>
+<h6>Base class import for CLI/IDE</h6>
 
 ```python
 from pyanno4rt.base import TreatmentPlan
 ```
 
-<i>GUI import</i>
+<h6>GUI import</h6>
 
 ```python
 from pyanno4rt.gui import GraphicalUserInterface
 ```
-
 <br>
+
 <h3>Dependencies</h3>
 
 <ul>
@@ -42,7 +42,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> numpy (>=2.1.3) </li>
 	<li> ipyopt (>=0.12.9) </li>
 	<li> proxmin (>=0.6.12) </li>
-	<li> absl-py (>=2.2.0) </li>
+	<li> absl-py (>=2.2.1) </li>
 	<li> pydicom (>=3.0.1) </li>
 	<li> scikit-image (>=0.25.2) </li>
 	<li> h5py (>=3.13.0) </li>
@@ -63,4 +63,4 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> seaborn (>=0.13.2) </li>
 	<li> pypop7 (>=0.0.82) </li>
 </ul>
-We are using Python version 3.11.11 with the Spyder IDE version 6.0.4 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>
+Moreover, we are using Python v3.11.11 and Spyder IDE v6.0.5 for development.<br><br>

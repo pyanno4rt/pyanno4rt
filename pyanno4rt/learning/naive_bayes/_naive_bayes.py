@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from pickle import dumps, load
+from pickle import dump, load
 
 from hyperopt import hp
 from numpy import mean
@@ -163,7 +163,7 @@ class NaiveBayesModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the naive Bayes model from the model file path.
+        Import the naive Bayes model.
 
         Returns
         -------
@@ -178,13 +178,10 @@ class NaiveBayesModel(MachineLearningModel):
         return load(open(self.model_path, 'rb'))
 
     def export_model(self):
-        """
-        Export the naive Bayes model to a bytes-like object.
+        """Export the naive Bayes model."""
 
-        Returns
-        -------
-        bytes
-            Bytes-like model object.
-        """
+        # Open a file stream
+        with open(self.model_path, 'wb') as file:
 
-        return dumps(self.prediction_model)
+            # Dump the model
+            dump(self.prediction_model, file)

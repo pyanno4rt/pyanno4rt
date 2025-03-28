@@ -100,9 +100,30 @@ class EquivalentUniformDose(ConventionalComponent):
             locals(), remove_keys=('self', '__class__'))
 
     def to_dict(self):
-        """Return the component input dictionary."""
+        """Serialize the component into a dictionary."""
 
-        return {'Equivalent Uniform Dose': self.arguments}
+        return {self.name: self.arguments}
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the component from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the component parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.optimization.components._equivalent_uniform_dose.EquivalentUniformDose`
+            The object used to handle the component parameters.
+        """
+
+        return cls(**dictionary)
 
     def compute_value(
             self,

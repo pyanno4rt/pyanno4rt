@@ -228,7 +228,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
                 partial(check_type, types=(int, float)),),
             'number_of_fractions': (
                 partial(check_type, types=int),
-                partial(check_value, reference=0, sign='>')),}
+                partial(check_value, reference=0, sign='>'))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():
@@ -337,6 +337,17 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         """
 
         self.weight = value
+
+    @abstractmethod
+    def to_dict(self):
+        """Serialize the component into a dictionary."""
+
+    @classmethod
+    @abstractmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """Deserialize the component from a dictionary."""
 
     @abstractmethod
     def compute_value(

@@ -21,107 +21,86 @@
 
 # General information
 
-<b>pyanno4rt</b> is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for tumor control probability (TCP) and normal tissue complication probability (NTCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems, thereby covering a number of different problem designs. To summarize roughly, the following functionality is provided:
+*pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for tumor control probability (TCP) and normal tissue complication probability (NTCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning.
+
+---
+
+# Highlight features
+
+<h3>Import of patient data and dose influence matrices from different sources</h3>
 <ul>
-	<li> <b>Import of patient data and dose information from different sources </b>
-		<br>
-		<ul> 
-			<li> DICOM files (.dcm) </li>
-			<li> MATLAB files (.mat) </li>
-			<li> Python files (.npy, .npz, .p) </li>
-		</ul>
-	</li>
-	<br>
-	<li> <b>Individual configuration and management of treatment plan instances</b>
-		<br>
-		<ul> 
-			<li> Class-based plan generation </li>
-			<li> Dedicated logging channels and singleton datahubs </li>
-			<li> Automatic input checks to preserve the integrity </li>
-			<li> Snapshot/copycat functionality for storage and retrieval </li>
-		</ul>
-	</li>
-	<br>
-	<li> <b>Multi-objective treatment plan optimization</b>
-		<br>
+	<li> DICOM files (.dcm) </li>
+	<li> MATLAB files (.mat) </li>
+	<li> Python files (.npy, .npz, .p) </li>
+</ul>
+<br>
+
+<h3>Easy configuration and management of treatment plans</h3>
+<ul>
+	<li> Class-based plan generation </li>
+	<li> Automatic input checks to preserve the integrity </li>
+	<li> Dedicated logging channels & singleton datahubs </li>
+	<li> Snapshot/copycat functionality for storage/retrieval </li>
+</ul>
+<br>
+
+<h3>Multi-objective treatment plan optimization</h3>
+<ul>
+	<li> Physical & RBE-weighted dose-fluence projections </li>
+	<li> Classical & data-driven fluence initialization strategies
 		<ul>
-			<li> Dose-fluence projections
-				<ul>
-					<li> Constant RBE projection </li>
-					<li> Dose projection </li>
-				</ul>
-			</li>
-			<li> Fluence initialization strategies
-				<ul>
-					<li> Data medoid initialization </li>
-					<li> Tumor coverage initialization </li>
-					<li> Warm start initialization </li>
-				</ul>
-			</li>
-			<li> Optimization methods
-				<ul> 
-					<li> Lexicographic method </li> 
-					<li> Pareto analysis </li> 
-					<li> Weighted-sum method
-				</ul>
-			</li>
-			<li> 24-type dose-volume and outcome prediction model-based optimization component catalogue
-			</li>
-			<li> Local and global solvers
-				<ul> 
-					<li> Interior-point algorithms provided by Ipyopt </li>
-					<li> Proximal algorithms provided by Proxmin </li>
-					<li> Multi-objective algorithms provided by Pymoo </li>
-					<li> Population-based algorithms provided by PyPop7 </li>
-					<li> Local algorithms provided by SciPy </li>
-				</ul>
-			</li>
+			<li> Data medoid initialization </li>
+			<li> Tumor coverage initialization </li>
+			<li> Warm start initialization </li>
 		</ul>
 	</li>
-	<br>
-	<li> <b>Data-driven outcome prediction model handling</b>
-		<br>
+	<li> Scalarization & multi-objective optimization methods
 		<ul> 
-			<li> Dataset import, handling and preprocessing </li>
-			<li> 24-type feature catalogue for iterative (re)calculation </li>
-			<li> 7 customizable internal model classes (decision tree, k-nearest neighbors, logistic regression, naive Bayes, neural network, random forest, support vector machine)
-				<ul> 
-					<li> Individual preprocessing, inspection and evaluation units </li>  
-					<li> Adjustable hyperparameter tuning via sequential model-based optimization (SMBO) with (repeated) stratified train-validation-split or k-fold cross-validation </li> 
-					<li> Out-of-folds prediction for generalization assessment </li>
-				</ul>
-			</li>
-			<li> External model loading via user-definable model folder paths </li>
+			<li> Lexicographic method </li> 
+			<li> Pareto analysis </li> 
+			<li> Weighted-sum method
 		</ul>
 	</li>
-	<br>
-	<li> <b>Evaluation tools</b>
-		<br>
+	<li> 24-type dose-volume & outcome prediction model-based optimization component catalogue
+	</li>
+	<li> Local & global solvers
 		<ul>
-			<li> Cumulative and differential dose volume histograms (DVH) </li>
-			<li> Dose statistics and clinical quality measures </li>
+			<li> Interior-point algorithms provided by Ipyopt </li>
+			<li> Proximal algorithms provided by Proxmin </li>
+			<li> Multi-objective algorithms provided by Pymoo </li>
+			<li> Population-based algorithms provided by PyPop7 </li>
+			<li> Local algorithms provided by SciPy </li>
 		</ul>
 	</li>
-	<br>
-	<li> <b>Graphical user interface</b>
-		<br>
+</ul>
+<br>
+
+<h3>Data-driven outcome prediction model handling</h3>
+<ul> 
+	<li> Dataset import, handling & preprocessing </li>
+	<li> 24-type dosiomic & radiomic feature catalogue </li>
+	<li> 7 internal ML models (decision tree, KNN, logistic regression, naive Bayes, neural network, random forest, SVM) with individual preprocessing, inspection & evaluation units + Bayesian hyperparameter tuning </li>
+	<li> External model loading via folder paths </li>
+</ul>
+<br>
+
+<h3>Plan evaluation tools</h3>
+<ul>
+	<li> Cumulative & differential DVHs </li>
+	<li> Dose statistics & clinical quality measures </li>
+</ul>
+<br>
+
+<h3>Graphical user interface</h3>
+<ul>
+	<li> Easy-to-use & powerful PyQt5 main window
 		<ul>
-			<li> Responsive PyQt5 design with easy-to-use and clear surface
-				<ul> 
-					<li> Treatment plan editor </li>
-					<li> Workflow controls & plan comparison </li>
-					<li> CT/Dose preview </li>
-				</ul>
-			</li>
-			<li> Extendable PyQt5/Matplotlib visualization suite
-				<ul> 
-					<li> Optimization problem analysis </li> 
-					<li> Data-driven model review </li>
-					<li> Treatment plan evaluation </li> 
-				</ul>
-			</li>
+			<li> Treatment plan editor </li>
+			<li> Workflow controls & plan comparison </li>
+			<li> CT/Dose preview </li>
 		</ul>
 	</li>
+	<li> (Standalone) PyQt/Matplotlib visualization window </li>
 </ul>
 <br>
 
@@ -134,8 +113,8 @@ You can install the latest distribution via:
 ```bash
 pip install pyanno4rt
 ```
-
 <br>
+
 <h3>Source code</h3>
 
 You can check the latest source code via:
@@ -143,25 +122,25 @@ You can check the latest source code via:
 ```bash
 git clone https://github.com/pyanno4rt/pyanno4rt.git
 ```
-
 <br>
+
 <h3>Usage</h3>
 
-pyanno4rt has two main classes which provide a code-based and a UI-based interface:  <br><br>
+*pyanno4rt* has two main classes which provide a code-based and a UI-based interface:
 
-<i>Base class import for CLI/IDE</i>
+<h6>Base class import for CLI/IDE</h6>
 
 ```python
 from pyanno4rt.base import TreatmentPlan
 ```
 
-<i>GUI import</i>
+<h6>GUI import</h6>
 
 ```python
 from pyanno4rt.gui import GraphicalUserInterface
 ```
-
 <br>
+
 <h3>Dependencies</h3>
 
 <ul>
@@ -190,27 +169,26 @@ from pyanno4rt.gui import GraphicalUserInterface
 	<li> seaborn (>=0.13.2) </li>
 	<li> pypop7 (>=0.0.82) </li>
 </ul>
-We are using Python version 3.11.11 with the Spyder IDE version 6.0.4 for development. For optimization, the package integrates external local and global solvers, where the L-BFGS-B algorithm from SciPy acts as default. <br><br>
+Moreover, we are using Python v3.11.11 and Spyder IDE v6.0.5 for development.<br><br>
 
 # Development
 
 <h3>Important links</h3>
 
 <ul>
-	<li> Official source code repo: https://github.com/pyanno4rt/pyanno4rt </li>
-	<li> Download releases: https://pypi.org/project/pyanno4rt/
-	<li> Issue tracker: https://github.com/pyanno4rt/pyanno4rt/issues </li>
-	
+	<li> Official source code repo: <a href="https://github.com/pyanno4rt/pyanno4rt">https://github.com/pyanno4rt/pyanno4rt</a> </li>
+	<li> Download releases: <a href="https://pypi.org/project/pyanno4rt/">https://pypi.org/project/pyanno4rt/</a> </li>
+	<li> Issue tracker: <a href="https://github.com/pyanno4rt/pyanno4rt/issues">https://github.com/pyanno4rt/pyanno4rt/issues</a> </li>
 </ul>
-
 <br>
+
 <h3>Contributing</h3>
 
-pyanno4rt is open for new contributors of all experience levels. Please get in contact with us (see "Help and support") to discuss the format of your contribution.
-
-Note: the "docs" folder on Github includes example files with CT/segmentation data and the photon dose-influence matrix for the TG-119 case, a standard test phantom which can be used for development. You will find more realistic patient data e.g. in the CORT dataset<sup>1</sup> or the TROTS dataset<sup>2</sup>. <br><br>
-
+pyanno4rt is open for contributors of all experience levels. Please refer to our contribution guidelines or get in contact with us (see "Help and support") to discuss the format of your contribution.
+<br><br>
+Note: the "docs" folder on Github includes example files with CT/segmentation data and the photon dose-influence matrix for the TG-119 case, a standard test phantom which can be used for development. You will find more realistic patient data e.g. in the CORT<sup>1</sup> or the TROTS<sup>2</sup> dataset.
 <sub>
+<br><br>
 <sup>1</sup>D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". <i>GigaScience</i> 3.1 (2014). <br>
 <sup>2</sup>S. Breedveld, B. Heijmen. "Data for TROTS - The Radiotherapy Optimisation Test Set". <i>Data in Brief</i> (2017).
 </sub>
@@ -222,8 +200,8 @@ Note: the "docs" folder on Github includes example files with CT/segmentation da
 
 <ul>
 	<li> Mail: <a href="mailto:tim.ortkamp@gmx.de?subject=Request on pyanno4rt">tim.ortkamp(at)gmx.de</a> </li>
-	<li> Github Discussions: https://github.com/pyanno4rt/pyanno4rt/discussions </li>
-	<li> LinkedIn: https://www.linkedin.com/in/tim-ortkamp/
+	<li> Github Discussions: <a href="https://github.com/pyanno4rt/pyanno4rt/discussions">https://github.com/pyanno4rt/pyanno4rt/discussions</a> </li>
+	<li> LinkedIn: <a href="https://www.linkedin.com/in/tim-ortkamp">https://www.linkedin.com/in/tim-ortkamp</a>
 	
 </ul>
 

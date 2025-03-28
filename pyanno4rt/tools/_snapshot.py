@@ -4,13 +4,17 @@
 
 # %% External package import
 
-from json import dumps
-from os.path import abspath, splitext
-from zipfile import ZipFile
+from os import mkdir
+from os.path import abspath, exists, splitext
+from shutil import copy
+
+from json import dump
+from numpy import save
 
 # %% Internal package import
 
-from pyanno4rt.tools import apply, get_machine_learning_objectives
+from pyanno4rt.tools import (
+    apply, get_machine_learning_constraints, get_machine_learning_objectives)
 
 # %% Function definition
 
@@ -28,7 +32,7 @@ def snapshot(
         The object from which to take a snapshot.
 
     path : str
-        Directory path for the snapshot (archive).
+        Directory path for the snapshot (folder).
 
     include_patient_data : bool, default=False
         Indicator for the storage of the external patient data, i.e., \
@@ -52,40 +56,41 @@ def snapshot(
     def export_model_files(data):
         """Export the machine learning model data files."""
 
+        # Build the model folder path
+        model_path = f'{snap_path}/{data[0]}'
+
+        # Check if the path does not yet exist
+        if not exists(model_path):
+
+            # Create a new folder
+            mkdir(model_path)
+
         # Get the model object
-        model = data[2]
+        model = data[1]
 
-        # Set the model file paths to the ZIP file
-        model.set_file_paths(f'{snap_path}.p4rt')
+        # Set the file paths in the model
+        model.set_file_paths(model_path)
 
-        # Write the configuration to the ZIP file
-        zip_file.writestr(
-            f'{data[1]}/configuration.json',
-            data=model.export_configuration(include_model_data))
+        # Export the configuration file
+        model.export_configuration(include_model_data)
 
-        # Write the hyperparameters to the ZIP file
-        zip_file.writestr(
-            f'{data[1]}/hyperparameters.json',
-            data=model.export_hyperparameters())
+        # Export the hyperparameter file
+        model.export_hyperparameters()
 
-        # Write the prediction model to the ZIP file
-        zip_file.writestr(
-            f'{data[1]}/model.'
-            f'{"h5" if "Neural Network" in data[0] else "sav"}',
-            data=model.export_model())
+        # Export the prediction model file
+        model.export_model()
 
-        # Write the preprocessor to the ZIP file
-        zip_file.writestr(
-            f'{data[1]}/preprocessor.sav', data=model.export_preprocessor())
+        # Export the preprocessor file
+        model.export_preprocessor()
 
-        # Check if the model data should be saved and exists
-        if include_model_data and data[3] is not None:
+        # Check if the model data should be included and is not None
+        if include_model_data and data[2] is not None:
 
             # Get the file extension
-            _, extension = splitext(data[3])
+            _, extension = splitext(data[2])
 
-            # Write the model data to the ZIP file
-            zip_file.write(data[3], f'{data[1]}/model_data{extension}')
+            # Copy the model data into a file
+            copy(data[2], f'{model_path}/model_data{extension}')
 
     # Check if any required attribute is missing
     if (any(getattr(instance, attribute) is None for attribute in (
@@ -99,66 +104,71 @@ def snapshot(
             "snapshot!")
 
     # Build the snapshot folder path
-    snap_path = abspath(f"{path}/{instance.configuration.label}")
+    snap_path = abspath(f'{path}/{instance.configuration.label}')
 
-    # Build a joint dictionary for the plan inputs
-    input_dictionaries = {
-        'configuration': instance.configuration.to_dict(),
-        'optimization': instance.optimization.to_dict(),
-        'evaluation': instance.evaluation.to_dict()}
+    # Check if the path does not yet exist
+    if not exists(snap_path):
+
+        # Create a new folder
+        mkdir(snap_path)
+
+    # Open a file stream for the input parameters
+    with open(f'{snap_path}/input_parameters.json', 'w',
+              encoding='utf-8') as file:
+
+        # Get the input dictionaries
+        input_dictionaries = {
+            'configuration': instance.configuration.to_dict(),
+            'optimization': instance.optimization.to_dict(),
+            'evaluation': instance.evaluation.to_dict()}
+
+        # Dump the input dictionaries
+        dump(input_dictionaries, file, sort_keys=False, indent=4)
+
+    # Open a file stream for the log output
+    with open(f'{snap_path}/{instance.datahub.label}.log', 'w',
+              encoding='utf-8') as file:
+
+        # Get the logging stream value
+        stream_value = instance.logger.logger.handlers[1].stream.getvalue()
+
+        # Print the stream value to the file
+        print(stream_value, file=file)
 
     # Get the machine learning model data
-    ml_model_data = tuple(
-        (objective.name, objective.model.model_label, objective.model,
-         objective.model_parameters.get('data_path'))
-        for objective in get_machine_learning_objectives(
-                instance.datahub.segmentation))
+    ml_model_data = tuple((
+        component.model.model_label, component.model,
+        component.model_parameters.data_path)
+        for component in (
+            get_machine_learning_objectives(instance.datahub.segmentation)
+            + get_machine_learning_constraints(instance.datahub.segmentation)))
 
-    # Open a stream to a ZIP file
-    with ZipFile(f'{snap_path}.p4rt', mode="w") as zip_file:
+    # Export the machine learning model files
+    apply(export_model_files, ml_model_data)
 
-        # Write the input parameter dictionary to the ZIP file
-        zip_file.writestr(
-            'input_parameters.json',
-            data=dumps(input_dictionaries, sort_keys=False, indent=4))
+    # Check if the patient data should be included
+    if include_patient_data:
 
-        # Write the log file to the ZIP file
-        zip_file.writestr(
-            f'{instance.datahub.label}.log',
-            data=instance.logger.logger.handlers[1].stream.getvalue())
+        # Get the file extension
+        _, extension = splitext(instance.configuration.imaging_path)
 
-        # Export the data for the machine learning model(s)
-        apply(export_model_files, ml_model_data)
+        # Copy the patient data into a file
+        copy(instance.configuration.imaging_path,
+             f'{snap_path}/patient_data{extension}')
 
-        # Check if the patient data should be saved
-        if include_patient_data:
+    # Check if the dose influence matrix data should be included
+    if include_dose_matrix:
 
-            # Get the file extension
-            _, extension = splitext(instance.configuration.imaging_path)
+        # Get the file extension
+        _, extension = splitext(instance.configuration.dose_matrix_path)
 
-            # Write the patient data to the ZIP file
-            zip_file.write(
-                instance.configuration.imaging_path,
-                f'patient_data{extension}')
+        # Copy the matrix into a file
+        copy(instance.configuration.dose_matrix_path,
+             f'{snap_path}/dose_influence_matrix{extension}')
 
-        # Check if the dose-influence matrix should be saved
-        if include_dose_matrix:
+    # Check if the optimized fluence array should be included
+    if include_optimum:
 
-            # Get the file extension
-            _, extension = splitext(instance.configuration.dose_matrix_path)
-
-            # Write the dose-influence matrix to the ZIP file
-            zip_file.write(
-                instance.configuration.dose_matrix_path,
-                f'dose_influence_matrix{extension}')
-
-        # Check if the optimized fluence array should be saved
-        if include_optimum:
-
-            # Write the optimized fluence array to the ZIP file
-            zip_file.writestr(
-                'optimized_fluence.npy',
-                data=instance.datahub.optimization['optimized_fluence'])
-
-        # Test the integrity of the ZIP file
-        zip_file.testzip()
+        # Save the fluence array
+        save(f'{snap_path}/optimized_fluence.npy',
+             instance.datahub.optimization['optimized_fluence'])

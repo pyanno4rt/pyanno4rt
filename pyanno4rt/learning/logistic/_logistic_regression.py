@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from pickle import dumps, load
+from pickle import dump, load
 
 from hyperopt import hp
 from sklearn.linear_model import LogisticRegression
@@ -208,7 +208,7 @@ class LogisticRegressionModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the logistic regression model from the model file path.
+        Import the logistic regression model.
 
         Returns
         -------
@@ -223,13 +223,10 @@ class LogisticRegressionModel(MachineLearningModel):
         return load(open(self.model_path, 'rb'))
 
     def export_model(self):
-        """
-        Export the logistic regression model to a bytes-like object.
+        """Export the logistic regression model."""
 
-        Returns
-        -------
-        bytes
-            Bytes-like model object.
-        """
+        # Open a file stream
+        with open(self.model_path, 'wb') as file:
 
-        return dumps(self.prediction_model)
+            # Dump the model
+            dump(self.prediction_model, file)

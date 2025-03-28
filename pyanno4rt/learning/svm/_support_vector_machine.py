@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from pickle import dumps, load
+from pickle import dump, load
 
 from hyperopt import hp
 from sklearn.svm import SVC
@@ -182,7 +182,7 @@ class SupportVectorMachineModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the support vector machine model from the model file path.
+        Import the support vector machine model.
 
         Returns
         -------
@@ -197,13 +197,10 @@ class SupportVectorMachineModel(MachineLearningModel):
         return load(open(self.model_path, 'rb'))
 
     def export_model(self):
-        """
-        Export the support vector machine model to a bytes-like object.
+        """Export the support vector machine model."""
 
-        Returns
-        -------
-        bytes
-            Bytes-like model object.
-        """
+        # Open a file stream
+        with open(self.model_path, 'wb') as file:
 
-        return dumps(self.prediction_model)
+            # Dump the model
+            dump(self.prediction_model, file)

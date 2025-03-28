@@ -4,9 +4,9 @@
 
 # %% External package import
 
-from json import dumps as jdumps, load as jload
+from json import dump as jdump, load as jload
 from os.path import exists
-from pickle import dumps, load
+from pickle import dump, load
 from statistics import mean
 
 from abc import ABCMeta, abstractmethod
@@ -743,15 +743,13 @@ class MachineLearningModel(metaclass=ABCMeta):
 
     def import_preprocessor(self):
         """
-        Import the data preprocessor from the preprocessor file path.
+        Import the data preprocessor.
 
         Returns
         -------
         object of class \
             :class:`~pyanno4rt.learning.preprocessing._data_preprocessor.DataPreprocessor`
-            The object used to build the preprocessing pipeline, transform \
-            the data, and return the input gradients of the preprocessing \
-            algorithms.
+            The object used to handle the data preprocessing.
         """
 
         # Log a message about the preprocessor file reading
@@ -761,28 +759,25 @@ class MachineLearningModel(metaclass=ABCMeta):
         return load(open(self.preprocessor_path, 'rb'))
 
     def export_preprocessor(self):
-        """
-        Export the data preprocessor to a bytes-like object.
+        """Export the data preprocessor."""
 
-        Returns
-        -------
-        bytes
-            Bytes-like preprocessor object.
-        """
+        # Open a file stream
+        with open(self.preprocessor_path, 'wb') as file:
 
-        return dumps(self.preprocessor)
+            # Dump the preprocessor
+            dump(self.preprocessor, file)
 
     @abstractmethod
     def import_model(self):
-        """Import the machine learning model from the model file path."""
+        """Import the machine learning model."""
 
     @abstractmethod
     def export_model(self):
-        """Export the machine learning model to a bytes-like object."""
+        """Export the machine learning model."""
 
     def import_configuration(self):
         """
-        Import the configuration dictionary from the configuration file path.
+        Import the configuration dictionary.
 
         Returns
         -------
@@ -814,17 +809,12 @@ class MachineLearningModel(metaclass=ABCMeta):
             self,
             include_model_data=False):
         """
-        Export the configuration dictionary to a JSON string.
+        Export the configuration dictionary.
 
         Parameters
         ----------
         include_model_data : bool, default=False
-            Indicator for the storage of the outcome model-related dataset(s).
-
-        Returns
-        -------
-        str
-            JSON string of the configuration dictionary.
+            Indicator for the storage of the outcome model-related datasets.
         """
 
         # Check if the model data should be included
@@ -851,14 +841,17 @@ class MachineLearningModel(metaclass=ABCMeta):
                 # Set the values to None
                 self.configuration[key] = None
 
-        return jdumps(self.configuration, sort_keys=False, indent=4)
+        # Open a file stream
+        with open(self.configuration_path, 'w', encoding='utf-8') as file:
+
+            # Dump the configuration dictionary
+            jdump(self.configuration, file, sort_keys=False, indent=4)
 
     def import_hyperparameters(
             self,
             verbose=True):
         """
-        Import the machine learning model hyperparameters from the \
-        hyperparameter file path.
+        Import the machine learning model hyperparameters.
 
         Parameters
         ----------
@@ -868,7 +861,7 @@ class MachineLearningModel(metaclass=ABCMeta):
         Returns
         -------
         dict
-            Dictionary with the values of the hyperparameters.
+            Dictionary with the hyperparameter values.
         """
 
         # Check if a message should be printed
@@ -881,13 +874,10 @@ class MachineLearningModel(metaclass=ABCMeta):
         return jload(open(self.hyperparameter_path, 'r', encoding='utf-8'))
 
     def export_hyperparameters(self):
-        """
-        Export the machine learning model hyperparameters to a JSON string.
+        """Export the machine learning model hyperparameters."""
 
-        Returns
-        -------
-        str
-            JSON string of the hyperparameter dictionary.
-        """
+        # Open a file stream
+        with open(self.hyperparameter_path, 'w', encoding='utf-8') as file:
 
-        return jdumps(self.hyperparameters, sort_keys=False, indent=4)
+            # Dump the hyperparameter dictionary
+            jdump(self.hyperparameters, file, sort_keys=False, indent=4)
