@@ -49,7 +49,7 @@ def test_copycat():
             initial_fluence_vector=None,
             lower_variable_bounds=0,
             upper_variable_bounds=None,
-            max_iter=500,
+            maximum_iterations=500,
             tolerance=1e-3),
 
         evaluation=Evaluation(

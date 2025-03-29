@@ -1,11 +1,11 @@
 [![CI/CD](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml)
 ![Read the Docs](https://img.shields.io/readthedocs/pyanno4rt)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyanno4rt)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/pyanno4rt)
 [![Coverage Status](https://coveralls.io/repos/github/pyanno4rt/pyanno4rt/badge.svg)](https://coveralls.io/github/pyanno4rt/pyanno4rt)
-[![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
-[![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 
 ![GitHub Repo stars](https://img.shields.io/github/stars/pyanno4rt/pyanno4rt)
+![GitHub forks](https://img.shields.io/github/forks/pyanno4rt/pyanno4rt)
+[![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 
+[![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
 [![GitHub Discussions](https://img.shields.io/github/discussions/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/discussions)
 [![GitHub Issues](https://img.shields.io/github/issues/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/issues)
 [![GitHub Contributors](https://img.shields.io/github/contributors/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/graphs/contributors)
@@ -19,13 +19,11 @@
 
 ---
 
-# General information
+# General information :information_source:
 
-*pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for tumor control probability (TCP) and normal tissue complication probability (NTCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning.
+*pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning.
 
----
-
-# Highlight features
+# Highlight features :flashlight:
 
 <h3>Import of patient data and dose influence matrices from different sources</h3>
 <ul>
@@ -33,7 +31,6 @@
 	<li> MATLAB files (.mat) </li>
 	<li> Python files (.npy, .npz, .p) </li>
 </ul>
-<br>
 
 <h3>Easy configuration and management of treatment plans</h3>
 <ul>
@@ -42,7 +39,6 @@
 	<li> Dedicated logging channels & singleton datahubs </li>
 	<li> Snapshot/copycat functionality for storage/retrieval </li>
 </ul>
-<br>
 
 <h3>Multi-objective treatment plan optimization</h3>
 <ul>
@@ -65,15 +61,14 @@
 	</li>
 	<li> Local & global solvers
 		<ul>
-			<li> Interior-point algorithms provided by Ipyopt </li>
-			<li> Proximal algorithms provided by Proxmin </li>
-			<li> Multi-objective algorithms provided by Pymoo </li>
-			<li> Population-based algorithms provided by PyPop7 </li>
-			<li> Local algorithms provided by SciPy </li>
+			<li> Interior-point algorithms provided by <a href="https://pypi.org/project/ipyopt/">ipyopt</a> </li>
+			<li> Proximal algorithms provided by <a href="https://pypi.org/project/proxmin/">proxmin</a> </li>
+			<li> Multi-objective algorithms provided by <a href="https://pypi.org/project/pymoo/">pymoo</a> </li>
+			<li> Population-based algorithms provided by <a href="https://pypi.org/project/pypop7/">pypop7</a> </li>
+			<li> Local algorithms provided by <a href="https://pypi.org/project/scipy/">scipy</a> </li>
 		</ul>
 	</li>
 </ul>
-<br>
 
 <h3>Data-driven outcome prediction model handling</h3>
 <ul> 
@@ -82,14 +77,12 @@
 	<li> 7 internal ML models (decision tree, KNN, logistic regression, naive Bayes, neural network, random forest, SVM) with individual preprocessing, inspection & evaluation units + Bayesian hyperparameter tuning </li>
 	<li> External model loading via folder paths </li>
 </ul>
-<br>
 
 <h3>Plan evaluation tools</h3>
 <ul>
 	<li> Cumulative & differential DVHs </li>
 	<li> Dose statistics & clinical quality measures </li>
 </ul>
-<br>
 
 <h3>Graphical user interface</h3>
 <ul>
@@ -102,9 +95,8 @@
 	</li>
 	<li> (Standalone) PyQt/Matplotlib visualization window </li>
 </ul>
-<br>
 
-# Installation
+# Installation :computer:
 
 <h3>Python distribution</h3>
 
@@ -113,7 +105,6 @@ You can install the latest distribution via:
 ```bash
 pip install pyanno4rt
 ```
-<br>
 
 <h3>Source code</h3>
 
@@ -122,7 +113,6 @@ You can check the latest source code via:
 ```bash
 git clone https://github.com/pyanno4rt/pyanno4rt.git
 ```
-<br>
 
 <h3>Usage</h3>
 
@@ -139,75 +129,77 @@ from pyanno4rt.base import TreatmentPlan
 ```python
 from pyanno4rt.gui import GraphicalUserInterface
 ```
-<br>
 
 <h3>Dependencies</h3>
 
-<ul>
-	<li> python (>=3.10, <3.12)
-	<li> numpy (>=2.1.3) </li>
-	<li> ipyopt (>=0.12.9) </li>
-	<li> proxmin (>=0.6.12) </li>
-	<li> absl-py (>=2.2.0) </li>
-	<li> pydicom (>=3.0.1) </li>
-	<li> scikit-image (>=0.25.2) </li>
-	<li> h5py (>=3.13.0) </li>
-	<li> pandas (>=2.2.3) </li>
-	<li> jax (>=0.5.3) </li>
-	<li> jaxlib (>=0.5.3) </li>
-	<li> numba (>=0.61.0) </li>
-	<li> scikit-learn (>=1.6.1) </li>
-	<li> tensorflow (>=2.19.0) </li>
-	<li> tensorflow-io-gcs-filesystem (==0.31.0) </li>
-	<li> hyperopt (>=0.2.7) </li>
-	<li> pymoo (>=0.6.1.3) </li>
-	<li> pyqt5-qt5 (==5.15.2) </li>
-	<li> pyqt5 (==5.15.10) </li>
-	<li> pyqtgraph (>=0.13.7) </li>
-	<li> ipython (>=8.34.0) </li>
-	<li> matplotlib (>=3.10.1) </li>
-	<li> seaborn (>=0.13.2) </li>
-	<li> pypop7 (>=0.0.82) </li>
-</ul>
-Moreover, we are using Python v3.11.11 and Spyder IDE v6.0.5 for development.<br><br>
+| Name                           | Version                               |
+| -----------------------------: | :------------------------------------ |
+| `python`                       | <font size="3"> >=3.10, <3.12 </font> |
+| `numpy`                        | <font size="3"> >=2.1.3 </font>       |
+| `ipyopt`                       | <font size="3"> >=0.12.9 </font>      |
+| `proxmin`                      | <font size="3"> >=0.6.12 </font>      |
+| `absl-py`                      | <font size="3"> >=2.2.1 </font>       |
+| `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
+| `scikit-image`                 | <font size="3"> >=0.25.2 </font>      |
+| `h5py`                         | <font size="3"> >=3.13.0 </font>      |
+| `pandas`                       | <font size="3"> >=2.2.3 </font>       |
+| `jax`                          | <font size="3"> >=0.5.3 </font>       |
+| `jaxlib`                       | <font size="3"> >=0.5.3 </font>       |
+| `numba`                        | <font size="3"> >=0.61.0 </font>      |
+| `scikit-learn`                 | <font size="3"> >=1.6.1 </font>       |
+| `tensorflow`                   | <font size="3"> >=2.19.0 </font>      |
+| `tensorflow-io-gcs-filesystem` | <font size="3"> ==0.31.0 </font>      |
+| `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
+| `pymoo`                        | <font size="3"> >=0.6.1.3 </font>     |
+| `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |
+| `pyqt5`                        | <font size="3"> >=5.15.10 </font>     |
+| `pyqtgraph`                    | <font size="3"> >=0.13.7 </font>      |
+| `ipython`                      | <font size="3"> >=8.34.0 </font>      |
+| `matplotlib`                   | <font size="3"> >=3.10.1 </font>      |
+| `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
+| `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
-# Development
+Moreover, we are using `Python v3.11.11` and `Spyder IDE v6.0.5` for development.
+
+# Development :rocket:
 
 <h3>Important links</h3>
-
 <ul>
-	<li> Official source code repo: <a href="https://github.com/pyanno4rt/pyanno4rt">https://github.com/pyanno4rt/pyanno4rt</a> </li>
-	<li> Download releases: <a href="https://pypi.org/project/pyanno4rt/">https://pypi.org/project/pyanno4rt/</a> </li>
-	<li> Issue tracker: <a href="https://github.com/pyanno4rt/pyanno4rt/issues">https://github.com/pyanno4rt/pyanno4rt/issues</a> </li>
+	<li> <a href="https://github.com/pyanno4rt/pyanno4rt">Github Repo</a> </li>
+	<li> <a href="https://pypi.org/project/pyanno4rt/">PyPI</a> </li>
+	<li> <a href="https://coveralls.io/github/pyanno4rt/pyanno4rt">Coveralls</a> </li>
+	<li> <a href="https://github.com/pyanno4rt/pyanno4rt/issues">Issue tracker</a> </li>
 </ul>
-<br>
 
 <h3>Contributing</h3>
 
-pyanno4rt is open for contributors of all experience levels. Please refer to our contribution guidelines or get in contact with us (see "Help and support") to discuss the format of your contribution.
-<br><br>
-Note: the "docs" folder on Github includes example files with CT/segmentation data and the photon dose-influence matrix for the TG-119 case, a standard test phantom which can be used for development. You will find more realistic patient data e.g. in the CORT<sup>1</sup> or the TROTS<sup>2</sup> dataset.
+*pyanno4rt* is open for contributors of all experience levels. Please refer to our [contribution guidelines](CONTRIBUTION.md) or get in contact with us (see [Help and support](#help-and-support)) to discuss the format of your contribution.
+
+> Note: the [docs](https://github.com/pyanno4rt/pyanno4rt/tree/develop/docs) folder includes example files with CT/segmentation data and the photon dose-influence matrix for the TG-119 case, a standard test phantom which can be used for development. You will find more realistic patient data e.g. in the CORT<sup>1</sup> or the TROTS<sup>2</sup> dataset.
 <sub>
-<br><br>
-<sup>1</sup>D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". <i>GigaScience</i> 3.1 (2014). <br>
+<sup>1</sup>D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". <i>GigaScience</i> 3.1 (2014).
 <sup>2</sup>S. Breedveld, B. Heijmen. "Data for TROTS - The Radiotherapy Optimisation Test Set". <i>Data in Brief</i> (2017).
 </sub>
-<br><br>
 
-# Help and support
+# Help and support :busts_in_silhouette:
 
-<h3>Contact</h3>
+<h3>Resources</h3>
 
 <ul>
-	<li> Mail: <a href="mailto:tim.ortkamp@gmx.de?subject=Request on pyanno4rt">tim.ortkamp(at)gmx.de</a> </li>
-	<li> Github Discussions: <a href="https://github.com/pyanno4rt/pyanno4rt/discussions">https://github.com/pyanno4rt/pyanno4rt/discussions</a> </li>
-	<li> LinkedIn: <a href="https://www.linkedin.com/in/tim-ortkamp">https://www.linkedin.com/in/tim-ortkamp</a>
-	
+	<li> <a href="https://pyanno4rt.readthedocs.io/en/latest/">Documentation</a> </li>
+	<li> <a href="https://github.com/pyanno4rt/pyanno4rt/discussions">Github Discussions</a> </li>
+<li> <a href="https://github.com/pyanno4rt/pyanno4rt/issues">Github Issues</a> </li>
+</ul>
+
+<h3>Contact</h3>
+<ul>
+	<li> <a href="mailto:tim.ortkamp@gmx.de?subject=Request on pyanno4rt">Mail</a> </li>
+	<li> <a href="https://www.linkedin.com/in/tim-ortkamp">Linkedin</a>
 </ul>
 
 <h3>Citation</h3>
 
-To cite this repository:
+If you use *pyanno4rt* in your work, let us now and cite this repository:
 
 ```
 @misc{pyanno4rt2024,
@@ -217,3 +209,4 @@ To cite this repository:
   howpublished = {\url{http://github.com/pyanno4rt/pyanno4rt}}
 }
 ```
+

@@ -15,7 +15,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../'))
 
-from myst_sphinx_gallery import GalleryConfig, ThumbnailConfig, __version__
+from myst_sphinx_gallery import GalleryConfig, __version__
 
 # -- Project information -----------------------------------------------------
 
