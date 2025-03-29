@@ -7,7 +7,6 @@ You can install the latest distribution via:
 ```bash
 pip install pyanno4rt
 ```
-<br>
 
 <h3>Source code</h3>
 
@@ -16,7 +15,6 @@ You can check the latest source code via:
 ```bash
 git clone https://github.com/pyanno4rt/pyanno4rt.git
 ```
-<br>
 
 <h3>Usage</h3>
 
@@ -33,34 +31,34 @@ from pyanno4rt.base import TreatmentPlan
 ```python
 from pyanno4rt.gui import GraphicalUserInterface
 ```
-<br>
 
 <h3>Dependencies</h3>
 
-<ul>
-	<li> python (>=3.10, <3.12)
-	<li> numpy (>=2.1.3) </li>
-	<li> ipyopt (>=0.12.9) </li>
-	<li> proxmin (>=0.6.12) </li>
-	<li> absl-py (>=2.2.1) </li>
-	<li> pydicom (>=3.0.1) </li>
-	<li> scikit-image (>=0.25.2) </li>
-	<li> h5py (>=3.13.0) </li>
-	<li> pandas (>=2.2.3) </li>
-	<li> jax (>=0.5.3) </li>
-	<li> jaxlib (>=0.5.3) </li>
-	<li> numba (>=0.61.0) </li>
-	<li> scikit-learn (>=1.6.1) </li>
-	<li> tensorflow (>=2.19.0) </li>
-	<li> tensorflow-io-gcs-filesystem (==0.31.0) </li>
-	<li> hyperopt (>=0.2.7) </li>
-	<li> pymoo (>=0.6.1.3) </li>
-	<li> pyqt5-qt5 (==5.15.2) </li>
-	<li> pyqt5 (==5.15.10) </li>
-	<li> pyqtgraph (>=0.13.7) </li>
-	<li> ipython (>=8.34.0) </li>
-	<li> matplotlib (>=3.10.1) </li>
-	<li> seaborn (>=0.13.2) </li>
-	<li> pypop7 (>=0.0.82) </li>
-</ul>
-Moreover, we are using Python v3.11.11 and Spyder IDE v6.0.5 for development.<br><br>
+| Name                           | Version                               |
+| -----------------------------: | :------------------------------------ |
+| `python`                       | <font size="3"> >=3.10, <3.12 </font> |
+| `numpy`                        | <font size="3"> >=2.1.3 </font>       |
+| `ipyopt`                       | <font size="3"> >=0.12.9 </font>      |
+| `proxmin`                      | <font size="3"> >=0.6.12 </font>      |
+| `absl-py`                      | <font size="3"> >=2.2.1 </font>       |
+| `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
+| `scikit-image`                 | <font size="3"> >=0.25.2 </font>      |
+| `h5py`                         | <font size="3"> >=3.13.0 </font>      |
+| `pandas`                       | <font size="3"> >=2.2.3 </font>       |
+| `jax`                          | <font size="3"> >=0.5.3 </font>       |
+| `jaxlib`                       | <font size="3"> >=0.5.3 </font>       |
+| `numba`                        | <font size="3"> >=0.61.0 </font>      |
+| `scikit-learn`                 | <font size="3"> >=1.6.1 </font>       |
+| `tensorflow`                   | <font size="3"> >=2.19.0 </font>      |
+| `tensorflow-io-gcs-filesystem` | <font size="3"> ==0.31.0 </font>      |
+| `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
+| `pymoo`                        | <font size="3"> >=0.6.1.3 </font>     |
+| `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |
+| `pyqt5`                        | <font size="3"> >=5.15.10 </font>     |
+| `pyqtgraph`                    | <font size="3"> >=0.13.7 </font>      |
+| `ipython`                      | <font size="3"> >=8.34.0 </font>      |
+| `matplotlib`                   | <font size="3"> >=3.10.1 </font>      |
+| `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
+| `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
+
+Moreover, we are using `Python v3.11.11` and `Spyder IDE v6.0.5` for development.<br><br>

@@ -3,11 +3,11 @@
 [![CI/CD](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml)
 ![Read the Docs](https://img.shields.io/readthedocs/pyanno4rt)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyanno4rt)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/pyanno4rt)
 [![Coverage Status](https://coveralls.io/repos/github/pyanno4rt/pyanno4rt/badge.svg)](https://coveralls.io/github/pyanno4rt/pyanno4rt)
-[![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
-[![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 
 ![GitHub Repo stars](https://img.shields.io/github/stars/pyanno4rt/pyanno4rt)
+![GitHub forks](https://img.shields.io/github/forks/pyanno4rt/pyanno4rt)
+[![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 
+[![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
 [![GitHub Discussions](https://img.shields.io/github/discussions/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/discussions)
 [![GitHub Issues](https://img.shields.io/github/issues/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/issues)
 [![GitHub Contributors](https://img.shields.io/github/contributors/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/graphs/contributors)
@@ -15,13 +15,11 @@
 
 ---
 
-# General information
+# General
 
-*pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for tumor control probability (TCP) and normal tissue complication probability (NTCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning.
+*pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning.
 
----
-
-# Highlight features
+# Highlight Features
 
 <h3>Import of patient data and dose influence matrices from different sources</h3>
 <ul>
@@ -29,7 +27,6 @@
 	<li> MATLAB files (.mat) </li>
 	<li> Python files (.npy, .npz, .p) </li>
 </ul>
-<br>
 
 <h3>Easy configuration and management of treatment plans</h3>
 <ul>
@@ -38,7 +35,6 @@
 	<li> Dedicated logging channels & singleton datahubs </li>
 	<li> Snapshot/copycat functionality for storage/retrieval </li>
 </ul>
-<br>
 
 <h3>Multi-objective treatment plan optimization</h3>
 <ul>
@@ -61,15 +57,14 @@
 	</li>
 	<li> Local & global solvers
 		<ul>
-			<li> Interior-point algorithms provided by Ipyopt </li>
-			<li> Proximal algorithms provided by Proxmin </li>
-			<li> Multi-objective algorithms provided by Pymoo </li>
-			<li> Population-based algorithms provided by PyPop7 </li>
-			<li> Local algorithms provided by SciPy </li>
+			<li> Interior-point algorithms provided by <a href="https://pypi.org/project/ipyopt/">ipyopt</a> </li>
+			<li> Proximal algorithms provided by <a href="https://pypi.org/project/proxmin/">proxmin</a> </li>
+			<li> Multi-objective algorithms provided by <a href="https://pypi.org/project/pymoo/">pymoo</a> </li>
+			<li> Population-based algorithms provided by <a href="https://pypi.org/project/pypop7/">pypop7</a> </li>
+			<li> Local algorithms provided by <a href="https://pypi.org/project/scipy/">scipy</a> </li>
 		</ul>
 	</li>
 </ul>
-<br>
 
 <h3>Data-driven outcome prediction model handling</h3>
 <ul> 
@@ -78,14 +73,12 @@
 	<li> 7 internal ML models (decision tree, KNN, logistic regression, naive Bayes, neural network, random forest, SVM) with individual preprocessing, inspection & evaluation units + Bayesian hyperparameter tuning </li>
 	<li> External model loading via folder paths </li>
 </ul>
-<br>
 
 <h3>Plan evaluation tools</h3>
 <ul>
 	<li> Cumulative & differential DVHs </li>
 	<li> Dose statistics & clinical quality measures </li>
 </ul>
-<br>
 
 <h3>Graphical user interface</h3>
 <ul>
