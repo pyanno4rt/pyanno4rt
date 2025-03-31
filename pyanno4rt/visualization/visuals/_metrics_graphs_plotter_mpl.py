@@ -98,7 +98,7 @@ class MetricsGraphsPlotterMPL():
 
         # Get the number of graphs per model
         number_of_graphs = tuple(
-            len(hub.model_instances[model_label]['display_options']['graphs'])
+            len(hub.model_instances[model_label]['display_options'].graphs)
             for model_label in (*hub.model_instances,))
 
         # Loop over the number of evaluation subsets
@@ -120,7 +120,7 @@ class MetricsGraphsPlotterMPL():
 
                 # Check if the AUC-ROC scores should be displayed
                 if 'AUC-ROC' in hub.model_instances[evaluated_models[i]][
-                        'display_options']['graphs']:
+                        'display_options'].graphs:
 
                     # Plot the AUC-ROC points
                     scatterplot(
@@ -162,7 +162,7 @@ class MetricsGraphsPlotterMPL():
 
                 # Check if the AUC-PR scores should be displayed
                 if 'AUC-PR' in hub.model_instances[evaluated_models[i]][
-                        'display_options']['graphs']:
+                        'display_options'].graphs:
 
                     # Plot the AUC-PR line
                     lineplot(x="Recall", y="Precision",
@@ -184,7 +184,7 @@ class MetricsGraphsPlotterMPL():
 
                 # Check if the ROC scores should be displayed
                 if 'F1' in hub.model_instances[evaluated_models[i]][
-                        'display_options']['graphs']:
+                        'display_options'].graphs:
 
                     # Plot the F1 line
                     f1s[i][modes[j]]['values'].plot(

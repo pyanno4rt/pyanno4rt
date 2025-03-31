@@ -99,7 +99,7 @@ class MetricsTablesPlotterMPL():
 
         # Get the evaluation data
         data = tuple((key, value['kpi'],
-                      hub.model_instances[key]['display_options']['kpis'])
+                      hub.model_instances[key]['display_options'].kpis)
                      for key, value in hub.model_evaluations.items()
                      if any(component.model_parameters.model_label == key
                             for component in (

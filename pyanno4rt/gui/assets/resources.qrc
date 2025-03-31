@@ -1474,6 +1474,7 @@
     <file>icons_special/stop.svg</file>
     <file>icons_special/logo_black_icon.png</file>
     <file>icons_special/logo_white_icon.png</file>
+    <file>icons_special/logo_white_512.png</file>
   </qresource>
   <qresource prefix="black_icons">
     <file>icons_black/activity.svg</file>

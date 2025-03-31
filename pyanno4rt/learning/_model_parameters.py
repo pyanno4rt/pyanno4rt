@@ -11,9 +11,10 @@ from os.path import abspath
 # %% Internal package import
 
 from pyanno4rt.checking import (
-    check_key_in_dict, check_length, check_path, check_regular_extension,
+    check_length, check_path, check_regular_extension,
     check_regular_extension_directory, check_subtype, check_type,
     check_value, check_value_in_set)
+from pyanno4rt.learning.evaluation import DisplayOptions
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import filter_dict
 
@@ -110,8 +111,10 @@ class ModelParameters():
     write_features : bool, default=False
         Indicator for writing a history of the iteration-wise feature vectors.
 
-    display_options : None or dict, default=None
-        Dictionary with the graph and KPI display options.
+    display_options : object of class \
+        :class:`~pyanno4rt.learning.evaluation._display_options_DisplayOptions`,\
+        default=DisplayOptions()
+        The object used to represent the graph and KPI display options.
 
     Attributes
     ----------
@@ -170,7 +173,8 @@ class ModelParameters():
     write_features : bool
         See 'Parameters'.
 
-    display_options : None or dict
+    display_options : object of class \
+        :class:`~pyanno4rt.learning.evaluation._display_options_DisplayOptions`
         See 'Parameters'.
     """
 
@@ -194,7 +198,7 @@ class ModelParameters():
             oof_splits=5,
             oof_repeats=1,
             write_features=False,
-            display_options=None):
+            display_options=DisplayOptions()):
 
         # Check if the data columns are None
         if data_columns is None:
@@ -214,22 +218,11 @@ class ModelParameters():
             # Get the default tune space
             tune_space = maps.SPACES[model_type]()
 
-        # Check if the display options are None
-        if display_options is None:
-
-            # Get the default display options
-            display_options = {
-                'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
-                'kpis': [
-                    'Logloss', 'Brier score', 'Subset accuracy',
-                    'Cohen Kappa', 'Hamming loss', 'Jaccard score',
-                    'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']}
-
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
 
         # Check the input arguments
-        self.check(self.inputs | display_options)
+        self.check(self.inputs)
 
         # Loop over the input arguments
         for item in self.inputs.items():
@@ -262,6 +255,9 @@ class ModelParameters():
         # Serialize the tune space
         dictionary['tune_space'] = self.tune_space.to_dict()
 
+        # Serialize the display options
+        dictionary['display_options'] = self.display_options.to_dict()
+
         return dictionary
 
     @classmethod
@@ -292,6 +288,10 @@ class ModelParameters():
         # Deserialize the tune space
         dictionary['tune_space'] = maps.SPACES[dictionary['model_type']](
             **dictionary['tune_space'])
+
+        # Deserialize the display options
+        dictionary['display_options'] = DisplayOptions(
+            **dictionary['display_options'])
 
         return cls(**dictionary)
 
@@ -371,18 +371,7 @@ class ModelParameters():
             'write_features': (
                 partial(check_type, types=bool),),
             'display_options': (
-                partial(check_type, types=dict),
-                partial(check_key_in_dict, keys=('graphs', 'kpis'))),
-            'graphs': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(
-                    'AUC-ROC', 'AUC-PR', 'F1'))),
-            'kpis': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(
-                    'Logloss', 'Brier score', 'Subset accuracy',
-                    'Cohen Kappa', 'Hamming loss', 'Jaccard score',
-                    'Precision', 'Recall', 'F1 score', 'MCC', 'AUC')))}
+                partial(check_type, types=DisplayOptions),)}
 
         # Check if the data path is None
         if inputs['data_path'] is None:

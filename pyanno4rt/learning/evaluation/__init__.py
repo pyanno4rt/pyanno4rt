@@ -15,6 +15,7 @@ from ._f1 import f1
 from ._kpi import kpi
 
 # Import the model evaluator
+from ._display_options import DisplayOptions
 from ._model_evaluator import ModelEvaluator
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     'auc_roc',
     'f1',
     'kpi',
+    'DisplayOptions',
     'ModelEvaluator']
