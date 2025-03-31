@@ -25,7 +25,7 @@ We encourage and value all types of contributions regardless of experience level
 
 Everyone contributing to the development of *pyanno4rt* is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). If you also want to be a part of the project, we expect you to uphold this code. Please report unacceptable behavior to the developers.
 
-## I Have a Question:question:
+## I Have a Question :question:
 
 If you have a question about *pyanno4rt*, we recommend the following steps:
 

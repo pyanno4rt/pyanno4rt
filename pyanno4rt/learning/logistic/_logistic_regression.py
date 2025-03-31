@@ -28,14 +28,6 @@ class LogisticRegressionModel(MachineLearningModel):
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
-
-    .. note:: Currently, the hyperparameter search space for the logistic \
-        regression model includes:
-
-            - 'C' : inverse of the regularization strength
-            - 'penalty' : norm of the penalty function
-            - 'tol' : tolerance for stopping criteria
-            - 'class_weight' : weights associated with the classes
     """
 
     def __init__(
@@ -51,12 +43,8 @@ class LogisticRegressionModel(MachineLearningModel):
             evaluate_model,
             display_options):
 
-        # Configure the internal hyperparameter search space
-        tune_space = {
-            'penalty': tune_space.get('penalty', ['l1', 'l2', 'elasticnet']),
-            'tol': tune_space.get('tol', [1e-4, 1e-5, 1e-6]),
-            'C': tune_space.get('C', [2**-5, 2**10]),
-            'class_weight': tune_space.get('class_weight', [None, 'balanced'])}
+        # Get the internal hyperparameter search space
+        tune_space_dict = tune_space.to_dict()
 
         # Configure the hyperopt search space
         hp_space = {
@@ -74,7 +62,8 @@ class LogisticRegressionModel(MachineLearningModel):
                                'lbfgs', 'liblinear', 'newton-cg',
                                'newton-cholesky', 'sag', 'saga']),
                        'C': hp.uniform(
-                           f'C_{norm}', tune_space['C'][0], tune_space['C'][1])
+                           f'C_{norm}', tune_space_dict['C'][0],
+                           tune_space_dict['C'][1])
                        }
                       if norm != 'elasticnet' else
                       {'penalty': 'elasticnet',
@@ -82,18 +71,19 @@ class LogisticRegressionModel(MachineLearningModel):
                        'solver': hp.choice(
                            f'solver_{norm}', ['saga']),
                        'C': hp.uniform(
-                           f'C_{norm}', tune_space['C'][0], tune_space['C'][1])
+                           f'C_{norm}', tune_space_dict['C'][0],
+                           tune_space_dict['C'][1])
                        }
-                      for norm in tune_space['penalty']]
+                      for norm in tune_space_dict['penalty']]
                     ]),
-            'tol': hp.choice('tol', tune_space['tol']),
+            'tol': hp.choice('tol', tune_space_dict['tol']),
             'class_weight': hp.choice(
-                'class_weight', tune_space['class_weight'])}
+                'class_weight', tune_space_dict['class_weight'])}
 
         # Initialize the superclass
         super().__init__(
             model_label, model_folder_path, dataset, preprocessing_steps,
-            tune_space, hp_space, tune_evaluations, tune_score,
+            tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
 
     def get_hyperparameter_set(

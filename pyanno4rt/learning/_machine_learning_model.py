@@ -186,8 +186,10 @@ class MachineLearningModel(metaclass=ABCMeta):
             'tune_evaluations': tune_evaluations,
             'tune_score': tune_score}
 
-        # Add the label bias to the configuration dictionary
+        # Check if label values are available
         if dataset.get('label_values') is not None:
+
+            # Add the label bias to the configuration dictionary
             self.configuration['bias'] = (
                 sum(dataset['label_values'] == 1)
                 / sum(dataset['label_values'] == 0))
@@ -464,7 +466,7 @@ class MachineLearningModel(metaclass=ABCMeta):
                         labels, self.predict(features, prediction_model))
                     for features, labels in (split[:2], split[2:])]
 
-                return mean(scores)
+                return max(scores)
 
             # Loop over the past trials
             for trial in trials:
@@ -496,7 +498,7 @@ class MachineLearningModel(metaclass=ABCMeta):
             folds = self.configuration['tune_folds']
 
             # Compute the objective function value (score) across all folds
-            rep_scores = (mean(map(compute_fold_score, (
+            repeat_scores = (mean(map(compute_fold_score, (
                 (training_indices, validation_indices)
                 for training_indices, validation_indices in (
                     (where(folds[:, index] != number),
@@ -514,7 +516,7 @@ class MachineLearningModel(metaclass=ABCMeta):
             self.step += 1
 
             return {
-                'loss': mean(rep_scores),
+                'loss': mean(repeat_scores),
                 'params': hyperparameters,
                 'status': STATUS_OK}
 
@@ -692,7 +694,7 @@ class MachineLearningModel(metaclass=ABCMeta):
             # Compute the model inspection results
             self.inspector.compute(
                 self.prediction_model, self.hyperparameters, features, labels,
-                self.preprocessing_steps, 30, self.configuration['oof_folds'],
+                self.preprocessing_steps, 20, self.configuration['oof_folds'],
                 self.configuration['tune_score'])
 
     def evaluate(

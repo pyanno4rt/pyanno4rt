@@ -61,4 +61,4 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
-Moreover, we are using `Python v3.11.11` and `Spyder IDE v6.0.5` for development.<br><br>
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.5** for development.<br><br>

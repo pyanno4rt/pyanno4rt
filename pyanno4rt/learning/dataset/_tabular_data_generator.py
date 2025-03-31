@@ -180,6 +180,11 @@ class TabularDataGenerator():
             "Decomposing tabular base dataset into features, label and time "
             "variable ...")
 
+        # Sort the data columns by the dataframe columns
+        data_columns = {
+            key: data_columns[key] for key in data_frame.columns
+            if key in data_columns}
+
         # Get the meta information for the features
         feature_meta = {
             label: data for label, data in data_columns.items()
@@ -202,11 +207,10 @@ class TabularDataGenerator():
         # Return the data information dictionary
         return (
             {'raw_data': data_frame,
-             'feature_names': list(features.columns),
+             'feature_names': feature_names,
              'feature_values': features.values,
              'feature_scales': [
-                 feature_meta[feature]['scale']
-                 for feature in list(features.columns)],
+                 feature_meta[feature]['scale'] for feature in feature_names],
              'label_name': label_name,
              'label_values': data_frame[label_name].values,
              'label_bounds': label_meta[label_name].get('bounds', [1, 1]),

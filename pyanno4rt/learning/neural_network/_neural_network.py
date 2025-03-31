@@ -31,21 +31,6 @@ class NeuralNetworkModel(MachineLearningModel):
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
 
-    .. note:: Currently, the hyperparameter search space for the neural \
-        network model includes:
-
-            - 'input_neuron_number' : number of neurons for the input layer
-            - 'input_activation' : activation function for the input layer
-            - 'hidden_neuron_number' : number of neurons for the hidden \
-                layer(s)
-            - 'hidden_activation' : activation function for the hidden layer(s)
-            - 'input_dropout_rate' : dropout rate for the input layer
-            - 'hidden_dropout_rate' : dropout rate for the hidden layer(s)
-            - 'batch_size' : batch size
-            - 'learning_rate' : learning rate
-            - 'optimizer' : algorithm for the network optimization
-            - 'loss' : loss function for the network optimization
-
     Attributes
     ----------
     optimization_model : object of class `Functional`
@@ -67,26 +52,8 @@ class NeuralNetworkModel(MachineLearningModel):
             evaluate_model,
             display_options):
 
-        # Configure the internal hyperparameter search space
-        tune_space = {
-            'input_neuron_number': tune_space.get(
-                'input_neuron_number', [2**x for x in range(1, 12)]),
-            'input_activation': tune_space.get(
-                'input_activation', ['elu', 'gelu', 'leaky_relu', 'linear',
-                                     'relu', 'softmax', 'softplus', 'swish']),
-            'hidden_neuron_number': tune_space.get(
-                'hidden_neuron_number', [2**x for x in range(1, 12)]),
-            'hidden_activation': tune_space.get(
-                'hidden_activation', ['elu', 'gelu', 'leaky_relu', 'linear',
-                                      'relu', 'softmax', 'softplus', 'swish']),
-            'input_dropout_rate': tune_space.get(
-                'input_dropout_rate', [0.0, 0.1, 0.25, 0.5, 0.75]),
-            'hidden_dropout_rate': tune_space.get(
-                'input_dropout_rate', [0.0, 0.1, 0.25, 0.5, 0.75]),
-            'batch_size': tune_space.get('batch_size', [4, 8, 16, 32]),
-            'learning_rate': tune_space.get('learning_rate', [1e-5, 1e-2]),
-            'optimizer': tune_space.get('optimizer', list(NN_OPTS)),
-            'loss': tune_space.get('loss', list(NN_LOSSES))}
+        # Get the internal hyperparameter search space
+        tune_space_dict = tune_space.to_dict()
 
         # Configure the hyperopt search space
         hp_space = {
@@ -96,36 +63,37 @@ class NeuralNetworkModel(MachineLearningModel):
                      'hidden_neuron_number': [
                          hp.choice(
                              f'{n+1}L{m+1}_neuron_number',
-                             tune_space['hidden_neuron_number'])
+                             tune_space_dict['hidden_neuron_number'])
                          for m in range(n+1)],
                      'hidden_activation': [
                          hp.choice(
                              f'{n+1}L{m+1}_activation',
-                             tune_space['hidden_activation'])
+                             tune_space_dict['hidden_activation'])
                          for m in range(n+1)],
                      'hidden_dropout_rate': [
                          hp.choice(
                              f'{n+1}L{m+1}_hidden_dropout',
-                             tune_space['hidden_dropout_rate'])
+                             tune_space_dict['hidden_dropout_rate'])
                          for m in range(n+1)]}
                     for n in range(max_hidden_layers)]),
             'input_neuron_number': hp.choice(
-                'input_neuron_number', tune_space['input_neuron_number']),
+                'input_neuron_number', tune_space_dict['input_neuron_number']),
             'input_activation': hp.choice(
-                'input_activation', tune_space['input_activation']),
+                'input_activation', tune_space_dict['input_activation']),
             'input_dropout_rate': hp.choice(
-                'input_dropout_rate', tune_space['input_dropout_rate']),
-            'batch_size': hp.choice('batch_size', tune_space['batch_size']),
+                'input_dropout_rate', tune_space_dict['input_dropout_rate']),
+            'batch_size': hp.choice(
+                'batch_size', tune_space_dict['batch_size']),
             'learning_rate': hp.uniform(
-                'learning_rate', tune_space['learning_rate'][0],
-                tune_space['learning_rate'][1]),
-            'optimizer': hp.choice('optimizer', tune_space['optimizer']),
-            'loss': hp.choice('loss', tune_space['loss'])}
+                'learning_rate', tune_space_dict['learning_rate'][0],
+                tune_space_dict['learning_rate'][1]),
+            'optimizer': hp.choice('optimizer', tune_space_dict['optimizer']),
+            'loss': hp.choice('loss', tune_space_dict['loss'])}
 
         # Initialize the superclass
         super().__init__(
             model_label, model_folder_path, dataset, preprocessing_steps,
-            tune_space, hp_space, tune_evaluations, tune_score,
+            tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options, architecture,
             max_hidden_layers)
 

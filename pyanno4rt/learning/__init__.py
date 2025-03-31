@@ -28,6 +28,7 @@ from . import neural_network
 from . import preprocessing
 from . import svm
 from . import tree
+from . import tune_spaces
 
 __all__ = [
     'DataModelHandler',
@@ -45,4 +46,5 @@ __all__ = [
     'neural_network',
     'preprocessing',
     'svm',
-    'tree']
+    'tree',
+    'tune_spaces']

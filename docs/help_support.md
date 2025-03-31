@@ -18,7 +18,7 @@
 
 If you use *pyanno4rt* in your work, let us now and cite this repository:
 
-```
+```tex
 @misc{pyanno4rt2024,
   title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
   author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},

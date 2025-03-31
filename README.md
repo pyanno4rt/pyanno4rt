@@ -159,7 +159,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
-Moreover, we are using `Python v3.11.11` and `Spyder IDE v6.0.5` for development.
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.5** for development.
 
 # Development :rocket:
 
@@ -198,7 +198,7 @@ Moreover, we are using `Python v3.11.11` and `Spyder IDE v6.0.5` for development
 
 If you use *pyanno4rt* in your work, let us now and cite this repository:
 
-```
+```tex
 @misc{pyanno4rt2024,
   title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
   author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},

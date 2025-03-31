@@ -32,19 +32,23 @@ class ModelParameters():
     model_label : str
         Label for the learning model.
 
+    model_type : {'forest', 'logistic', 'naive_bayes', 'neighbors', \
+                  'neural_network', 'svm', 'tree'}
+        Type of the machine learning model.
+
     model_folder_path : None or str
         Path to an external model folder.
 
     data_path : None or str
         Path to the data set used for fitting the learning model.
 
-    data_columns : list, default=[]
+    data_columns : None or list, default=None
         List of \
         :class:`~pyanno4rt.learning.features._columns.DynamicFeature` \
         or :class:`~pyanno4rt.learning.features._columns.StaticFeature` \
         and :class:`~pyanno4rt.learning.features._columns.Label` objects.
 
-    preprocessing : list, default=['Identity']
+    preprocessing : None or list, default=None
         Sequence of labels associated with data preprocessing steps.
 
         Currently available:
@@ -62,8 +66,16 @@ class ModelParameters():
     max_hidden_layers : int, default=2
         Maximum number of hidden layers for a neural network model.
 
-    tune_space : dict, default={}
-        Search space for the Bayesian hyperparameter optimization.
+    tune_space : None or object, default=None
+        The object used to represent the search space for the Bayesian \
+        hyperparameter optimization, see the classes \
+            :class:`~pyanno4rt.learning.forest._tune_space_rf.TuneSpaceRF`\
+            :class:`~pyanno4rt.learning.logistic._tune_space_lr.TuneSpaceLR`\
+            :class:`~pyanno4rt.learning.naive_bayes._tune_space_nb.TuneSpaceNB`\
+            :class:`~pyanno4rt.learning.neighbors._tune_space_knn.TuneSpaceKNN`\
+            :class:`~pyanno4rt.learning.neural_network._tune_space_nn.TuneSpaceNN`\
+            :class:`~pyanno4rt.learning.svm._tune_space_svm.TuneSpaceSVM`\
+            :class:`~pyanno4rt.learning.tree._tune_space_dt.TuneSpaceDT`.
 
     tune_evaluations : int, default=50
         Number of evaluation steps (trials) for the Bayesian \
@@ -98,16 +110,16 @@ class ModelParameters():
     write_features : bool, default=False
         Indicator for writing a history of the iteration-wise feature vectors.
 
-    display_options : dict, \
-        default={'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],\
-                 'kpis': ['Logloss', 'Brier score', 'Subset accuracy', \
-                          'Cohen Kappa', 'Hamming loss', 'Jaccard score', \
-                          'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']}
+    display_options : None or dict, default=None
         Dictionary with the graph and KPI display options.
 
     Attributes
     ----------
     model_label : str
+        See 'Parameters'.
+
+    model_type : {'forest', 'logistic', 'naive_bayes', 'neighbors', \
+                  'neural_network', 'svm', 'tree'}
         See 'Parameters'.
 
     model_folder_path : None or str
@@ -116,10 +128,10 @@ class ModelParameters():
     data_path : None or str
         See 'Parameters'.
 
-    data_columns : list
+    data_columns : None or list
         See 'Parameters'.
 
-    preprocessing : list
+    preprocessing : None or list
         See 'Parameters'.
 
     architecture : {'vanilla-input-convex', 'vanilla'}
@@ -128,7 +140,7 @@ class ModelParameters():
     max_hidden_layers : int
         See 'Parameters'.
 
-    tune_space : dict
+    tune_space : None or object
         See 'Parameters'.
 
     tune_evaluations : int
@@ -158,20 +170,21 @@ class ModelParameters():
     write_features : bool
         See 'Parameters'.
 
-    display_options : dict
+    display_options : None or dict
         See 'Parameters'.
     """
 
     def __init__(
             self,
             model_label,
+            model_type,
             model_folder_path=None,
             data_path=None,
-            data_columns=[],
-            preprocessing=['Identity'],
+            data_columns=None,
+            preprocessing=None,
             architecture='vanilla',
             max_hidden_layers=2,
-            tune_space={},
+            tune_space=None,
             tune_evaluations=50,
             tune_score='Logloss',
             tune_splits=5,
@@ -181,18 +194,42 @@ class ModelParameters():
             oof_splits=5,
             oof_repeats=1,
             write_features=False,
-            display_options={
+            display_options=None):
+
+        # Check if the data columns are None
+        if data_columns is None:
+
+            # Get the default data columns
+            data_columns = []
+
+        # Check if the preprocessing is None
+        if preprocessing is None:
+
+            # Get the default preprocessing
+            preprocessing = ['Identity']
+
+        # Check if the tune space is None
+        if tune_space is None:
+
+            # Get the default tune space
+            tune_space = maps.SPACES[model_type]()
+
+        # Check if the display options are None
+        if display_options is None:
+
+            # Get the default display options
+            display_options = {
                 'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
                 'kpis': [
                     'Logloss', 'Brier score', 'Subset accuracy',
                     'Cohen Kappa', 'Hamming loss', 'Jaccard score',
-                    'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']}):
+                    'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']}
 
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
 
         # Check the input arguments
-        self.check(self.inputs | tune_space | display_options)
+        self.check(self.inputs | display_options)
 
         # Loop over the input arguments
         for item in self.inputs.items():
@@ -222,6 +259,9 @@ class ModelParameters():
         dictionary['data_columns'] = [
             item.to_dict() for item in dictionary['data_columns']]
 
+        # Serialize the tune space
+        dictionary['tune_space'] = self.tune_space.to_dict()
+
         return dictionary
 
     @classmethod
@@ -249,6 +289,10 @@ class ModelParameters():
             for item in dictionary['data_columns']
             for key, value in item.items()]
 
+        # Deserialize the tune space
+        dictionary['tune_space'] = maps.SPACES[dictionary['model_type']](
+            **dictionary['tune_space'])
+
         return cls(**dictionary)
 
     def check(
@@ -266,6 +310,11 @@ class ModelParameters():
         check_map = {
             'model_label': (
                 partial(check_type, types=str),),
+            'model_type': (
+                partial(check_type, types=str),
+                partial(check_value_in_set, options=(
+                    'forest', 'logistic', 'naive_bayes', 'neighbors',
+                    'neural_network', 'svm', 'tree'))),
             'model_folder_path': (
                 partial(check_type, types=(type(None), str)),
                 partial(check_path)),
@@ -295,7 +344,7 @@ class ModelParameters():
                 partial(check_type, types=int),
                 partial(check_value, reference=0, sign='>=')),
             'tune_space': (
-                partial(check_type, types=dict),),
+                partial(check_type, types=tuple(maps.SPACES.values())),),
             'tune_evaluations': (
                 partial(check_type, types=int),
                 partial(check_value, reference=0, sign='>')),
@@ -324,47 +373,6 @@ class ModelParameters():
             'display_options': (
                 partial(check_type, types=dict),
                 partial(check_key_in_dict, keys=('graphs', 'kpis'))),
-            'criterion': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=('entropy', 'gini'))),
-            'splitter': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=('best', 'random'))),
-            'max_depth': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'min_samples_split': (
-                partial(check_type, types=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=float),
-                partial(check_value, reference=0, sign='>=', is_vector=True),
-                partial(check_value, reference=1, sign='<=', is_vector=True)),
-            'min_samples_leaf': (
-                partial(check_type, types=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=float),
-                partial(check_value, reference=0, sign='>=', is_vector=True),
-                partial(check_value, reference=1, sign='<=', is_vector=True)),
-            'min_weight_fraction_leaf': (
-                partial(check_type, types=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=float),
-                partial(check_value, reference=0, sign='>=', is_vector=True),
-                partial(check_value, reference=1, sign='<=', is_vector=True)),
-            'max_features': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'class_weight': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(None, 'balanced'))),
-            'ccp_alpha': (
-                partial(check_type, types=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=float),
-                partial(check_value, reference=0, sign='>=', is_vector=True),
-                partial(check_value, reference=1, sign='<=', is_vector=True)),
             'n_neighbors': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=int),
@@ -380,19 +388,6 @@ class ModelParameters():
                 partial(check_type, types=list),
                 partial(check_subtype, types=int),
                 partial(check_value, reference=0, sign='>', is_vector=True)),
-            'C': (
-                partial(check_type, types=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'penalty': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(
-                    'l1', 'l2', 'elasticnet'))),
-            'tol': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
             'priors': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=(list, type(None)))),
@@ -401,47 +396,6 @@ class ModelParameters():
                 partial(check_length, reference=2, sign='=='),
                 partial(check_subtype, types=(int, float)),
                 partial(check_value, reference=0, sign='>', is_vector=True)),
-            'input_neuron_number': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'input_activation': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(
-                    'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
-                    'softplus', 'swish'))),
-            'hidden_neuron_number': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'hidden_activation': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(
-                    'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
-                    'softplus', 'swish'))),
-            'input_dropout_rate': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>=', is_vector=True)),
-            'hidden_dropout_rate': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>=', is_vector=True)),
-            'batch_size': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'learning_rate': (
-                partial(check_type, types=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'optimizer': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=tuple(maps.NN_OPTS))),
-            'loss': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=tuple(maps.NN_LOSSES))),
             'n_estimators': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=int),

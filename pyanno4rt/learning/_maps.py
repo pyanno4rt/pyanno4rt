@@ -20,6 +20,9 @@ from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
 from pyanno4rt.learning.losses import brier_loss, log_loss
 from pyanno4rt.learning.preprocessing import (
     Identity, StandardScaler, Whitening)
+from pyanno4rt.learning.tune_spaces import (
+    TuneSpaceDT, TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB, TuneSpaceNN,
+    TuneSpaceRF, TuneSpaceSVM)
 
 # %% Map definitions
 
@@ -68,6 +71,15 @@ NN_OPTS = {
     'Adam': Adam,
     'Ftrl': Ftrl,
     'SGD': SGD}
+
+SPACES = {
+    'forest': TuneSpaceRF,
+    'logistic': TuneSpaceLR,
+    'naive_bayes': TuneSpaceNB,
+    'neighbors': TuneSpaceKNN,
+    'neural_network': TuneSpaceNN,
+    'svm': TuneSpaceSVM,
+    'tree': TuneSpaceDT}
 
 TRANSFORMERS = {
     'Identity': Identity,
