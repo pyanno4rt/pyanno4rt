@@ -28,16 +28,6 @@ class SupportVectorMachineModel(MachineLearningModel):
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
-
-    .. note:: Currently, the hyperparameter search space for the support \
-        vector machine model includes:
-
-            - 'C' : inverse proportional of the regularization strength
-            - 'kernel' : kernel type
-            - 'degree' : degree of the polynomial kernel function
-            - 'gamma' : kernel coefficient for 'rbf', 'poly' and 'sigmoid'
-            - 'tol' : tolerance for stopping criteria
-            - 'class_weight' : weights associated with the classes
     """
 
     def __init__(
@@ -53,31 +43,26 @@ class SupportVectorMachineModel(MachineLearningModel):
             evaluate_model,
             display_options):
 
-        # Configure the internal hyperparameter search space
-        tune_space = {
-            'C': tune_space.get('C', [2**-5, 2**10]),
-            'kernel': tune_space.get(
-                'kernel', ['linear', 'poly', 'rbf', 'sigmoid']),
-            'degree': tune_space.get('degree', [3, 4, 5, 6]),
-            'gamma': tune_space.get('gamma', [0.01, 100]),
-            'tol': tune_space.get('tol', [1e-4, 1e-5, 1e-6]),
-            'class_weight': tune_space.get('class_weight', [None, 'balanced'])}
+        # Get the internal hyperparameter search space
+        tune_space_dict = tune_space.to_dict()
 
         # Configure the hyperopt search space
         hp_space = {
-            'C': hp.uniform('C', tune_space['C'][0], tune_space['C'][1]),
-            'kernel': hp.choice('kernel', tune_space['kernel']),
-            'degree': hp.choice('degree', tune_space['degree']),
+            'C': hp.uniform(
+                'C', tune_space_dict['C'][0], tune_space_dict['C'][1]),
+            'kernel': hp.choice('kernel', tune_space_dict['kernel']),
+            'degree': hp.choice('degree', tune_space_dict['degree']),
             'gamma': hp.uniform(
-                'gamma', tune_space['gamma'][0], tune_space['gamma'][1]),
-            'tol': hp.choice('tol', tune_space['tol']),
+                'gamma', tune_space_dict['gamma'][0],
+                tune_space_dict['gamma'][1]),
+            'tol': hp.choice('tol', tune_space_dict['tol']),
             'class_weight': hp.choice(
-                'class_weight', tune_space['class_weight'])}
+                'class_weight', tune_space_dict['class_weight'])}
 
         # Initialize the superclass
         super().__init__(
             model_label, model_folder_path, dataset, preprocessing_steps,
-            tune_space, hp_space, tune_evaluations, tune_score,
+            tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
 
     def get_hyperparameter_set(

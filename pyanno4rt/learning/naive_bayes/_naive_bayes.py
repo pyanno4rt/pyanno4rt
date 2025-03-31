@@ -29,13 +29,6 @@ class NaiveBayesModel(MachineLearningModel):
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
-
-    .. note:: Currently, the hyperparameter search space for the naive Bayes \
-        model includes:
-
-            - 'priors' : prior probabilities of the classes
-            - 'var_smoothing' : portion of the largest variance of all \
-                features added to variances for calculation stability
     """
 
     def __init__(
@@ -51,27 +44,28 @@ class NaiveBayesModel(MachineLearningModel):
             evaluate_model,
             display_options):
 
-        # Configure the internal hyperparameter search space
-        tune_space = {
-            'priors': tune_space.get(
-                'priors', [
-                    [i/100, 1-i/100] for i in range(1, 100)]
-                + [[mean(dataset['label_values']),
-                    1-mean(dataset['label_values'])],
-                   None]),
-            'var_smoothing': tune_space.get('var_smoothing', [1e-12, 1])}
+        # Get the internal hyperparameter search space
+        tune_space_dict = tune_space.to_dict()
+
+        # Check if the dataset holds the label values
+        if dataset['label_values'] is not None:
+
+            # Add the mean label prior
+            tune_space_dict['priors'] += [[
+                mean(dataset['label_values']),
+                1-mean(dataset['label_values'])]]
 
         # Configure the hyperopt search space
         hp_space = {
-            'priors': hp.choice('priors', tune_space['priors']),
+            'priors': hp.choice('priors', tune_space_dict['priors']),
             'var_smoothing': hp.uniform(
-                'var_smoothing', tune_space['var_smoothing'][0],
-                tune_space['var_smoothing'][1])}
+                'var_smoothing', tune_space_dict['var_smoothing'][0],
+                tune_space_dict['var_smoothing'][1])}
 
         # Initialize the superclass
         super().__init__(
             model_label, model_folder_path, dataset, preprocessing_steps,
-            tune_space, hp_space, tune_evaluations, tune_score,
+            tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
 
     def get_hyperparameter_set(

@@ -25,10 +25,10 @@ class TuneSpaceDT():
     Parameters
     ----------
     criterion : None or list, default=None
-        Options for the split quality measure.
+        Options ('gini', 'entropy') for the split quality measure.
 
     splitter : None or list, default=None
-        Options for the splitting strategy at each node.
+        Options ('best', 'random') for the splitting strategy at each node.
 
     max_depth : None or list, default=None
         Options for the maximum tree depth.
@@ -47,12 +47,12 @@ class TuneSpaceDT():
         Options for the maximum number of features considered at each split.
 
     class_weight : None or list, default=None
-        Options for the weights associated with the classes.
+        Options (None, 'balanced') for the weights associated with the classes.
 
     ccp_alpha : None or list, default=None
         Range for the complexity parameter for minimal cost-complexity pruning.
 
-    .. note:: If any argument is None, default values will be applied.
+    .. note:: If arguments are passed as None, default values will be applied.
 
     Attributes
     ----------
@@ -107,18 +107,14 @@ class TuneSpaceDT():
             'min_samples_split': [0.0, 1.0],
             'min_samples_leaf': [0.0, 0.5],
             'min_weight_fraction_leaf': [0.0, 0.5],
-            'max_features': [1],
+            'max_features': [0],
             'class_weight': [None, 'balanced'],
             'ccp_alpha': [0.0, 1.0]}
 
-        # Loop over the inputs
-        for key, value in inputs.items():
-
-            # Check if the value is None
-            if value is None:
-
-                # Overwrite the value with the default
-                inputs[key] = defaults[key]
+        # Update the input arguments with the defaults, if applicable
+        inputs = {
+            key: value if value is not None else defaults[key]
+            for key, value in inputs.items()}
 
         # Check the input arguments
         self.check(inputs)

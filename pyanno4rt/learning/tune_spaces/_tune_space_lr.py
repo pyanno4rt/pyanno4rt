@@ -28,15 +28,16 @@ class TuneSpaceLR():
         Range for the inverse of the regularization strength.
 
     penalty : None or list, default=None
-        Options for the norm of the penalty function.
+        Options ('l1', 'l2', 'elasticnet') for the norm of the penalty \
+        function.
 
     tol : None or list, default=None
         Options for the stopping criteria tolerance.
 
     class_weight : None or list, default=None
-        Options for the weights associated with the classes.
+        Options (None, 'balanced') for the weights associated with the classes.
 
-    .. note:: If any argument is None, default values will be applied.
+    .. note:: If arguments are passed as None, default values will be applied.
 
     Attributes
     ----------
@@ -70,14 +71,10 @@ class TuneSpaceLR():
             'tol': [1e-4, 1e-5, 1e-6],
             'class_weight': [None, 'balanced']}
 
-        # Loop over the inputs
-        for key, value in inputs.items():
-
-            # Check if the value is None
-            if value is None:
-
-                # Overwrite the value with the default
-                inputs[key] = defaults[key]
+        # Update the input arguments with the defaults, if applicable
+        inputs = {
+            key: value if value is not None else defaults[key]
+            for key, value in inputs.items()}
 
         # Check the input arguments
         self.check(inputs)
@@ -108,7 +105,7 @@ class TuneSpaceLR():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.logistic._tune_space_lr.TuneSpaceLR`
+            :class:`~pyanno4rt.learning.tune_spaces._tune_space_lr.TuneSpaceLR`
             The object used to handle the tune space parameters.
         """
 

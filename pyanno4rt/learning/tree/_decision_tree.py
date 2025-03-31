@@ -47,10 +47,10 @@ class DecisionTreeModel(MachineLearningModel):
         # Get the internal hyperparameter search space
         tune_space_dict = tune_space.to_dict()
 
-        # Check if the max_features is set to the default
-        if tune_space_dict['max_features'] == [1]:
+        # Check if the maximum number of features is set to the default
+        if tune_space_dict['max_features'] == [0]:
 
-            # Adjust the max_features to the dataset
+            # Adjust the maximum number of features by the dataset
             tune_space_dict['max_features'] = [len(dataset['feature_names'])]
 
         # Configure the hyperopt search space

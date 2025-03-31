@@ -88,8 +88,10 @@ class EmptyDataGenerator():
         # Generate the data information dictionary
         data_information = {
             'feature_names': configuration['feature_names'],
+            'feature_values': configuration['feature_values'],
             'feature_scales': configuration['feature_scales'],
             'label_name': configuration['label_name'],
+            'label_values': configuration['label_values'],
             'label_viewpoint': configuration['label_viewpoint'],
             'label_bounds': configuration['label_bounds'],
             'time_variable_name': configuration['time_variable_name'],

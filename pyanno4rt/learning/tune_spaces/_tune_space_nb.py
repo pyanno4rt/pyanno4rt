@@ -1,4 +1,4 @@
-"""Logistic regression tune space."""
+"""Naive Bayes tune space."""
 
 # Author: Tim Ortkamp
 
@@ -9,7 +9,7 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.checking import (
-    check_length, check_subtype, check_type, check_value, check_value_in_set)
+    check_length, check_subtype, check_type, check_value)
 from pyanno4rt.tools import filter_dict
 
 # %% Class definition
@@ -17,67 +17,48 @@ from pyanno4rt.tools import filter_dict
 
 class TuneSpaceNB():
     """
-    Logistic regression tune space class.
+    Naive Bayes tune space class.
 
     This class provides methods to set, validate and serialize a \
-    hyperparameter tune space for the logistic regression model.
+    hyperparameter tune space for the naive Bayes model.
 
     Parameters
     ----------
-    C : None or list, default=None
-        Range for the inverse of the regularization strength.
+    priors : None or list, default=None
+        Options for the prior probabilities of the classes.
 
-    penalty : None or list, default=None
-        Options for the norm of the penalty function.
+    var_smoothing : None or list, default=None
+        Range for the portion of the largest variance of all features added \
+        to variances for calculation stability.
 
-    tol : None or list, default=None
-        Options for the stopping criteria tolerance.
-
-    class_weight : None or list, default=None
-        Options for the weights associated with the classes.
-
-    .. note:: If any argument is None, default values will be applied.
+    .. note:: If arguments are passed as None, default values will be applied.
 
     Attributes
     ----------
-    C : None or list
+    priors : None or list
         See 'Parameters'.
 
-    penalty : None or list
-        See 'Parameters'.
-
-    tol : None or list
-        See 'Parameters'.
-
-    class_weight : None or list
+    var_smoothing : None or list
         See 'Parameters'.
     """
 
     def __init__(
             self,
-            C=None,
-            penalty=None,
-            tol=None,
-            class_weight=None):
+            priors=None,
+            var_smoothing=None):
+
+        # Get the input arguments
+        inputs = filter_dict(vars(), remove_keys=('self',))
 
         # Set the default argument values
         defaults = {
-            'C': [2**-5, 2**10],
-            'penalty': ['l1', 'l2', 'elasticnet'],
-            'tol': [1e-4, 1e-5, 1e-6],
-            'class_weight': [None, 'balanced']}
+            'priors': [[i/100, 1-i/100] for i in range(1, 100)] + [None],
+            'var_smoothing': [1e-12, 1]}
 
-        # Get the input arguments
-        inputs = filter_dict(vars(), remove_keys=('self', 'defaults'))
-
-        # Loop over the inputs
-        for key, value in inputs.items():
-
-            # Check if the value is None
-            if value is None:
-
-                # Overwrite the value with the default
-                inputs[key] = defaults[key]
+        # Update the input arguments with the defaults, if applicable
+        inputs = {
+            key: value if value is not None else defaults[key]
+            for key, value in inputs.items()}
 
         # Check the input arguments
         self.check(inputs)
@@ -108,7 +89,7 @@ class TuneSpaceNB():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.logistic._tune_space_lr.TuneSpaceLR`
+            :class:`~pyanno4rt.learning.tune_spaces._tune_space_nb.TuneSpaceNB`
             The object used to handle the tune space parameters.
         """
 
@@ -128,22 +109,14 @@ class TuneSpaceNB():
 
         # Get the check map
         check_map = {
-            'C': (
+            'priors': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=(list, type(None)))),
+            'var_smoothing': (
                 partial(check_type, types=list),
                 partial(check_length, reference=2, sign='=='),
                 partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'penalty': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(
-                    'l1', 'l2', 'elasticnet'))),
-            'tol': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'class_weight': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(None, 'balanced')))}
+                partial(check_value, reference=0, sign='>', is_vector=True))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

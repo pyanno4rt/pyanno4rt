@@ -373,52 +373,6 @@ class ModelParameters():
             'display_options': (
                 partial(check_type, types=dict),
                 partial(check_key_in_dict, keys=('graphs', 'kpis'))),
-            'n_neighbors': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'weights': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=('distance', 'uniform'))),
-            'leaf_size': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'p': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'priors': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(list, type(None)))),
-            'var_smoothing': (
-                partial(check_type, types=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'n_estimators': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'bootstrap': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(False, True))),
-            'warm_start': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(False, True))),
-            'kernel': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(
-                    'linear', 'rbf', 'poly', 'sigmoid'))),
-            'degree': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'gamma': (
-                partial(check_type, types=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
             'graphs': (
                 partial(check_type, types=list),
                 partial(check_value_in_set, options=(

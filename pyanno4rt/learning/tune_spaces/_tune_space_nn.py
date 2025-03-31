@@ -10,7 +10,7 @@ from functools import partial
 
 from pyanno4rt.checking import (
     check_length, check_subtype, check_type, check_value, check_value_in_set)
-from pyanno4rt.learning._maps import NN_LOSSES, NN_OPTS
+import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import filter_dict
 
 # %% Class definition
@@ -29,19 +29,21 @@ class TuneSpaceNN():
         Options for the number of input layer neurons.
 
     input_activation : None or list, default=None
-        Options for the input layer activation function.
+        Options ('elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
+        'softplus', 'swish') for the input layer activation function.
 
     hidden_neuron_number : None or list, default=None
         Options for the number of hidden layer neurons.
 
     hidden_activation : None or list, default=None
-        Options for the hidden layer activation functions.
+        Options ('elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
+        'softplus', 'swish') for the hidden layer activation functions.
 
     input_dropout_rate : None or list, default=None
-        Range for the input layer dropout rate.
+        Options for the input layer dropout rate.
 
     hidden_dropout_rate : None or list, default=None
-        Range for the hidden layer dropout rates.
+        Options for the hidden layer dropout rates.
 
     batch_size : None or list, default=None
         Options for the batch size.
@@ -50,12 +52,13 @@ class TuneSpaceNN():
         Range for the learning rate.
 
     optimizer : None or list, default=None
-        Options for the network optimization algorithm.
+        Options ('Adam', 'Ftrl', 'SGD') for the network optimization algorithm.
 
     loss : None or list, default=None
-        Options for the network optimization loss function.
+        Options ('BCE', 'FocalBCE', 'KLD') for the network optimization loss \
+        function.
 
-    .. note:: If any argument is None, default values will be applied.
+    .. note:: If arguments are passed as None, default values will be applied.
 
     Attributes
     ----------
@@ -120,17 +123,13 @@ class TuneSpaceNN():
             'hidden_dropout_rate': [0.0, 0.1, 0.25, 0.5, 0.75],
             'batch_size': [4, 8, 16, 32],
             'learning_rate': [1e-5, 1e-2],
-            'optimizer': list(NN_OPTS),
-            'loss': list(NN_LOSSES)}
+            'optimizer': list(maps.NN_OPTS),
+            'loss': list(maps.NN_LOSSES)}
 
-        # Loop over the inputs
-        for key, value in inputs.items():
-
-            # Check if the value is None
-            if value is None:
-
-                # Overwrite the value with the default
-                inputs[key] = defaults[key]
+        # Update the input arguments with the defaults, if applicable
+        inputs = {
+            key: value if value is not None else defaults[key]
+            for key, value in inputs.items()}
 
         # Check the input arguments
         self.check(inputs)
@@ -218,10 +217,10 @@ class TuneSpaceNN():
                 partial(check_value, reference=0, sign='>', is_vector=True)),
             'optimizer': (
                 partial(check_type, types=list),
-                partial(check_value_in_set, options=tuple(NN_OPTS))),
+                partial(check_value_in_set, options=tuple(maps.NN_OPTS))),
             'loss': (
                 partial(check_type, types=list),
-                partial(check_value_in_set, options=tuple(NN_LOSSES)))}
+                partial(check_value_in_set, options=tuple(maps.NN_LOSSES)))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

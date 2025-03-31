@@ -29,25 +29,6 @@ class RandomForestModel(MachineLearningModel):
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
-
-    .. note:: Currently, the hyperparameter search space for the random \
-        model includes:
-
-            - 'n_estimators' : number of trees in the forest
-            - 'criterion' : measure for the quality of a split
-            - 'max_depth' : maximum depth of the tree
-            - 'min_samples_split' : minimum number of samples required to \
-                split an internal node
-            - 'min_samples_leaf' : minimum number of samples required at a \
-                leaf node
-            - 'min_weight_fraction_leaf' : minimum weighted fraction of the \
-                sum of weights required at each node
-            - 'max_features' : number of features considered at each split
-            - 'bootstrap' : indicator for the use of bootstrap samples to \
-                build the trees
-            - 'class_weight' : weights associated with the classes
-            - 'ccp_alpha' : complexity parameter for minimal cost-complexity \
-                pruning
     """
 
     def __init__(
@@ -63,51 +44,44 @@ class RandomForestModel(MachineLearningModel):
             evaluate_model,
             display_options):
 
-        # Configure the internal hyperparameter search space
-        tune_space = {
-            'n_estimators': tune_space.get('n_estimators', list(range(1, 51))),
-            'criterion': tune_space.get('criterion', ['gini', 'entropy']),
-            'max_depth': tune_space.get('max_depth', list(range(1, 21))),
-            'min_samples_split': tune_space.get(
-                'min_samples_split', [0.0, 1.0]),
-            'min_samples_leaf': tune_space.get('min_samples_leaf', [0.0, 0.5]),
-            'min_weight_fraction_leaf': tune_space.get(
-                'min_weight_fraction_leaf', [0.0, 0.5]),
-            'max_features': tune_space.get('max_features', list(range(
-                    1, dataset['feature_values'].shape[1]+1))),
-            'bootstrap': tune_space.get('bootstrap', [False, True]),
-            'class_weight': tune_space.get('class_weight', [None, 'balanced']),
-            'ccp_alpha': tune_space.get('ccp_alpha', [0.0, 1.0])}
+        # Get the internal hyperparameter search space
+        tune_space_dict = tune_space.to_dict()
+
+        # Check if the maximum number of features is set to the default
+        if tune_space_dict['max_features'] == [0]:
+
+            # Adjust the maximum number of features by the dataset
+            tune_space_dict['max_features'] = [len(dataset['feature_names'])]
 
         # Configure the hyperopt search space
         hp_space = {
             'n_estimators': hp.choice(
-                'n_estimators', tune_space['n_estimators']),
-            'criterion': hp.choice('criterion', tune_space['criterion']),
-            'max_depth': hp.choice('max_depth', tune_space['max_depth']),
+                'n_estimators', tune_space_dict['n_estimators']),
+            'criterion': hp.choice('criterion', tune_space_dict['criterion']),
+            'max_depth': hp.choice('max_depth', tune_space_dict['max_depth']),
             'min_samples_split': hp.uniform(
-                'min_samples_split', tune_space['min_samples_split'][0],
-                tune_space['min_samples_split'][1]),
+                'min_samples_split', tune_space_dict['min_samples_split'][0],
+                tune_space_dict['min_samples_split'][1]),
             'min_samples_leaf': hp.uniform(
-                'min_samples_leaf', tune_space['min_samples_leaf'][0],
-                tune_space['min_samples_leaf'][1]),
+                'min_samples_leaf', tune_space_dict['min_samples_leaf'][0],
+                tune_space_dict['min_samples_leaf'][1]),
             'min_weight_fraction_leaf': hp.uniform(
                 'min_weight_fraction_leaf',
-                tune_space['min_weight_fraction_leaf'][0],
-                tune_space['min_weight_fraction_leaf'][1]),
+                tune_space_dict['min_weight_fraction_leaf'][0],
+                tune_space_dict['min_weight_fraction_leaf'][1]),
             'max_features': hp.choice(
-                'max_features', tune_space['max_features']),
-            'bootstrap': hp.choice('bootstrap', tune_space['bootstrap']),
+                'max_features', tune_space_dict['max_features']),
+            'bootstrap': hp.choice('bootstrap', tune_space_dict['bootstrap']),
             'class_weight': hp.choice(
-                'class_weight', tune_space['class_weight']),
+                'class_weight', tune_space_dict['class_weight']),
             'ccp_alpha': hp.uniform(
-                'ccp_alpha', tune_space['ccp_alpha'][0],
-                tune_space['ccp_alpha'][1])}
+                'ccp_alpha', tune_space_dict['ccp_alpha'][0],
+                tune_space_dict['ccp_alpha'][1])}
 
         # Initialize the superclass
         super().__init__(
             model_label, model_folder_path, dataset, preprocessing_steps,
-            tune_space, hp_space, tune_evaluations, tune_score,
+            tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
 
         # Get the optimization surrogate of the random forest model

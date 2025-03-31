@@ -4,7 +4,7 @@ Tune spaces module.
 ==================================================================
 
 The module aims to provide methods and classes for setting up the search \
-spaces for the Bayesian hyperparameter tuning.
+spaces for the Bayesian hyperparameter tuning of the learning models.
 """
 
 # Author: Tim Ortkamp

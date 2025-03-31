@@ -28,14 +28,6 @@ class KNeighborsModel(MachineLearningModel):
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
-
-    .. note:: Currently, the hyperparameter search space for the k-nearest \
-        neighbors model includes:
-
-            - 'n_neighbors' : number of neighbors
-            - 'weights' : weight function for prediction
-            - 'leaf_size' : leaf size for BallTree or KDTree
-            - 'p' : power parameter for the Minkowski metric
     """
 
     def __init__(
@@ -51,25 +43,28 @@ class KNeighborsModel(MachineLearningModel):
             evaluate_model,
             display_options):
 
-        # Configure the internal hyperparameter search space
-        tune_space = {
-            'n_neighbors': tune_space.get('n_neighbors', list(range(
-                    1, round(0.5*dataset['feature_values'].shape[0])))),
-            'weights': tune_space.get('weights', ['uniform', 'distance']),
-            'leaf_size': tune_space.get('leaf_size', list(range(1, 501))),
-            'p': tune_space.get('p', [1, 2, 3])}
+        # Get the internal hyperparameter search space
+        tune_space_dict = tune_space.to_dict()
+
+        # Check if the number of neighbors is set to the default
+        if tune_space_dict['n_neighbors'] == [0]:
+
+            # Adjust the number of neighbors by the dataset
+            tune_space_dict['n_neighbors'] = list(range(
+                    1, round(0.5*dataset['number_of_samples'])))
 
         # Configure the hyperopt search space
         hp_space = {
-            'n_neighbors': hp.choice('n_neighbors', tune_space['n_neighbors']),
-            'weights': hp.choice('weights', tune_space['weights']),
-            'leaf_size': hp.choice('leaf_size', tune_space['leaf_size']),
-            'p': hp.choice('p', tune_space['p'])}
+            'n_neighbors': hp.choice(
+                'n_neighbors', tune_space_dict['n_neighbors']),
+            'weights': hp.choice('weights', tune_space_dict['weights']),
+            'leaf_size': hp.choice('leaf_size', tune_space_dict['leaf_size']),
+            'p': hp.choice('p', tune_space_dict['p'])}
 
         # Initialize the superclass
         super().__init__(
             model_label, model_folder_path, dataset, preprocessing_steps,
-            tune_space, hp_space, tune_evaluations, tune_score,
+            tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
 
     def get_hyperparameter_set(
