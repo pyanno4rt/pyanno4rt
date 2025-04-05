@@ -20,7 +20,8 @@ from PyQt5.QtWidgets import (
 
 # %% Internal package import
 
-from pyanno4rt.base import TreatmentPlan
+from pyanno4rt.base import (
+    Configuration, Evaluation, Optimization, TreatmentPlan)
 from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.main_window import Ui_main_window
 from pyanno4rt.gui.custom_widgets import (
@@ -32,7 +33,7 @@ from pyanno4rt.gui.windows import (
     CompareWindow, InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow,
     SplashScreenWindow, TreeWindow)
 from pyanno4rt.gui.windows.components import component_window_map
-import pyanno4rt.optimization._maps as maps
+import pyanno4rt.optimization._maps as opt_maps
 from pyanno4rt.optimization.components import (
     ConventionalComponent, MachineLearningComponent, RadiobiologicalComponent)
 from pyanno4rt.tools import (
@@ -132,12 +133,12 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.tab_dvh_layout.insertWidget(0, self.dvh_widget)
 
         # Add the optimization methods to the method combo box
-        self.method_cbox.addItems(list(maps.METHODS))
+        self.method_cbox.addItems(list(opt_maps.METHODS))
         self.method_cbox.model().sort(0)
         self.method_cbox.setCurrentText('weighted-sum')
 
         # Add the solvers to the solver combo box
-        self.solver_cbox.addItems(list(maps.SOLVERS))
+        self.solver_cbox.addItems(list(opt_maps.SOLVERS))
         self.solver_cbox.model().sort(0)
         self.solver_cbox.setCurrentText('scipy')
         self.update_by_solver()
@@ -154,10 +155,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.display_metrics_cbox.addItems(
             ['mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI'])
 
-        # Get the base input dictionaries
-        self.base_configuration = self.transform_configuration_to_dict()
-        self.base_optimization = self.transform_optimization_to_dict()
-        self.base_evaluation = self.transform_evaluation_to_dict()
+        # Get the base input objects
+        self.base_configuration = self.get_configuration()
+        self.base_optimization = self.get_optimization()
+        self.base_evaluation = self.get_evaluation()
 
         # Add the dropdown menu to the components 'plus' button
         self.add_dropdown_to_components()
@@ -178,9 +179,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             'info_pbutton': pbutton_menu,
             'exit_pbutton': pbutton_menu,
             'plan_ledit': ledit,
-            'log_level_cbox': cbox,
             'modality_cbox': cbox,
-            'nfx_sbox': sbox,
             'img_path_ledit': ledit,
             'img_path_tbutton': tbutton_composer,
             'dose_path_ledit': ledit,
@@ -188,6 +187,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             'dose_res_ledit_x': ledit,
             'dose_res_ledit_y': ledit,
             'dose_res_ledit_z': ledit,
+            'log_level_cbox': cbox,
+            'nfx_sbox': sbox,
             'update_configuration_pbutton': pbutton_composer,
             'reset_configuration_pbutton': pbutton_composer,
             'clear_configuration_pbutton': pbutton_composer,
@@ -240,7 +241,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Loop over the QComboBox and QSpinBox elements
         for box in (
-                'log_level_cbox', 'modality_cbox', 'nfx_sbox', 'method_cbox',
+                'modality_cbox', 'log_level_cbox', 'nfx_sbox', 'method_cbox',
                 'solver_cbox', 'algorithm_cbox', 'init_strat_cbox',
                 'ref_plan_cbox', 'max_iter_sbox', 'dvh_type_cbox',
                 'n_points_sbox', 'display_segments_cbox',
@@ -586,7 +587,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         """
 
         # Get the treatment plan label
-        label = treatment_plan.configuration['label']
+        label = treatment_plan.configuration.label
 
         # Check if the label is not yet included in the selector
         if label not in (
@@ -673,8 +674,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             includes = self.settings_window.current[3]
 
             # Make a snapshot of the treatment plan
-            snapshot(self.plans[self.plan_ledit.text()],
-                     ''.join((path, '/')), *includes)
+            snapshot(
+                self.plans[self.plan_ledit.text()], ''.join((path, '/')),
+                *includes)
 
     def drop_tpi(self):
         """Drop a treatment plan."""
@@ -804,8 +806,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Check if the instance has already been configured
             if (all(getattr(instance, unit) is not None for unit in (
-                   'input_checker', 'patient_loader', 'plan_generator',
-                   'dose_info_generator'))
+                   'patient_loader', 'plan_generator', 'dose_info_generator'))
                     and instance.datahub.state >= 1):
 
                 # Add the CT cube to the slice widget
@@ -849,7 +850,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.status_bar.showMessage("Ready for optimization ...")
 
                 # Check if the instance has already been optimized
-                if (getattr(instance, 'fluence_optimizer') is not None
+                if (instance.fluence_optimizer is not None
                         and 'optimized_dose' in instance.datahub.optimization
                         and instance.datahub.state >= 3):
 
@@ -1105,7 +1106,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Get the file path
         path, _ = QFileDialog.getOpenFileName(
             self, 'Select a dose-influence matrix file', '',
-            'Dose-influence matrix (*.mat *.npy)')
+            'Dose-influence matrix (*.mat *.npy *.npz)')
 
         # Check if the file path exists
         if path:
@@ -1125,7 +1126,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         try:
 
             # Update the configuration dictionary
-            instance.update(self.transform_configuration_to_dict())
+            instance.update(self.get_configuration())
 
             # Load the segment names and types
             self.segments = load_segments_from_path(self.img_path_ledit.text())
@@ -1142,14 +1143,11 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Raise the exception
             raise exception
 
-        # Reset the datahub state
-        instance.datahub.state = 0
-
         # Clear the display segments
         self.display_segments_cbox.clear()
 
         # Add the segment items to the display segments
-        self.display_segments_cbox.addItems(list(self.segments.keys()))
+        self.display_segments_cbox.addItems(list(self.segments))
 
         # Loop over the display segment items
         for item in (
@@ -1158,8 +1156,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Set the item to checked or unchecked
             item.setCheckState(2*(
-                item.text() in instance.evaluation['display_segments'] or
-                instance.evaluation['display_segments'] == []))
+                item.text() in instance.evaluation.display_segments or
+                instance.evaluation.display_segments == []))
 
         # Reset the slice widget
         self.slice_widget.reset_images()
@@ -1177,6 +1175,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Disable some fields
         self.set_disabled(('optimize_pbutton', 'evaluate_pbutton'))
 
+        # Reset the datahub state
+        instance.datahub.state = 0
+
         # Set the status bar to configuration-ready
         self.status_bar.showMessage("Ready for configuration ...")
 
@@ -1187,31 +1188,30 @@ class MainWindow(QMainWindow, Ui_main_window):
         configuration = self.plans[self.plan_ledit.text()].configuration
 
         # Set the treatment plan label
-        self.plan_ledit.setText(configuration['label'])
-
-        # Set the minimum logging level
-        self.log_level_cbox.setCurrentText(configuration['min_log_level'])
+        self.plan_ledit.setText(configuration.label)
 
         # Set the treatment modality
-        self.modality_cbox.setCurrentText(configuration['modality'])
-
-        # Set the number of fractions
-        self.nfx_sbox.setValue(configuration['number_of_fractions'])
+        self.modality_cbox.setCurrentText(configuration.modality)
 
         # Set the imaging path
-        self.img_path_ledit.setText(abspath(configuration['imaging_path']))
+        self.img_path_ledit.setText(abspath(configuration.imaging_path))
 
         # Load the segment names and types
         self.segments = load_segments_from_path(self.img_path_ledit.text())
 
         # Set the dose matrix path
-        self.dose_path_ledit.setText(
-            abspath(configuration['dose_matrix_path']))
+        self.dose_path_ledit.setText(abspath(configuration.dose_matrix_path))
 
         # Set the dose resolution
-        self.dose_res_ledit_x.setText(str(configuration['dose_resolution'][0]))
-        self.dose_res_ledit_y.setText(str(configuration['dose_resolution'][1]))
-        self.dose_res_ledit_z.setText(str(configuration['dose_resolution'][2]))
+        self.dose_res_ledit_x.setText(str(configuration.dose_resolution[0]))
+        self.dose_res_ledit_y.setText(str(configuration.dose_resolution[1]))
+        self.dose_res_ledit_z.setText(str(configuration.dose_resolution[2]))
+
+        # Set the minimum logging level
+        self.log_level_cbox.setCurrentText(configuration.min_log_level)
+
+        # Set the number of fractions
+        self.nfx_sbox.setValue(configuration.number_of_fractions)
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1228,15 +1228,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Reset the treatment plan label
             self.plan_ledit.setText(self.base_configuration['label'])
 
-        # Reset the minimum logging level
-        self.log_level_cbox.setCurrentText(
-            self.base_configuration['min_log_level'])
-
         # Reset the treatment modality
         self.modality_cbox.setCurrentText(self.base_configuration['modality'])
-
-        # Reset the number of fractions
-        self.nfx_sbox.setValue(self.base_configuration['number_of_fractions'])
 
         # Reset the imaging path
         self.img_path_ledit.setText(self.base_configuration['imaging_path'])
@@ -1256,9 +1249,16 @@ class MainWindow(QMainWindow, Ui_main_window):
             None if not self.base_configuration['dose_resolution']
             else self.base_configuration['dose_resolution'][2])
 
-    def transform_configuration_to_dict(self):
+        # Reset the minimum logging level
+        self.log_level_cbox.setCurrentText(
+            self.base_configuration['min_log_level'])
+
+        # Reset the number of fractions
+        self.nfx_sbox.setValue(self.base_configuration['number_of_fractions'])
+
+    def get_configuration(self):
         """
-        Transform the configuration fields into a dictionary.
+        Get the configuration fields as a dictionary.
 
         Returns
         -------
@@ -1271,9 +1271,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             'label': (
                 None if not self.plan_ledit.text()
                 else self.plan_ledit.text()),
-            'min_log_level': self.log_level_cbox.currentText(),
             'modality': self.modality_cbox.currentText(),
-            'number_of_fractions': self.nfx_sbox.value(),
             'imaging_path': (
                 None if not self.img_path_ledit.text()
                 else abspath(self.img_path_ledit.text())),
@@ -1287,6 +1285,8 @@ class MainWindow(QMainWindow, Ui_main_window):
                 else [string_to_numeric(resolution) for resolution in (
                     self.dose_res_ledit_x.text(), self.dose_res_ledit_y.text(),
                     self.dose_res_ledit_z.text())]),
+            'min_log_level': self.log_level_cbox.currentText(),
+            'number_of_fractions': self.nfx_sbox.value()
             }
 
         return configuration
@@ -1303,7 +1303,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         ml_menu = menu.addMenu('Machine Learning')
 
         # Loop over the component map items
-        for label, component in maps.COMPONENTS.items():
+        for label, component in opt_maps.COMPONENTS.items():
 
             # Check if the component is of conventional type
             if issubclass(component, ConventionalComponent):
@@ -1379,7 +1379,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Get the component window
         self.current_component_window = component_window_map[
-            component[next(iter(component))]['instance']['function']](self)
+            component.name](self)
 
         # Load the component into the window
         self.current_component_window.load(component, edit=True)
@@ -1609,7 +1609,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         try:
 
             # Overwrite the optimization dictionary
-            instance.update(self.transform_optimization_to_dict())
+            instance.update(self.get_optimization())
 
         except Exception as exception:
 
@@ -1627,8 +1627,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         if instance.plan_generator is not None:
 
             # Overwrite the components in the plan generator
-            instance.plan_generator.components = instance.optimization[
-                'components']
+            instance.plan_generator.components = (
+                instance.optimization.components)
 
             # Update the components in the datahub
             instance.plan_generator.set_optimization_components(
@@ -1644,13 +1644,17 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_zero_line_cursor((
             'init_fluence_ledit', 'lower_var_ledit', 'upper_var_ledit'))
 
-        # Disable the evaluation button
-        self.evaluate_pbutton.setEnabled(False)
+        # Disable some buttons
+        self.set_disabled((
+            'model_pbutton', 'optimize_pbutton', 'evaluate_pbutton'))
+
+        # Set the status bar to configuration-ready
+        self.status_bar.showMessage("Ready for configuration ...")
 
         # Check if the instance has already been configured
-        if all(getattr(instance, unit) is not None for unit in (
-                'input_checker', 'patient_loader', 'plan_generator',
-                'dose_info_generator')):
+        if (all(getattr(instance, unit) is not None for unit in (
+                'patient_loader', 'plan_generator', 'dose_info_generator'))
+                and instance.datahub.state >= 1):
 
             # Reset the datahub state
             instance.datahub.state = 1
@@ -1678,16 +1682,10 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Enable the modeling button
                 self.model_pbutton.setEnabled(True)
 
-                # Disable the optimization button
-                self.optimize_pbutton.setEnabled(False)
-
                 # Set the status bar to modeling-ready
                 self.status_bar.showMessage("Ready for modeling ...")
 
             else:
-
-                # Disable the modeling button
-                self.model_pbutton.setEnabled(False)
 
                 # Enable the optimization button
                 self.optimize_pbutton.setEnabled(True)
@@ -1698,7 +1696,7 @@ class MainWindow(QMainWindow, Ui_main_window):
     def set_optimization(self):
         """Set the optimization parameters."""
 
-        def set_single_component(segment, component):
+        def set_single_component(component):
             """Set a single component."""
 
             # Map the component and segment type to the icon paths
@@ -1718,7 +1716,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                 }
 
             # Get the icon path
-            icon_path = paths[f'{component["type"]}_{self.segments[segment]}']
+            icon_path = paths[
+                f'{component.component_type}_'
+                f'{self.segments[component.segment]}']
 
             # Initialize the icon object
             icon = QIcon()
@@ -1726,54 +1726,20 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Add the pixmap to the icon
             icon.addPixmap(QPixmap(icon_path), QIcon.Normal, QIcon.Off)
 
-            # Get the component parameters
-            parameters = component['instance']['parameters']
-
-            # Check if the identifier parameter has been specified
-            if 'identifier' in parameters:
-
-                # Get the identifier string
-                identifier = parameters['identifier']
-
-            else:
-
-                # Set the identifier to None
-                identifier = None
-
-            # Check if the embedding parameter is specified
-            if 'embedding' in parameters:
-
-                # Get the embedding string
-                embedding = f'embedding: {str(parameters["embedding"])}'
-
-            else:
-
-                # Set the embedding string to the default
-                embedding = 'embedding: active'
-
-            # Check if the weight parameter has been specified
-            if 'weight' in parameters:
-
-                # Get the weight string
-                weight = f'weight: {str(float(parameters["weight"]))}'
-
-            else:
-
-                # Set the weight string to the default
-                weight = 'weight: 1'
-
-            # Join the parameter strings
-            component_string = ' - '.join((string for string in (
-                segment, component['instance']['function'], identifier,
-                embedding, weight) if string))
+            # Build the component string
+            component_string = ' - '.join((
+                string for string in filter(None, (
+                    component.segment, component.name, component.identifier,
+                    f'embedding: {component.embedding}',
+                    f'weight: {str(component.weight)}'))))
 
             # Add the icon with the component string to the list
             self.components_lwidget.addItem(
                 QListWidgetItem(icon, component_string))
 
             # Add the component to the plan component dictionary
-            self.plan_components[self.plan_ledit.text()][component_string] = {
-                segment: component}
+            self.plan_components[self.plan_ledit.text()][component_string] = (
+                component)
 
         # Get the optimization dictionary
         optimization = self.plans[self.plan_ledit.text()].optimization
@@ -1781,34 +1747,20 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Clear the component list
         self.components_lwidget.clear()
 
-        # Loop over the components
-        for segment, component in optimization['components'].items():
-
-            # Check if the component is a list
-            if isinstance(component, list):
-
-                # Loop over the component elements
-                for element in component:
-
-                    # Set the element
-                    set_single_component(segment, element)
-
-            else:
-
-                # Set the component
-                set_single_component(segment, component)
+        # Set the components
+        apply(set_single_component, optimization.components)
 
         # Set the optimization method
-        self.method_cbox.setCurrentText(optimization['method'])
+        self.method_cbox.setCurrentText(optimization.method)
 
         # Set the solver
-        self.solver_cbox.setCurrentText(optimization['solver'])
+        self.solver_cbox.setCurrentText(optimization.solver)
 
         # Set the algorithm
-        self.algorithm_cbox.setCurrentText(optimization['algorithm'])
+        self.algorithm_cbox.setCurrentText(optimization.algorithm)
 
         # Set the initialization strategy
-        self.init_strat_cbox.setCurrentText(optimization['initial_strategy'])
+        self.init_strat_cbox.setCurrentText(optimization.initial_strategy)
 
         # Check if the initialization strategy is different from 'warm-start'
         if self.init_strat_cbox.currentText() != 'warm-start':
@@ -1824,11 +1776,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox'))
 
         # Check if an initial fluence vector has been specified
-        if optimization['initial_fluence_vector']:
+        if optimization.initial_fluence_vector:
 
             # Set the initial fluence vector
             self.init_fluence_ledit.setText(
-                str(optimization['initial_fluence_vector'])[1:-1])
+                str(optimization.initial_fluence_vector)[1:-1])
 
         else:
 
@@ -1839,11 +1791,11 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.ref_plan_cbox.setCurrentIndex(0)
 
         # Check if the lower variable bounds are different from zero
-        if optimization['lower_variable_bounds'] != 0:
+        if optimization.lower_variable_bounds != 0:
 
             # Set the lower variable bounds
             self.lower_var_ledit.setText(
-                str(optimization['lower_variable_bounds']))
+                str(optimization.lower_variable_bounds))
 
         else:
 
@@ -1851,11 +1803,11 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.lower_var_ledit.clear()
 
         # Check if the upper variable bounds have been specified
-        if optimization['upper_variable_bounds']:
+        if optimization.upper_variable_bounds:
 
             # Set the upper variable bounds
             self.upper_var_ledit.setText(
-                str(optimization['upper_variable_bounds']))
+                str(optimization.upper_variable_bounds))
 
         else:
 
@@ -1863,12 +1815,12 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.upper_var_ledit.clear()
 
         # Set the maximum number of iterations
-        self.max_iter_sbox.setValue(optimization['maximum_iterations'])
+        self.max_iter_sbox.setValue(optimization.maximum_iterations)
 
         # Set the tolerance
         self.tolerance_ledit.setText(
-            '' if optimization['tolerance'] == 0.001
-            else str(optimization['tolerance']))
+            '' if optimization.tolerance == 0.001
+            else str(optimization.tolerance))
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1910,40 +1862,17 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.base_optimization['maximum_iterations'])
 
         # Reset the tolerance
-        self.tolerance_ledit.setText(
-            '' if self.base_optimization['tolerance'] == 0.001
-            else str(self.base_optimization['tolerance']))
+        self.tolerance_ledit.clear()
 
-    def transform_optimization_to_dict(self):
+    def get_optimization(self):
         """
-        Transform the optimization fields into a dictionary.
+        Get the optimization fields as a dictionary.
 
         Returns
         -------
         dict
             Dictionary with the optimization parameters.
         """
-
-        # Initialize the components dictionary
-        components = {}
-
-        # Loop over the treatment plan components
-        for component in self.plan_components.get(
-                self.plan_ledit.text(), {}).values():
-
-            # Get the key and value of the component
-            (key, value), = component.items()
-
-            # Check if the key is not yet included in the dictionary
-            if key not in components:
-
-                # Enter the value into the dictionary
-                components[key] = value
-
-            else:
-
-                # Extend the component to a list
-                components[key] = [components[key], value]
 
         # Get the initial fluence sources
         sources = (
@@ -1959,7 +1888,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Create the optimization dictionary from the input fields
         optimization = {
-            'components': components,
+            'components': list(
+                self.plan_components.get(self.plan_ledit.text(), {}).values()),
             'method': self.method_cbox.currentText(),
             'solver': self.solver_cbox.currentText(),
             'algorithm': self.algorithm_cbox.currentText(),
@@ -1992,7 +1922,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         try:
 
             # Update the evaluation dictionary
-            instance.update(self.transform_evaluation_to_dict())
+            instance.update(self.get_evaluation())
 
         except Exception as exception:
 
@@ -2013,8 +1943,9 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))
 
         # Check if the instance has already been optimized
-        if (getattr(instance, 'fluence_optimizer') is not None
-                and 'optimized_dose' in instance.datahub.optimization):
+        if (instance.fluence_optimizer is not None
+                and 'optimized_dose' in instance.datahub.optimization
+                and instance.datahub.state >= 3):
 
             # Reset the datahub state
             instance.datahub.state = 3
@@ -2029,26 +1960,26 @@ class MainWindow(QMainWindow, Ui_main_window):
         evaluation = self.plans[self.plan_ledit.text()].evaluation
 
         # Set the DVH type
-        self.dvh_type_cbox.setCurrentText(evaluation['dvh_type'])
+        self.dvh_type_cbox.setCurrentText(evaluation.dvh_type)
 
         # Set the number of DVH points
-        self.n_points_sbox.setValue(evaluation['number_of_points'])
+        self.n_points_sbox.setValue(evaluation.number_of_points)
 
         # Set the reference volume
         self.ref_vol_ledit.setText(
-            '' if evaluation['reference_volume'] == [2, 5, 50, 95, 98]
-            else str(evaluation['reference_volume'])[1:-1])
+            '' if evaluation.reference_volume == [2, 5, 50, 95, 98]
+            else str(evaluation.reference_volume)[1:-1])
 
         # Set the reference dose values
         self.ref_dose_ledit.setText(
-            '' if evaluation['reference_dose'] == []
-            else str(evaluation['reference_dose'])[1:-1])
+            '' if evaluation.reference_dose == []
+            else str(evaluation.reference_dose)[1:-1])
 
         # Clear the display segments
         self.display_segments_cbox.clear()
 
         # Add the segment items to the display segments
-        self.display_segments_cbox.addItems(list(self.segments.keys()))
+        self.display_segments_cbox.addItems(list(self.segments))
 
         # Loop over the display segment items
         for item in (
@@ -2057,8 +1988,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Set the item to checked or unchecked
             item.setCheckState(2*(
-                item.text() in evaluation['display_segments'] or
-                evaluation['display_segments'] == []))
+                item.text() in evaluation.display_segments or
+                evaluation.display_segments == []))
 
         # Update the line edit text
         self.display_segments_cbox.updateText()
@@ -2070,8 +2001,8 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Set the item to checked or unchecked
             item.setCheckState(2*(
-                item.text() in evaluation['display_metrics'] or
-                evaluation['display_metrics'] == []))
+                item.text() in evaluation.display_metrics or
+                evaluation.display_metrics == []))
 
         # Update the line edit text
         self.display_metrics_cbox.updateText()
@@ -2089,12 +2020,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.n_points_sbox.setValue(self.base_evaluation['number_of_points'])
 
         # Reset the reference volume
-        self.ref_vol_ledit.setText(
-            str(self.base_evaluation['reference_volume'])[1:-1])
+        self.ref_vol_ledit.clear()
 
         # Reset the reference dose values
-        self.ref_dose_ledit.setText(
-            str(self.base_evaluation['reference_dose'])[1:-1])
+        self.ref_dose_ledit.clear()
 
         # Loop over the display segments
         for index in range(self.display_segments_cbox.count()):
@@ -2108,9 +2037,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Reset the display metric to checked
             self.display_metrics_cbox.model().item(index).setCheckState(2)
 
-    def transform_evaluation_to_dict(self):
+    def get_evaluation(self):
         """
-        Transform the evaluation fields into a dictionary.
+        Get the evaluation fields as a dictionary.
 
         Returns
         -------
@@ -2225,9 +2154,9 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Initialize the treatment plan
         treatment_plan = TreatmentPlan(
-            self.transform_configuration_to_dict(),
-            self.transform_optimization_to_dict(),
-            self.transform_evaluation_to_dict())
+            Configuration(**self.get_configuration()),
+            Optimization(**self.get_optimization()),
+            Evaluation(**self.get_evaluation()))
 
         # Activate the treatment plan
         self.activate(treatment_plan)
@@ -2595,15 +2524,17 @@ class MainWindow(QMainWindow, Ui_main_window):
         for key in ('imaging_path', 'dose_matrix_path'):
 
             # Convert into an absolute path
-            instance.configuration[key] = abspath(instance.configuration[key])
+            setattr(
+                instance.configuration, key,
+                abspath(getattr(instance.configuration, key)))
 
         # Clear the configuration window
         self.config_window.tree_widget.clear()
 
-        # Create the configuration tree from the input dictionaries
+        # Create the configuration tree from the input objects
         self.config_window.create_tree_from_dict(data={
-            key: value for key, value in vars(instance).items()
-            if isinstance(value, dict)},
+            key: getattr(instance, key).to_dict() for key in (
+                'configuration', 'optimization', 'evaluation')},
             parent=self.config_window.tree_widget)
 
         # Set the resize mode for the first tree column
@@ -2674,33 +2605,46 @@ class MainWindow(QMainWindow, Ui_main_window):
                     'false': 'False'}
 
                 # Convert the input dictionaries to formatted strings
-                configuration, optimization, evaluation = (
-                    reduce(lambda x, y: x.replace(*y),
-                           [dumps(getattr(instance, dct), indent=4),
-                            *list(mapping.items())])
-                    for dct in ('configuration', 'optimization', 'evaluation'))
+                configuration, optimization, evaluation = (reduce(
+                    lambda x, y: x.replace(*y),
+                    [dumps(getattr(instance, attribute).to_dict(), indent=4),
+                     *list(mapping.items())]) for attribute in (
+                         'configuration', 'optimization', 'evaluation'))
 
-                # Write the string output to the file
+                # Write the headline statements
                 file.write(
                     '"""\n'
-                    'Python script for the '
-                    f'"{instance.configuration["label"]}" plan.\n\n'
-                    'Generated from the pyanno4rt GUI.\n"""\n\n'
+                    f'Python script for the "{instance.configuration.label}" '
+                    'plan.\n\n'
+                    'Generated from the pyanno4rt GUI.\n"""\n\n')
+
+                # Write the import statements
+                file.write(
                     '# %% Internal package import\n\n'
-                    'from pyanno4rt.base import TreatmentPlan\n'
-                    'from pyanno4rt.gui import GraphicalUserInterface\n\n'
+                    'from pyanno4rt.base import (\n    '
+                    'Configuration, Evaluation, Optimization, TreatmentPlan)\n'
+                    'from pyanno4rt.gui import GraphicalUserInterface\n\n')
+
+                # Write the initialization statements
+                file.write(
                     '# %% Initialization\n\n'
                     'tp = TreatmentPlan(\n\n'
                     f'    configuration={configuration},\n\n'
                     f'    optimization={optimization},\n\n'
                     f'    evaluation={evaluation}\n\n'
-                    ')\n\n'
+                    ')\n\n')
+
+                # Write the workflow statements
+                file.write(
                     '# %% Workflow\n\n'
                     'tp.configure()\n'
                     'tp.model()\n'
                     'tp.optimize()\n'
                     'tp.evaluate()\n'
-                    'tp.visualize()\n\n'
+                    'tp.visualize()\n\n')
+
+                # Write the GUI statements
+                file.write(
                     '# %% GUI\n\n'
                     'gui = GraphicalUserInterface()\n'
                     'gui.launch(tp)\n'

@@ -49,9 +49,6 @@ class TuneSpaceRF():
     bootstrap : None or list, default=None
         Options (False, True) for the bootstrap sampling indicator.
 
-    warm_start : None or list, default=None
-        Options (False, True) for the warm-start indicator.
-
     class_weight : None or list, default=None
         Options (None, 'balanced') for the weights associated with the classes.
 
@@ -86,9 +83,6 @@ class TuneSpaceRF():
     bootstrap : None or list
         See 'Parameters'.
 
-    warm_start : None or list
-        See 'Parameters'.
-
     class_weight : None or list
         See 'Parameters'.
 
@@ -106,7 +100,6 @@ class TuneSpaceRF():
             min_weight_fraction_leaf=None,
             max_features=None,
             bootstrap=None,
-            warm_start=None,
             class_weight=None,
             ccp_alpha=None):
 
@@ -123,7 +116,6 @@ class TuneSpaceRF():
             'min_weight_fraction_leaf': [0.0, 0.5],
             'max_features': [0],
             'bootstrap': [False, True],
-            'warm_start': [False],
             'class_weight': [None, 'balanced'],
             'ccp_alpha': [0.0, 1.0]}
 
@@ -213,11 +205,8 @@ class TuneSpaceRF():
             'max_features': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_value, reference=0, sign='>=', is_vector=True)),
             'bootstrap': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(False, True))),
-            'warm_start': (
                 partial(check_type, types=list),
                 partial(check_value_in_set, options=(False, True))),
             'class_weight': (

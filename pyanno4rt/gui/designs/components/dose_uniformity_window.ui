@@ -55,7 +55,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>0</y>
+       <y>-193</y>
        <width>690</width>
        <height>679</height>
       </rect>
@@ -551,7 +551,7 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
       <property name="placeholderText">
-       <string>None</string>
+       <string>+∞</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="weight_ledit">
@@ -640,11 +640,14 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
+      <property name="text">
+       <string/>
+      </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
       </property>
       <property name="placeholderText">
-       <string>0.0</string>
+       <string>-∞</string>
       </property>
      </widget>
      <widget class="QComboBox" name="segment_cbox">

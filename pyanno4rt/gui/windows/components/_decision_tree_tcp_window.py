@@ -17,7 +17,12 @@ from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, sbox, tbutton_composer, tbutton_data_window)
 from pyanno4rt.gui.windows import DataColumnsWindow
+from pyanno4rt.learning import ModelParameters
+from pyanno4rt.learning.evaluation import DisplayOptions
+from pyanno4rt.learning.tune_spaces import TuneSpaceDT
 import pyanno4rt.learning._maps as maps
+from pyanno4rt.optimization.components import DecisionTreeTCP
+from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition
 
@@ -49,8 +54,8 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
         # Get the parent window
         self.parent = parent
 
-        # Initialize the data columns dictionary
-        self.data_columns = {}
+        # Initialize the data columns list
+        self.data_columns = []
 
         # Initialize the edit boolean
         self.edit = False
@@ -298,8 +303,9 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
 
         Parameters
         ----------
-        component : dict
-            Dictionary with the information on the optimization component.
+        component : object of class \
+            :class:`~pyanno4rt.optimization.components._decision_tree_tcp.DecisionTreeTCP`
+            The object used to represent the optimization component.
 
         edit : bool
             Indicator for the editing of the component.
@@ -308,113 +314,75 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
         # Get the edit attribute from the argument
         self.edit = edit
 
-        # Get the segment associated with the component
-        segment = next(iter(component))
-
         # Get the component parameters
-        ctype = component[segment]['type']
-        model_parameters = component[segment]['instance']['parameters'][
-            'model_parameters']
-        embedding = component[segment]['instance']['parameters'].get(
-            'embedding', 'active')
-        weight = component[segment]['instance']['parameters'].get(
-            'weight', 1.0)
-        rank = component[segment]['instance']['parameters'].get('rank', 1)
-        lower, upper = component[segment]['instance']['parameters'].get(
-            'bounds', (0.0, 1.0))
-        link = component[segment]['instance']['parameters'].get('link')
-        identifier = component[segment]['instance']['parameters'].get(
-            'identifier')
-        display = component[segment]['instance']['parameters'].get(
-            'display', True)
+        (segment, model_parameters, component_type, embedding, weight, rank,
+         bounds, link, identifier, display) = component.arguments.values()
 
-        # Get the data columns dictionary
-        self.data_columns = model_parameters['data_columns']
+        # Convert the bounds
+        lower, upper = (None, None) if bounds is None else bounds
+
+        # Get the data columns list
+        self.data_columns = model_parameters.data_columns
 
         # Get the tune space
-        tune_space = model_parameters.get(
-            'tune_space', {
-                'criterion': ['gini', 'entropy'],
-                'splitter': ['best', 'random'],
-                'max_depth': list(range(1, 21)),
-                'min_samples_split': [0.0, 1.0],
-                'min_samples_leaf': [0.0, 0.5],
-                'min_weight_fraction_leaf': [0.0, 0.5],
-                'max_features': list(range(1, len(self.data_columns))),
-                'class_weight': [None, 'balanced'],
-                'ccp_alpha': [0.0, 1.0]})
+        tune_space = model_parameters.tune_space
 
         # Get the display options
-        display_options = model_parameters.get(
-            'display_options', {
-                'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
-                'kpis': ['Logloss', 'Brier score', 'Subset accuracy',
-                         'Cohen Kappa', 'Hamming loss', 'Jaccard score',
-                         'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']})
+        display_options = model_parameters.display_options
 
         # Loop over the fields with 'setText' method
         for key, value in {
-                'weight_ledit': '' if weight == 1.0 else str(float(weight)),
-                'lower_bound_ledit': '' if lower == 0.0 else str(float(lower)),
-                'upper_bound_ledit': '' if upper == 1.0 else str(float(upper)),
-                'model_label_ledit': model_parameters['model_label'],
+                'weight_ledit': '' if weight == 1.0 else str(weight),
+                'lower_bound_ledit': '' if lower is None else str(lower),
+                'upper_bound_ledit': '' if upper is None else str(upper),
+                'model_label_ledit': model_parameters.model_label,
                 'model_path_ledit': (
-                    '' if not model_parameters.get('model_folder_path')
-                    else abspath(model_parameters['model_folder_path'])),
+                    '' if not model_parameters.model_folder_path
+                    else abspath(model_parameters.model_folder_path)),
                 'data_path_ledit': (
-                    '' if not model_parameters.get('data_path')
-                    else abspath(model_parameters['data_path'])),
+                    '' if not model_parameters.data_path
+                    else abspath(model_parameters.data_path)),
                 'prep_steps_ledit': (
-                    '' if not model_parameters.get('preprocessing_steps')
-                    or model_parameters['preprocessing_steps'] == ['Identity']
-                    else str(model_parameters['preprocessing_steps']).replace(
+                    '' if not model_parameters.preprocessing
+                    or model_parameters.preprocessing == ['Identity']
+                    else str(model_parameters.preprocessing).replace(
                         "\'", '')),
                 'max_depth_lower_bound_ledit': (
-                    '' if not tune_space.get('max_depth')
-                    or tune_space['max_depth'][0] == 1
-                    else str(tune_space['max_depth'][0])),
+                    '' if tune_space.max_depth[0] == 5
+                    else str(tune_space.max_depth[0])),
                 'max_depth_upper_bound_ledit': (
-                    '' if not tune_space.get('max_depth')
-                    or tune_space['max_depth'][-1] == 20
-                    else str(tune_space['max_depth'][-1])),
+                    '' if tune_space.max_depth[-1] == 5
+                    else str(tune_space.max_depth[-1])),
                 'min_samples_split_lower_bound_ledit': (
-                    '' if not tune_space.get('min_samples_split')
-                    or tune_space['min_samples_split'][0] == 0.0
-                    else str(tune_space['min_samples_split'][0])),
+                    '' if tune_space.min_samples_split[0] == 0.0
+                    else str(tune_space.min_samples_split[0])),
                 'min_samples_split_upper_bound_ledit': (
-                    '' if not tune_space.get('min_samples_split')
-                    or tune_space['min_samples_split'][1] == 1.0
-                    else str(tune_space['min_samples_split'][1])),
+                    '' if tune_space.min_samples_split[1] == 1.0
+                    else str(tune_space.min_samples_split[1])),
                 'min_samples_leaf_lower_bound_ledit': (
-                    '' if not tune_space.get('min_samples_leaf')
-                    or tune_space['min_samples_leaf'][0] == 0.0
-                    else str(tune_space['min_samples_leaf'][0])),
+                    '' if tune_space.min_samples_leaf[0] == 0.0
+                    else str(tune_space.min_samples_leaf[0])),
                 'min_samples_leaf_upper_bound_ledit': (
-                    '' if not tune_space.get('min_samples_leaf')
-                    or tune_space['min_samples_leaf'][1] == 0.5
-                    else str(tune_space['min_samples_leaf'][1])),
+                    '' if tune_space.min_samples_leaf[1] == 0.5
+                    else str(tune_space.min_samples_leaf[1])),
                 'min_weight_frac_leaf_lower_bound_ledit': (
-                    '' if not tune_space.get('min_weight_fraction_leaf')
-                    or tune_space['min_weight_fraction_leaf'][0] == 0.0
-                    else str(tune_space['min_weight_fraction_leaf'][0])),
+                    '' if tune_space.min_weight_fraction_leaf[0] == 0.0
+                    else str(tune_space.min_weight_fraction_leaf[0])),
                 'min_weight_frac_leaf_upper_bound_ledit': (
-                    '' if not tune_space.get('min_weight_fraction_leaf')
-                    or tune_space['min_weight_fraction_leaf'][1] == 0.5
-                    else str(tune_space['min_weight_fraction_leaf'][1])),
+                    '' if tune_space.min_weight_fraction_leaf[1] == 0.5
+                    else str(tune_space.min_weight_fraction_leaf[1])),
                 'max_features_lower_bound_ledit': (
-                    '' if not tune_space.get('max_features')
-                    else str(tune_space['max_features'][0])),
+                    '' if tune_space.max_features[0] == 0
+                    else str(tune_space.max_features[0])),
                 'max_features_upper_bound_ledit': (
-                    '' if not tune_space.get('max_features')
-                    else str(tune_space['max_features'][-1])),
+                    '' if not tune_space.max_features[-1] == 0
+                    else str(tune_space.max_features[-1])),
                 'ccp_alpha_lower_bound_ledit': (
-                    '' if not tune_space.get('ccp_alpha')
-                    or tune_space['ccp_alpha'][0] == 0.0
-                    else str(tune_space['ccp_alpha'][0])),
+                    '' if tune_space.ccp_alpha == 0.0
+                    else str(tune_space.ccp_alpha[0])),
                 'ccp_alpha_upper_bound_ledit': (
-                    '' if not tune_space.get('ccp_alpha')
-                    or tune_space['ccp_alpha'][1] == 1.0
-                    else str(tune_space['ccp_alpha'][1])),
+                    '' if tune_space.ccp_alpha[1] == 1.0
+                    else str(tune_space.ccp_alpha[1])),
                 'identifier_ledit': '' if not identifier else identifier
                 }.items():
 
@@ -424,10 +392,9 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
         # Loop over the fields with 'setCurrentText' method
         for key, value in {
                 'segment_cbox': segment,
-                'type_cbox': ctype,
+                'type_cbox': component_type,
                 'embedding_cbox': embedding,
-                'tune_score_cbox': model_parameters.get(
-                    'tune_score', 'Logloss')
+                'tune_score_cbox': model_parameters.tune_score
                 }.items():
 
             # Set the text
@@ -436,11 +403,11 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
         # Loop over the fields with 'setValue' method
         for key, value in {
                 'rank_sbox': rank,
-                'tune_eval_sbox': model_parameters.get('tune_evaluations', 50),
-                'tune_splits_sbox': model_parameters.get('tune_splits', 5),
-                'tune_repeats_sbox': model_parameters.get('tune_repeats', 1),
-                'oof_splits_sbox': model_parameters.get('oof_splits', 5),
-                'oof_repeats_sbox': model_parameters.get('oof_repeats', 1)
+                'tune_eval_sbox': model_parameters.tune_evaluations,
+                'tune_splits_sbox': model_parameters.tune_splits,
+                'tune_repeats_sbox': model_parameters.tune_repeats,
+                'oof_splits_sbox': model_parameters.oof_splits,
+                'oof_repeats_sbox': model_parameters.oof_repeats
                 }.items():
 
             # Set the value
@@ -448,12 +415,9 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
 
         # Loop over the fields with 'setCheckState' method
         for key, value in {
-                'write_features_check': (
-                    2*model_parameters.get('write_features', False)),
-                'inspect_model_check': (
-                    2*model_parameters.get('inspect_model', False)),
-                'evaluate_model_check': (
-                    2*model_parameters.get('evaluate_model', False)),
+                'write_features_check': 2*model_parameters.write_features,
+                'inspect_model_check': 2*model_parameters.inspect,
+                'evaluate_model_check': 2*model_parameters.evaluate,
                 'disp_component_check': 2*display
                 }.items():
 
@@ -463,11 +427,12 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
         # Loop over the checkable combo boxes with their selections
         for box, selection in {
                 'segment_link_cbox': [] if not link else link,
-                'criterion_cbox': tune_space['criterion'],
-                'splitter_cbox': tune_space['splitter'],
-                'class_weight_cbox': map(str, tune_space['class_weight']),
-                'graphs_cbox': display_options['graphs'],
-                'kpi_cbox': display_options['kpis']}.items():
+                'criterion_cbox': tune_space.criterion,
+                'splitter_cbox': tune_space.splitter,
+                'class_weight_cbox': map(str, tune_space.class_weight),
+                'graphs_cbox': display_options.graphs,
+                'kpi_cbox': display_options.kpis
+                }.items():
 
             # Get the combo box
             combo_box = getattr(self, box)
@@ -500,120 +465,104 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
         """Save the fields to a component."""
 
         # Get the model parameters
-        model_parameters = {
-            'model_label': self.model_label_ledit.text(),
-            'model_folder_path': (
+        model_parameters = ModelParameters(
+            model_label=self.model_label_ledit.text(),
+            model_type='forest',
+            model_folder_path=(
                 None if self.model_path_ledit.text() == ''
                 else abspath(self.model_path_ledit.text())),
-            'data_path': (
+            data_path=(
                 None if self.data_path_ledit.text() == ''
                 else abspath(self.data_path_ledit.text())),
-            'data_columns': self.data_columns,
-            'preprocessing_steps': (
+            data_columns=self.data_columns,
+            preprocessing=(
                 ['Identity'] if self.prep_steps_ledit.text() == ''
                 else self.prep_steps_ledit.text().strip('][').split(', ')),
-            'tune_space': {
-                'criterion': self.criterion_cbox.currentData(),
-                'splitter': self.splitter_cbox.currentData(),
-                'max_depth': list(range(
-                    1 if self.max_depth_lower_bound_ledit.text() == ''
+            tune_space=TuneSpaceDT(
+                criterion=self.criterion_cbox.currentData(),
+                splitter=self.splitter_cbox.currentData(),
+                max_depth=list(range(
+                    5 if self.max_depth_lower_bound_ledit.text() == ''
                     else int(self.max_depth_lower_bound_ledit.text()),
-                    21 if self.max_depth_upper_bound_ledit.text() == ''
+                    6 if self.max_depth_upper_bound_ledit.text() == ''
                     else int(self.max_depth_upper_bound_ledit.text())+1)),
-                'min_samples_split': [
+                min_samples_split=[
                     0.0
                     if self.min_samples_split_lower_bound_ledit.text() == ''
-                    else float(
+                    else string_to_numeric(
                         self.min_samples_split_lower_bound_ledit.text()),
                     1.0
                     if self.min_samples_split_upper_bound_ledit.text() == ''
-                    else float(
+                    else string_to_numeric(
                         self.min_samples_split_upper_bound_ledit.text())],
-                'min_samples_leaf': [
-                    0.0
-                    if self.min_samples_leaf_lower_bound_ledit.text() == ''
-                    else float(
+                min_samples_leaf=[
+                    0.0 if self.min_samples_leaf_lower_bound_ledit.text() == ''
+                    else string_to_numeric(
                         self.min_samples_leaf_lower_bound_ledit.text()),
-                    0.5
-                    if self.min_samples_leaf_upper_bound_ledit.text() == ''
-                    else float(
+                    0.5 if self.min_samples_leaf_upper_bound_ledit.text() == ''
+                    else string_to_numeric(
                         self.min_samples_leaf_upper_bound_ledit.text())],
-                'min_weight_fraction_leaf': [
+                min_weight_fraction_leaf=[
                     0.0
                     if self.min_weight_frac_leaf_lower_bound_ledit.text() == ''
-                    else float(
+                    else string_to_numeric(
                         self.min_weight_frac_leaf_lower_bound_ledit.text()),
                     0.5
                     if self.min_weight_frac_leaf_upper_bound_ledit.text() == ''
-                    else float(
+                    else string_to_numeric(
                         self.min_weight_frac_leaf_upper_bound_ledit.text())],
-                'class_weight': [
+                max_features=list(range(
+                    len(self.data_columns)
+                    if self.max_features_lower_bound_ledit.text() == ''
+                    else int(self.max_features_lower_bound_ledit.text()),
+                    len(self.data_columns)+1
+                    if self.max_features_upper_bound_ledit.text() == ''
+                    else int(self.max_features_upper_bound_ledit.text())+1)),
+                class_weight=[
                     None if value == 'None' else value
                     for value in self.class_weight_cbox.currentData()],
-                'ccp_alpha': [
+                ccp_alpha=[
                     0.0 if self.ccp_alpha_lower_bound_ledit.text() == ''
-                    else float(self.ccp_alpha_lower_bound_ledit.text()),
+                    else string_to_numeric(
+                        self.ccp_alpha_lower_bound_ledit.text()),
                     1.0 if self.ccp_alpha_upper_bound_ledit.text() == ''
-                    else float(self.ccp_alpha_upper_bound_ledit.text())]},
-            'tune_evaluations': self.tune_eval_sbox.value(),
-            'tune_score': self.tune_score_cbox.currentText(),
-            'tune_splits': self.tune_splits_sbox.value(),
-            'tune_repeats': self.tune_repeats_sbox.value(),
-            'inspect_model': self.inspect_model_check.isChecked(),
-            'evaluate_model': self.evaluate_model_check.isChecked(),
-            'oof_splits': self.oof_splits_sbox.value(),
-            'oof_repeats': self.oof_repeats_sbox.value(),
-            'write_features': self.write_features_check.isChecked(),
-            'display_options': {
-                'graphs': self.graphs_cbox.currentData(),
-                'kpis': self.kpi_cbox.currentData()}}
+                    else string_to_numeric(
+                        self.ccp_alpha_upper_bound_ledit.text())]),
+            tune_evaluations=self.tune_eval_sbox.value(),
+            tune_score=self.tune_score_cbox.currentText(),
+            tune_splits=self.tune_splits_sbox.value(),
+            tune_repeats=self.tune_repeats_sbox.value(),
+            inspect=self.inspect_model_check.isChecked(),
+            evaluate=self.evaluate_model_check.isChecked(),
+            oof_splits=self.oof_splits_sbox.value(),
+            oof_repeats=self.oof_repeats_sbox.value(),
+            write_features=self.write_features_check.isChecked(),
+            display_options=DisplayOptions(
+                graphs=self.graphs_cbox.currentData(),
+                kpis=self.kpi_cbox.currentData()))
 
-        # Check if bounds for the maximum features have been specified
-        if all(text != '' for text in (
-                self.max_features_lower_bound_ledit.text(),
-                self.max_features_upper_bound_ledit.text())):
-
-            # Add the 'max_features' to the tune space
-            model_parameters['tune_space']['max_features'] = list(range(
-                int(self.max_features_lower_bound_ledit.text()),
-                int(self.max_features_upper_bound_ledit.text())+1)),
-
-        # Configure the component dictionary
-        component = {
-            self.segment_cbox.currentText(): {
-                'type': self.type_cbox.currentText(),
-                'instance': {
-                    'function': 'Decision Tree TCP',
-                    'parameters': {
-                        'model_parameters': model_parameters,
-                        'embedding': self.embedding_cbox.currentText(),
-                        'weight': (
-                            1.0 if self.weight_ledit.text() == ''
-                            else float(self.weight_ledit.text())),
-                        'rank': self.rank_sbox.value(),
-                        'bounds': [
-                            0.0 if self.lower_bound_ledit.text() == ''
-                            else float(self.lower_bound_ledit.text()),
-                            1.0 if self.upper_bound_ledit.text() == ''
-                            else float(self.upper_bound_ledit.text())],
-                        'link': (
-                            None
-                            if len(self.segment_link_cbox.currentData()) == 0
-                            else self.segment_link_cbox.currentData()),
-                        'identifier': (
-                            None if self.identifier_ledit.text() == ''
-                            else self.identifier_ledit.text()),
-                        'display': self.disp_component_check.isChecked()}}}}
-
-        # Get the component and function parameters
-        cparams = component[self.segment_cbox.currentText()]
-        fparams = cparams['instance']['parameters']
-
-        # Get the required parameter values
-        ctype = cparams['type']
-        identifier = fparams['identifier']
-        embedding = f'embedding: {str(fparams["embedding"])}'
-        weight = f'weight: {str(fparams["weight"])}'
+        # Get the component
+        component = DecisionTreeTCP(
+            segment=self.segment_cbox.currentText(),
+            model_parameters=model_parameters,
+            component_type=self.type_cbox.currentText(),
+            embedding=self.embedding_cbox.currentText(),
+            weight=(
+                1.0 if self.weight_ledit.text() == ''
+                else string_to_numeric(self.weight_ledit.text())),
+            rank=self.rank_sbox.value(),
+            bounds=[
+                None if self.lower_bound_ledit.text() == ''
+                else string_to_numeric(self.lower_bound_ledit.text()),
+                None if self.upper_bound_ledit.text() == ''
+                else string_to_numeric(self.upper_bound_ledit.text())],
+            link=(
+                None if len(self.segment_link_cbox.currentData()) == 0
+                else self.segment_link_cbox.currentData()),
+            identifier=(
+                None if self.identifier_ledit.text() == ''
+                else self.identifier_ledit.text()),
+            display=self.disp_component_check.isChecked())
 
         # Map the component and segment type to the icon paths
         paths = {
@@ -628,7 +577,8 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
 
         # Get the icon path
         icon_path = paths[
-            f'{ctype}_{self.parent.segments[self.segment_cbox.currentText()]}']
+            f'{component.arguments["component_type"]}_'
+            f'{self.parent.segments[self.segment_cbox.currentText()]}']
 
         # Initialize the icon object
         icon = QIcon()
@@ -638,8 +588,12 @@ class DecisionTreeTCPWindow(QMainWindow, Ui_decision_tree_tcp_window):
 
         # Get the component string
         component_string = ' - '.join((substring for substring in (
-            self.segment_cbox.currentText(), 'Decision Tree TCP', identifier,
-            embedding, weight) if substring))
+            self.segment_cbox.currentText(), component.name,
+            f'weight: {component.arguments["weight"]}',
+            f'embedding: {component.arguments["embedding"]}',
+            f'link: {component.arguments["link"]}',
+            f'identifier: {component.arguments["identifier"]}')
+            if 'None' not in substring))
 
         # Check if the component item is edited
         if self.edit:

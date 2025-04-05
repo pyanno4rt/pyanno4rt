@@ -351,45 +351,20 @@ class TreatmentPlan():
             # Check if the key is in the configuration object
             if hasattr(self.configuration, key):
 
-                # Check the configuration update
-                self.configuration.check({key: value})
-
-                # Update the configuration parameter value
-                self.configuration.key = value
-
-                # Check if the key is 'min_log_level'
-                if key == 'min_log_level':
-
-                    # Change the logging levels of all handlers
-                    self.logger.change_log_levels(value)
+                # Set the source
+                source = self.configuration
 
             # Else, check if the key is in the optimization dictionary
             elif hasattr(self.optimization, key):
 
-                # Check the optimization update
-                self.optimization.check({key: value})
-
-                # Update the optimization parameter value
-                self.optimization.key = value
-
-                # Check if the key is 'components'
-                if key == 'components' and self.plan_generator is not None:
-
-                    # Overwrite the components in the plan generator
-                    self.plan_generator.components = value
-
-                    # Update the components in the datahub
-                    self.plan_generator.set_optimization_components(
-                        verbose=False)
+                # Set the source
+                source = self.optimization
 
             # Else, check if the key is in the evaluation dictionary
             elif hasattr(self.evaluation, key):
 
-                # Check the evaluation update
-                self.evaluation.check({key: value})
-
-                # Update the evaluation parameter value
-                self.evaluation.key = value
+                # Set the source
+                source = self.evaluation
 
             else:
 
@@ -397,3 +372,40 @@ class TreatmentPlan():
                 self.logger.display_warning(
                     f"The update parameter '{key}' is not part of the "
                     "treatment plan and will be ignored!")
+
+                return
+
+            # Get the current value
+            current_value = getattr(source, key)
+
+            try:
+
+                # Update the parameter value
+                setattr(source, key, value)
+
+                # Check the update
+                source.check(vars(source))
+
+            except Exception as error:
+
+                # Return to the current value
+                setattr(source, key, current_value)
+
+                # Raise the exception
+                raise error
+
+            # Check if the key is 'min_log_level'
+            if key == 'min_log_level':
+
+                # Change the logging levels of all handlers
+                self.logger.change_log_levels(value)
+
+            # Check if the key is 'components'
+            if key == 'components' and self.plan_generator is not None:
+
+                # Overwrite the components in the plan generator
+                self.plan_generator.components = value
+
+                # Update the components in the datahub
+                self.plan_generator.set_optimization_components(
+                    verbose=False)

@@ -25,22 +25,12 @@ class TuneSpaceNN():
 
     Parameters
     ----------
-    input_neuron_number : None or list, default=None
-        Options for the number of input layer neurons.
-
-    input_activation : None or list, default=None
-        Options ('elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
-        'softplus', 'swish') for the input layer activation function.
-
     hidden_neuron_number : None or list, default=None
         Options for the number of hidden layer neurons.
 
     hidden_activation : None or list, default=None
         Options ('elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
         'softplus', 'swish') for the hidden layer activation functions.
-
-    input_dropout_rate : None or list, default=None
-        Options for the input layer dropout rate.
 
     hidden_dropout_rate : None or list, default=None
         Options for the hidden layer dropout rates.
@@ -62,19 +52,10 @@ class TuneSpaceNN():
 
     Attributes
     ----------
-    input_neuron_number : None or list
-        See 'Parameters'.
-
-    input_activation : None or list
-        See 'Parameters'.
-
     hidden_neuron_number : None or list
         See 'Parameters'.
 
     hidden_activation : None or list
-        See 'Parameters'.
-
-    input_dropout_rate : None or list
         See 'Parameters'.
 
     hidden_dropout_rate : None or list
@@ -95,11 +76,8 @@ class TuneSpaceNN():
 
     def __init__(
             self,
-            input_neuron_number=None,
-            input_activation=None,
             hidden_neuron_number=None,
             hidden_activation=None,
-            input_dropout_rate=None,
             hidden_dropout_rate=None,
             batch_size=None,
             learning_rate=None,
@@ -111,15 +89,10 @@ class TuneSpaceNN():
 
         # Set the default argument values
         defaults = {
-            'input_neuron_number': [2**x for x in range(1, 12)],
-            'input_activation': [
-                'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
-                'softplus', 'swish'],
             'hidden_neuron_number': [2**x for x in range(1, 12)],
             'hidden_activation': [
                 'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
                 'softplus', 'swish'],
-            'input_dropout_rate': [0.0, 0.1, 0.25, 0.5, 0.75],
             'hidden_dropout_rate': [0.0, 0.1, 0.25, 0.5, 0.75],
             'batch_size': [4, 8, 16, 32],
             'learning_rate': [1e-5, 1e-2],
@@ -180,15 +153,6 @@ class TuneSpaceNN():
 
         # Get the check map
         check_map = {
-            'input_neuron_number': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
-            'input_activation': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(
-                    'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
-                    'softplus', 'swish'))),
             'hidden_neuron_number': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=int),
@@ -198,10 +162,6 @@ class TuneSpaceNN():
                 partial(check_value_in_set, options=(
                     'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
                     'softplus', 'swish'))),
-            'input_dropout_rate': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>=', is_vector=True)),
             'hidden_dropout_rate': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=(int, float)),

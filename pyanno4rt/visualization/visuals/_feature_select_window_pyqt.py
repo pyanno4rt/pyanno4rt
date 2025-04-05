@@ -443,7 +443,8 @@ class FeatureWidget(QWidget):
 
         # Set the tick spacing for the x-axis
         steps_in_x = min(
-            (5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000),
+            (1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000,
+             20000, 50000, 100000, 200000, 500000, 1000000),
             key=lambda x: abs(ceil(
                 max(len(history) for history
                     in feature_history.values())/x)

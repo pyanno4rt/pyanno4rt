@@ -342,7 +342,7 @@ class ModelParameters():
                     'vanilla', 'vanilla input-convex'))),
             'max_hidden_layers': (
                 partial(check_type, types=int),
-                partial(check_value, reference=0, sign='>=')),
+                partial(check_value, reference=1, sign='>=')),
             'tune_space': (
                 partial(check_type, types=tuple(maps.SPACES.values())),),
             'tune_evaluations': (

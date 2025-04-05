@@ -196,7 +196,7 @@ class TuneSpaceDT():
             'max_features': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_value, reference=0, sign='>=', is_vector=True)),
             'class_weight': (
                 partial(check_type, types=list),
                 partial(check_value_in_set, options=(None, 'balanced'))),

@@ -55,9 +55,9 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>-957</y>
+       <y>-887</y>
        <width>690</width>
-       <height>1669</height>
+       <height>1619</height>
       </rect>
      </property>
      <widget class="QComboBox" name="embedding_cbox">
@@ -228,7 +228,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>614</x>
-        <y>1630</y>
+        <y>1580</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -250,7 +250,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1540</y>
+        <y>1490</y>
         <width>381</width>
         <height>31</height>
        </rect>
@@ -303,7 +303,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1510</y>
+        <y>1460</y>
         <width>381</width>
         <height>25</height>
        </rect>
@@ -390,7 +390,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1460</y>
+        <y>1410</y>
         <width>684</width>
         <height>31</height>
        </rect>
@@ -433,7 +433,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>534</x>
-        <y>1630</y>
+        <y>1580</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -580,7 +580,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1590</y>
+        <y>1540</y>
         <width>231</width>
         <height>23</height>
        </rect>
@@ -603,7 +603,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1500</y>
+        <y>1450</y>
         <width>684</width>
         <height>2</height>
        </rect>
@@ -939,7 +939,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1330</y>
+        <y>1280</y>
         <width>681</width>
         <height>31</height>
        </rect>
@@ -956,7 +956,7 @@ color: rgb(85, 87, 83);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1290</y>
+        <y>1240</y>
         <width>141</width>
         <height>23</height>
        </rect>
@@ -976,7 +976,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1370</y>
+        <y>1320</y>
         <width>261</width>
         <height>25</height>
        </rect>
@@ -998,7 +998,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>1370</y>
+        <y>1320</y>
         <width>401</width>
         <height>25</height>
        </rect>
@@ -1020,7 +1020,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>150</x>
-        <y>1290</y>
+        <y>1240</y>
         <width>141</width>
         <height>23</height>
        </rect>
@@ -1040,7 +1040,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>300</x>
-        <y>1290</y>
+        <y>1240</y>
         <width>141</width>
         <height>23</height>
        </rect>
@@ -1148,7 +1148,7 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1400</y>
+        <y>1350</y>
         <width>261</width>
         <height>31</height>
        </rect>
@@ -1159,50 +1159,12 @@ color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>1400</y>
+        <y>1350</y>
         <width>401</width>
         <height>31</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="kpi_layout"/>
-     </widget>
-     <widget class="QLabel" name="input_activation_label">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>1030</y>
-        <width>131</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>input activation</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="input_dropout_ledit">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>1080</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="placeholderText">
-       <string>[0.0, 0.1, 0.25, 0.5, 0.75]</string>
-      </property>
      </widget>
      <widget class="QLabel" name="architecture_label">
       <property name="geometry">
@@ -1229,8 +1191,8 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLabel" name="learning_rate_conjunction">
       <property name="geometry">
        <rect>
-        <x>578</x>
-        <y>1134</y>
+        <x>218</x>
+        <y>1084</y>
         <width>16</width>
         <height>20</height>
        </rect>
@@ -1251,30 +1213,11 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="input_neurons_label">
-      <property name="geometry">
-       <rect>
-        <x>15</x>
-        <y>980</y>
-        <width>111</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>input neurons</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
      <widget class="QLabel" name="optimizer_label">
       <property name="geometry">
        <rect>
-        <x>45</x>
-        <y>1180</y>
+        <x>405</x>
+        <y>1080</y>
         <width>81</width>
         <height>31</height>
        </rect>
@@ -1327,7 +1270,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>350</x>
-        <y>1030</y>
+        <y>980</y>
         <width>141</width>
         <height>31</height>
        </rect>
@@ -1345,8 +1288,8 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QWidget" name="horizontalLayoutWidget_9">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>1180</y>
+        <x>490</x>
+        <y>1080</y>
         <width>191</width>
         <height>31</height>
        </rect>
@@ -1356,8 +1299,8 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLineEdit" name="learning_rate_lower_bound_ledit">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>1130</y>
+        <x>130</x>
+        <y>1080</y>
         <width>87</width>
         <height>31</height>
        </rect>
@@ -1379,7 +1322,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>490</x>
-        <y>1030</y>
+        <y>980</y>
         <width>191</width>
         <height>31</height>
        </rect>
@@ -1411,7 +1354,7 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLabel" name="hidden_neurons_label">
       <property name="geometry">
        <rect>
-        <x>365</x>
+        <x>5</x>
         <y>980</y>
         <width>121</width>
         <height>31</height>
@@ -1427,30 +1370,11 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="input_dropout_label">
-      <property name="geometry">
-       <rect>
-        <x>15</x>
-        <y>1080</y>
-        <width>111</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 0px solid;</string>
-      </property>
-      <property name="text">
-       <string>input dropout</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
      <widget class="QLineEdit" name="hidden_dropout_ledit">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>1080</y>
+        <x>130</x>
+        <y>1030</y>
         <width>191</width>
         <height>31</height>
        </rect>
@@ -1468,8 +1392,8 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLabel" name="hidden_dropout_label">
       <property name="geometry">
        <rect>
-        <x>370</x>
-        <y>1080</y>
+        <x>10</x>
+        <y>1030</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -1484,22 +1408,11 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget_7">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>1030</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="input_activation_layout"/>
-     </widget>
      <widget class="QLabel" name="batch_size_label">
       <property name="geometry">
        <rect>
-        <x>45</x>
-        <y>1130</y>
+        <x>405</x>
+        <y>1030</y>
         <width>81</width>
         <height>31</height>
        </rect>
@@ -1549,8 +1462,8 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLineEdit" name="learning_rate_upper_bound_ledit">
       <property name="geometry">
        <rect>
-        <x>594</x>
-        <y>1130</y>
+        <x>234</x>
+        <y>1080</y>
         <width>87</width>
         <height>31</height>
        </rect>
@@ -1571,8 +1484,8 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLabel" name="loss_label">
       <property name="geometry">
        <rect>
-        <x>453</x>
-        <y>1180</y>
+        <x>93</x>
+        <y>1130</y>
         <width>31</width>
         <height>31</height>
        </rect>
@@ -1590,7 +1503,7 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLineEdit" name="hidden_neurons_ledit">
       <property name="geometry">
        <rect>
-        <x>490</x>
+        <x>130</x>
         <y>980</y>
         <width>191</width>
         <height>31</height>
@@ -1609,8 +1522,8 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QLabel" name="learning_rate_label">
       <property name="geometry">
        <rect>
-        <x>387</x>
-        <y>1130</y>
+        <x>27</x>
+        <y>1080</y>
         <width>101</width>
         <height>31</height>
        </rect>
@@ -1628,8 +1541,8 @@ border-color: rgb(186, 189, 182);</string>
      <widget class="QWidget" name="horizontalLayoutWidget_10">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>1180</y>
+        <x>130</x>
+        <y>1130</y>
         <width>191</width>
         <height>31</height>
        </rect>
@@ -1658,30 +1571,11 @@ border-color: rgb(186, 189, 182);</string>
        <string>Maximum hidden layers</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="input_neurons_ledit">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>980</y>
-        <width>191</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
-border: 1px solid;
-border-color: rgb(186, 189, 182);</string>
-      </property>
-      <property name="placeholderText">
-       <string>[2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]]</string>
-      </property>
-     </widget>
      <widget class="QLineEdit" name="batch_size_ledit">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>1130</y>
+        <x>490</x>
+        <y>1030</y>
         <width>191</width>
         <height>31</height>
        </rect>
@@ -1700,7 +1594,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>140</x>
-        <y>1220</y>
+        <y>1170</y>
         <width>141</width>
         <height>25</height>
        </rect>
@@ -1722,7 +1616,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1250</y>
+        <y>1200</y>
         <width>121</width>
         <height>31</height>
        </rect>
@@ -1756,7 +1650,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>1220</y>
+        <y>1170</y>
         <width>131</width>
         <height>25</height>
        </rect>
@@ -1778,7 +1672,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>490</x>
-        <y>1250</y>
+        <y>1200</y>
         <width>81</width>
         <height>31</height>
        </rect>
@@ -1812,7 +1706,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>1220</y>
+        <y>1170</y>
         <width>91</width>
         <height>25</height>
        </rect>
@@ -1834,7 +1728,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>380</x>
-        <y>1250</y>
+        <y>1200</y>
         <width>91</width>
         <height>31</height>
        </rect>
@@ -1868,7 +1762,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>590</x>
-        <y>1250</y>
+        <y>1200</y>
         <width>91</width>
         <height>31</height>
        </rect>
@@ -1902,7 +1796,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>490</x>
-        <y>1220</y>
+        <y>1170</y>
         <width>91</width>
         <height>25</height>
        </rect>
@@ -1924,7 +1818,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>590</x>
-        <y>1220</y>
+        <y>1170</y>
         <width>101</width>
         <height>25</height>
        </rect>
@@ -1946,7 +1840,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>1250</y>
+        <y>1200</y>
         <width>81</width>
         <height>31</height>
        </rect>
@@ -1980,7 +1874,7 @@ border-color: rgb(186, 189, 182);</string>
       <property name="geometry">
        <rect>
         <x>140</x>
-        <y>1250</y>
+        <y>1200</y>
         <width>121</width>
         <height>31</height>
        </rect>
@@ -1994,17 +1888,12 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
-      <item>
-       <property name="text">
-        <string>Brier score</string>
-       </property>
-      </item>
      </widget>
      <widget class="QLabel" name="tune_repeats_label">
       <property name="geometry">
        <rect>
         <x>380</x>
-        <y>1220</y>
+        <y>1170</y>
         <width>101</width>
         <height>25</height>
        </rect>

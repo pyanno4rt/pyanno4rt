@@ -126,7 +126,9 @@ class SettingsWindow(QMainWindow, Ui_settings_window):
 
         return (language, light_mode, resolution, includes)
 
-    def set_fields(self, settings):
+    def set_fields(
+            self,
+            settings):
         """."""
 
         # 

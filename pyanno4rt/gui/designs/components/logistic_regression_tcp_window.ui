@@ -55,7 +55,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>-772</y>
+       <y>-705</y>
        <width>690</width>
        <height>1429</height>
       </rect>
@@ -1672,11 +1672,6 @@ background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
       </property>
-      <item>
-       <property name="text">
-        <string>Brier score</string>
-       </property>
-      </item>
      </widget>
      <widget class="QLabel" name="tune_repeats_label">
       <property name="geometry">

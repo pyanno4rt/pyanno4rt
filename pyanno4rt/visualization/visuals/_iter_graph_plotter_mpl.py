@@ -99,14 +99,15 @@ class IterGraphPlotterMPL():
 
         # Determine the step length on the x-axis
         x_step = min(
-            (1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000,
-             50000, 100000),
+            (1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000,
+             20000, 50000, 100000, 200000, 500000, 1000000),
             key=lambda x: abs(ceil(
                 max(len(track) for track in tracker.values())/x)-20))
 
         # Determine the step length on the y-axis
         y_step = min(
-             (5e-5, 5e-4, 5e-3, 5e-2, 5e-1, 5e0, 5e1, 5e2, 5e3, 5e4, 5e5),
+             (5e-7, 5e-6, 5e-5, 5e-4, 5e-3, 5e-2, 5e-1, 5e0, 5e1, 5e2, 5e3,
+              5e4, 5e5, 5e6, 5e7),
              key=lambda x: abs(ceil((
                  max(max([value for value in track if value is not None])
                      for track in tracker.values())

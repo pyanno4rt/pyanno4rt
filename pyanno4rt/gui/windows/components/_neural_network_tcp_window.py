@@ -18,7 +18,12 @@ from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, sbox, tbutton_composer, tbutton_data_window)
 from pyanno4rt.gui.windows import DataColumnsWindow
+from pyanno4rt.learning import ModelParameters
+from pyanno4rt.learning.evaluation import DisplayOptions
+from pyanno4rt.learning.tune_spaces import TuneSpaceNN
 import pyanno4rt.learning._maps as maps
+from pyanno4rt.optimization.components import NeuralNetworkTCP
+from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition
 
@@ -50,8 +55,8 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
         # Get the parent window
         self.parent = parent
 
-        # Initialize the data columns dictionary
-        self.data_columns = {}
+        # Initialize the data columns list
+        self.data_columns = []
 
         # Initialize the edit boolean
         self.edit = False
@@ -61,7 +66,6 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
 
         # Initialize the checkable combo boxes
         self.segment_link_cbox = CheckableComboBox()
-        self.input_activation_cbox = CheckableComboBox()
         self.hidden_activation_cbox = CheckableComboBox()
         self.optimizer_cbox = CheckableComboBox()
         self.loss_cbox = CheckableComboBox()
@@ -73,10 +77,6 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
                 'segment_link_cbox': (
                     426, list(self.parent.segments), False,
                     'segment_link_layout'),
-                'input_activation_cbox': (
-                    191, ['elu', 'gelu', 'leaky_relu', 'linear', 'relu',
-                          'softmax', 'softplus', 'swish'],
-                    True, 'input_activation_layout'),
                 'hidden_activation_cbox': (
                     191, ['elu', 'gelu', 'leaky_relu', 'linear', 'relu',
                           'softmax', 'softplus', 'swish'],
@@ -91,7 +91,8 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
                     401, ['Logloss', 'Brier score', 'Subset accuracy',
                           'Cohen Kappa', 'Hamming loss', 'Jaccard score',
                           'Precision', 'Recall', 'F1 score', 'MCC', 'AUC'],
-                    True, 'kpi_layout')}.items():
+                    True, 'kpi_layout')
+                }.items():
 
             # Get the combo box
             combo_box = getattr(self, box)
@@ -133,11 +134,8 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
             'prep_steps_ledit': ledit,
             'architecture_cbox': cbox,
             'max_hidden_layers_sbox': sbox,
-            'input_neurons_ledit': ledit,
             'hidden_neurons_ledit': ledit,
-            'input_activation_cbox': cbox,
             'hidden_activation_cbox': cbox,
-            'input_dropout_ledit': ledit,
             'hidden_dropout_ledit': ledit,
             'batch_size_ledit': ledit,
             'learning_rate_lower_bound_ledit': ledit,
@@ -160,11 +158,11 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
         for box in (
                 'segment_cbox', 'type_cbox', 'embedding_cbox',
                 'segment_link_cbox', 'rank_sbox', 'architecture_cbox',
-                'max_hidden_layers_sbox', 'input_activation_cbox',
-                'hidden_activation_cbox', 'optimizer_cbox', 'loss_cbox',
-                'tune_eval_sbox', 'tune_score_cbox', 'tune_splits_sbox',
-                'tune_repeats_sbox', 'oof_splits_sbox', 'oof_repeats_sbox',
-                'graphs_cbox', 'kpi_cbox'):
+                'max_hidden_layers_sbox', 'hidden_activation_cbox',
+                'optimizer_cbox', 'loss_cbox', 'tune_eval_sbox',
+                'tune_score_cbox', 'tune_splits_sbox', 'tune_repeats_sbox',
+                'oof_splits_sbox', 'oof_repeats_sbox', 'graphs_cbox',
+                'kpi_cbox'):
 
             # Install the custom event filters
             getattr(self, box).installEventFilter(parent)
@@ -173,9 +171,8 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
         self.set_zero_line_cursor((
             'weight_ledit', 'lower_bound_ledit', 'upper_bound_ledit',
             'model_label_ledit', 'model_path_ledit', 'data_path_ledit',
-            'prep_steps_ledit', 'input_neurons_ledit', 'hidden_neurons_ledit',
-            'input_dropout_ledit', 'hidden_dropout_ledit', 'batch_size_ledit',
-            'learning_rate_lower_bound_ledit',
+            'prep_steps_ledit', 'hidden_neurons_ledit', 'hidden_dropout_ledit',
+            'batch_size_ledit', 'learning_rate_lower_bound_ledit',
             'learning_rate_upper_bound_ledit', 'identifier_ledit'))
 
         # Disable some fields
@@ -298,8 +295,9 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
 
         Parameters
         ----------
-        component : dict
-            Dictionary with the information on the optimization component.
+        component : object of class \
+            :class:`~pyanno4rt.optimization.components._neural_network_tcp.NeuralNetworkTCP`
+            The object used to represent the optimization component.
 
         edit : bool
             Indicator for the editing of the component.
@@ -308,102 +306,56 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
         # Get the edit attribute from the argument
         self.edit = edit
 
-        # Get the segment associated with the component
-        segment = next(iter(component))
-
         # Get the component parameters
-        ctype = component[segment]['type']
-        model_parameters = component[segment]['instance']['parameters'][
-            'model_parameters']
-        embedding = component[segment]['instance']['parameters'].get(
-            'embedding', 'active')
-        weight = component[segment]['instance']['parameters'].get(
-            'weight', 1.0)
-        rank = component[segment]['instance']['parameters'].get('rank', 1)
-        lower, upper = component[segment]['instance']['parameters'].get(
-            'bounds', (0.0, 1.0))
-        link = component[segment]['instance']['parameters'].get('link')
-        identifier = component[segment]['instance']['parameters'].get(
-            'identifier')
-        display = component[segment]['instance']['parameters'].get(
-            'display', True)
+        (segment, model_parameters, component_type, embedding, weight, rank,
+         bounds, link, identifier, display) = component.arguments.values()
 
-        # Get the data columns dictionary
+        # Convert the bounds
+        lower, upper = (None, None) if bounds is None else bounds
+
+        # Get the data columns list
         self.data_columns = model_parameters['data_columns']
 
         # Get the tune space
-        tune_space = model_parameters.get(
-            'tune_space', {
-                'input_neuron_number': [2**x for x in range(1, 12)],
-                'input_activation': ['elu', 'gelu', 'leaky_relu', 'linear',
-                                     'relu', 'softmax', 'softplus', 'swish'],
-                'hidden_neuron_number': [2**x for x in range(1, 12)],
-                'hidden_activation': ['elu', 'gelu', 'leaky_relu', 'linear',
-                                      'relu', 'softmax', 'softplus', 'swish'],
-                'input_dropout_rate': [0.0, 0.1, 0.25, 0.5, 0.75],
-                'hidden_dropout_rate': [0.0, 0.1, 0.25, 0.5, 0.75],
-                'batch_size': [4, 8, 16, 32],
-                'learning_rate': [1e-5, 1e-2],
-                'optimizer': ['Adam', 'Ftrl', 'SGD'],
-                'loss': ['BCE', 'FocalBCE', 'KLD']})
+        tune_space = model_parameters.tune_space
 
         # Get the display options
-        display_options = model_parameters.get(
-            'display_options', {
-                'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
-                'kpis': ['Logloss', 'Brier score', 'Subset accuracy',
-                         'Cohen Kappa', 'Hamming loss', 'Jaccard score',
-                         'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']})
+        display_options = model_parameters.display_options
 
         # Loop over the fields with 'setText' method
         for key, value in {
-                'weight_ledit': '' if weight == 1.0 else str(float(weight)),
-                'lower_bound_ledit': '' if lower == 0.0 else str(float(lower)),
-                'upper_bound_ledit': '' if upper == 1.0 else str(float(upper)),
-                'model_label_ledit': model_parameters['model_label'],
+                'weight_ledit': '' if weight == 1.0 else str(weight),
+                'lower_bound_ledit': '' if lower is None else str(lower),
+                'upper_bound_ledit': '' if upper is None else str(upper),
+                'model_label_ledit': model_parameters.model_label,
                 'model_path_ledit': (
-                    '' if not model_parameters.get('model_folder_path')
-                    else abspath(model_parameters['model_folder_path'])),
+                    '' if not model_parameters.model_folder_path
+                    else abspath(model_parameters.model_folder_path)),
                 'data_path_ledit': (
-                    '' if not model_parameters.get('data_path')
-                    else abspath(model_parameters['data_path'])),
+                    '' if not model_parameters.data_path
+                    else abspath(model_parameters.data_path)),
                 'prep_steps_ledit': (
-                    '' if not model_parameters.get('preprocessing_steps')
-                    or model_parameters['preprocessing_steps'] == ['Identity']
-                    else str(model_parameters['preprocessing_steps']).replace(
+                    '' if not model_parameters.preprocessing
+                    or model_parameters.preprocessing == ['Identity']
+                    else str(model_parameters.preprocessing).replace(
                         "\'", '')),
-                'input_neurons_ledit': (
-                    '' if not tune_space.get('input_neuron_number')
-                    or tune_space['input_neuron_number'] == [
-                        2**x for x in range(1, 12)]
-                    else str(tune_space['input_neuron_number'])),
                 'hidden_neurons_ledit': (
-                    '' if not tune_space.get('hidden_neuron_number')
-                    or tune_space['hidden_neuron_number'] == [
+                    '' if tune_space.hidden_neuron_number == [
                         2**x for x in range(1, 12)]
-                    else str(tune_space['hidden_neuron_number'])),
-                'input_dropout_ledit': (
-                    '' if not tune_space.get('input_dropout_rate')
-                    or tune_space['input_dropout_rate'] == [
-                        0.0, 0.1, 0.25, 0.5, 0.75]
-                    else str(tune_space['input_dropout_rate'])),
+                    else str(tune_space.hidden_neuron_number)),
                 'hidden_dropout_ledit': (
-                    '' if not tune_space.get('hidden_dropout_rate')
-                    or tune_space['hidden_dropout_rate'] == [
+                    '' if tune_space.hidden_dropout_rate == [
                         0.0, 0.1, 0.25, 0.5, 0.75]
-                    else str(tune_space['hidden_dropout_rate'])),
+                    else str(tune_space.hidden_dropout_rate)),
                 'batch_size_ledit': (
-                    '' if not tune_space.get('batch_size')
-                    or tune_space['batch_size'] == [4, 8, 16, 32]
-                    else str(tune_space['batch_size'])),
+                    '' if tune_space.batch_size == [4, 8, 16, 32]
+                    else str(tune_space.batch_size)),
                 'learning_rate_lower_bound_ledit': (
-                    '' if not tune_space.get('learning_rate')
-                    or tune_space['learning_rate'][0] == 1e-5
-                    else str(tune_space['learning_rate'][0])),
+                    '' if tune_space.learning_rate[0] == 1e-5
+                    else str(tune_space.learning_rate[0])),
                 'learning_rate_upper_bound_ledit': (
-                    '' if not tune_space.get('learning_rate')
-                    or tune_space['learning_rate'][1] == 1e-2
-                    else str(tune_space['learning_rate'][1])),
+                    '' if tune_space.learning_rate[1] == 1e-2
+                    else str(tune_space.learning_rate[1])),
                 'identifier_ledit': '' if not identifier else identifier
                 }.items():
 
@@ -413,13 +365,10 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
         # Loop over the fields with 'setCurrentText' method
         for key, value in {
                 'segment_cbox': segment,
-                'type_cbox': ctype,
+                'type_cbox': component_type,
                 'embedding_cbox': embedding,
-                'architecture_cbox': (
-                    'vanilla' if not model_parameters.get('architecture')
-                    else model_parameters['architecture']),
-                'tune_score_cbox': model_parameters.get(
-                    'tune_score', 'Logloss')
+                'architecture_cbox': model_parameters.architecture,
+                'tune_score_cbox': model_parameters.tune_score
                 }.items():
 
             # Set the text
@@ -428,14 +377,12 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
         # Loop over the fields with 'setValue' method
         for key, value in {
                 'rank_sbox': rank,
-                'max_hidden_layers_sbox': (
-                    2 if not model_parameters.get('max_hidden_layers')
-                    else model_parameters['max_hidden_layers']),
-                'tune_eval_sbox': model_parameters.get('tune_evaluations', 50),
-                'tune_splits_sbox': model_parameters.get('tune_splits', 5),
-                'tune_repeats_sbox': model_parameters.get('tune_repeats', 1),
-                'oof_splits_sbox': model_parameters.get('oof_splits', 5),
-                'oof_repeats_sbox': model_parameters.get('oof_repeats', 1)
+                'max_hidden_layers_sbox': model_parameters.max_hidden_layers,
+                'tune_eval_sbox': model_parameters.tune_evaluations,
+                'tune_splits_sbox': model_parameters.tune_splits,
+                'tune_repeats_sbox': model_parameters.tune_repeats,
+                'oof_splits_sbox': model_parameters.oof_splits,
+                'oof_repeats_sbox': model_parameters.oof_repeats
                 }.items():
 
             # Set the value
@@ -443,12 +390,9 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
 
         # Loop over the fields with 'setCheckState' method
         for key, value in {
-                'write_features_check': (
-                    2*model_parameters.get('write_features', False)),
-                'inspect_model_check': (
-                    2*model_parameters.get('inspect_model', False)),
-                'evaluate_model_check': (
-                    2*model_parameters.get('evaluate_model', False)),
+                'write_features_check': 2*model_parameters.write_features,
+                'inspect_model_check': 2*model_parameters.inspect,
+                'evaluate_model_check': 2*model_parameters.evaluate,
                 'disp_component_check': 2*display
                 }.items():
 
@@ -458,12 +402,12 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
         # Loop over the checkable combo boxes with their selections
         for box, selection in {
                 'segment_link_cbox': [] if not link else link,
-                'input_activation_cbox': tune_space['input_activation'],
-                'hidden_activation_cbox': tune_space['hidden_activation'],
-                'optimizer_cbox': tune_space['optimizer'],
-                'loss_cbox': tune_space['loss'],
-                'graphs_cbox': display_options['graphs'],
-                'kpi_cbox': display_options['kpis']}.items():
+                'hidden_activation_cbox': tune_space.hidden_activation,
+                'optimizer_cbox': tune_space.optimizer,
+                'loss_cbox': tune_space.loss,
+                'graphs_cbox': display_options.graphs,
+                'kpi_cbox': display_options.kpis
+                }.items():
 
             # Get the combo box
             combo_box = getattr(self, box)
@@ -480,108 +424,86 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
         self.set_zero_line_cursor((
             'weight_ledit', 'lower_bound_ledit', 'upper_bound_ledit',
             'model_label_ledit', 'model_path_ledit', 'data_path_ledit',
-            'prep_steps_ledit', 'input_neurons_ledit', 'hidden_neurons_ledit',
-            'input_dropout_ledit', 'hidden_dropout_ledit', 'batch_size_ledit',
-            'learning_rate_lower_bound_ledit',
+            'prep_steps_ledit', 'hidden_neurons_ledit', 'hidden_dropout_ledit',
+            'batch_size_ledit', 'learning_rate_lower_bound_ledit',
             'learning_rate_upper_bound_ledit', 'identifier_ledit'))
 
     def save(self):
         """Save the fields to a component."""
 
         # Get the model parameters
-        model_parameters = {
-            'model_label': self.model_label_ledit.text(),
-            'model_folder_path': (
+        model_parameters = ModelParameters(
+            model_label=self.model_label_ledit.text(),
+            model_type='neural_network',
+            model_folder_path=(
                 None if self.model_path_ledit.text() == ''
                 else abspath(self.model_path_ledit.text())),
-            'data_path': (
+            data_path=(
                 None if self.data_path_ledit.text() == ''
                 else abspath(self.data_path_ledit.text())),
-            'data_columns': self.data_columns,
-            'preprocessing_steps': (
+            data_columns=self.data_columns,
+            preprocessing=(
                 ['Identity'] if self.prep_steps_ledit.text() == ''
                 else self.prep_steps_ledit.text().strip('][').split(', ')),
-            'architecture': self.architecture_cbox.currentText(),
-            'max_hidden_layers': self.max_hidden_layers_sbox.value(),
-            'tune_space': {
-                'input_neuron_number': (
-                    [2**x for x in range(1, 12)]
-                    if self.input_neurons_ledit.text() == ''
-                    else loads(self.input_neurons_ledit.text())),
-                'input_activation': self.input_activation_cbox.currentData(),
-                'hidden_neuron_number': (
+            architecture=self.architecture_cbox.currentText(),
+            max_hidden_layers=self.max_hidden_layers_sbox.value(),
+            tune_space=TuneSpaceNN(
+                hidden_neuron_number=(
                     [2**x for x in range(1, 12)]
                     if self.hidden_neurons_ledit.text() == ''
                     else loads(self.hidden_neurons_ledit.text())),
-                'hidden_activation': self.hidden_activation_cbox.currentData(),
-                'input_dropout_rate': (
-                    [0.0, 0.1, 0.25, 0.5, 0.75]
-                    if self.input_dropout_ledit.text() == ''
-                    else loads(self.input_dropout_ledit.text())),
-                'hidden_dropout_rate': (
+                hidden_activation=self.hidden_activation_cbox.currentData(),
+                hidden_dropout_rate=(
                     [0.0, 0.1, 0.25, 0.5, 0.75]
                     if self.hidden_dropout_ledit.text() == ''
                     else loads(self.hidden_dropout_ledit.text())),
-                'batch_size': (
-                    [4, 8, 16, 32]
-                    if self.batch_size_ledit.text() == ''
+                batch_size=(
+                    [4, 8, 16, 32] if self.batch_size_ledit.text() == ''
                     else loads(self.batch_size_ledit.text())),
-                'learning_rate': [
+                learning_rate=[
                     1e-5 if self.learning_rate_lower_bound_ledit.text() == ''
-                    else float(self.learning_rate_lower_bound_ledit.text()),
+                    else string_to_numeric(
+                        self.learning_rate_lower_bound_ledit.text()),
                     1e-2 if self.learning_rate_upper_bound_ledit.text() == ''
-                    else float(self.learning_rate_upper_bound_ledit.text())],
-                'optimizer': self.optimizer_cbox.currentData(),
-                'loss': self.loss_cbox.currentData()},
-            'tune_evaluations': self.tune_eval_sbox.value(),
-            'tune_score': self.tune_score_cbox.currentText(),
-            'tune_splits': self.tune_splits_sbox.value(),
-            'tune_repeats': self.tune_repeats_sbox.value(),
-            'inspect_model': self.inspect_model_check.isChecked(),
-            'evaluate_model': self.evaluate_model_check.isChecked(),
-            'oof_splits': self.oof_splits_sbox.value(),
-            'oof_repeats': self.oof_repeats_sbox.value(),
-            'write_features': self.write_features_check.isChecked(),
-            'display_options': {
-                'graphs': self.graphs_cbox.currentData(),
-                'kpis': self.kpi_cbox.currentData()}}
+                    else string_to_numeric(
+                        self.learning_rate_upper_bound_ledit.text())],
+                optimizer=self.optimizer_cbox.currentData(),
+                loss=self.loss_cbox.currentData()),
+            tune_evaluations=self.tune_eval_sbox.value(),
+            tune_score=self.tune_score_cbox.currentText(),
+            tune_splits=self.tune_splits_sbox.value(),
+            tune_repeats=self.tune_repeats_sbox.value(),
+            inspect=self.inspect_model_check.isChecked(),
+            evaluate=self.evaluate_model_check.isChecked(),
+            oof_splits=self.oof_splits_sbox.value(),
+            oof_repeats=self.oof_repeats_sbox.value(),
+            write_features=self.write_features_check.isChecked(),
+            display_options=DisplayOptions(
+                graphs=self.graphs_cbox.currentData(),
+                kpis=self.kpi_cbox.currentData()))
 
-        # Configure the component dictionary
-        component = {
-            self.segment_cbox.currentText(): {
-                'type': self.type_cbox.currentText(),
-                'instance': {
-                    'function': 'Neural Network TCP',
-                    'parameters': {
-                        'model_parameters': model_parameters,
-                        'embedding': self.embedding_cbox.currentText(),
-                        'weight': (
-                            1.0 if self.weight_ledit.text() == ''
-                            else float(self.weight_ledit.text())),
-                        'rank': self.rank_sbox.value(),
-                        'bounds': [
-                            0.0 if self.lower_bound_ledit.text() == ''
-                            else float(self.lower_bound_ledit.text()),
-                            1.0 if self.upper_bound_ledit.text() == ''
-                            else float(self.upper_bound_ledit.text())],
-                        'link': (
-                            None
-                            if len(self.segment_link_cbox.currentData()) == 0
-                            else self.segment_link_cbox.currentData()),
-                        'identifier': (
-                            None if self.identifier_ledit.text() == ''
-                            else self.identifier_ledit.text()),
-                        'display': self.disp_component_check.isChecked()}}}}
-
-        # Get the component and function parameters
-        cparams = component[self.segment_cbox.currentText()]
-        fparams = cparams['instance']['parameters']
-
-        # Get the required parameter values
-        ctype = cparams['type']
-        identifier = fparams['identifier']
-        embedding = f'embedding: {str(fparams["embedding"])}'
-        weight = f'weight: {str(fparams["weight"])}'
+        # Get the component
+        component = NeuralNetworkTCP(
+            segment=self.segment_cbox.currentText(),
+            model_parameters=model_parameters,
+            component_type=self.type_cbox.currentText(),
+            embedding=self.embedding_cbox.currentText(),
+            weight=(
+                1.0 if self.weight_ledit.text() == ''
+                else string_to_numeric(self.weight_ledit.text())),
+            rank=self.rank_sbox.value(),
+            bounds=[
+                None if self.lower_bound_ledit.text() == ''
+                else string_to_numeric(self.lower_bound_ledit.text()),
+                None if self.upper_bound_ledit.text() == ''
+                else string_to_numeric(self.upper_bound_ledit.text())],
+            link=(
+                None if len(self.segment_link_cbox.currentData()) == 0
+                else self.segment_link_cbox.currentData()),
+            identifier=(
+                None if self.identifier_ledit.text() == ''
+                else self.identifier_ledit.text()),
+            display=self.disp_component_check.isChecked())
 
         # Map the component and segment type to the icon paths
         paths = {
@@ -596,7 +518,8 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
 
         # Get the icon path
         icon_path = paths[
-            f'{ctype}_{self.parent.segments[self.segment_cbox.currentText()]}']
+            f'{component.arguments["component_type"]}_'
+            f'{self.parent.segments[self.segment_cbox.currentText()]}']
 
         # Initialize the icon object
         icon = QIcon()
@@ -606,8 +529,12 @@ class NeuralNetworkTCPWindow(QMainWindow, Ui_neural_network_tcp_window):
 
         # Get the component string
         component_string = ' - '.join((substring for substring in (
-            self.segment_cbox.currentText(), 'Neural Network TCP', identifier,
-            embedding, weight) if substring))
+            self.segment_cbox.currentText(), component.name,
+            f'weight: {component.arguments["weight"]}',
+            f'embedding: {component.arguments["embedding"]}',
+            f'link: {component.arguments["link"]}',
+            f'identifier: {component.arguments["identifier"]}')
+            if 'None' not in substring))
 
         # Check if the component item is edited
         if self.edit:

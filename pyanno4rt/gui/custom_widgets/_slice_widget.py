@@ -172,7 +172,7 @@ class SliceWidget(QWidget):
         # 
         interpolated_ct, interpolated_cst = interpolate_ct(
             computed_tomography, segmentation,
-            plan.configuration['dose_resolution'])
+            plan.configuration.dose_resolution)
 
         # 
         self.ct_cube = interpolated_ct['cubeHU']

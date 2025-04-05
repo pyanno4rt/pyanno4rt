@@ -65,7 +65,7 @@ class TuneSpaceKNN():
 
         # Set the default argument values
         defaults = {
-            'n_neighbors': [0],
+            'n_neighbors': list(range(1, 11)),
             'weights': ['uniform', 'distance'],
             'leaf_size': list(range(1, 501)),
             'p': [1, 2, 3]}
@@ -127,7 +127,7 @@ class TuneSpaceKNN():
             'n_neighbors': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_value, reference=0, sign='>=', is_vector=True)),
             'weights': (
                 partial(check_type, types=list),
                 partial(check_value_in_set, options=('distance', 'uniform'))),

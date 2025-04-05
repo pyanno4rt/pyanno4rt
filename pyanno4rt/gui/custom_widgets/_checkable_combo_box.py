@@ -121,10 +121,16 @@ class CheckableComboBox(QComboBox):
         else:
             item.setData(Qt.Unchecked, Qt.CheckStateRole)
         self.model().appendRow(item)
+        self.updateText()
 
     def addItems(self, texts, checked=True):
         for i, text in enumerate(texts):
             self.addItem(text, checked)
+        self.updateText()
+
+    def removeItem(self):
+        self.model().removeRow(self.model().rowCount()-1)
+        self.updateText()
 
     def currentData(self):
         # Return the list of selected items data

@@ -29,7 +29,7 @@ class Ui_support_vector_machine_ntcp_window(object):
         self.scroll_area.setStyleSheet("border-color: transparent;")
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, -830, 690, 1489))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, -808, 690, 1489))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 90, 111, 31))
@@ -655,7 +655,6 @@ class Ui_support_vector_machine_ntcp_window(object):
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.tune_score_cbox.setObjectName("tune_score_cbox")
-        self.tune_score_cbox.addItem("")
         self.tune_repeats_label = QtWidgets.QLabel(self.scroll_contents)
         self.tune_repeats_label.setGeometry(QtCore.QRect(380, 1040, 101, 25))
         font = QtGui.QFont()
@@ -738,5 +737,4 @@ class Ui_support_vector_machine_ntcp_window(object):
         self.tune_splits_label.setText(_translate("support_vector_machine_ntcp_window", "Tune splits"))
         self.oof_splits_label.setText(_translate("support_vector_machine_ntcp_window", "OOF splits"))
         self.oof_repeats_label.setText(_translate("support_vector_machine_ntcp_window", "OOF repeats"))
-        self.tune_score_cbox.setItemText(0, _translate("support_vector_machine_ntcp_window", "Brier score"))
         self.tune_repeats_label.setText(_translate("support_vector_machine_ntcp_window", "Tune repeats"))

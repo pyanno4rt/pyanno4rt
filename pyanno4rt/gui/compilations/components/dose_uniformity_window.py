@@ -29,7 +29,7 @@ class Ui_dose_uniformity_window(object):
         self.scroll_area.setStyleSheet("border-color: transparent;")
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, 0, 690, 679))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, -193, 690, 679))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 100, 111, 31))
@@ -237,6 +237,7 @@ class Ui_dose_uniformity_window(object):
 "background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
+        self.lower_bound_ledit.setText("")
         self.lower_bound_ledit.setAlignment(QtCore.Qt.AlignCenter)
         self.lower_bound_ledit.setObjectName("lower_bound_ledit")
         self.segment_cbox = QtWidgets.QComboBox(self.scroll_contents)
@@ -284,7 +285,7 @@ class Ui_dose_uniformity_window(object):
         self.conjunction.setText(_translate("dose_uniformity_window", "-"))
         self.optimization_label.setText(_translate("dose_uniformity_window", "Optimization"))
         self.rank_label.setText(_translate("dose_uniformity_window", "Rank"))
-        self.upper_bound_ledit.setPlaceholderText(_translate("dose_uniformity_window", "None"))
+        self.upper_bound_ledit.setPlaceholderText(_translate("dose_uniformity_window", "+∞"))
         self.weight_ledit.setPlaceholderText(_translate("dose_uniformity_window", "1.0"))
         self.disp_component_check.setText(_translate("dose_uniformity_window", "Display component"))
-        self.lower_bound_ledit.setPlaceholderText(_translate("dose_uniformity_window", "0.0"))
+        self.lower_bound_ledit.setPlaceholderText(_translate("dose_uniformity_window", "-∞"))

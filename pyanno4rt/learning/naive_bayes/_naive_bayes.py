@@ -47,14 +47,6 @@ class NaiveBayesModel(MachineLearningModel):
         # Get the internal hyperparameter search space
         tune_space_dict = tune_space.to_dict()
 
-        # Check if the dataset holds the label values
-        if dataset['label_values'] is not None:
-
-            # Add the mean label prior
-            tune_space_dict['priors'] += [[
-                mean(dataset['label_values']),
-                1-mean(dataset['label_values'])]]
-
         # Configure the hyperopt search space
         hp_space = {
             'priors': hp.choice('priors', tune_space_dict['priors']),

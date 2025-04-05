@@ -18,6 +18,7 @@ from pyanno4rt.gui.compilations.data_columns_window import (
     Ui_data_columns_window)
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, sbox, tbutton_composer)
+from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import apply, string_to_numeric
 
@@ -227,14 +228,14 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         # Get the selected preset and state from the input dialog
         selection, checked = QInputDialog.getItem(
             self, "Load preset", "Select preset:",
-            [''] + list(self.parent.parent.data_presets.keys()),
+            [''] + list(self.parent.parent.data_presets),
             current=0, editable=False)
 
         # Check if the dialog has been confirmed with a non-empty selection
         if checked and selection != '':
 
             # Load the data columns from the presets dictionary
-            self.load(self.parent.parent.data_presets.get(selection, {}))
+            self.load(self.parent.parent.data_presets.get(selection, []))
 
     def load(self, preset=None):
         """Load the data columns into the table."""
@@ -245,7 +246,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
         # Add the horizontal header labels
         self.feature_table.setHorizontalHeaderLabels(
-            ['Scale', 'Segment', 'Function', 'Argument', 'Value'])
+            ['Segment', 'Function', 'Argument', 'Value', 'Scale'])
 
         # Set the resize mode for the horizontal section
         self.feature_table.horizontalHeader().setSectionResizeMode(
@@ -254,15 +255,15 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         # Check if no preset has been passed
         if preset is None:
 
-            # Load the column names and dictionary from the model/dataset
+            # Load the column names and list from the dataset/model
             column_names, data_columns = self.load_columns_from_data()
 
         else:
 
-            # Load the column names from the data
+            # Load the column names from the dataset
             column_names, _ = self.load_columns_from_data()
 
-            # Load the data columns dictionary from the preset
+            # Load the data columns list from the preset
             data_columns = preset
 
         # Check if the columns are not loaded from a model folder
@@ -288,14 +289,16 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         self.time_variable_cbox.addItems([''] + column_names)
 
         # Insert the feature values
-        apply(self.insert_feature, {
-            key: value for key, value in data_columns.items()
-            if value['type'] == 'feature'}.items())
+        apply(
+            self.insert_feature,
+            (next(iter(column.to_dict().values())) for column in data_columns
+             if 'Feature' in type(column).__name__))
 
         # Insert the label values
-        apply(self.insert_label, {
-            key: value for key, value in data_columns.items()
-            if value['type'] == 'label'}.items())
+        apply(
+            self.insert_label,
+            (next(iter(column.to_dict().values())) for column in data_columns
+             if type(column).__name__ == 'Label'))
 
         # Update the time variable combo box
         self.update_by_viewpoint()
@@ -309,8 +312,8 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         list
             The column names read from the model folder or data file path.
 
-        dict
-            Dictionary with the features and the label.
+        list
+            List with the features and the label.
         """
 
         try:
@@ -326,60 +329,72 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
                 configuration = load(file)
 
             # Get the column names from the configuration
-            model_columns = (configuration['feature_names'] + list(set(filter(
-                None, [configuration['label_name'],
-                       configuration['time_variable_name']]))))
+            column_names = (configuration['feature_names'] + list(set(filter(
+                None, [configuration['time_variable_name'],
+                       configuration['label_name']]))))
 
-            # Compile the model data columns dictionary
-            model_dictionary = (
-                {item[0]: item[1] | {
-                    'type': 'feature',
-                    'scale': configuration['feature_scales'][index]}
-                    for index, item in enumerate(
-                            configuration['feature_definitions'].items())}
-                | {configuration['label_name']: {
-                    'type': 'label',
-                    'viewpoint': configuration['label_viewpoint'],
-                    'time_variable': configuration['time_variable_name'],
-                    'bounds': configuration['label_bounds']}})
+            # Get the column objects from the configuration
+            column_objects = (
+                [DynamicFeature(
+                    column=item[0],
+                    segment=item[1]['segment'],
+                    function=item[1]['function'],
+                    argument=item[1]['argument'],
+                    scale=configuration['feature_scales'][index])
+                 if item[1]['value'] is None else
+                 StaticFeature(
+                     column=item[0],
+                     value=item[1]['value'],
+                     scale=configuration['feature_scales'][index])
+                 for index, item in enumerate(
+                     configuration['feature_definitions'].items())]
+                + [Label(
+                    column=configuration['label_name'],
+                    viewpoint=configuration['label_viewpoint'],
+                    time_variable=configuration['time_variable_name'],
+                    bounds=configuration['label_bounds'])])
 
-            # Loop over the model dictionary items
-            for key, value in model_dictionary.items():
+            # Loop over the column objects
+            for item in column_objects:
 
-                # Check if the item is a feature from the parent data columns
-                if (value['type'] == 'feature' and
-                        key in self.parent.data_columns):
+                # Find the column-matching parent item
+                parent_item = next((
+                    element for element in self.parent.data_columns
+                    if element.column == item.column), None)
 
-                    # Replace the segment name by the data columns dictionary
-                    value['segment'] = self.parent.data_columns[key]['segment']
+                # Check if the parent item exists
+                if parent_item is not None:
+
+                    # Overwrite the item segment
+                    item.segment = parent_item.segment
 
         except FileNotFoundError:
 
-            # Set the model column names to the empty list
-            model_columns = []
+            # Set the column names as empty
+            column_names = []
 
-            # Set the model columns dictionary as empty
-            model_dictionary = {}
+            # Set the columns objects as empty
+            column_objects = []
 
         try:
 
-            # Get the column names from the dataset
+            # Get the tabular column names from the dataset
             tab_data_columns = list(
                 read_csv(self.parent.data_path_ledit.text()).columns)
 
         except FileNotFoundError:
 
-            # Set the dataset column names to the empty list
+            # Set the tabular column names as empty
             tab_data_columns = []
 
-        # Set the column names and the dictionary to the tabular data inputs
-        columns, dictionary = tab_data_columns, self.parent.data_columns
+        # Set the column names and objects to the tabular data inputs
+        columns, objects = tab_data_columns, self.parent.data_columns
 
         # Set the model load indicator to the default
         self.from_model = False
 
-        # Check if model columns have been passed
-        if len(model_columns) >= 2:
+        # Check if column names have been passed
+        if len(column_names) >= 2:
 
             # Set the model load indicator
             self.from_model = len(tab_data_columns) < 2
@@ -387,14 +402,14 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             # Check if the columns are loaded from a model folder
             if self.from_model:
 
-                # Overwrite the columns by the model inputs
-                columns = model_columns
+                # Overwrite the column names by the model inputs
+                columns = column_names
 
-            # Overwrite the columns dictionary by the model inputs
-            dictionary = model_dictionary
+            # Overwrite the columns objects by the model inputs
+            objects = column_objects
 
-        # Return the column names and dictionary
-        return columns, dictionary
+        # Return the column names and objects
+        return columns, objects
 
     def add_dropdown_to_features(
             self,
@@ -432,7 +447,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
                     # Add the action to the submenu
                     submenu.addAction(
-                        column, partial(self.add_default_feature, column))
+                        column, partial(self.insert_default_feature, column))
 
         else:
 
@@ -441,7 +456,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
                 # Add the column to the dropdown menu
                 menu.addAction(
-                    column, partial(self.add_default_feature, column))
+                    column, partial(self.insert_default_feature, column))
 
         # Set the popup mode for the 'plus' button
         self.feature_plus_tbutton.setPopupMode(2)
@@ -449,7 +464,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         # Add the dropdown menu to the 'plus' button
         self.feature_plus_tbutton.setMenu(menu)
 
-    def add_default_feature(
+    def insert_default_feature(
             self,
             label):
         """
@@ -462,9 +477,9 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         """
 
         # Insert the feature
-        self.insert_feature((label, {
-            'type': 'feature', 'scale': 'metric', 'segment': '',
-            'function': '', 'argument': '', 'value': ''}))
+        self.insert_feature({
+            'column': label, 'segment': '', 'function': '', 'argument': '',
+            'value': '', 'scale': 'metric'})
 
         # Move the feature table slider to the bottom
         self.feature_table.verticalScrollBar().setSliderPosition(
@@ -475,14 +490,14 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
     def insert_feature(
             self,
-            item):
+            feature):
         """
         Insert the feature information.
 
         Parameters
         ----------
-        item : tuple
-            Tuple with the feature label and parameter dictionary.
+        feature : dict
+            Dictionary with information on the feature.
         """
 
         def add_combo_box(items, current_text, row, column, action=None):
@@ -521,9 +536,6 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             # Set the cell widget in the feature table
             self.feature_table.setCellWidget(row, column, combo_box)
 
-        # Get the label and the parameters
-        label, parameters = item
-
         # Get the index as the current row count
         index = self.feature_table.rowCount()
 
@@ -533,39 +545,40 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         # Initialize the vertical header
         header = QTableWidgetItem()
 
-        # Set the header text to the label
-        header.setText(label)
+        # Set the header text to the column name
+        header.setText(feature['column'])
 
         # Set the vertical header in the feature table
         self.feature_table.setVerticalHeaderItem(index, header)
 
-        # Add the combo box for the feature scale
-        add_combo_box(
-            items=['metric', 'nominal', 'ordinal'],
-            current_text=parameters['scale'],
-            row=index,
-            column=0)
+        # Get the feature segment
+        segment = feature.get('segment')
 
         # Add the combo box for the feature segment
         add_combo_box(
-            items=(['', self.parent.segment_cbox.currentText()]
-                   + self.parent.segment_link_cbox.currentData()),
-            current_text=(
-                '' if not parameters['segment'] else parameters['segment']),
+            items=(
+                ['', self.parent.segment_cbox.currentText()]
+                + self.parent.segment_link_cbox.currentData()),
+            current_text=('' if segment is None else segment),
             row=index,
-            column=1)
+            column=0)
+
+        # Get the feature function
+        function = feature.get('function')
 
         # Add the combo box for the feature function
         add_combo_box(
             items=[''] + list(maps.FEATURES),
-            current_text=(
-                '' if not parameters['function'] else parameters['function']),
+            current_text=('' if function is None else function),
             row=index,
-            column=2,
+            column=1,
             action=partial(self.update_by_function, index=index))
 
         # Add the feature argument field depending on the function
-        self.update_by_function(index, parameters['argument'])
+        self.update_by_function(index, feature.get('argument'))
+
+        # Get the feature value
+        value = feature.get('value')
 
         # Initialize a line edit for the feature value
         line_edit = QLineEdit()
@@ -574,8 +587,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         line_edit.setStyleSheet(ledit)
 
         # Set the text to the current value
-        line_edit.setText(
-            '' if parameters['value'] is None else str(parameters['value']))
+        line_edit.setText('' if value is None else str(value))
 
         # Check if the columns are loaded from a model folder
         if self.from_model:
@@ -584,57 +596,14 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             line_edit.setEnabled(False)
 
         # Set the cell widget in the feature table
-        self.feature_table.setCellWidget(index, 4, line_edit)
+        self.feature_table.setCellWidget(index, 3, line_edit)
 
-    def insert_label(
-            self,
-            item):
-        """
-        Insert the label information.
-
-        Parameters
-        ----------
-        item : tuple
-            Tuple with the label name and parameter dictionary.
-        """
-
-        # Get the name and the parameters
-        label, parameters = item
-
-        # Set the label name
-        self.column_cbox.setCurrentText(label)
-
-        # Set the label viewpoint
-        self.viewpoint_cbox.setCurrentText(parameters['viewpoint'])
-
-        # Set the time variable
-        self.time_variable_cbox.setCurrentText(
-            '' if not parameters['time_variable']
-            else parameters['time_variable'])
-
-        # Loop over the lower and upper label bound fields
-        for i, field in enumerate(('lower_bound_ledit', 'upper_bound_ledit')):
-
-            # Set the field text
-            getattr(self, field).setText(
-                ''
-                if not parameters['bounds'] or parameters['bounds'][i] == 1.0
-                else str(parameters['bounds'][i]))
-
-        # Check if the columns are loaded from a model folder
-        if self.from_model:
-
-            # Disable some fields
-            self.set_disabled((
-                'column_cbox', 'viewpoint_cbox', 'time_variable_cbox',
-                'lower_bound_ledit', 'upper_bound_ledit'))
-
-        else:
-
-            # Enable some fields
-            self.set_enabled((
-                'column_cbox', 'viewpoint_cbox', 'time_variable_cbox',
-                'lower_bound_ledit', 'upper_bound_ledit'))
+        # Add the combo box for the feature scale
+        add_combo_box(
+            items=['metric', 'nominal', 'ordinal'],
+            current_text=feature.get('scale'),
+            row=index,
+            column=4)
 
     def remove_feature(self):
         """Remove the selected feature."""
@@ -665,7 +634,7 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
         """
 
         # Get the feature function
-        function = self.feature_table.cellWidget(index, 2).currentText()
+        function = self.feature_table.cellWidget(index, 1).currentText()
 
         # Check if the function is 'Dx' or 'Vx'
         if function in ('Dx', 'Vx'):
@@ -760,7 +729,53 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
             widget.setEnabled(False)
 
         # Set the cell widget in the feature table
-        self.feature_table.setCellWidget(index, 3, widget)
+        self.feature_table.setCellWidget(index, 2, widget)
+
+    def insert_label(
+            self,
+            label):
+        """
+        Insert the label information.
+
+        Parameters
+        ----------
+        label : object of class \
+            :class:`~pyanno4rt.learning.features._columns.Label`
+            The object used to represent the label.
+        """
+
+        # Set the label name
+        self.column_cbox.setCurrentText(label['column'])
+
+        # Set the label viewpoint
+        self.viewpoint_cbox.setCurrentText(label['viewpoint'])
+
+        # Set the time variable
+        self.time_variable_cbox.setCurrentText(
+            '' if label['time_variable'] is None else label['time_variable'])
+
+        # Loop over the lower and upper label bound fields
+        for i, field in enumerate(('lower_bound_ledit', 'upper_bound_ledit')):
+
+            # Set the field text
+            getattr(self, field).setText(
+                '' if label['bounds'] is None or label['bounds'][i] == 1.0
+                else str(label['bounds'][i]))
+
+        # Check if the columns are loaded from a model folder
+        if self.from_model:
+
+            # Disable some fields
+            self.set_disabled((
+                'column_cbox', 'viewpoint_cbox', 'time_variable_cbox',
+                'lower_bound_ledit', 'upper_bound_ledit'))
+
+        else:
+
+            # Enable some fields
+            self.set_enabled((
+                'column_cbox', 'viewpoint_cbox', 'time_variable_cbox',
+                'lower_bound_ledit', 'upper_bound_ledit'))
 
     def update_by_viewpoint(self):
         """Update the time variable by the viewpoint."""
@@ -790,40 +805,40 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
         Returns
         -------
-        dict
-            Dictionary with the features and the label.
+        list
+            List with the features and the label.
         """
 
-        def read_cells(index):
-            """Read the cells for a row index."""
+        def get_feature(row):
+            """Convert the row cells to a feature."""
 
-            # Get the feature scale
-            scale = self.feature_table.cellWidget(index, 0).currentText()
+            # Get the column name
+            column = self.feature_table.verticalHeaderItem(row).text()
 
             # Get the feature segment
-            segment = self.feature_table.cellWidget(index, 1).currentText()
+            segment = self.feature_table.cellWidget(row, 0).currentText()
 
             # Get the feature function
-            function = self.feature_table.cellWidget(index, 2).currentText()
+            function = self.feature_table.cellWidget(row, 1).currentText()
 
             # Check if the function is 'Dx' or 'Vx'
             if function in ('Dx', 'Vx'):
 
                 # Get the argument from the spin box
-                argument = self.feature_table.cellWidget(index, 3).value()
+                argument = self.feature_table.cellWidget(row, 2).value()
 
             # Else, check if the feature is 'Dose Gradient' or 'Dose Subvolume'
             elif function in ('Dose Gradient', 'Dose Subvolume'):
 
                 # Get the argument from the combo box
                 argument = (
-                    self.feature_table.cellWidget(index, 3).currentText())
+                    self.feature_table.cellWidget(row, 2).currentText())
 
             # Else, check if the feature is 'Dose Moment'
             elif function == 'Dose Moment':
 
                 # Get the argument from the line edit
-                argument = self.feature_table.cellWidget(index, 3).text()
+                argument = self.feature_table.cellWidget(row, 2).text()
 
             else:
 
@@ -834,49 +849,49 @@ class DataColumnsWindow(QMainWindow, Ui_data_columns_window):
 
                 # Convert the value from string to numeric
                 value = string_to_numeric(
-                    self.feature_table.cellWidget(index, 4).text())
+                    self.feature_table.cellWidget(row, 3).text())
 
             except ValueError:
 
                 # Get the value from the default or as string
                 value = (
                     None
-                    if self.feature_table.cellWidget(index, 4).text() == ''
-                    else self.feature_table.cellWidget(index, 4).text())
+                    if self.feature_table.cellWidget(row, 3).text() == ''
+                    else self.feature_table.cellWidget(row, 3).text())
 
-            return {
-                'type': 'feature',
-                'scale': None if scale == '' else scale,
-                'segment': None if segment == '' else segment,
-                'function': None if function == '' else function,
-                'argument': None if argument == '' else argument,
-                'value': None if value == '' else value}
+            # Get the feature scale
+            scale = self.feature_table.cellWidget(row, 4).currentText()
 
-        # Set up the feature dictionary
-        features = {
-            self.feature_table.verticalHeaderItem(row).text(): read_cells(row)
-            for row in range(self.feature_table.rowCount())}
+            # Check if the value is None
+            if value is None:
 
-        # Set up the label dictionary
-        label = {
-            self.column_cbox.currentText(): {
-                'type': 'label',
-                'viewpoint': self.viewpoint_cbox.currentText(),
-                'time_variable': (
-                    None if self.time_variable_cbox.currentText() == ''
-                    else self.time_variable_cbox.currentText()),
-                'bounds': [
-                    1 if bound == '' else None if bound == 'None'
-                    else string_to_numeric(bound) for bound in (
-                        self.lower_bound_ledit.text(),
-                        self.upper_bound_ledit.text())]}}
+                # Return a dynamic feature
+                return DynamicFeature(
+                    column, segment, function, argument, scale)
 
-        return features | label
+            # Return a static feature
+            return StaticFeature(column, value)
+
+        # Set up the feature list
+        features = [
+            get_feature(row) for row in range(self.feature_table.rowCount())]
+
+        # Set up the label
+        label = Label(
+            self.column_cbox.currentText(), self.viewpoint_cbox.currentText(),
+            (None if self.time_variable_cbox.currentText() == ''
+             else self.time_variable_cbox.currentText()),
+            [1 if bound == '' else None if bound == 'None'
+             else string_to_numeric(bound) for bound in (
+                 self.lower_bound_ledit.text(),
+                 self.upper_bound_ledit.text())])
+
+        return features + [label]
 
     def save(self):
         """Save the data columns."""
 
-        # Overwrite the parent data columns dictionary
+        # Overwrite the parent data columns list
         self.parent.data_columns = self.read_columns()
 
         # Update the parent button status

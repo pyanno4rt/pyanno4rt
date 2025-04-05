@@ -592,7 +592,7 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
       <property name="placeholderText">
-       <string>None</string>
+       <string>+∞</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="weight_ledit">
@@ -685,7 +685,7 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
       <property name="placeholderText">
-       <string>0.0</string>
+       <string>-∞</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="volume_ledit">

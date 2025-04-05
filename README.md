@@ -19,11 +19,11 @@
 
 ---
 
-# General :information_source:
+# General :thought_balloon:
 
 *pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning.
 
-# Highlight Features :flashlight:
+# Highlight Features :telescope:
 
 <h3>Import of patient data and dose influence matrices from different sources</h3>
 <ul>
@@ -138,7 +138,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `numpy`                        | <font size="3"> >=2.1.3 </font>       |
 | `ipyopt`                       | <font size="3"> >=0.12.9 </font>      |
 | `proxmin`                      | <font size="3"> >=0.6.12 </font>      |
-| `absl-py`                      | <font size="3"> >=2.2.1 </font>       |
+| `absl-py`                      | <font size="3"> >=2.2.2 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
 | `scikit-image`                 | <font size="3"> >=0.25.2 </font>      |
 | `h5py`                         | <font size="3"> >=3.13.0 </font>      |

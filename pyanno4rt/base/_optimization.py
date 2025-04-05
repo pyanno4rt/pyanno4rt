@@ -339,12 +339,12 @@ class Optimization():
                 partial(check_type, types=(type(None), int, float, list)),
                 partial(check_value, reference=0, sign='>=',
                         is_vector=isinstance(
-                            inputs['lower_variable_bounds'], list))),
+                            inputs.get('lower_variable_bounds'), list))),
             'upper_variable_bounds': (
                 partial(check_type, types=(type(None), int, float, list)),
                 partial(check_value, reference=0, sign='>=',
                         is_vector=isinstance(
-                            inputs['upper_variable_bounds'], list))),
+                            inputs.get('upper_variable_bounds'), list))),
             'maximum_iterations': (
                 partial(check_type, types=int),
                 partial(check_value, reference=1, sign='>=')),

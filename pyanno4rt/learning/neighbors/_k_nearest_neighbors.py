@@ -46,13 +46,6 @@ class KNeighborsModel(MachineLearningModel):
         # Get the internal hyperparameter search space
         tune_space_dict = tune_space.to_dict()
 
-        # Check if the number of neighbors is set to the default
-        if tune_space_dict['n_neighbors'] == [0]:
-
-            # Adjust the number of neighbors by the dataset
-            tune_space_dict['n_neighbors'] = list(range(
-                    1, round(0.5*dataset['number_of_samples'])))
-
         # Configure the hyperopt search space
         hp_space = {
             'n_neighbors': hp.choice(

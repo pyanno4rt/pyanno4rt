@@ -76,12 +76,6 @@ class NeuralNetworkModel(MachineLearningModel):
                              tune_space_dict['hidden_dropout_rate'])
                          for m in range(n+1)]}
                     for n in range(max_hidden_layers)]),
-            'input_neuron_number': hp.choice(
-                'input_neuron_number', tune_space_dict['input_neuron_number']),
-            'input_activation': hp.choice(
-                'input_activation', tune_space_dict['input_activation']),
-            'input_dropout_rate': hp.choice(
-                'input_dropout_rate', tune_space_dict['input_dropout_rate']),
             'batch_size': hp.choice(
                 'batch_size', tune_space_dict['batch_size']),
             'learning_rate': hp.uniform(
@@ -133,10 +127,7 @@ class NeuralNetworkModel(MachineLearningModel):
         # Build the hyperparameter dictionary
         hyperparameters = {
             **hidden_layers,
-            'input_neuron_number': proposal['input_neuron_number'],
-            'input_activation': proposal['input_activation'],
             'output_activation': 'sigmoid',
-            'input_dropout_rate': proposal['input_dropout_rate'],
             'batch_size': proposal['batch_size'],
             'epochs': 1000,
             'learning_rate': proposal['learning_rate'],
@@ -376,8 +367,9 @@ class NeuralNetworkModel(MachineLearningModel):
         with File(self.model_path, 'r') as file:
 
             # Get the network weights from the file
-            weights = tuple(file[''.join(('weight', str(i)))][:]
-                            for i, _ in enumerate(file))
+            weights = tuple(
+                file[''.join(('weight', str(i)))][:]
+                for i, _ in enumerate(file))
 
         # Read the configuration from the file
         configuration = self.import_configuration()

@@ -45,15 +45,15 @@ def build_vanilla_iocnn(
     # Initialize the network input
     inputs = Input((input_shape,), name='input')
 
-    # Define the input layer
+    # Define the first hidden layer
     hidden = BatchNormalization()(inputs)
-    hidden = Dropout(hyperparameters['input_dropout_rate'])(hidden)
+    hidden = Dropout(hyperparameters['hidden_dropout_rate'][0])(hidden)
     hidden = Dense(
-        units=hyperparameters['input_neuron_number'],
-        activation=hyperparameters['input_activation'])(hidden)
+        units=hyperparameters['hidden_neuron_number'][0],
+        activation=hyperparameters['hidden_activation'][0])(hidden)
 
-    # Loop over the number of hidden layers
-    for layer in range(hyperparameters['hidden_layer_number']):
+    # Loop over the number of additional hidden layers
+    for layer in range(hyperparameters['hidden_layer_number']-1):
 
         # Define the hidden layer
         hidden = BatchNormalization()(hidden)
@@ -116,13 +116,13 @@ def build_vanilla_nn(
 
     # Define the input layer
     hidden = BatchNormalization()(inputs)
-    hidden = Dropout(hyperparameters['input_dropout_rate'])(hidden)
+    hidden = Dropout(hyperparameters['hidden_dropout_rate'][0])(hidden)
     hidden = Dense(
-        units=hyperparameters['input_neuron_number'],
-        activation=hyperparameters['input_activation'])(hidden)
+        units=hyperparameters['hidden_neuron_number'][0],
+        activation=hyperparameters['hidden_activation'][0])(hidden)
 
     # Loop over the number of hidden layers
-    for layer in range(hyperparameters['hidden_layer_number']):
+    for layer in range(hyperparameters['hidden_layer_number']-1):
 
         # Define the hidden layer
         hidden = BatchNormalization()(hidden)

@@ -4,10 +4,11 @@
 
 # %% External package import
 
-from json import loads
 from os.path import abspath
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import QFileDialog, QListWidgetItem, QMainWindow
+from PyQt5.QtWidgets import (
+    QFileDialog, QInputDialog, QLineEdit, QListWidgetItem, QMainWindow,
+    QMessageBox)
 
 # %% Internal package import
 
@@ -18,7 +19,12 @@ from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, sbox, tbutton_composer, tbutton_data_window)
 from pyanno4rt.gui.windows import DataColumnsWindow
+from pyanno4rt.learning import ModelParameters
+from pyanno4rt.learning.evaluation import DisplayOptions
+from pyanno4rt.learning.tune_spaces import TuneSpaceNB
 import pyanno4rt.learning._maps as maps
+from pyanno4rt.optimization.components import NaiveBayesNTCP
+from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition
 
@@ -50,8 +56,8 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
         # Get the parent window
         self.parent = parent
 
-        # Initialize the data columns dictionary
-        self.data_columns = {}
+        # Initialize the data columns list
+        self.data_columns = []
 
         # Initialize the edit boolean
         self.edit = False
@@ -71,16 +77,15 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
                     426, list(self.parent.segments), False,
                     'segment_link_layout'),
                 'priors_cbox': (
-                    121,
-                    ['None'] + [str(round(1-i/100, 2)) for i in range(1, 100)],
-                    False, 'priors_layout'),
+                    121, [], False, 'priors_layout'),
                 'graphs_cbox': (
                     261, ['AUC-ROC', 'AUC-PR', 'F1'], True, 'graphs_layout'),
                 'kpi_cbox': (
                     401, ['Logloss', 'Brier score', 'Subset accuracy',
                           'Cohen Kappa', 'Hamming loss', 'Jaccard score',
                           'Precision', 'Recall', 'F1 score', 'MCC', 'AUC'],
-                    True, 'kpi_layout')}.items():
+                    True, 'kpi_layout')
+                }.items():
 
             # Get the combo box
             combo_box = getattr(self, box)
@@ -93,9 +98,6 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
 
             # Add the combo box to the layout
             getattr(self, parameters[3]).addWidget(combo_box)
-
-        # Set the 'None' item of the priors combo box to checked
-        self.priors_cbox.model().item(0).setCheckState(2)
 
         # Add the segment items to the segment combo box
         self.segment_cbox.addItems(list(self.parent.segments))
@@ -123,8 +125,9 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
             'data_path_tbutton': tbutton_composer,
             'data_columns_tbutton': tbutton_data_window,
             'prep_steps_ledit': ledit,
-            'priors_one_class_ledit': ledit,
             'priors_cbox': cbox,
+            'priors_plus_tbutton': tbutton_composer,
+            'priors_minus_tbutton': tbutton_composer,
             'var_smoothing_lower_bound_ledit': ledit,
             'var_smoothing_upper_bound_ledit': ledit,
             'tune_eval_sbox': sbox,
@@ -154,8 +157,7 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
         self.set_zero_line_cursor((
             'weight_ledit', 'lower_bound_ledit', 'upper_bound_ledit',
             'model_label_ledit', 'model_path_ledit', 'data_path_ledit',
-            'prep_steps_ledit', 'priors_one_class_ledit',
-            'var_smoothing_lower_bound_ledit',
+            'prep_steps_ledit', 'var_smoothing_lower_bound_ledit',
             'var_smoothing_upper_bound_ledit', 'identifier_ledit'))
 
         # Disable some fields
@@ -244,6 +246,8 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
                 'model_path_tbutton': self.add_model_path,
                 'data_path_tbutton': self.add_data_path,
                 'data_columns_tbutton': self.open_data_columns_window,
+                'priors_plus_tbutton': self.add_prior,
+                'priors_minus_tbutton': self.priors_cbox.removeItem,
                 'save_pbutton': self.save,
                 'close_pbutton': self.close
                 }.items():
@@ -253,7 +257,7 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
 
         # Loop over the field names with 'currentTextChanged' events
         for key, value in {
-                'segment_cbox': self.update_buttons
+                'segment_cbox': self.update_buttons,
                 }.items():
 
             # Connect the 'currentTextChanged' event
@@ -278,8 +282,9 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
 
         Parameters
         ----------
-        component : dict
-            Dictionary with the information on the optimization component.
+        component : object of class \
+            :class:`~pyanno4rt.optimization.components._naive_bayes_ntcp.NaiveBayesNTCP`
+            The object used to represent the optimization component.
 
         edit : bool
             Indicator for the editing of the component.
@@ -288,72 +293,45 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
         # Get the edit attribute from the argument
         self.edit = edit
 
-        # Get the segment associated with the component
-        segment = next(iter(component))
-
         # Get the component parameters
-        ctype = component[segment]['type']
-        model_parameters = component[segment]['instance']['parameters'][
-            'model_parameters']
-        embedding = component[segment]['instance']['parameters'].get(
-            'embedding', 'active')
-        weight = component[segment]['instance']['parameters'].get(
-            'weight', 1.0)
-        rank = component[segment]['instance']['parameters'].get('rank', 1)
-        lower, upper = component[segment]['instance']['parameters'].get(
-            'bounds', (0.0, 1.0))
-        link = component[segment]['instance']['parameters'].get('link')
-        identifier = component[segment]['instance']['parameters'].get(
-            'identifier')
-        display = component[segment]['instance']['parameters'].get(
-            'display', True)
+        (segment, model_parameters, component_type, embedding, weight, rank,
+         bounds, link, identifier, display) = component.arguments.values()
 
-        # Get the data columns dictionary
-        self.data_columns = model_parameters['data_columns']
+        # Convert the bounds
+        lower, upper = (None, None) if bounds is None else bounds
+
+        # Get the data columns list
+        self.data_columns = model_parameters.data_columns
 
         # Get the tune space
-        tune_space = model_parameters.get(
-            'tune_space', {
-                'var_smoothing': [1e-12, 1]})
+        tune_space = model_parameters.tune_space
 
         # Get the display options
-        display_options = model_parameters.get(
-            'display_options', {
-                'graphs': ['AUC-ROC', 'AUC-PR', 'F1'],
-                'kpis': ['Logloss', 'Brier score', 'Subset accuracy',
-                         'Cohen Kappa', 'Hamming loss', 'Jaccard score',
-                         'Precision', 'Recall', 'F1 score', 'MCC', 'AUC']})
+        display_options = model_parameters.display_options
 
         # Loop over the fields with 'setText' method
         for key, value in {
-                'weight_ledit': '' if weight == 1.0 else str(float(weight)),
-                'lower_bound_ledit': '' if lower == 0.0 else str(float(lower)),
-                'upper_bound_ledit': '' if upper == 1.0 else str(float(upper)),
-                'model_label_ledit': model_parameters['model_label'],
+                'weight_ledit': '' if weight == 1.0 else str(weight),
+                'lower_bound_ledit': '' if lower is None else str(lower),
+                'upper_bound_ledit': '' if upper is None else str(upper),
+                'model_label_ledit': model_parameters.model_label,
                 'model_path_ledit': (
-                    '' if not model_parameters.get('model_folder_path')
-                    else abspath(model_parameters['model_folder_path'])),
+                    '' if not model_parameters.model_folder_path
+                    else abspath(model_parameters.model_folder_path)),
                 'data_path_ledit': (
-                    '' if not model_parameters.get('data_path')
-                    else abspath(model_parameters['data_path'])),
+                    '' if not model_parameters.data_path
+                    else abspath(model_parameters.data_path)),
                 'prep_steps_ledit': (
-                    '' if not model_parameters.get('preprocessing_steps')
-                    or model_parameters['preprocessing_steps'] == ['Identity']
-                    else str(model_parameters['preprocessing_steps']).replace(
+                    '' if not model_parameters.preprocessing
+                    or model_parameters.preprocessing == ['Identity']
+                    else str(model_parameters.preprocessing).replace(
                         "\'", '')),
-                'priors_one_class_ledit': (
-                    '' if not tune_space.get('priors')
-                    or len(list(filter(None, tune_space['priors']))) == 0
-                    else str([value[1] for value in filter(
-                        None, tune_space['priors'])])),
                 'var_smoothing_lower_bound_ledit': (
-                    '' if not tune_space.get('var_smoothing')
-                    or tune_space['var_smoothing'][0] == 1e-12
-                    else str(tune_space['var_smoothing'][0])),
+                    '' if tune_space.var_smoothing[0] == 1e-12
+                    else str(tune_space.var_smoothing[0])),
                 'var_smoothing_upper_bound_ledit': (
-                    '' if not tune_space.get('var_smoothing')
-                    or tune_space['var_smoothing'][1] == 1
-                    else str(tune_space['var_smoothing'][1])),
+                    '' if tune_space.var_smoothing[1] == 1
+                    else str(tune_space.var_smoothing[1])),
                 'identifier_ledit': '' if not identifier else identifier
                 }.items():
 
@@ -363,10 +341,9 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
         # Loop over the fields with 'setCurrentText' method
         for key, value in {
                 'segment_cbox': segment,
-                'type_cbox': ctype,
+                'type_cbox': component_type,
                 'embedding_cbox': embedding,
-                'tune_score_cbox': model_parameters.get(
-                    'tune_score', 'Logloss')
+                'tune_score_cbox': model_parameters.tune_score
                 }.items():
 
             # Set the text
@@ -375,11 +352,11 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
         # Loop over the fields with 'setValue' method
         for key, value in {
                 'rank_sbox': rank,
-                'tune_eval_sbox': model_parameters.get('tune_evaluations', 50),
-                'tune_splits_sbox': model_parameters.get('tune_splits', 5),
-                'tune_repeats_sbox': model_parameters.get('tune_repeats', 1),
-                'oof_splits_sbox': model_parameters.get('oof_splits', 5),
-                'oof_repeats_sbox': model_parameters.get('oof_repeats', 1)
+                'tune_eval_sbox': model_parameters.tune_evaluations,
+                'tune_splits_sbox': model_parameters.tune_splits,
+                'tune_repeats_sbox': model_parameters.tune_repeats,
+                'oof_splits_sbox': model_parameters.oof_splits,
+                'oof_repeats_sbox': model_parameters.oof_repeats
                 }.items():
 
             # Set the value
@@ -387,12 +364,9 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
 
         # Loop over the fields with 'setCheckState' method
         for key, value in {
-                'write_features_check': (
-                    2*model_parameters.get('write_features', False)),
-                'inspect_model_check': (
-                    2*model_parameters.get('inspect_model', False)),
-                'evaluate_model_check': (
-                    2*model_parameters.get('evaluate_model', False)),
+                'write_features_check': 2*model_parameters.write_features,
+                'inspect_model_check': 2*model_parameters.inspect,
+                'evaluate_model_check': 2*model_parameters.evaluate,
                 'disp_component_check': 2*display
                 }.items():
 
@@ -402,13 +376,9 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
         # Loop over the checkable combo boxes with their selections
         for box, selection in {
                 'segment_link_cbox': [] if not link else link,
-                'priors_cbox': (
-                    ['None'] if not tune_space.get('priors')
-                    else map(
-                        str, ['None' if value is None else
-                              value[1] for value in tune_space['priors']])),
-                'graphs_cbox': display_options['graphs'],
-                'kpi_cbox': display_options['kpis']}.items():
+                'graphs_cbox': display_options.graphs,
+                'kpi_cbox': display_options.kpis
+                }.items():
 
             # Get the combo box
             combo_box = getattr(self, box)
@@ -421,98 +391,90 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
                 # Set the item text to checked or unchecked
                 item.setCheckState(2*(item.text() in selection))
 
+        # Remove all items from the priors combo box
+        self.priors_cbox.clear()
+
+        # Check if the priors are different from the default
+        if (tune_space.priors
+                != [None] + [[i/10, 1-i/10] for i in range(1, 10)]):
+
+            # Add the priors
+            self.priors_cbox.addItems(
+                ['None' if value is None else str(value[1])
+                 for value in tune_space.priors], True)
+
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
             'weight_ledit', 'lower_bound_ledit', 'upper_bound_ledit',
             'model_label_ledit', 'model_path_ledit', 'data_path_ledit',
-            'prep_steps_ledit', 'priors_one_class_ledit',
-            'var_smoothing_lower_bound_ledit',
+            'prep_steps_ledit', 'var_smoothing_lower_bound_ledit',
             'var_smoothing_upper_bound_ledit', 'identifier_ledit'))
 
     def save(self):
         """Save the fields to a component."""
 
         # Get the model parameters
-        model_parameters = {
-            'model_label': self.model_label_ledit.text(),
-            'model_folder_path': (
+        model_parameters = ModelParameters(
+            model_label=self.model_label_ledit.text(),
+            model_type='naive_bayes',
+            model_folder_path=(
                 None if self.model_path_ledit.text() == ''
                 else abspath(self.model_path_ledit.text())),
-            'data_path': (
+            data_path=(
                 None if self.data_path_ledit.text() == ''
                 else abspath(self.data_path_ledit.text())),
-            'data_columns': self.data_columns,
-            'preprocessing_steps': (
+            data_columns=self.data_columns,
+            preprocessing=(
                 ['Identity'] if self.prep_steps_ledit.text() == ''
                 else self.prep_steps_ledit.text().strip('][').split(', ')),
-            'tune_space': {
-                'var_smoothing': [
+            tune_space=TuneSpaceNB(
+                priors=(
+                    None if len(self.priors_cbox.currentData()) == 0 else
+                    [None if value == 'None' else [
+                        1-string_to_numeric(value), string_to_numeric(value)]
+                        for value in self.priors_cbox.currentData()]),
+                var_smoothing=[
                     1e-12 if self.var_smoothing_lower_bound_ledit.text() == ''
-                    else float(self.var_smoothing_lower_bound_ledit.text()),
+                    else string_to_numeric(
+                        self.var_smoothing_lower_bound_ledit.text()),
                     1 if self.var_smoothing_upper_bound_ledit.text() == ''
-                    else float(self.var_smoothing_upper_bound_ledit.text())]},
-            'tune_evaluations': self.tune_eval_sbox.value(),
-            'tune_score': self.tune_score_cbox.currentText(),
-            'tune_splits': self.tune_splits_sbox.value(),
-            'tune_repeats': self.tune_repeats_sbox.value(),
-            'inspect_model': self.inspect_model_check.isChecked(),
-            'evaluate_model': self.evaluate_model_check.isChecked(),
-            'oof_splits': self.oof_splits_sbox.value(),
-            'oof_repeats': self.oof_repeats_sbox.value(),
-            'write_features': self.write_features_check.isChecked(),
-            'display_options': {
-                'graphs': self.graphs_cbox.currentData(),
-                'kpis': self.kpi_cbox.currentData()}}
+                    else string_to_numeric(
+                        self.var_smoothing_upper_bound_ledit.text())]),
+            tune_evaluations=self.tune_eval_sbox.value(),
+            tune_score=self.tune_score_cbox.currentText(),
+            tune_splits=self.tune_splits_sbox.value(),
+            tune_repeats=self.tune_repeats_sbox.value(),
+            inspect=self.inspect_model_check.isChecked(),
+            evaluate=self.evaluate_model_check.isChecked(),
+            oof_splits=self.oof_splits_sbox.value(),
+            oof_repeats=self.oof_repeats_sbox.value(),
+            write_features=self.write_features_check.isChecked(),
+            display_options=DisplayOptions(
+                graphs=self.graphs_cbox.currentData(),
+                kpis=self.kpi_cbox.currentData()))
 
-        # Check if a prior has been specified
-        if (self.priors_one_class_ledit.text() != ''
-                or len(self.priors_cbox.currentData()) > 0):
-
-            # Append the prior information
-            model_parameters['tune_space']['priors'] = (
-                ([] if self.priors_one_class_ledit.text() == ''
-                 else (
-                     [[1-value, value]
-                      for value in loads(self.priors_one_class_ledit.text())]))
-                + [None if value == 'None' else [1-value, value]
-                   for value in self.priors_cbox.currentData()])
-
-        # Configure the component dictionary
-        component = {
-            self.segment_cbox.currentText(): {
-                'type': self.type_cbox.currentText(),
-                'instance': {
-                    'function': 'Naive Bayes NTCP',
-                    'parameters': {
-                        'model_parameters': model_parameters,
-                        'embedding': self.embedding_cbox.currentText(),
-                        'weight': (
-                            1.0 if self.weight_ledit.text() == ''
-                            else float(self.weight_ledit.text())),
-                        'rank': self.rank_sbox.value(),
-                        'bounds': [
-                            0.0 if self.lower_bound_ledit.text() == ''
-                            else float(self.lower_bound_ledit.text()),
-                            1.0 if self.upper_bound_ledit.text() == ''
-                            else float(self.upper_bound_ledit.text())],
-                        'link': (
-                            None
-                            if len(self.segment_link_cbox.currentData()) == 0
-                            else self.segment_link_cbox.currentData()),
-                        'identifier': (
-                            None if self.identifier_ledit.text() == ''
-                            else self.identifier_ledit.text()),
-                        'display': self.disp_component_check.isChecked()}}}}
-
-        # Get the component and function parameters
-        cparams = component[self.segment_cbox.currentText()]
-        fparams = cparams['instance']['parameters']
-
-        # Get the required parameter values
-        ctype = cparams['type']
-        identifier = fparams['identifier']
-        embedding = f'embedding: {str(fparams["embedding"])}'
-        weight = f'weight: {str(fparams["weight"])}'
+        # Get the component
+        component = NaiveBayesNTCP(
+            segment=self.segment_cbox.currentText(),
+            model_parameters=model_parameters,
+            component_type=self.type_cbox.currentText(),
+            embedding=self.embedding_cbox.currentText(),
+            weight=(
+                1.0 if self.weight_ledit.text() == ''
+                else string_to_numeric(self.weight_ledit.text())),
+            rank=self.rank_sbox.value(),
+            bounds=[
+                None if self.lower_bound_ledit.text() == ''
+                else string_to_numeric(self.lower_bound_ledit.text()),
+                None if self.upper_bound_ledit.text() == ''
+                else string_to_numeric(self.upper_bound_ledit.text())],
+            link=(
+                None if len(self.segment_link_cbox.currentData()) == 0
+                else self.segment_link_cbox.currentData()),
+            identifier=(
+                None if self.identifier_ledit.text() == ''
+                else self.identifier_ledit.text()),
+            display=self.disp_component_check.isChecked())
 
         # Map the component and segment type to the icon paths
         paths = {
@@ -527,7 +489,8 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
 
         # Get the icon path
         icon_path = paths[
-            f'{ctype}_{self.parent.segments[self.segment_cbox.currentText()]}']
+            f'{component.arguments["component_type"]}_'
+            f'{self.parent.segments[self.segment_cbox.currentText()]}']
 
         # Initialize the icon object
         icon = QIcon()
@@ -537,8 +500,12 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
 
         # Get the component string
         component_string = ' - '.join((substring for substring in (
-            self.segment_cbox.currentText(), 'Naive Bayes NTCP', identifier,
-            embedding, weight) if substring))
+            self.segment_cbox.currentText(), component.name,
+            f'weight: {component.arguments["weight"]}',
+            f'embedding: {component.arguments["embedding"]}',
+            f'link: {component.arguments["link"]}',
+            f'identifier: {component.arguments["identifier"]}')
+            if 'None' not in substring))
 
         # Check if the component item is edited
         if self.edit:
@@ -606,6 +573,39 @@ class NaiveBayesNTCPWindow(QMainWindow, Ui_naive_bayes_ntcp_window):
 
         # Show the window
         self.data_columns_window.show()
+
+    def add_prior(self):
+        """Add a prior value to the combo box."""
+
+        # Get the text input and state from the input dialog
+        text, checked = QInputDialog.getText(
+            self, "Add prior", "Enter prior probability (y=1):",
+            QLineEdit.Normal, "")
+
+        # Check if the dialog has been confirmed with a non-empty text
+        if checked and text != '':
+
+            try:
+
+                # Check if the prior value is between 0 and 1
+                if 0 <= string_to_numeric(text) <= 1:
+
+                    # Add the prior to the combo box
+                    self.priors_cbox.addItem(text, True)
+
+                else:
+
+                    # Show a critical message box
+                    QMessageBox.critical(
+                        self, "pyanno4rt",
+                        "Please enter a valid number for the prior!")
+
+            except ValueError:
+
+                # Show a critical message box
+                QMessageBox.critical(
+                    self, "pyanno4rt",
+                    "Please enter a valid number for the prior!")
 
     def update_buttons(self):
         """Update the conditional buttons."""

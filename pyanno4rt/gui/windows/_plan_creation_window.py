@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from copy import deepcopy
 from functools import partial
 from os.path import abspath, dirname, isdir, isfile
 from PyQt5.QtCore import QEvent
@@ -323,7 +324,7 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
         # Get the file path
         path, _ = QFileDialog.getOpenFileName(
             self, 'Select a dose-influence matrix file', '',
-            'Dose-influence matrix (*.mat *.npy)')
+            'Dose-influence matrix (*.mat *.npy *.npz)')
 
         # Check if the file path exists
         if path:
@@ -379,12 +380,9 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
         component = self.plan_components[next(iter(self.plan_components))][
             self.components_lwidget.currentItem().text()]
 
-        # Loop over the component values
-        for value in component.values():
-
-            # Get the component window
-            self.current_component_window = component_window_map[
-                value['instance']['function']](self)
+        # Get the component window
+        self.current_component_window = component_window_map[
+            component.name](self)
 
         # Set the position of the window
         self.current_component_window.position()
@@ -407,13 +405,13 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
         # Check if a reference plan has been selected
         if reference != 'None':
 
-            # Copy the reference input dictionaries
-            configuration = self.parent.plans[reference].configuration.copy()
-            optimization = self.parent.plans[reference].optimization.copy()
-            evaluation = self.parent.plans[reference].evaluation.copy()
+            # Copy the reference input objects
+            configuration, optimization, evaluation = (deepcopy(
+                getattr(self.parent.plans[reference], key)) for key in (
+                    'configuration', 'optimization', 'evaluation'))
 
             # Change the treatment plan label
-            configuration['label'] = new_label
+            configuration.label = new_label
 
             # Initialize the treatment plan
             new_plan = TreatmentPlan(configuration, optimization, evaluation)
@@ -463,7 +461,7 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
 
             # Add the segment names to the parent display combo box
             self.parent.display_segments_cbox.addItems(
-                list(self.segments.keys()))
+                list(self.segments))
 
             # Loop over the parent display segments
             for index in range(self.parent.display_segments_cbox.count()):

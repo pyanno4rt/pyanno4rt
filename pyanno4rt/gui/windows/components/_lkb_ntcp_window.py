@@ -15,6 +15,8 @@ from pyanno4rt.gui.compilations.components.lkb_ntcp_window import (
 from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.styles._custom_styles import (
     cbox, ledit, pbutton_composer, sbox)
+from pyanno4rt.optimization.components import LymanKutcherBurmanNTCP
+from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition
 
@@ -56,14 +58,13 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
         self.segment_link_cbox.setFixedSize(391, 31)
 
         # Add the items
-        self.segment_link_cbox.addItems(
-            list(self.parent.segments.keys()), False)
+        self.segment_link_cbox.addItems(list(self.parent.segments), False)
 
         # Add the combo box to the layout
         self.segment_link_layout.addWidget(self.segment_link_cbox)
 
         # Add the segment items to the segment combo box
-        self.segment_cbox.addItems(list(self.parent.segments.keys()))
+        self.segment_cbox.addItems(list(self.parent.segments))
         self.segment_cbox.setCurrentIndex(-1)
 
         # Set the stylesheets
@@ -213,8 +214,9 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
 
         Parameters
         ----------
-        component : dict
-            Dictionary with the information on the optimization component.
+        component : object of class \
+            :class:`~pyanno4rt.optimization.components._lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
+            The object used to represent the optimization component.
 
         edit : bool
             Indicator for the editing of the component.
@@ -223,37 +225,22 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
         # Get the edit attribute from the argument
         self.edit = edit
 
-        # Get the segment associated with the component
-        segment = next(iter(component))
-
         # Get the component parameters
-        ctype = component[segment]['type']
-        td50 = component[segment]['instance']['parameters'][
-            'tolerance_dose_50']
-        slope = component[segment]['instance']['parameters']['slope_parameter']
-        vol_eff = component[segment]['instance']['parameters'][
-            'volume_parameter']
-        embedding = component[segment]['instance']['parameters'].get(
-            'embedding', 'active')
-        weight = component[segment]['instance']['parameters'].get(
-            'weight', 1.0)
-        rank = component[segment]['instance']['parameters'].get('rank', 1)
-        lower, upper = component[segment]['instance']['parameters'].get(
-            'bounds', (0.0, 1.0))
-        link = component[segment]['instance']['parameters'].get('link')
-        identifier = component[segment]['instance']['parameters'].get(
-            'identifier')
-        display = component[segment]['instance']['parameters'].get(
-            'display', True)
+        (segment, td50, slope_parameter, volume_parameter, component_type,
+        embedding, weight, rank, bounds, link, identifier, display) = (
+            component.arguments.values())
+
+        # Convert the bounds
+        lower, upper = (None, None) if bounds is None else bounds
 
         # Loop over the fields with 'setText' method
         for key, value in {
-                'td50_ledit': str(float(td50)),
-                'slope_ledit': str(float(slope)),
-                'vol_eff_ledit': str(float(vol_eff)),
-                'weight_ledit': '' if weight == 1.0 else str(float(weight)),
-                'lower_bound_ledit': '' if not lower else str(float(lower)),
-                'upper_bound_ledit': '' if not upper else str(float(upper)),
+                'td50_ledit': str(td50),
+                'slope_ledit': str(slope_parameter),
+                'vol_eff_ledit': str(volume_parameter),
+                'weight_ledit': '' if weight == 1.0 else str(weight),
+                'lower_bound_ledit': '' if lower is None else str(lower),
+                'upper_bound_ledit': '' if upper is None else str(upper),
                 'identifier_ledit': '' if not identifier else identifier
                 }.items():
 
@@ -263,7 +250,7 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
         # Loop over the fields with 'setCurrentText' method
         for key, value in {
                 'segment_cbox': segment,
-                'type_cbox': ctype,
+                'type_cbox': component_type,
                 'embedding_cbox': embedding,
                 }.items():
 
@@ -288,7 +275,8 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
 
         # Loop over the checkable combo boxes with their selections
         for box, selection in {
-                'segment_link_cbox': [] if not link else link}.items():
+                'segment_link_cbox': [] if not link else link
+                }.items():
 
             # Get the combo box
             combo_box = getattr(self, box)
@@ -309,44 +297,30 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
     def save(self):
         """Save the fields to a component."""
 
-        # Configure the component dictionary
-        component = {
-            self.segment_cbox.currentText(): {
-                'type': self.type_cbox.currentText(),
-                'instance': {
-                    'function': 'Lyman-Kutcher-Burman NTCP',
-                    'parameters': {
-                        'tolerance_dose_50': float(self.td50_ledit.text()),
-                        'slope_parameter': float(self.slope_ledit.text()),
-                        'volume_parameter': float(self.vol_eff_ledit.text()),
-                        'embedding': self.embedding_cbox.currentText(),
-                        'weight': (
-                            1.0 if self.weight_ledit.text() == ''
-                            else float(self.weight_ledit.text())),
-                        'rank': self.rank_sbox.value(),
-                        'bounds': [
-                            0.0 if self.lower_bound_ledit.text() == ''
-                            else float(self.lower_bound_ledit),
-                            1.0 if self.upper_bound_ledit.text() == ''
-                            else float(self.upper_bound_ledit)],
-                        'link': (
-                            None
-                            if len(self.segment_link_cbox.currentData()) == 0
-                            else self.segment_link_cbox.currentData()),
-                        'identifier': (
-                            None if self.identifier_ledit.text() == ''
-                            else self.identifier_ledit.text()),
-                        'display': self.disp_component_check.isChecked()}}}}
-
-        # Get the component and function parameters
-        cparams = component[self.segment_cbox.currentText()]
-        fparams = cparams['instance']['parameters']
-
-        # Get the required parameter values
-        ctype = cparams['type']
-        identifier = fparams['identifier']
-        embedding = f'embedding: {str(fparams["embedding"])}'
-        weight = f'weight: {str(fparams["weight"])}'
+        # Get the component
+        component = LymanKutcherBurmanNTCP(
+            segment=self.segment_cbox.currentText(),
+            tolerance_dose_50=string_to_numeric(self.td50_ledit.text()),
+            slope_parameter=string_to_numeric(self.slope_ledit.text()),
+            volume_parameter=string_to_numeric(self.vol_eff_ledit.text()),
+            component_type=self.type_cbox.currentText(),
+            embedding=self.embedding_cbox.currentText(),
+            weight=(
+                1.0 if self.weight_ledit.text() == ''
+                else string_to_numeric(self.weight_ledit.text())),
+            rank=self.rank_sbox.value(),
+            bounds=[
+                None if self.lower_bound_ledit.text() == ''
+                else string_to_numeric(self.lower_bound_ledit.text()),
+                None if self.upper_bound_ledit.text() == ''
+                else string_to_numeric(self.upper_bound_ledit.text())],
+            link=(
+                None if len(self.segment_link_cbox.currentData()) == 0
+                else self.segment_link_cbox.currentData()),
+            identifier=(
+                None if self.identifier_ledit.text() == ''
+                else self.identifier_ledit.text()),
+            display=self.disp_component_check.isChecked())
 
         # Map the component and segment type to the icon paths
         paths = {
@@ -361,7 +335,8 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
 
         # Get the icon path
         icon_path = paths[
-            f'{ctype}_{self.parent.segments[self.segment_cbox.currentText()]}']
+            f'{component.arguments["component_type"]}_'
+            f'{self.parent.segments[self.segment_cbox.currentText()]}']
 
         # Initialize the icon object
         icon = QIcon()
@@ -371,8 +346,12 @@ class LKBNTCPWindow(QMainWindow, Ui_lkb_ntcp_window):
 
         # Get the component string
         component_string = ' - '.join((substring for substring in (
-            self.segment_cbox.currentText(), 'Lyman-Kutcher-Burman NTCP',
-            identifier, embedding, weight) if substring))
+            self.segment_cbox.currentText(), component.name,
+            f'weight: {component.arguments["weight"]}',
+            f'embedding: {component.arguments["embedding"]}',
+            f'link: {component.arguments["link"]}',
+            f'identifier: {component.arguments["identifier"]}')
+            if 'None' not in substring))
 
         # Check if the component item is edited
         if self.edit:
