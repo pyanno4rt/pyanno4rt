@@ -29,7 +29,7 @@ class Ui_k_nearest_neighbors_tcp_window(object):
         self.scroll_area.setStyleSheet("border-color: transparent;")
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, -842, 690, 1439))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, -817, 690, 1439))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 90, 111, 31))
@@ -781,7 +781,7 @@ class Ui_k_nearest_neighbors_tcp_window(object):
         self.p_label.setText(_translate("k_nearest_neighbors_tcp_window", "p"))
         self.leaf_size_label.setText(_translate("k_nearest_neighbors_tcp_window", "leaf size"))
         self.leaf_size_upper_bound_ledit.setPlaceholderText(_translate("k_nearest_neighbors_tcp_window", "500"))
-        self.neighbors_upper_bound_ledit.setPlaceholderText(_translate("k_nearest_neighbors_tcp_window", "⌊0.5*|samples|⌉"))
+        self.neighbors_upper_bound_ledit.setPlaceholderText(_translate("k_nearest_neighbors_tcp_window", "10"))
         self.weights_label.setText(_translate("k_nearest_neighbors_tcp_window", "weights"))
         self.leaf_size_conjunction.setText(_translate("k_nearest_neighbors_tcp_window", "-"))
         self.tune_score_label.setText(_translate("k_nearest_neighbors_tcp_window", "Tune score"))
@@ -790,3 +790,4 @@ class Ui_k_nearest_neighbors_tcp_window(object):
         self.oof_splits_label.setText(_translate("k_nearest_neighbors_tcp_window", "OOF splits"))
         self.oof_repeats_label.setText(_translate("k_nearest_neighbors_tcp_window", "OOF repeats"))
         self.tune_repeats_label.setText(_translate("k_nearest_neighbors_tcp_window", "Tune repeats"))
+

@@ -55,7 +55,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>-752</y>
+       <y>-770</y>
        <width>690</width>
        <height>1439</height>
       </rect>
@@ -1385,7 +1385,7 @@ border-color: rgb(186, 189, 182);</string>
        <set>Qt::AlignCenter</set>
       </property>
       <property name="placeholderText">
-       <string>⌊0.5*|samples|⌉</string>
+       <string>10</string>
       </property>
      </widget>
      <widget class="QLabel" name="weights_label">

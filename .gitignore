@@ -1,16 +1,5 @@
-# Ignore local files
-launcher.sh
-tp_conv.py
-tp_dcm.py
-tp_ml.py
-tp_rb.py
-
-# Ignore local folders
-external/
-snaps/
-
 # Ignore unwanted file types
-*.odg
 .ipynb_checkpoints/
 __pycache__
 .DS_Store
+*.odg
