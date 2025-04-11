@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
         def add_logo(layout):
             """Create and add the pyanno4rt logo."""
             logo = QLabel(self)
-            pixmap = QtGui.QPixmap('./logo/logo_white_512.png')
+            pixmap = QtGui.QPixmap('../pyanno4rt/logo/logo_white_512.png')
             pixmap = pixmap.scaled(int(pixmap.width()/2),
                                    int(pixmap.height()/2))
             logo.setPixmap(pixmap)

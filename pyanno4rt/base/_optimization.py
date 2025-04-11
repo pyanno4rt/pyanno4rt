@@ -297,6 +297,20 @@ class Optimization():
             Dictionary with the input arguments.
         """
 
+        # Initialize the conditional variable dictionary
+        conditions = {}
+
+        # Loop over the conditional key-default pairs
+        for key, default in (
+                ('method', 'weighted-sum'),
+                ('solver', 'scipy'),
+                ('initial_strategy', 'target-coverage'),
+                ('lower_variable_bounds', 0),
+                ('upper_variable_bounds', None)):
+
+            # Add the pair to the dictionary
+            conditions[key] = inputs.get(key, getattr(self, key, default))
+
         # Get the check map
         check_map = {
             'components': (
@@ -312,7 +326,7 @@ class Optimization():
                     'lexicographic': ('scipy',),
                     'pareto': ('pymoo',),
                     'weighted-sum': ('ipyopt', 'proxmin', 'pypop7', 'scipy')},
-                    value_condition=inputs.get('method'))),
+                    value_condition=conditions['method'])),
             'algorithm': (
                 partial(check_type, types=str),
                 partial(check_value_in_set, options={
@@ -323,7 +337,8 @@ class Optimization():
                     'lexicographic/scipy': ('trust-constr',),
                     'weighted-sum/scipy': ('L-BFGS-B', 'TNC', 'trust-constr')},
                     value_condition=(
-                        f"{inputs.get('method')}/{inputs.get('solver')}"))),
+                        f"{conditions['method']}/"
+                        f"{conditions['solver']}"))),
             'initial_strategy': (
                 partial(check_type, types=str),
                 partial(check_value_in_set, options=(
@@ -333,18 +348,18 @@ class Optimization():
                     'data-medoid': type(None),
                     'target-coverage': type(None),
                     'warm-start': list},
-                    type_condition=inputs.get('initial_strategy')),
+                    type_condition=conditions['initial_strategy']),
                 partial(check_value, reference=0, sign='>=', is_vector=True)),
             'lower_variable_bounds': (
                 partial(check_type, types=(type(None), int, float, list)),
                 partial(check_value, reference=0, sign='>=',
                         is_vector=isinstance(
-                            inputs.get('lower_variable_bounds'), list))),
+                            conditions['lower_variable_bounds'], list))),
             'upper_variable_bounds': (
                 partial(check_type, types=(type(None), int, float, list)),
                 partial(check_value, reference=0, sign='>=',
                         is_vector=isinstance(
-                            inputs.get('upper_variable_bounds'), list))),
+                            conditions['upper_variable_bounds'], list))),
             'maximum_iterations': (
                 partial(check_type, types=int),
                 partial(check_value, reference=1, sign='>=')),

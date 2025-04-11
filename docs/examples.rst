@@ -27,7 +27,7 @@ Snippets
 .. base-gallery::
     :caption: Snippets
 
-    snippets_components
-    snippets_columns
+    components
+    columns
 
    

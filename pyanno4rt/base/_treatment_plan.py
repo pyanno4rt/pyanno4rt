@@ -151,6 +151,9 @@ class TreatmentPlan():
     def configure(self):
         """Initialize the configuration classes and process the input data."""
 
+        # Check the configuration parameters
+        self.configuration.check(vars(self.configuration))
+
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration.label
 
@@ -238,6 +241,9 @@ class TreatmentPlan():
 
         else:
 
+            # Check the optimization parameters
+            self.optimization.check(vars(self.optimization))
+
             # Initialize the fluence optimizer
             self.fluence_optimizer = FluenceOptimizer(
                 method=self.optimization.method,
@@ -272,6 +278,9 @@ class TreatmentPlan():
                 "Please optimize the treatment plan before evaluation!")
 
         else:
+
+            # Check the evaluation parameters
+            self.evaluation.check(vars(self.evaluation))
 
             # Initialize the DVH class
             self.dose_histogram = DVHEvaluator(
@@ -345,26 +354,29 @@ class TreatmentPlan():
             Dictionary with the update parameter(s).
         """
 
+        # Initialize the base dictionaries
+        configuration, optimization, evaluation = {}, {}, {}
+
         # Loop over the items of the update dictionary
         for key, value in inputs.items():
 
             # Check if the key is in the configuration object
             if hasattr(self.configuration, key):
 
-                # Set the source
-                source = self.configuration
+                # Add the item to the configuration base
+                configuration |= {key: value}
 
-            # Else, check if the key is in the optimization dictionary
+            # Else, check if the key is in the optimization object
             elif hasattr(self.optimization, key):
 
-                # Set the source
-                source = self.optimization
+                # Add the item to the optimization base
+                optimization |= {key: value}
 
-            # Else, check if the key is in the evaluation dictionary
+            # Else, check if the key is in the evaluation object
             elif hasattr(self.evaluation, key):
 
-                # Set the source
-                source = self.evaluation
+                # Add the item to the evaluation base
+                evaluation |= {key: value}
 
             else:
 
@@ -373,39 +385,33 @@ class TreatmentPlan():
                     f"The update parameter '{key}' is not part of the "
                     "treatment plan and will be ignored!")
 
-                return
+        # Loop over the base objects and dictionaries
+        for base_object, update in (
+                (self.configuration, configuration),
+                (self.optimization, optimization),
+                (self.evaluation, evaluation)):
 
-            # Get the current value
-            current_value = getattr(source, key)
+            # Check the update parameters
+            base_object.check(update)
 
-            try:
+            # Loop over the update items
+            for key, value in update.items():
 
-                # Update the parameter value
-                setattr(source, key, value)
+                # Update the attribute in the base object
+                setattr(base_object, key, value)
 
-                # Check the update
-                source.check(vars(source))
+                # Check if the key is 'min_log_level'
+                if key == 'min_log_level':
 
-            except Exception as error:
+                    # Change the logging levels of all handlers
+                    self.logger.change_log_levels(value)
 
-                # Return to the current value
-                setattr(source, key, current_value)
+                # Check if the key is 'components'
+                if key == 'components' and self.plan_generator is not None:
 
-                # Raise the exception
-                raise error
+                    # Overwrite the components in the plan generator
+                    self.plan_generator.components = value
 
-            # Check if the key is 'min_log_level'
-            if key == 'min_log_level':
-
-                # Change the logging levels of all handlers
-                self.logger.change_log_levels(value)
-
-            # Check if the key is 'components'
-            if key == 'components' and self.plan_generator is not None:
-
-                # Overwrite the components in the plan generator
-                self.plan_generator.components = value
-
-                # Update the components in the datahub
-                self.plan_generator.set_optimization_components(
-                    verbose=False)
+                    # Update the components in the datahub
+                    self.plan_generator.set_optimization_components(
+                        verbose=False)
