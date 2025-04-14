@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>main_window</class>
- <widget class="QMainWindow" name="main_window">
+ <class>vis_window</class>
+ <widget class="QMainWindow" name="vis_window">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -59,20 +62,51 @@ background-color: rgb(0, 0, 0);</string>
         </property>
         <item row="0" column="2">
          <widget class="QWidget" name="meta_settings_right_widget" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
-            <width>385</width>
+            <width>333</width>
             <height>0</height>
            </size>
           </property>
          </widget>
         </item>
-        <item row="4" column="0" rowspan="2" colspan="3">
+        <item row="0" column="0">
+         <widget class="QWidget" name="meta_settings_left_widget" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>333</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="3">
          <widget class="QTabWidget" name="categories_widget">
+          <property name="minimumSize">
+           <size>
+            <width>916</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <pointsize>12</pointsize>
            </font>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
           </property>
           <property name="iconSize">
            <size>
@@ -83,7 +117,7 @@ background-color: rgb(0, 0, 0);</string>
           <property name="documentMode">
            <bool>true</bool>
           </property>
-          <widget class="QWidget" name="tab_optimization">
+          <widget class="QWidget" name="tab_problem">
            <property name="styleSheet">
             <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(211, 215, 207);</string>
@@ -108,63 +142,309 @@ background-color: rgb(211, 215, 207);</string>
              <number>0</number>
             </property>
             <item>
-             <widget class="QScrollArea" name="scroll_optimization">
-              <property name="verticalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOn</enum>
-              </property>
-              <property name="widgetResizable">
-               <bool>true</bool>
-              </property>
-              <widget class="QWidget" name="scroll_optimization_content">
-               <property name="geometry">
-                <rect>
-                 <x>0</x>
-                 <y>0</y>
-                 <width>900</width>
-                 <height>433</height>
-                </rect>
-               </property>
-               <layout class="QVBoxLayout" name="scroll_configuration_meta_layout">
-                <property name="spacing">
+             <layout class="QVBoxLayout" name="tab_problem_layout">
+              <item>
+               <widget class="QTabWidget" name="tab_problem_fields">
+                <property name="currentIndex">
                  <number>0</number>
                 </property>
-                <property name="leftMargin">
-                 <number>10</number>
-                </property>
-                <property name="topMargin">
-                 <number>10</number>
-                </property>
-                <property name="rightMargin">
-                 <number>10</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QTabWidget" name="optimization_fields_widget">
-                  <property name="currentIndex">
-                   <number>0</number>
-                  </property>
-                  <widget class="QWidget" name="tab_iterations">
-                   <attribute name="title">
-                    <string>Iterative component values</string>
-                   </attribute>
-                  </widget>
-                  <widget class="QWidget" name="tab_outcome">
-                   <attribute name="title">
-                    <string>Iterative (N)TCP values</string>
-                   </attribute>
-                  </widget>
-                  <widget class="QWidget" name="tab_features">
-                   <attribute name="title">
-                    <string>Iterative feature values</string>
-                   </attribute>
-                  </widget>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </widget>
+                <widget class="QWidget" name="comp_vals_widget">
+                 <attribute name="title">
+                  <string>Iterative component values</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_11">
+                  <item>
+                   <layout class="QVBoxLayout" name="comp_vals_layout">
+                    <item>
+                     <layout class="QHBoxLayout" name="comp_vals_top_layout">
+                      <item>
+                       <widget class="QWidget" name="comp_vals_top_widget" native="true">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>187</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="baseline_meta_layout_5">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QVBoxLayout" name="comp_vals_top_widget_layout">
+                           <property name="spacing">
+                            <number>0</number>
+                           </property>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="comp_vals_bottom_layout">
+                      <item>
+                       <spacer name="comp_vals_bottom_hspacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="open_comp_vals_pbutton">
+                        <property name="minimumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>Open static plot</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="outc_vals_widget">
+                 <attribute name="title">
+                  <string>Iterative outcome values</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_12">
+                  <item>
+                   <layout class="QVBoxLayout" name="outc_vals_layout">
+                    <item>
+                     <layout class="QHBoxLayout" name="outc_vals_top_layout">
+                      <item>
+                       <widget class="QWidget" name="outc_vals_top_widget" native="true">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>187</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="dvh_meta_layout_4">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QVBoxLayout" name="outc_vals_top_widget_layout">
+                           <property name="spacing">
+                            <number>0</number>
+                           </property>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="outc_vals_bottom_layout">
+                      <item>
+                       <spacer name="outc_vals_bottom_hspacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="open_outc_vals_pbutton">
+                        <property name="minimumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>Open static plot</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="feat_vals_widget">
+                 <attribute name="title">
+                  <string>Iterative feature values</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_13">
+                  <item>
+                   <layout class="QVBoxLayout" name="feat_vals_layout">
+                    <item>
+                     <layout class="QHBoxLayout" name="feat_vals_top_layout">
+                      <item>
+                       <widget class="QWidget" name="feat_vals_top_widget" native="true">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>187</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="baseline_meta_layout_6">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QVBoxLayout" name="feat_vals_top_widget_layout">
+                           <property name="spacing">
+                            <number>0</number>
+                           </property>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="feat_vals_bottom_layout">
+                      <item>
+                       <spacer name="feat_vals_bottom_hspacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="open_feat_vals_pbutton">
+                        <property name="minimumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>Open static plot</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -193,58 +473,239 @@ background-color: rgb(211, 215, 207);</string>
              <number>0</number>
             </property>
             <item>
-             <widget class="QScrollArea" name="scroll_model">
-              <property name="verticalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOn</enum>
-              </property>
-              <property name="widgetResizable">
-               <bool>true</bool>
-              </property>
-              <widget class="QWidget" name="scroll_model_content">
-               <property name="geometry">
-                <rect>
-                 <x>0</x>
-                 <y>0</y>
-                 <width>900</width>
-                 <height>433</height>
-                </rect>
-               </property>
-               <layout class="QVBoxLayout" name="scroll_optimization_meta_layout">
-                <property name="spacing">
+             <layout class="QVBoxLayout" name="tab_model_layout">
+              <item>
+               <widget class="QTabWidget" name="tab_model_fields">
+                <property name="currentIndex">
                  <number>0</number>
                 </property>
-                <property name="leftMargin">
-                 <number>10</number>
-                </property>
-                <property name="topMargin">
-                 <number>10</number>
-                </property>
-                <property name="rightMargin">
-                 <number>10</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QTabWidget" name="model_fields_widget">
-                  <property name="currentIndex">
-                   <number>0</number>
-                  </property>
-                  <widget class="QWidget" name="tab_metrics">
-                   <attribute name="title">
-                    <string>Evaluation metrics</string>
-                   </attribute>
-                  </widget>
-                  <widget class="QWidget" name="tab_importance">
-                   <attribute name="title">
-                    <string>Permutation importances</string>
-                   </attribute>
-                  </widget>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </widget>
+                <widget class="QWidget" name="metrics_widget">
+                 <attribute name="title">
+                  <string>Evaluation metrics</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_9">
+                  <item>
+                   <layout class="QVBoxLayout" name="metrics_layout">
+                    <item>
+                     <layout class="QHBoxLayout" name="metrics_top_layout">
+                      <item>
+                       <widget class="QWidget" name="metrics_top_widget" native="true">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>187</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="baseline_meta_layout_4">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QVBoxLayout" name="metrics_top_widget_layout">
+                           <property name="spacing">
+                            <number>0</number>
+                           </property>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="metrics_bottom_layout">
+                      <item>
+                       <spacer name="metrics_bottom_hspacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="open_metrics_graphs_pbutton">
+                        <property name="minimumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>Open static plot (gr.)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="open_metrics_tables_pbutton">
+                        <property name="minimumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>Open static plot (tab.)</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="perm_widget">
+                 <attribute name="title">
+                  <string>Permutation importance</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_10">
+                  <item>
+                   <layout class="QVBoxLayout" name="perm_layout">
+                    <item>
+                     <layout class="QHBoxLayout" name="perm_top_layout">
+                      <item>
+                       <widget class="QWidget" name="perm_top_widget" native="true">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>187</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="dvh_meta_layout_3">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QVBoxLayout" name="perm_top_widget_layout">
+                           <property name="spacing">
+                            <number>0</number>
+                           </property>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="perm_bottom_layout">
+                      <item>
+                       <spacer name="perm_bottom_hspacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="open_perm_pbutton">
+                        <property name="minimumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>Open static plot</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -273,76 +734,283 @@ background-color: rgb(211, 215, 207);</string>
              <number>0</number>
             </property>
             <item>
-             <widget class="QScrollArea" name="scroll_plan">
-              <property name="verticalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOn</enum>
-              </property>
-              <property name="widgetResizable">
-               <bool>true</bool>
-              </property>
-              <widget class="QWidget" name="scroll_plan_content">
-               <property name="geometry">
-                <rect>
-                 <x>0</x>
-                 <y>0</y>
-                 <width>900</width>
-                 <height>433</height>
-                </rect>
-               </property>
-               <layout class="QVBoxLayout" name="scroll_evaluation_meta_layout">
-                <property name="spacing">
+             <layout class="QVBoxLayout" name="tab_plan_layout">
+              <item>
+               <widget class="QTabWidget" name="tab_plan_fields">
+                <property name="currentIndex">
                  <number>0</number>
                 </property>
-                <property name="leftMargin">
-                 <number>10</number>
-                </property>
-                <property name="topMargin">
-                 <number>10</number>
-                </property>
-                <property name="rightMargin">
-                 <number>10</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QTabWidget" name="plan_fields_widget">
-                  <property name="currentIndex">
-                   <number>0</number>
-                  </property>
-                  <widget class="QWidget" name="tab_slices">
-                   <attribute name="title">
-                    <string>CT/Dose slices</string>
-                   </attribute>
-                  </widget>
-                  <widget class="QWidget" name="tab_dvh">
-                   <attribute name="title">
-                    <string>Dose-volume histogram</string>
-                   </attribute>
-                  </widget>
-                  <widget class="QWidget" name="tab_quantities">
-                   <attribute name="title">
-                    <string>Dosimetric quantities</string>
-                   </attribute>
-                  </widget>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </widget>
+                <widget class="QWidget" name="image_widget">
+                 <attribute name="title">
+                  <string>CT/Dose image</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_3">
+                  <item>
+                   <layout class="QVBoxLayout" name="image_layout">
+                    <item>
+                     <layout class="QHBoxLayout" name="image_top_layout">
+                      <item>
+                       <widget class="QWidget" name="image_top_widget" native="true">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>187</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="baseline_meta_layout">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QVBoxLayout" name="image_top_widget_layout">
+                           <property name="spacing">
+                            <number>0</number>
+                           </property>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="image_bottom_layout">
+                      <item>
+                       <spacer name="image_bottom_hspacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="open_image_pbutton">
+                        <property name="minimumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>Open static plot</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="dvh_widget">
+                 <attribute name="title">
+                  <string>Dose-volume histogram</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_6">
+                  <item>
+                   <layout class="QVBoxLayout" name="dvh_layout">
+                    <item>
+                     <layout class="QHBoxLayout" name="dvh_top_layout">
+                      <item>
+                       <widget class="QWidget" name="dvh_top_widget" native="true">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>187</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="dvh_meta_layout">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QVBoxLayout" name="dvh_top_widget_layout">
+                           <property name="spacing">
+                            <number>0</number>
+                           </property>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="dvh_bottom_layout">
+                      <item>
+                       <spacer name="dvh_bottom_hspacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="open_dvh_pbutton">
+                        <property name="minimumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>Open static plot</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="ind_widget">
+                 <attribute name="title">
+                  <string>Quality indicators</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_5">
+                  <item>
+                   <layout class="QVBoxLayout" name="ind_layout">
+                    <item>
+                     <spacer name="ind_top_vspacer">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="ind_bottom_layout">
+                      <item>
+                       <spacer name="ind_bottom_hspacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="open_ind_pbutton">
+                        <property name="minimumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>161</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="cursor">
+                         <cursorShape>PointingHandCursor</cursorShape>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="text">
+                         <string>Open static plot</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QWidget" name="meta_settings_left_widget" native="true">
-          <property name="minimumSize">
-           <size>
-            <width>385</width>
-            <height>0</height>
-           </size>
-          </property>
          </widget>
         </item>
         <item row="0" column="1">
@@ -396,12 +1064,91 @@ background-color: rgb(211, 215, 207);</string>
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QWidget" name="bottom_widget" native="true">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(211, 215, 207);</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="bottom_widget_layout">
+           <property name="leftMargin">
+            <number>10</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <property name="rightMargin">
+            <number>10</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <spacer name="bottom_hspacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="close_visualizer_pbutton">
+             <property name="minimumSize">
+              <size>
+               <width>71</width>
+               <height>31</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>71</width>
+               <height>31</height>
+              </size>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+             </property>
+             <property name="text">
+              <string>Close</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
   </widget>
  </widget>
  <resources>
+  <include location="../assets/resources.qrc"/>
   <include location="../assets/resources.qrc"/>
   <include location="../assets/resources.qrc"/>
   <include location="../assets/resources.qrc"/>

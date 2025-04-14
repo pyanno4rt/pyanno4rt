@@ -3335,7 +3335,7 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>418</width>
+                 <width>817</width>
                  <height>1122</height>
                 </rect>
                </property>
@@ -5300,8 +5300,8 @@ background-color: rgb(211, 215, 207);</string>
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>369</width>
-                 <height>624</height>
+                 <width>817</width>
+                 <height>695</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="scroll_evaluation_meta_layout">
