@@ -10,9 +10,9 @@ analysis, data-driven model review, and treatment plan evaluation.
 
 # Author: Tim Ortkamp
 
-from pyanno4rt.visualization._visualizer import Visualizer
-from pyanno4rt.visualization import visuals
+from pyanno4rt.visualization import static_plots
+from pyanno4rt.visualization._visualization_window import VisualizationWindow
 
 __all__ = [
-    'Visualizer',
-    'visuals']
+    'static_plots',
+    'VisualizationWindow']

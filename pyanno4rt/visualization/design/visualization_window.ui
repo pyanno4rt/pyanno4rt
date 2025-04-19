@@ -3,7 +3,7 @@
  <class>vis_window</class>
  <widget class="QMainWindow" name="vis_window">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::WindowModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -26,10 +26,10 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>pyanno4rt</string>
+   <string>Visualizer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../assets/resources.qrc">
+   <iconset resource="../../gui/assets/resources.qrc">
     <normaloff>:/special_icons/icons_special/logo_white_icon.png</normaloff>:/special_icons/icons_special/logo_white_icon.png</iconset>
   </property>
   <widget class="QWidget" name="central_widget">
@@ -125,7 +125,7 @@ background-color: rgb(211, 215, 207);</string>
            <attribute name="title">
             <string>Optimization problem analysis</string>
            </attribute>
-           <layout class="QVBoxLayout" name="tab_configuration_meta_layout">
+           <layout class="QVBoxLayout" name="tab_problem_meta_layout">
             <property name="spacing">
              <number>0</number>
             </property>
@@ -152,7 +152,7 @@ background-color: rgb(211, 215, 207);</string>
                  <attribute name="title">
                   <string>Iterative component values</string>
                  </attribute>
-                 <layout class="QVBoxLayout" name="verticalLayout_11">
+                 <layout class="QVBoxLayout" name="comp_vals_meta_layout">
                   <item>
                    <layout class="QVBoxLayout" name="comp_vals_layout">
                     <item>
@@ -169,7 +169,7 @@ background-color: rgb(211, 215, 207);</string>
                          <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                         </property>
-                        <layout class="QVBoxLayout" name="baseline_meta_layout_5">
+                        <layout class="QVBoxLayout" name="comp_vals_top_meta_layout">
                          <property name="spacing">
                           <number>0</number>
                          </property>
@@ -250,7 +250,7 @@ border-color: rgb(186, 189, 182);</string>
                  <attribute name="title">
                   <string>Iterative outcome values</string>
                  </attribute>
-                 <layout class="QVBoxLayout" name="verticalLayout_12">
+                 <layout class="QVBoxLayout" name="outc_vals_meta_layout">
                   <item>
                    <layout class="QVBoxLayout" name="outc_vals_layout">
                     <item>
@@ -267,7 +267,7 @@ border-color: rgb(186, 189, 182);</string>
                          <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                         </property>
-                        <layout class="QVBoxLayout" name="dvh_meta_layout_4">
+                        <layout class="QVBoxLayout" name="outc_vals_top_meta_layout">
                          <property name="spacing">
                           <number>0</number>
                          </property>
@@ -348,7 +348,7 @@ border-color: rgb(186, 189, 182);</string>
                  <attribute name="title">
                   <string>Iterative feature values</string>
                  </attribute>
-                 <layout class="QVBoxLayout" name="verticalLayout_13">
+                 <layout class="QVBoxLayout" name="feat_vals_meta_layout">
                   <item>
                    <layout class="QVBoxLayout" name="feat_vals_layout">
                     <item>
@@ -365,7 +365,7 @@ border-color: rgb(186, 189, 182);</string>
                          <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                         </property>
-                        <layout class="QVBoxLayout" name="baseline_meta_layout_6">
+                        <layout class="QVBoxLayout" name="feat_vals_top_meta_layout">
                          <property name="spacing">
                           <number>0</number>
                          </property>
@@ -456,7 +456,7 @@ background-color: rgb(211, 215, 207);</string>
            <attribute name="title">
             <string>Data-driven model review</string>
            </attribute>
-           <layout class="QVBoxLayout" name="tab_optimization_meta_layout">
+           <layout class="QVBoxLayout" name="tab_model_meta_layout">
             <property name="spacing">
              <number>0</number>
             </property>
@@ -483,7 +483,7 @@ background-color: rgb(211, 215, 207);</string>
                  <attribute name="title">
                   <string>Evaluation metrics</string>
                  </attribute>
-                 <layout class="QVBoxLayout" name="verticalLayout_9">
+                 <layout class="QVBoxLayout" name="metrics_meta_layout">
                   <item>
                    <layout class="QVBoxLayout" name="metrics_layout">
                     <item>
@@ -500,7 +500,7 @@ background-color: rgb(211, 215, 207);</string>
                          <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                         </property>
-                        <layout class="QVBoxLayout" name="baseline_meta_layout_4">
+                        <layout class="QVBoxLayout" name="metrics_top_meta_layout">
                          <property name="spacing">
                           <number>0</number>
                          </property>
@@ -609,7 +609,7 @@ border-color: rgb(186, 189, 182);</string>
                  <attribute name="title">
                   <string>Permutation importance</string>
                  </attribute>
-                 <layout class="QVBoxLayout" name="verticalLayout_10">
+                 <layout class="QVBoxLayout" name="perm_meta_layout">
                   <item>
                    <layout class="QVBoxLayout" name="perm_layout">
                     <item>
@@ -626,7 +626,7 @@ border-color: rgb(186, 189, 182);</string>
                          <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                         </property>
-                        <layout class="QVBoxLayout" name="dvh_meta_layout_3">
+                        <layout class="QVBoxLayout" name="perm_top_meta_layout">
                          <property name="spacing">
                           <number>0</number>
                          </property>
@@ -717,7 +717,7 @@ background-color: rgb(211, 215, 207);</string>
            <attribute name="title">
             <string>Treatment Plan Evaluation</string>
            </attribute>
-           <layout class="QVBoxLayout" name="tab_evaluation_meta_layout">
+           <layout class="QVBoxLayout" name="tab_plan_meta_layout">
             <property name="spacing">
              <number>0</number>
             </property>
@@ -744,7 +744,7 @@ background-color: rgb(211, 215, 207);</string>
                  <attribute name="title">
                   <string>CT/Dose image</string>
                  </attribute>
-                 <layout class="QVBoxLayout" name="verticalLayout_3">
+                 <layout class="QVBoxLayout" name="image_meta_layout">
                   <item>
                    <layout class="QVBoxLayout" name="image_layout">
                     <item>
@@ -761,7 +761,7 @@ background-color: rgb(211, 215, 207);</string>
                          <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                         </property>
-                        <layout class="QVBoxLayout" name="baseline_meta_layout">
+                        <layout class="QVBoxLayout" name="image_top_meta_layout">
                          <property name="spacing">
                           <number>0</number>
                          </property>
@@ -842,7 +842,7 @@ border-color: rgb(186, 189, 182);</string>
                  <attribute name="title">
                   <string>Dose-volume histogram</string>
                  </attribute>
-                 <layout class="QVBoxLayout" name="verticalLayout_6">
+                 <layout class="QVBoxLayout" name="dvh_meta_layout">
                   <item>
                    <layout class="QVBoxLayout" name="dvh_layout">
                     <item>
@@ -859,7 +859,7 @@ border-color: rgb(186, 189, 182);</string>
                          <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
                         </property>
-                        <layout class="QVBoxLayout" name="dvh_meta_layout">
+                        <layout class="QVBoxLayout" name="dvh_top_meta_layout">
                          <property name="spacing">
                           <number>0</number>
                          </property>
@@ -940,7 +940,7 @@ border-color: rgb(186, 189, 182);</string>
                  <attribute name="title">
                   <string>Quality indicators</string>
                  </attribute>
-                 <layout class="QVBoxLayout" name="verticalLayout_5">
+                 <layout class="QVBoxLayout" name="ind_meta_layout">
                   <item>
                    <layout class="QVBoxLayout" name="ind_layout">
                     <item>
@@ -1049,7 +1049,7 @@ border-color: rgb(186, 189, 182);</string>
               </size>
              </property>
              <property name="pixmap">
-              <pixmap resource="../assets/resources.qrc">:/Logo/logo_white_square.png</pixmap>
+              <pixmap resource="../../gui/assets/resources.qrc">:/Logo/logo_white_square.png</pixmap>
              </property>
              <property name="scaledContents">
               <bool>true</bool>
@@ -1069,7 +1069,7 @@ border-color: rgb(186, 189, 182);</string>
         <property name="styleSheet">
          <string notr="true">background-color: rgb(211, 215, 207);</string>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QHBoxLayout" name="bottom_widget_meta_layout">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -1148,8 +1148,8 @@ border-color: rgb(186, 189, 182);</string>
   </widget>
  </widget>
  <resources>
-  <include location="../assets/resources.qrc"/>
-  <include location="../assets/resources.qrc"/>
+  <include location="../../gui/assets/resources.qrc"/>
+  <include location="../../gui/assets/resources.qrc"/>
   <include location="../assets/resources.qrc"/>
   <include location="../assets/resources.qrc"/>
  </resources>

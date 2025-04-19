@@ -31,7 +31,7 @@ from pyanno4rt.gui.styles._custom_styles import (
     pbutton_workflow, sbox, selector, tab, tbutton_composer, tbutton_workflow)
 from pyanno4rt.gui.windows import (
     CompareWindow, InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow,
-    SplashScreenWindow, TreeWindow, VisualizationWindow)
+    SplashScreenWindow, TreeWindow)
 from pyanno4rt.gui.windows.components import component_window_map
 import pyanno4rt.optimization._maps as opt_maps
 from pyanno4rt.optimization.components import (
@@ -40,6 +40,7 @@ from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, get_machine_learning_constraints,
     get_machine_learning_objectives, load_list_from_file,
     load_segments_from_path, snapshot, string_to_numeric)
+from pyanno4rt.visualization import VisualizationWindow
 
 # %% Class definition
 
@@ -2512,14 +2513,8 @@ class MainWindow(QMainWindow, Ui_main_window):
     def visualize(self):
         """Visualize the treatment plan."""
 
-        # Set the position of the window
-        self.visualization_window.position()
-
-        # Show the window
-        self.visualization_window.show()
-
         # Run the visualization method of the treatment plan
-        # self.plans[self.plan_ledit.text()].visualize(parent=self)
+        self.plans[self.plan_ledit.text()].visualize(parent=self)
 
     def open_configuration_window(self):
         """Open the plan configuration window."""

@@ -17,7 +17,6 @@ from ._settings_window import SettingsWindow
 from ._splash_screen_window import SplashScreenWindow
 from ._text_window import TextWindow
 from ._tree_window import TreeWindow
-from ._visualization_window import VisualizationWindow
 
 from ._main_window import MainWindow
 
@@ -31,5 +30,4 @@ __all__ = [
     'SettingsWindow',
     'SplashScreenWindow',
     'TextWindow',
-    'TreeWindow',
-    'VisualizationWindow']
+    'TreeWindow']
