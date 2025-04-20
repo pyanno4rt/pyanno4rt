@@ -40,7 +40,7 @@ from pyanno4rt.tools import (
     add_square_brackets, apply, copycat, get_machine_learning_constraints,
     get_machine_learning_objectives, load_list_from_file,
     load_segments_from_path, snapshot, string_to_numeric)
-from pyanno4rt.visualization import VisualizationWindow
+from pyanno4rt.visualization import Visualizer
 
 # %% Class definition
 
@@ -121,7 +121,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.settings_window = SettingsWindow(self)
         self.info_window = InfoWindow(self)
         self.compare_window = CompareWindow(self)
-        self.visualization_window = VisualizationWindow(self)
+        self.visualization_window = Visualizer(self)
         self.config_window = TreeWindow('Plan Configuration Viewer', self)
         self.datahub_window = TreeWindow('Datahub Content Viewer', self)
         self.log_window = LogWindow(self)

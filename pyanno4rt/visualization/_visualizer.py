@@ -4,13 +4,8 @@
 
 # %% External package import
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (
-    QHBoxLayout, QLabel, QMainWindow, QPushButton, QSizePolicy, QVBoxLayout,
-    QWidget)
-from pyqtgraph import mkQApp, setConfigOptions
-from pyqtgraph.Qt import QtGui
+from pyqtgraph import mkQApp
+from PyQt5.QtWidgets import QApplication, QMainWindow
 
 # %% Internal package import
 
@@ -19,461 +14,309 @@ from pyanno4rt.tools import (
     get_conventional_constraints, get_conventional_objectives,
     get_machine_learning_constraints, get_machine_learning_objectives,
     get_radiobiological_constraints, get_radiobiological_objectives)
-from pyanno4rt.visualization.visuals import (
-    CtDoseSlicingWindowPyQt, DosimetricsTablePlotterMPL, DVHGraphPlotterMPL,
-    FeatureSelectWindowPyQt, IterGraphPlotterMPL, MetricsGraphsPlotterMPL,
-    MetricsTablesPlotterMPL, NTCPGraphPlotterMPL,
-    PermutationImportancePlotterMPL)
-
-# %% Set options
-
-setConfigOptions(imageAxisOrder='col-major')
+from pyanno4rt.visualization._custom_styles import pbutton_composer
+from pyanno4rt.visualization.design.visualizer import Ui_vis_window
+from pyanno4rt.visualization.static import (
+    DosimetricsTable, DVHGraph, IterGraph, MetricsGraph, MetricsTable,
+    NTCPGraph, PermutationImportanceBoxplot)
 
 # %% Class definition
 
 
-class Visualizer():
+class Visualizer(QMainWindow, Ui_vis_window):
     """
     Visualizer class.
 
-    This class provides methods to build and launch the visual analysis tool, \
-    i.e., it initializes the application, creates the main window, provides \
-    the window configuration, and runs the application.
-
-    Attributes
-    ----------
-    application : object of class `SpyderQApplication`
-        Instance of the class `SpyderQApplication` for managing control flow \
-        and main settings of the visual analysis tool.
+    This class creates the visual analysis tool as standalone or for the \
+    graphical user interface, including different types of plots.
     """
 
-    def __init__(self, parent=None):
+    def __init__(
+            self,
+            parent=None):
 
-        # 
+        # Run the constructor from the superclass
+        super().__init__()
+
+        # Build the UI main window
+        self.setupUi(self)
+
+        # Initialize the application
+        self.application = mkQApp("pyanno4rt")
+
+        # Set the application style
+        self.application.setStyle('Fusion')
+
+        # Get the application from the argument
         self.parent = parent
 
-        if not parent:
+        # Set the stylesheets
+        self.set_styles({
+            'open_comp_vals_pbutton': pbutton_composer,
+            'open_outc_vals_pbutton': pbutton_composer,
+            'open_feat_vals_pbutton': pbutton_composer,
+            'open_metrics_graphs_pbutton': pbutton_composer,
+            'open_metrics_tables_pbutton': pbutton_composer,
+            'open_perm_pbutton': pbutton_composer,
+            'open_dvh_pbutton': pbutton_composer,
+            'open_ind_pbutton': pbutton_composer,
+            'open_image_pbutton': pbutton_composer,
+            'close_visualizer_pbutton': pbutton_composer})
 
-            # Initialize the application
-            self.application = mkQApp("pyanno4rt")
+        # Connect the fields with the event signals
+        self.connect_signals()
 
-            # Set the application style
-            self.application.setStyle('Fusion')
+        # Disable irrelevant tabs
+        self.disable_tabs()
 
-            # Initialize the main window for the GUI
-            self.main_window = MainWindow(self.application)
+    def set_styles(
+            self,
+            key_value_pairs):
+        """
+        Set the element stylesheets from key-value pairs.
+
+        Parameters
+        ----------
+        key_value_pairs : dict
+            Dictionary with the field names (keys) and style sheets (values).
+        """
+
+        # Loop over the dictionary items
+        for key, value in key_value_pairs.items():
+
+            # Get the attribute and set the stylesheet
+            getattr(self, key).setStyleSheet(value)
+
+    def connect_signals(self):
+        """Connect the fields with the event signals."""
+
+        # Loop over the field names with 'clicked' events
+        for key, value in {
+                'open_comp_vals_pbutton': self.open_iter_graph,
+                'open_outc_vals_pbutton': self.open_ntcp_graph,
+                'open_feat_vals_pbutton': self.open_iter_graph,
+                'open_metrics_graphs_pbutton': self.open_metrics_graph,
+                'open_metrics_tables_pbutton': self.open_metrics_table,
+                'open_perm_pbutton': self.open_permutation_importance_boxplot,
+                'open_dvh_pbutton': self.open_dvh_graph,
+                'open_ind_pbutton': self.open_dosimetrics_table,
+                'open_image_pbutton': self.open_iter_graph
+                }.items():
+
+            # Connect the 'clicked' event
+            getattr(self, key).clicked.connect(value)
+
+        # Connect the 'clicked' event with the close button
+        self.close_visualizer_pbutton.clicked.connect(self.close)
+
+    def disable_tabs(self):
+        """Disable irrelevant tabs."""
+
+        # Get the datahub
+        hub = Datahub()
+
+        # Check if segmentation data is available
+        if hub.segmentation is not None:
+
+            # Get all conventional components
+            cv_components = (
+                get_conventional_constraints(hub.segmentation)
+                + get_conventional_objectives(hub.segmentation))
+
+            # Get the machine learning model-based components
+            ml_components = (
+                get_machine_learning_constraints(hub.segmentation)
+                + get_machine_learning_objectives(hub.segmentation))
+
+            # Get the radiobiological components
+            rb_components = (
+                get_radiobiological_constraints(hub.segmentation)
+                + get_radiobiological_objectives(hub.segmentation))
 
         else:
 
-            # Initialize the main window for the GUI from the parent
-            self.parent.visual_window = MainWindow(
-                self.parent.application, False)
+            # Set the component tuples to the default value
+            cv_components, ml_components, rb_components = (), (), ()
+
+        # Check if the iteration plot buttons should be disabled
+        if ((hub.state < 3 or
+            (hub.optimization is not None and
+             ('problem' not in hub.optimization or
+              not hasattr(hub.optimization['problem'], 'tracker')
+              or all(value == [] for value
+                     in hub.optimization['problem'].tracker.values()))))):
+            self.open_comp_vals_pbutton.setEnabled(False)
+            self.open_outc_vals_pbutton.setEnabled(False)
+
+        # Check if the iteration values button should be disabled
+        if (not any(objective.display for objective in (
+                *cv_components, *rb_components, *ml_components))):
+            self.open_comp_vals_pbutton.setEnabled(False)
+
+        # Check if the (N)TCP values button should be disabled
+        if (not any(objective.display for objective in (
+                rb_components + ml_components))):
+            self.open_outc_vals_pbutton.setEnabled(False)
+
+        # Check if the feature iterations button should be disabled
+        if ((hub.state < 3 or
+            (hub.optimization is not None and
+             ('problem' not in hub.optimization or
+              (not hasattr(hub.optimization['problem'], 'tracker')
+               or all(value == [] for value
+                      in hub.optimization['problem'].tracker.values()))))
+             or all(objective.model_parameters.write_features is False
+                    for objective in ml_components))):
+            self.open_feat_vals_pbutton.setEnabled(False)
+
+        # Check if the metrics tables and graphs buttons should be disabled
+        if ((hub.state < 2 or
+             (not hub.model_evaluations
+              or len(hub.model_evaluations) == 0))):
+            self.open_metrics_graphs_pbutton.setEnabled(False)
+            self.open_metrics_tables_pbutton.setEnabled(False)
+
+        # Check if the permutation importance button should be disabled
+        if ((hub.state < 2 or
+             (not hub.model_inspections
+              or len(hub.model_inspections) == 0))):
+            self.open_perm_pbutton.setEnabled(False)
+
+        # Check if the plan evaluation buttons should be disabled
+        if ((hub.state < 4 or
+             (not hub.dose_histogram and not hub.dosimetrics))):
+            self.open_dvh_pbutton.setEnabled(False)
+            self.open_ind_pbutton.setEnabled(False)
+
+        # Check if the CT/dose slice button should be disabled
+        if ((hub.state < 1 or
+             not hub.computed_tomography or not hub.segmentation)):
+            self.open_image_pbutton.setEnabled(False)
+
+    def open_iter_graph(self):
+        """Open the iterative component value graph."""
+
+        # Initialize the iterative component value graph
+        plotter = IterGraph()
+
+        # Open the view
+        plotter.view()
+
+    def open_ntcp_graph(self):
+        """Open the (N)TCP graph."""
+
+        # Initialize the (N)TCP graph
+        plotter = NTCPGraph()
+
+        # Open the view
+        plotter.view()
+
+    def open_metrics_graph(self):
+        """Open the metrics graph."""
+
+        # Initialize the metrics graph
+        plotter = MetricsGraph()
+
+        # Open the view
+        plotter.view()
+
+    def open_metrics_table(self):
+        """Open the metrics table."""
+
+        # Initialize the metrics table
+        plotter = MetricsTable()
+
+        # Open the view
+        plotter.view()
+
+    def open_permutation_importance_boxplot(self):
+        """Open the permutation importance boxplot."""
+
+        # Initialize the permutation importance boxplot
+        plotter = PermutationImportanceBoxplot()
+
+        # Open the view
+        plotter.view()
+
+    def open_dvh_graph(self):
+        """Open the DVH graph."""
+
+        # Initialize the DVH graph
+        plotter = DVHGraph()
+
+        # Open the view
+        plotter.view()
+
+    def open_dosimetrics_table(self):
+        """Open the dosimetrics table."""
+
+        # Initialize the dosimetrics table
+        plotter = DosimetricsTable()
+
+        # Open the view
+        plotter.view()
 
     def launch(self):
-        """Launch the visual analysis tool."""
+        """Launch the visualizer."""
 
-        if not self.parent:
+        if self.parent is None:
 
-            # Set the window size
-            self.main_window.resize(1000, 300)
+            # Set the window position
+            self.position()
 
-            # Show the main window
-            self.main_window.show()
+            # Show the visualization window
+            self.show()
 
             # Run the application
             self.application.exec_()
 
         else:
 
-            # Set the window size
-            self.parent.visual_window.resize(920, 320)
+            # Set the window position
+            self.parent.visualization_window.position()
 
-            # Get the window geometry
-            geometry = self.parent.visual_window.geometry()
+            # Show the window
+            self.parent.visualization_window.show()
 
-            # Move the geometry center towards the parent
+    def position(self):
+        """Set the window position."""
+
+        # Get the frame geometry
+        geometry = self.frameGeometry()
+
+        # Check if no parent has been passed
+        if self.parent is None:
+
+            # Get the screen number from the cursor position
+            screen = QApplication.desktop().screenNumber(
+                QApplication.desktop().cursor().pos())
+
+            # Move the geometry center according to the application window
+            geometry.moveCenter(
+                QApplication.desktop().screenGeometry(screen).center())
+
+            # Move the window to the top left of the geometry
+            self.move(geometry.topLeft())
+
+        else:
+
+            # Move the geometry center according to the parent window
             geometry.moveCenter(self.parent.geometry().center())
 
-            # Set the shifted geometry
-            self.parent.visual_window.setGeometry(geometry)
+            # Set the window geometry
+            self.setGeometry(geometry)
 
-            # Show the visualization window
-            self.parent.visual_window.show()
+    def close(self):
+        """Close the visualizer."""
 
-    def closeEvent(
-            self,
-            event):
-        """
-        Close the application.
-
-        Parameters
-        ----------
-        event : object of class `QCloseEvent`
-            Instance of the class `QCloseEvent` to be triggered at window \
-            closing.
-        """
-
-        # Close the application
-        self.application.quit()
-
-
-class MainWindow(QMainWindow):
-    """
-    Main window for the application.
-
-    This class creates the main window for the visual analysis tool, \
-    including logo, labels, and event buttons.
-
-    Parameters
-    ----------
-    application : object of class `SpyderQApplication`
-        Instance of the class `SpyderQApplication` for managing control flow \
-        and main settings of the visual analysis tool.
-    """
-
-    def __init__(
-            self,
-            application,
-            standalone=True):
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        def add_logo(layout):
-            """Create and add the pyanno4rt logo."""
-            logo = QLabel(self)
-            pixmap = QtGui.QPixmap('../pyanno4rt/logo/logo_white_512.png')
-            pixmap = pixmap.scaled(int(pixmap.width()/2),
-                                   int(pixmap.height()/2))
-            logo.setPixmap(pixmap)
-            logo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            logo.setAlignment(Qt.AlignCenter)
-            logo.setStyleSheet('''
-                               QLabel
-                                   {
-                                       margin: 0 0 0 0;
-                                   }
-                               ''')
-            layout.addWidget(logo)
-
-        def add_label(layout):
-            """Create and add the label below the logo."""
-            label = QLabel("Visual Analysis Tool")
-            label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            label.setAlignment(Qt.AlignCenter)
-            label.setStyleSheet('''
-                                QLabel
-                                    {
-                                        color: #FBFAF5;
-                                        font-size: 10pt;
-                                        margin-bottom: 15px;
-                                    }
-                                ''')
-            layout.addWidget(label)
-
-        def add_button(subclass, layouts, counts):
-            """Create a button and add it to the respective layout."""
-            # Get the category index
-            indexes = {labels[0]: 0, labels[1]: 1, labels[2]: 2}
-            index = indexes[subclass.category]
-
-            # Create a push button
-            button = QPushButton(subclass.label)
-
-            # Set the pointing hand cursor for the button
-            button.setCursor(QtGui.QCursor(Qt.PointingHandCursor))
-
-            # Set the stylesheet for the button
-            button.setStyleSheet(button_styles[index])
-
-            # Add the button to the layout
-            layouts[index].addWidget(button)
-
-            # Increment the counter for the category
-            counts[index] += 1
-
-            # Connect the buttons with the onclick events
-            button.clicked.connect(getattr(self, subclass.name).view)
-
-            # Check if the iteration plot buttons should be disabled
-            if ((hub.state < 3 or
-                (hub.optimization is not None and
-                 ('problem' not in hub.optimization or
-                  not hasattr(hub.optimization['problem'], 'tracker')
-                  or all(value == [] for value
-                         in hub.optimization['problem'].tracker.values()))))
-                    and subclass.name in (
-                        'iterations_plotter', 'ntcp_plotter')):
-                button.setEnabled(False)
-
-            # Check if the iteration values button should be disabled
-            if (not any(objective.display for objective in (
-                    *cv_components, *rb_components, *ml_components))
-                    and subclass.name == 'iterations_plotter'):
-                button.setEnabled(False)
-
-            # Check if the (N)TCP values button should be disabled
-            if (not any(objective.display for objective in (
-                    rb_components + ml_components))
-                    and subclass.name == 'ntcp_plotter'):
-                button.setEnabled(False)
-
-            # Check if the feature iterations button should be disabled
-            if ((hub.state < 3 or
-                (hub.optimization is not None and
-                 ('problem' not in hub.optimization or
-                  (not hasattr(hub.optimization['problem'], 'tracker')
-                   or all(value == [] for value
-                          in hub.optimization['problem'].tracker.values()))))
-                 or all(objective.model_parameters.write_features is False
-                        for objective in ml_components))
-                    and subclass.name == 'features_plotter'):
-                button.setEnabled(False)
-
-            # Check if the metrics tables and graphs buttons should be disabled
-            if ((hub.state < 2 or
-                 (not hub.model_evaluations
-                  or len(hub.model_evaluations) == 0))
-                    and subclass.name in (
-                        'metrics_graphs_plotter', 'metrics_tables_plotter')):
-                button.setEnabled(False)
-
-            # Check if the permutation importance button should be disabled
-            if ((hub.state < 2 or
-                 (not hub.model_inspections
-                  or len(hub.model_inspections) == 0))
-                    and subclass.name in ('permutation_importance_plotter',)):
-                button.setEnabled(False)
-
-            # Check if the plan evaluation buttons should be disabled
-            if ((hub.state < 4 or
-                (not hub.dose_histogram and not hub.dosimetrics))
-                    and subclass.name in (
-                        'dvh_plotter', 'dosimetrics_plotter')):
-                button.setEnabled(False)
-
-            # Check if the CT/dose slice button should be disabled
-            if ((hub.state < 1 or
-                 not hub.computed_tomography or not hub.segmentation)
-                    and subclass.name == 'ct_dose_plotter'):
-                button.setEnabled(False)
-
-        # Run the constructor from the superclass
-        super().__init__()
-
-        # Get the instance attributes from the arguments
-        self.application = application
-        self.standalone = standalone
-
-        # Set the window icon
-        self.setWindowIcon(QIcon('./logo/logo_white_icon.png'))
-
-        # Set the window title
-        self.setWindowTitle("Visualizer")
-
-        # Set the window style sheet
-        self.setStyleSheet('background-color: black;')
-
-        # Initialize the central widget and add it to the window
-        central_widget = QWidget(self)
-        self.setCentralWidget(central_widget)
-
-        # Set the layout for the central widget
-        central_layout = QVBoxLayout()
-        central_widget.setLayout(central_layout)
-
-        # Add logo and label to the central layout
-        add_logo(central_layout)
-        add_label(central_layout)
-
-        # Set the horizontal box layout for the plotting categories
-        categories_layout = QHBoxLayout()
-
-        # Add the categories layout to the central layout
-        central_layout.addLayout(categories_layout)
-
-        # Set the stylesheets for the category labels
-        label_styles = ('''
-                        QLabel
-                            {
-                                color: #C45C26;
-                                font-size: 14pt;
-                                max-height: 25%;
-                            }
-                        ''',
-                        '''
-                        QLabel
-                            {
-                                color: #34A56F;
-                                font-size: 14pt;
-                                max-height: 25%;
-                            }
-                        ''',
-                        '''
-                        QLabel
-                            {
-                                color: #5CB3FF;
-                                font-size: 14pt;
-                                max-height: 25%;
-                            }
-                        ''')
-
-        # Set the stylesheet for the category buttons
-        button_styles = ('''
-                         QPushButton
-                             {
-                                 background-color: #C45C26;
-                             }
-                         QPushButton:hover
-                             {
-                                 background-color: #B04812;
-                             }
-                         QPushButton:pressed
-                             {
-                                 background-color: #B04812;
-                             }
-                         QPushButton:disabled
-                             {
-                                 color: #808080;
-                             }
-                         ''',
-                         '''
-                         QPushButton
-                             {
-                                 background-color: #34A56F;
-                             }
-                         QPushButton:hover
-                             {
-                                 background-color: #278664;
-                             }
-                         QPushButton:pressed
-                             {
-                                 background-color: #278664;
-                             }
-                         QPushButton:disabled
-                             {
-                                 color: #808080;
-                             }
-                         ''',
-                         '''
-                         QPushButton
-                             {
-                                 background-color: #5CB3FF;
-                             }
-                         QPushButton:hover
-                             {
-                                 background-color: #157DEC;
-                             }
-                         QPushButton:pressed
-                             {
-                                 background-color: #157DEC;
-                             }
-                         QPushButton:disabled
-                             {
-                                 color: #808080;
-                             }
-                         ''')
-
-        # Initialize all plotting classes
-        classes = (IterGraphPlotterMPL,
-                   NTCPGraphPlotterMPL,
-                   FeatureSelectWindowPyQt,
-                   MetricsGraphsPlotterMPL,
-                   MetricsTablesPlotterMPL,
-                   PermutationImportancePlotterMPL,
-                   DVHGraphPlotterMPL,
-                   DosimetricsTablePlotterMPL,
-                   CtDoseSlicingWindowPyQt)
-
-        # Set the category labels
-        labels = ('Optimization problem analysis',
-                  'Data-driven model review',
-                  'Treatment plan evaluation')
-
-        # Create the layouts for all categories
-        layouts = []
-        for i, _ in enumerate(labels):
-            layouts.append(QVBoxLayout())
-            text = QLabel(labels[i])
-            text.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            text.setAlignment(Qt.AlignCenter)
-            text.setStyleSheet(label_styles[i])
-            layouts[i].addWidget(text)
-
-        # Get all components
-        if hub.segmentation:
-            cv_components = (
-                get_conventional_constraints(hub.segmentation)
-                + get_conventional_objectives(hub.segmentation))
-            ml_components = (
-                get_machine_learning_constraints(hub.segmentation)
-                + get_machine_learning_objectives(hub.segmentation))
-            rb_components = (
-                get_radiobiological_constraints(hub.segmentation)
-                + get_radiobiological_objectives(hub.segmentation))
-        else:
-            cv_components, ml_components, rb_components = (), (), ()
-
-        # Initialize the counter
-        counts = [0, 0, 0]
-
-        # Loop over the plotting classes
-        for subclass in classes:
-
-            # Set the class attribute from the subclasses' name
-            setattr(self, subclass.name, subclass())
-
-            # Add the button to the respective category layout
-            add_button(subclass, layouts, counts)
-
-        # Loop over the vertical button layouts
-        for layout in layouts:
-
-            # Add the layout to the categories layout
-            categories_layout.addLayout(layout)
-
-        # Get the maximum number of plots over all categories
-        equal_number = max(counts)
-
-        # Get the number of spacers to add per category
-        additional_space = {str(n): equal_number - counts[n]
-                            for n, _ in enumerate(counts)}
-
-        # Loop over the items
-        for key, value in additional_space.items():
-
-            # Loop over the value ranges
-            for _ in range(value):
-
-                # Create and add a spacer button
-                spacer_button = QPushButton("")
-                spacer_button.setStyleSheet('''
-                                            QPushButton
-                                                {
-                                                    color: black;
-                                                    background: black;
-                                                    border-color: black;
-                                                }
-                                            ''')
-                layouts[int(key)].addWidget(spacer_button)
-
-    def closeEvent(
-            self,
-            event):
-        """
-        Close the application.
-
-        Parameters
-        ----------
-        event : object of class `QCloseEvent`
-            Instance of the class `QCloseEvent`.
-        """
-
-        # Check if the visual interface is handled as a standalone
-        if self.standalone:
+        # Check if no parent has been passed
+        if self.parent is None:
 
             # Close the application
             self.application.quit()
+
+            # Hide the window
+            self.hide()
 
         else:
 

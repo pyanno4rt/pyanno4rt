@@ -22,7 +22,7 @@ from pyanno4rt.evaluation import DVHEvaluator
 from pyanno4rt.evaluation import DosimetricsEvaluator
 
 # Treatment plan visualization
-from pyanno4rt.visualization import VisualizationWindow
+from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
 from pyanno4rt.checking import check_type
@@ -323,8 +323,8 @@ class TreatmentPlan():
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration.label
 
-        # Initialize the visualization window
-        self.visualizer = VisualizationWindow(parent=parent)
+        # Initialize the visualizer
+        self.visualizer = Visualizer(parent=parent)
 
         # Set the position of the window
         self.visualizer.position()

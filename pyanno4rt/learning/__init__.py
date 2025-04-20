@@ -15,20 +15,10 @@ from ._machine_learning_model import MachineLearningModel
 from ._model_parameters import ModelParameters
 
 # Import the submodules
-from . import dataset
-from . import evaluation
-from . import features
-from . import forest
-from . import inspection
-from . import logistic
-from . import losses
-from . import naive_bayes
-from . import neighbors
-from . import neural_network
-from . import preprocessing
-from . import svm
-from . import tree
-from . import tune_spaces
+from . import (
+    dataset, evaluation, features, forest, inspection, logistic, losses,
+    naive_bayes, neighbors, neural_network, preprocessing, svm, tree,
+    tune_spaces)
 
 __all__ = [
     'DataModelHandler',
