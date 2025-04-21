@@ -8,8 +8,8 @@ from PyQt5.QtWidgets import QMainWindow, QTreeWidgetItem
 
 # %% Internal package import
 
+from pyanno4rt.gui._custom_styles import pbutton_composer
 from pyanno4rt.gui.compilations.tree_window import Ui_tree_window
-from pyanno4rt.gui.styles._custom_styles import pbutton_composer
 from pyanno4rt.gui.windows import TextWindow
 
 # %% Class definition

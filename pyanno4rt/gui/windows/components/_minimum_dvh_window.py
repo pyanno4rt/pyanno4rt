@@ -9,12 +9,11 @@ from PyQt5.QtWidgets import QListWidgetItem, QMainWindow
 
 # %% Internal package import
 
+from pyanno4rt.gui._custom_styles import cbox, ledit, pbutton_composer, sbox
 from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.components.minimum_dvh_window import (
     Ui_minimum_dvh_window)
 from pyanno4rt.gui.custom_widgets import CheckableComboBox
-from pyanno4rt.gui.styles._custom_styles import (
-    cbox, ledit, pbutton_composer, sbox)
 from pyanno4rt.optimization.components import MinimumDVH
 from pyanno4rt.tools import string_to_numeric
 

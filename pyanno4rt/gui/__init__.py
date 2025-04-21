@@ -12,8 +12,7 @@ The module aims to provide methods and classes to ...
 from ._gui import GraphicalUserInterface
 
 # Import the submodules
-from . import custom_widgets
-from . import windows
+from . import custom_widgets, windows
 
 # Import the resources file
 from .assets import resources_rc

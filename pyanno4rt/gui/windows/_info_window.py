@@ -8,8 +8,8 @@ from PyQt5.QtWidgets import QMainWindow
 
 # %% Internal package import
 
+from pyanno4rt.gui._custom_styles import pbutton_composer
 from pyanno4rt.gui.compilations.info_window import Ui_info_window
-from pyanno4rt.gui.styles._custom_styles import pbutton_composer
 
 # %% Class definition
 

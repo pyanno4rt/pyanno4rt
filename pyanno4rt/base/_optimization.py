@@ -79,7 +79,7 @@ class Optimization():
             :class:`~pyanno4rt.optimization.components._support_vector_machine_tcp.SupportVectorMachineTCP`
 
         .. note:: To prevent overwriting processes, make use of the \
-            identifier argument for components of the same type!
+            identifier argument for components of the same type and segment!
 
     method : {'lexicographic', 'pareto', 'weighted-sum'}, \
         default='weighted-sum'
@@ -88,16 +88,15 @@ class Optimization():
         :class:`~pyanno4rt.optimization.methods._pareto_optimization.ParetoOptimization`\
         :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`.
 
-        - 'lexicographic' : sequential optimization based on a preference \
-            order
+        - 'lexicographic' : sequential optimization based on a preference order
         - 'pareto' : parallel optimization based on the criterion of pareto \
             optimality
         - 'weighted-sum' : parallel optimization based on a weighted-sum \
             scalarization of the objective function
 
     solver : {'ipyopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}, default='scipy'
-        Python package to be used for solving the optimization problem, \
-        see the classes \
+        Python package to be used for solving the optimization problem, see \
+        the classes \
         :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
         :class:`~pyanno4rt.optimization.solvers._proxmin_solver.ProxminSolver`\
         :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
@@ -110,7 +109,7 @@ class Optimization():
         - 'pypop7': population-based algorithms provided by PyPop7
         - 'scipy' : local algorithms provided by SciPy
 
-        .. note:: The 'lexicographic' method currently only works with \
+        .. note:: The 'lexicographic' method only works with 'ipyopt' and \
             'scipy', while the 'pareto' method only works with 'pymoo'.
 
     algorithm : str, default='L-BFGS-B'
@@ -133,8 +132,7 @@ class Optimization():
         - solver='pypop7' : {'LMCMA', 'LMMAES'}
 
             - 'LMCMA' : limited-memory covariance matrix adaptation
-            - 'LMMAES' : limited-memory matrix adaptation evolution \
-                strategy
+            - 'LMMAES' : limited-memory matrix adaptation evolution strategy
 
         - solver='scipy' : {'L-BFGS-B', 'TNC', 'trust-constr'}
 
@@ -159,9 +157,8 @@ class Optimization():
             reference optimal point
 
         .. note:: Data-medoid initialization works best for a single \
-            dataset or multiple datasets with a high degree of \
-            similarity. Otherwise, the data medoid point may lose its \
-            individual representativeness.
+            dataset or multiple datasets with high similarity. Otherwise, the \
+            data medoid point may lose its individual representativeness.
 
     initial_fluence_vector : None or list, default=None
         Initial fluence vector for the optimization problem, only used if \
@@ -180,8 +177,7 @@ class Optimization():
                 bounds across all variables (where None for the lower \
                 and/or upper bound indicates infinity bounds)
             2) Passing a list translates into non-uniform bounds (where the \
-                length of the list must be equal to the number of decision \
-                variables)
+                length of the list must equal the number of decision variables)
 
     maximum_iterations : int, default=500
         Maximum number of iterations taken for the solver to converge.
@@ -255,7 +251,7 @@ class Optimization():
 
         # Serialize the components
         dictionary['components'] = [
-            item.to_dict() for item in dictionary['components']]
+            component.to_dict() for component in dictionary['components']]
 
         return dictionary
 
@@ -280,8 +276,8 @@ class Optimization():
         # Deserialize the components
         dictionary['components'] = [
             maps.COMPONENTS[key].from_dict(value)
-            for item in dictionary['components']
-            for key, value in item.items()]
+            for component in dictionary['components']
+            for key, value in component.items()]
 
         return cls(**dictionary)
 

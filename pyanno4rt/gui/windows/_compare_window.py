@@ -11,9 +11,9 @@ from pyqtgraph import mkPen
 
 # %% Internal package import
 
+from pyanno4rt.gui._custom_styles import cbox, sbox, pbutton_composer
 from pyanno4rt.gui.compilations.compare_window import Ui_compare_window
 from pyanno4rt.gui.custom_widgets import DVHCompareWidget, SliceCompareWidget
-from pyanno4rt.gui.styles._custom_styles import cbox, sbox, pbutton_composer
 from pyanno4rt.tools import get_constraint_segments, get_objective_segments
 
 # %% Class definition

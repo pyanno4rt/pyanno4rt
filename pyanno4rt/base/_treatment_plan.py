@@ -107,7 +107,7 @@ class TreatmentPlan():
     -------
     Our Read the Docs page (https://pyanno4rt.readthedocs.io/en/latest/) \
     features step-by-step examples for the application of the package. You \
-    will also find code templates there, e.g. for the optimization components.
+    will also find code snippets there, e.g. for the optimization components.
     """
 
     def __init__(
@@ -324,7 +324,7 @@ class TreatmentPlan():
         Datahub.label = self.configuration.label
 
         # Initialize the visualizer
-        self.visualizer = Visualizer(parent=parent)
+        self.visualizer = Visualizer(treatment_plan=self, parent=parent)
 
         # Set the position of the window
         self.visualizer.position()

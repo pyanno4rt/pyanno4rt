@@ -37,25 +37,29 @@ class Configuration():
     modality : {'photon', 'proton'}
         Treatment modality.
 
-        .. note:: If the modality is 'photon', \
+        .. note::
+            - modality='photon': \
             :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
-            with neutral RBE of 1.0 is automatically applied, whereas for \
-            the modality 'proton', \
+            with neutral RBE of 1.0
+            - modality='proton': \
             :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`\
-            with constant RBE of 1.1 is used.
+            with constant RBE of 1.1
 
     imaging_path : str
-        Path to the CT and segmentation data.
+        Path to the CT and segmentation data (.dcm, .mat or .p).
 
-        .. note:: It is assumed that CT and segmentation data are \
-            included in a single file (.mat or .p) or a series of files \
-            (.dcm).
+        .. note::
+            Requirements:
+
+            - Matlab/Python files should include 'ct' and 'cst' as variables
+            - DICOM folders should include a series of CT files and one \
+                structure file
 
     dose_matrix_path : str
         Path to the dose-influence matrix file (.mat, .npy or .npz).
 
     dose_resolution : list
-        Size of the dose grid in [`mm`] per dimension.
+        Size of the dose grid in `[mm]` per dimension.
 
     min_log_level : {'debug', 'info', 'warning', 'error, 'critical'}, \
                      default='info'
@@ -156,16 +160,9 @@ class Configuration():
             'label': (
                 partial(check_type, types=str),
                 partial(check_length, reference=1, sign='>=')),
-            'min_log_level': (
-                partial(check_type, types=str),
-                partial(check_value_in_set, options=(
-                    'debug', 'info', 'warning', 'error', 'critical'))),
             'modality': (
                 partial(check_type, types=str),
                 partial(check_value_in_set, options=('photon', 'proton'))),
-            'number_of_fractions': (
-                partial(check_type, types=int),
-                partial(check_value, reference=1, sign='>=')),
             'imaging_path': (
                 partial(check_type, types=str),
                 partial(check_regular_extension, extensions=('.mat', '.p')),
@@ -179,7 +176,14 @@ class Configuration():
                 partial(check_type, types=list),
                 partial(check_subtype, types=(int, float)),
                 partial(check_length, reference=3, sign='=='),
-                partial(check_value, reference=1, sign='>=', is_vector=True))}
+                partial(check_value, reference=1, sign='>=', is_vector=True)),
+            'min_log_level': (
+                partial(check_type, types=str),
+                partial(check_value_in_set, options=(
+                    'debug', 'info', 'warning', 'error', 'critical'))),
+            'number_of_fractions': (
+                partial(check_type, types=int),
+                partial(check_value, reference=1, sign='>='))}
 
         # Loop over the inputs
         for key, value in inputs.items():

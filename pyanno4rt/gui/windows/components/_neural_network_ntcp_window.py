@@ -11,12 +11,12 @@ from PyQt5.QtWidgets import QFileDialog, QListWidgetItem, QMainWindow
 
 # %% Internal package import
 
+from pyanno4rt.gui._custom_styles import (
+    cbox, ledit, pbutton_composer, sbox, tbutton_composer, tbutton_data_window)
 from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.components.neural_network_ntcp_window import (
     Ui_neural_network_ntcp_window)
 from pyanno4rt.gui.custom_widgets import CheckableComboBox
-from pyanno4rt.gui.styles._custom_styles import (
-    cbox, ledit, pbutton_composer, sbox, tbutton_composer, tbutton_data_window)
 from pyanno4rt.gui.windows import DataColumnsWindow
 from pyanno4rt.learning import ModelParameters
 from pyanno4rt.learning.evaluation import DisplayOptions

@@ -29,7 +29,7 @@
    <string>Visualizer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../gui/assets/resources.qrc">
+   <iconset resource="../assets/resources.qrc">
     <normaloff>:/special_icons/icons_special/logo_white_icon.png</normaloff>:/special_icons/icons_special/logo_white_icon.png</iconset>
   </property>
   <widget class="QWidget" name="central_widget">
@@ -100,11 +100,6 @@ background-color: rgb(0, 0, 0);</string>
             <height>0</height>
            </size>
           </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
           <property name="tabPosition">
            <enum>QTabWidget::North</enum>
           </property>
@@ -113,7 +108,7 @@ background-color: rgb(0, 0, 0);</string>
           </property>
           <property name="iconSize">
            <size>
-            <width>50</width>
+            <width>36</width>
             <height>50</height>
            </size>
           </property>
@@ -126,7 +121,7 @@ background-color: rgb(0, 0, 0);</string>
 background-color: rgb(211, 215, 207);</string>
            </property>
            <attribute name="icon">
-            <iconset resource="../../gui/assets/resources.qrc">
+            <iconset resource="../assets/resources.qrc">
              <normaloff>:/red_icons/icons_red/crosshair.svg</normaloff>:/red_icons/icons_red/crosshair.svg</iconset>
            </attribute>
            <attribute name="title">
@@ -154,6 +149,9 @@ background-color: rgb(211, 215, 207);</string>
                <widget class="QTabWidget" name="tab_problem_fields">
                 <property name="currentIndex">
                  <number>0</number>
+                </property>
+                <property name="documentMode">
+                 <bool>true</bool>
                 </property>
                 <widget class="QWidget" name="comp_vals_widget">
                  <attribute name="title">
@@ -202,50 +200,69 @@ border-color: rgb(211, 215, 207);</string>
                         </layout>
                        </widget>
                       </item>
-                     </layout>
-                    </item>
-                    <item>
-                     <layout class="QHBoxLayout" name="comp_vals_bottom_layout">
                       <item>
-                       <spacer name="comp_vals_bottom_hspacer">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                       <layout class="QVBoxLayout" name="comp_vals_options_layout">
+                        <property name="leftMargin">
+                         <number>10</number>
                         </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
+                        <property name="rightMargin">
+                         <number>10</number>
                         </property>
-                       </spacer>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="open_comp_vals_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
+                        <item>
+                         <spacer name="comp_vals_options_vspacer_top">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="open_comp_vals_pbutton">
+                          <property name="minimumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="cursor">
+                           <cursorShape>PointingHandCursor</cursorShape>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string>Open static plot</string>
-                        </property>
-                       </widget>
+                          </property>
+                          <property name="text">
+                           <string>Open static plot</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="comp_vals_options_vspacer_bottom">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
                       </item>
                      </layout>
                     </item>
@@ -300,50 +317,69 @@ border-color: rgb(211, 215, 207);</string>
                         </layout>
                        </widget>
                       </item>
-                     </layout>
-                    </item>
-                    <item>
-                     <layout class="QHBoxLayout" name="outc_vals_bottom_layout">
                       <item>
-                       <spacer name="outc_vals_bottom_hspacer">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                       <layout class="QVBoxLayout" name="outc_vals_options_layout">
+                        <property name="leftMargin">
+                         <number>10</number>
                         </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
+                        <property name="rightMargin">
+                         <number>10</number>
                         </property>
-                       </spacer>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="open_outc_vals_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
+                        <item>
+                         <spacer name="outc_vals_options_vspacer_top">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="open_outc_vals_pbutton">
+                          <property name="minimumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="cursor">
+                           <cursorShape>PointingHandCursor</cursorShape>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string>Open static plot</string>
-                        </property>
-                       </widget>
+                          </property>
+                          <property name="text">
+                           <string>Open static plot</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="outc_vals_options_vspacer_bottom">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
                       </item>
                      </layout>
                     </item>
@@ -398,50 +434,69 @@ border-color: rgb(211, 215, 207);</string>
                         </layout>
                        </widget>
                       </item>
-                     </layout>
-                    </item>
-                    <item>
-                     <layout class="QHBoxLayout" name="feat_vals_bottom_layout">
                       <item>
-                       <spacer name="feat_vals_bottom_hspacer">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                       <layout class="QVBoxLayout" name="feat_vals_options_layout">
+                        <property name="leftMargin">
+                         <number>10</number>
                         </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
+                        <property name="rightMargin">
+                         <number>10</number>
                         </property>
-                       </spacer>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="open_feat_vals_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
+                        <item>
+                         <spacer name="feat_vals_options_vspacer_top">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="open_feat_vals_pbutton">
+                          <property name="minimumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="cursor">
+                           <cursorShape>PointingHandCursor</cursorShape>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string>Open static plot</string>
-                        </property>
-                       </widget>
+                          </property>
+                          <property name="text">
+                           <string>Open static plot</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="feat_vals_options_vspacer_bottom">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
                       </item>
                      </layout>
                     </item>
@@ -461,7 +516,7 @@ border-color: rgb(186, 189, 182);</string>
 background-color: rgb(211, 215, 207);</string>
            </property>
            <attribute name="icon">
-            <iconset resource="../../gui/assets/resources.qrc">
+            <iconset resource="../assets/resources.qrc">
              <normaloff>:/green_icons/icons_green/cpu.svg</normaloff>:/green_icons/icons_green/cpu.svg</iconset>
            </attribute>
            <attribute name="title">
@@ -489,6 +544,9 @@ background-color: rgb(211, 215, 207);</string>
                <widget class="QTabWidget" name="tab_model_fields">
                 <property name="currentIndex">
                  <number>0</number>
+                </property>
+                <property name="documentMode">
+                 <bool>true</bool>
                 </property>
                 <widget class="QWidget" name="metrics_widget">
                  <attribute name="title">
@@ -537,78 +595,97 @@ border-color: rgb(211, 215, 207);</string>
                         </layout>
                        </widget>
                       </item>
-                     </layout>
-                    </item>
-                    <item>
-                     <layout class="QHBoxLayout" name="metrics_bottom_layout">
                       <item>
-                       <spacer name="metrics_bottom_hspacer">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                       <layout class="QVBoxLayout" name="metrics_options_layout">
+                        <property name="leftMargin">
+                         <number>10</number>
                         </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
+                        <property name="rightMargin">
+                         <number>10</number>
                         </property>
-                       </spacer>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="open_metrics_graphs_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
+                        <item>
+                         <spacer name="metrics_options_vspacer_top">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="open_metrics_graphs_pbutton">
+                          <property name="minimumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="cursor">
+                           <cursorShape>PointingHandCursor</cursorShape>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string>Open static plot (gr.)</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="open_metrics_tables_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
+                          </property>
+                          <property name="text">
+                           <string>Open static plot (gr.)</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="open_metrics_tables_pbutton">
+                          <property name="minimumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="cursor">
+                           <cursorShape>PointingHandCursor</cursorShape>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string>Open static plot (tab.)</string>
-                        </property>
-                       </widget>
+                          </property>
+                          <property name="text">
+                           <string>Open static plot (tab.)</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="metrics_options_vspacer_bottom">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
                       </item>
                      </layout>
                     </item>
@@ -663,50 +740,69 @@ border-color: rgb(211, 215, 207);</string>
                         </layout>
                        </widget>
                       </item>
-                     </layout>
-                    </item>
-                    <item>
-                     <layout class="QHBoxLayout" name="perm_bottom_layout">
                       <item>
-                       <spacer name="perm_bottom_hspacer">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                       <layout class="QVBoxLayout" name="perm_options_layout">
+                        <property name="leftMargin">
+                         <number>10</number>
                         </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
+                        <property name="rightMargin">
+                         <number>10</number>
                         </property>
-                       </spacer>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="open_perm_pbutton">
-                        <property name="minimumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
+                        <item>
+                         <spacer name="perm_options_vspacer_top">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="open_perm_pbutton">
+                          <property name="minimumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="cursor">
+                           <cursorShape>PointingHandCursor</cursorShape>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string>Open static plot</string>
-                        </property>
-                       </widget>
+                          </property>
+                          <property name="text">
+                           <string>Open static plot</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="perm_options_vspacer_bottom">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
                       </item>
                      </layout>
                     </item>
@@ -726,7 +822,7 @@ border-color: rgb(186, 189, 182);</string>
 background-color: rgb(211, 215, 207);</string>
            </property>
            <attribute name="icon">
-            <iconset resource="../../gui/assets/resources.qrc">
+            <iconset resource="../assets/resources.qrc">
              <normaloff>:/goldIcons/icons_gold/box.svg</normaloff>:/goldIcons/icons_gold/box.svg</iconset>
            </attribute>
            <attribute name="title">
@@ -755,66 +851,318 @@ background-color: rgb(211, 215, 207);</string>
                 <property name="currentIndex">
                  <number>0</number>
                 </property>
+                <property name="documentMode">
+                 <bool>true</bool>
+                </property>
                 <widget class="QWidget" name="image_widget">
                  <attribute name="title">
                   <string>CT/Dose image</string>
                  </attribute>
                  <layout class="QVBoxLayout" name="image_meta_layout">
                   <item>
-                   <layout class="QVBoxLayout" name="image_layout">
-                    <item>
-                     <layout class="QHBoxLayout" name="image_top_layout">
-                      <item>
-                       <widget class="QWidget" name="image_top_widget" native="true">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>187</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">border: 1px solid;
+                   <layout class="QGridLayout" name="image_layout">
+                    <item row="0" column="0">
+                     <widget class="QWidget" name="image_top_widget" native="true">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>187</height>
+                       </size>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="image_top_meta_layout">
-                         <property name="spacing">
-                          <number>0</number>
-                         </property>
-                         <property name="leftMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="topMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="rightMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="bottomMargin">
-                          <number>0</number>
-                         </property>
-                         <item>
-                          <layout class="QVBoxLayout" name="image_top_widget_layout">
-                           <property name="spacing">
-                            <number>0</number>
+                      </property>
+                      <layout class="QVBoxLayout" name="image_top_meta_layout">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <layout class="QVBoxLayout" name="image_top_widget_layout"/>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <layout class="QHBoxLayout" name="slice_options_layout">
+                      <property name="leftMargin">
+                       <number>10</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>10</number>
+                      </property>
+                      <item>
+                       <layout class="QVBoxLayout" name="plane_layout">
+                        <item>
+                         <widget class="QLabel" name="plane_label">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>25</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>25</height>
+                           </size>
+                          </property>
+                          <property name="font">
+                           <font>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">border: 0px;</string>
+                          </property>
+                          <property name="text">
+                           <string>Plane</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QComboBox" name="plane_cbox">
+                          <property name="minimumSize">
+                           <size>
+                            <width>101</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="cursor">
+                           <cursorShape>PointingHandCursor</cursorShape>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                          </property>
+                          <property name="currentText">
+                           <string>axial</string>
+                          </property>
+                          <property name="currentIndex">
+                           <number>0</number>
+                          </property>
+                          <item>
+                           <property name="text">
+                            <string>axial</string>
                            </property>
-                          </layout>
-                         </item>
-                        </layout>
-                       </widget>
+                          </item>
+                          <item>
+                           <property name="text">
+                            <string>coronal</string>
+                           </property>
+                          </item>
+                          <item>
+                           <property name="text">
+                            <string>sagittal</string>
+                           </property>
+                          </item>
+                         </widget>
+                        </item>
+                       </layout>
+                      </item>
+                      <item>
+                       <layout class="QVBoxLayout" name="opacity_layout">
+                        <item>
+                         <widget class="QLabel" name="opacity_label">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>25</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>25</height>
+                           </size>
+                          </property>
+                          <property name="font">
+                           <font>
+                            <weight>75</weight>
+                            <bold>true</bold>
+                           </font>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">border: 0px;</string>
+                          </property>
+                          <property name="text">
+                           <string>Dose opacity</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QSpinBox" name="opacity_sbox">
+                          <property name="minimumSize">
+                           <size>
+                            <width>101</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="cursor">
+                           <cursorShape>IBeamCursor</cursorShape>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignCenter</set>
+                          </property>
+                          <property name="buttonSymbols">
+                           <enum>QAbstractSpinBox::PlusMinus</enum>
+                          </property>
+                          <property name="maximum">
+                           <number>100</number>
+                          </property>
+                          <property name="value">
+                           <number>70</number>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </item>
+                      <item>
+                       <layout class="QVBoxLayout" name="slice_layout">
+                        <item>
+                         <layout class="QHBoxLayout" name="slice_label_layout">
+                          <item>
+                           <widget class="QLabel" name="slice_selection_label">
+                            <property name="minimumSize">
+                             <size>
+                              <width>0</width>
+                              <height>25</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>16777215</width>
+                              <height>25</height>
+                             </size>
+                            </property>
+                            <property name="font">
+                             <font>
+                              <weight>75</weight>
+                              <bold>true</bold>
+                             </font>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">border: 0px;</string>
+                            </property>
+                            <property name="text">
+                             <string>Slice</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QLabel" name="slice_selection_pos">
+                            <property name="minimumSize">
+                             <size>
+                              <width>0</width>
+                              <height>25</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>16777215</width>
+                              <height>25</height>
+                             </size>
+                            </property>
+                            <property name="font">
+                             <font>
+                              <weight>75</weight>
+                              <bold>true</bold>
+                             </font>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">border: 0px;</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </item>
+                        <item>
+                         <widget class="QScrollBar" name="slice_selection_sbar">
+                          <property name="sizePolicy">
+                           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                           </sizepolicy>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>16777215</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                          </property>
+                          <property name="value">
+                           <number>49</number>
+                          </property>
+                          <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
                       </item>
                      </layout>
                     </item>
-                    <item>
-                     <layout class="QHBoxLayout" name="image_bottom_layout">
+                    <item row="0" column="1">
+                     <layout class="QVBoxLayout" name="image_options_layout">
                       <item>
-                       <spacer name="image_bottom_hspacer">
+                       <spacer name="image_options_vspacer_top">
                         <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                         <enum>Qt::Vertical</enum>
                         </property>
                         <property name="sizeHint" stdset="0">
                          <size>
-                          <width>40</width>
-                          <height>20</height>
+                          <width>20</width>
+                          <height>40</height>
                          </size>
                         </property>
                        </spacer>
@@ -847,6 +1195,19 @@ border-color: rgb(186, 189, 182);</string>
                         </property>
                        </widget>
                       </item>
+                      <item>
+                       <spacer name="image_options_vspacer_bottom">
+                        <property name="orientation">
+                         <enum>Qt::Vertical</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>20</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
                      </layout>
                     </item>
                    </layout>
@@ -859,60 +1220,18 @@ border-color: rgb(186, 189, 182);</string>
                  </attribute>
                  <layout class="QVBoxLayout" name="dvh_meta_layout">
                   <item>
-                   <layout class="QVBoxLayout" name="dvh_layout">
-                    <item>
-                     <layout class="QHBoxLayout" name="dvh_top_layout">
+                   <layout class="QGridLayout" name="dvh_layout">
+                    <item row="0" column="1">
+                     <layout class="QVBoxLayout" name="dvh_options_layout">
                       <item>
-                       <widget class="QWidget" name="dvh_top_widget" native="true">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>187</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">border: 1px solid;
-border-color: rgb(211, 215, 207);</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="dvh_top_meta_layout">
-                         <property name="spacing">
-                          <number>0</number>
-                         </property>
-                         <property name="leftMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="topMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="rightMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="bottomMargin">
-                          <number>0</number>
-                         </property>
-                         <item>
-                          <layout class="QVBoxLayout" name="dvh_top_widget_layout">
-                           <property name="spacing">
-                            <number>0</number>
-                           </property>
-                          </layout>
-                         </item>
-                        </layout>
-                       </widget>
-                      </item>
-                     </layout>
-                    </item>
-                    <item>
-                     <layout class="QHBoxLayout" name="dvh_bottom_layout">
-                      <item>
-                       <spacer name="dvh_bottom_hspacer">
+                       <spacer name="dvh_options_vspacer_top">
                         <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
+                         <enum>Qt::Vertical</enum>
                         </property>
                         <property name="sizeHint" stdset="0">
                          <size>
-                          <width>40</width>
-                          <height>20</height>
+                          <width>20</width>
+                          <height>40</height>
                          </size>
                         </property>
                        </spacer>
@@ -945,6 +1264,362 @@ border-color: rgb(186, 189, 182);</string>
                         </property>
                        </widget>
                       </item>
+                      <item>
+                       <spacer name="dvh_options_vspacer_bottom">
+                        <property name="orientation">
+                         <enum>Qt::Vertical</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>20</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QWidget" name="dvh_top_widget" native="true">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>187</height>
+                       </size>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                      </property>
+                      <layout class="QVBoxLayout" name="dvh_top_meta_layout">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <layout class="QVBoxLayout" name="dvh_top_widget_layout">
+                         <property name="spacing">
+                          <number>6</number>
+                         </property>
+                        </layout>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <layout class="QGridLayout" name="stats_layout">
+                      <property name="leftMargin">
+                       <number>10</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>10</number>
+                      </property>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="segment_label">
+                        <property name="minimumSize">
+                         <size>
+                          <width>212</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;</string>
+                        </property>
+                        <property name="text">
+                         <string>Segment</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="3">
+                       <widget class="QLabel" name="maximum_label">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;</string>
+                        </property>
+                        <property name="text">
+                         <string>Max</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="4">
+                       <widget class="QLabel" name="minimum_label">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;</string>
+                        </property>
+                        <property name="text">
+                         <string>Min</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="2">
+                       <widget class="QLabel" name="std_label">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;</string>
+                        </property>
+                        <property name="text">
+                         <string>Std</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QLabel" name="mean_label">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>25</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <weight>75</weight>
+                          <bold>true</bold>
+                         </font>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">border: 0px solid;</string>
+                        </property>
+                        <property name="text">
+                         <string>Mean</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLineEdit" name="segment_ledit">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>212</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>212</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                        <property name="readOnly">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QLineEdit" name="mean_ledit">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                        <property name="readOnly">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="2">
+                       <widget class="QLineEdit" name="std_ledit">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                        <property name="readOnly">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="3">
+                       <widget class="QLineEdit" name="maximum_ledit">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                        <property name="readOnly">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="4">
+                       <widget class="QLineEdit" name="minimum_ledit">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>31</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                        <property name="readOnly">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
                      </layout>
                     </item>
                    </layout>
@@ -959,60 +1634,139 @@ border-color: rgb(186, 189, 182);</string>
                   <item>
                    <layout class="QVBoxLayout" name="ind_layout">
                     <item>
-                     <spacer name="ind_top_vspacer">
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item>
-                     <layout class="QHBoxLayout" name="ind_bottom_layout">
+                     <layout class="QHBoxLayout" name="ind_top_layout">
                       <item>
-                       <spacer name="ind_bottom_hspacer">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="open_ind_pbutton">
+                       <widget class="QWidget" name="ind_top_widget" native="true">
                         <property name="minimumSize">
                          <size>
-                          <width>161</width>
-                          <height>31</height>
+                          <width>0</width>
+                          <height>187</height>
                          </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>161</width>
-                          <height>31</height>
-                         </size>
-                        </property>
-                        <property name="cursor">
-                         <cursorShape>PointingHandCursor</cursorShape>
                         </property>
                         <property name="styleSheet">
-                         <string notr="true">color: rgb(0, 0, 0);
+                         <string notr="true">border: 1px solid;
+border-color: rgb(211, 215, 207);</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="dvh_top_meta_layout_2">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QVBoxLayout" name="ind_top_widget_layout">
+                           <property name="spacing">
+                            <number>6</number>
+                           </property>
+                           <item>
+                            <widget class="QTableWidget" name="ind_table_widget">
+                             <property name="styleSheet">
+                              <string notr="true">color: rgb(0, 0, 0);
 background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                        </property>
-                        <property name="text">
-                         <string>Open static plot</string>
-                        </property>
+                             </property>
+                             <property name="alternatingRowColors">
+                              <bool>true</bool>
+                             </property>
+                             <property name="selectionMode">
+                              <enum>QAbstractItemView::NoSelection</enum>
+                             </property>
+                             <property name="selectionBehavior">
+                              <enum>QAbstractItemView::SelectRows</enum>
+                             </property>
+                             <property name="verticalScrollMode">
+                              <enum>QAbstractItemView::ScrollPerPixel</enum>
+                             </property>
+                             <property name="horizontalScrollMode">
+                              <enum>QAbstractItemView::ScrollPerPixel</enum>
+                             </property>
+                             <attribute name="horizontalHeaderMinimumSectionSize">
+                              <number>75</number>
+                             </attribute>
+                             <attribute name="verticalHeaderMinimumSectionSize">
+                              <number>30</number>
+                             </attribute>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                        </layout>
                        </widget>
+                      </item>
+                      <item>
+                       <layout class="QVBoxLayout" name="ind_options_layout">
+                        <property name="leftMargin">
+                         <number>10</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>10</number>
+                        </property>
+                        <item>
+                         <spacer name="ind_options_vspacer_top">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="open_ind_pbutton">
+                          <property name="minimumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>161</width>
+                            <height>31</height>
+                           </size>
+                          </property>
+                          <property name="cursor">
+                           <cursorShape>PointingHandCursor</cursorShape>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                          </property>
+                          <property name="text">
+                           <string>Open static plot</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <spacer name="ind_options_vspacer_bottom">
+                          <property name="orientation">
+                           <enum>Qt::Vertical</enum>
+                          </property>
+                          <property name="sizeHint" stdset="0">
+                           <size>
+                            <width>20</width>
+                            <height>40</height>
+                           </size>
+                          </property>
+                         </spacer>
+                        </item>
+                       </layout>
                       </item>
                      </layout>
                     </item>
@@ -1064,7 +1818,7 @@ border-color: rgb(186, 189, 182);</string>
               </size>
              </property>
              <property name="pixmap">
-              <pixmap resource="../../gui/assets/resources.qrc">:/Logo/logo_white_square.png</pixmap>
+              <pixmap resource="../assets/resources.qrc">:/Logo/logo_white_square.png</pixmap>
              </property>
              <property name="scaledContents">
               <bool>true</bool>
@@ -1163,9 +1917,6 @@ border-color: rgb(186, 189, 182);</string>
   </widget>
  </widget>
  <resources>
-  <include location="../../gui/assets/resources.qrc"/>
-  <include location="../../gui/assets/resources.qrc"/>
-  <include location="../assets/resources.qrc"/>
   <include location="../assets/resources.qrc"/>
  </resources>
  <connections/>

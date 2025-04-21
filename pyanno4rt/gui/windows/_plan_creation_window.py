@@ -14,10 +14,10 @@ from PyQt5.QtWidgets import (
 # %% Internal package import
 
 from pyanno4rt.base import TreatmentPlan
+from pyanno4rt.gui._custom_styles import (
+    cbox, ledit, pbutton_composer, tbutton_composer)
 from pyanno4rt.gui.compilations.plan_creation_window import (
     Ui_plan_creation_window)
-from pyanno4rt.gui.styles._custom_styles import (
-    cbox, ledit, pbutton_composer, tbutton_composer)
 from pyanno4rt.gui.windows.components import component_window_map
 import pyanno4rt.optimization._maps as maps
 from pyanno4rt.optimization.components import (

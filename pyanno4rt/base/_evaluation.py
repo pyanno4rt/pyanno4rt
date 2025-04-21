@@ -31,10 +31,10 @@ class Evaluation():
         Number of (evenly-spaced) DVH evaluation points.
 
     reference_volume : list, default=[2, 5, 50, 95, 98]
-        Reference volumes for which to evaluate the inverse DVH values.
+        Reference volumes for the inverse DVH values.
 
     reference_dose : list, default=[]
-        Reference dose values for which to evaluate the DVH values.
+        Reference doses for the DVH values.
 
         .. note:: If the default value is used, reference dose levels will be \
             determined automatically.
@@ -55,8 +55,8 @@ class Evaluation():
             - 'std': standard deviation of the dose
             - 'max': maximum dose
             - 'min': minimum dose
-            - 'Dx': dose quantile(s) for level x (-> reference_volume)
-            - 'Vx': volume quantile(s) for level x (-> reference_dose)
+            - 'Dx': dose quantile(s) for level x (~reference_volume)
+            - 'Vx': volume quantile(s) for level x (~reference_dose)
             - 'CI': conformity index
             - 'HI': homogeneity index
 
@@ -85,13 +85,24 @@ class Evaluation():
             self,
             dvh_type='cumulative',
             number_of_points=1000,
-            reference_volume=[2, 5, 50, 95, 98],
-            reference_dose=[],
-            display_segments=[],
-            display_metrics=[]):
+            reference_volume=None,
+            reference_dose=None,
+            display_segments=None,
+            display_metrics=None):
 
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
+
+        # Loop over the keys with mutable default values
+        for key, default in {
+                'reference_volume': [2, 5, 50, 95, 98],
+                'reference_dose': [],
+                'display_segments': [],
+                'display_metrics': []
+                }.items():
+
+            # Update the input argument value
+            inputs[key] = inputs.get(key, default)
 
         # Check the input arguments
         self.check(inputs)
@@ -141,6 +152,13 @@ class Evaluation():
 
         # Get the check map
         check_map = {
+            'dvh_type': (
+                partial(check_type, types=str),
+                partial(check_value_in_set, options=(
+                    'cumulative', 'differential'))),
+            'number_of_points': (
+                partial(check_type, types=int),
+                partial(check_value, reference=1, sign='>=')),
             'reference_volume': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=(int, float)),
@@ -151,21 +169,14 @@ class Evaluation():
                 partial(check_type, types=list),
                 partial(check_subtype, types=(int, float)),
                 partial(check_value, reference=0, sign='>=', is_vector=True)),
-            'dvh_type': (
-                partial(check_type, types=str),
-                partial(check_value_in_set, options=(
-                    'cumulative', 'differential'))),
-            'number_of_points': (
-                partial(check_type, types=int),
-                partial(check_value, reference=1, sign='>=')),
+            'display_segments': (
+                partial(check_type, types=list),
+                partial(check_subtype, types=str)),
             'display_metrics': (
                 partial(check_type, types=list),
                 partial(check_subtype, types=str),
                 partial(check_value_in_set, options=(
-                    'mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI'))),
-            'display_segments': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=str))}
+                    'mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI')))}
 
         # Loop over the inputs
         for key, value in inputs.items():
