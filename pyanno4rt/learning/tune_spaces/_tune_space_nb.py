@@ -110,13 +110,13 @@ class TuneSpaceNB():
         # Get the check map
         check_map = {
             'priors': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(list, type(None)))),
+                partial(check_type, options=list),
+                partial(check_subtype, options=(list, type(None)))),
             'var_smoothing': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True))}
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>'))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

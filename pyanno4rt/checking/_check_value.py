@@ -9,9 +9,9 @@ from operator import eq, ge, gt, le, lt
 # %% Function definition
 
 
-def check_value(label, data, reference, sign, is_vector=False):
+def check_value(label, data, reference, sign):
     """
-    Check if the data has an invalid value.
+    Check if a (numeric) value is supported.
 
     Parameters
     ----------
@@ -19,7 +19,7 @@ def check_value(label, data, reference, sign, is_vector=False):
         Label for the item to be checked.
 
     data : None, int, float, list or tuple
-        Scalar or vector input to be checked.
+        Scalar or vector input value to be checked.
 
     reference : int or float
         Reference for the value comparison.
@@ -27,35 +27,30 @@ def check_value(label, data, reference, sign, is_vector=False):
     sign : {'==', '>', '>=', '<', '<='}
         Sign for the value comparison.
 
-    is_vector : bool, default=False
-        Indicator for the vector property of the data.
-
     Raises
     ------
     ValueError
-        If the data has an invalid value.
+        If the (numeric) value is unsupported.
     """
 
-    # Check if an input is passed
-    if data is not None:
+    # Map the operators
+    operator_dict = {'==': eq, '>=': ge, '>': gt, '<=': le, '<': lt}
 
-        # Create the operator dictionary
-        operator_dict = {'==': eq, '>=': ge, '>': gt, '<=': le, '<': lt}
+    # Check if a scalar with unsupported value has been passed
+    if isinstance(data, (int, float)) and not operator_dict[sign](
+            data, reference):
 
-        # Check if the data is a scalar with invalid value
-        if not is_vector and not operator_dict[sign](data, reference):
+        # Raise an error
+        raise ValueError(
+            f"The treatment plan parameter '{label}' must be {sign} "
+            f"{reference}, got {data}!")
 
-            # Raise an error to indicate an invalid value
-            raise ValueError(
-                f"The treatment plan parameter '{label}' must be {sign} "
-                f"{reference}, got {data}!")
+    # Check if a vector with unsupported elements has been passed
+    if isinstance(data, (list, tuple)) and not all(
+            operator_dict[sign](element, reference)
+            for element in data if isinstance(element, (int, float))):
 
-        # Check if the data is a vector with any invalid value
-        if is_vector and not all(
-                operator_dict[sign](element, reference)
-                for element in data if isinstance(element, (int, float))):
-
-            # Raise an error to indicate an invalid element
-            raise ValueError(
-                "One or more elements of the treatment plan parameter "
-                f"'{label}' are not {sign} {reference}!")
+        # Raise an error
+        raise ValueError(
+            "One or more elements of the treatment plan parameter "
+            f"'{label}' are not {sign} {reference}!")

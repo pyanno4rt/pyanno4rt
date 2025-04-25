@@ -10,8 +10,8 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.checking import (
-    check_length, check_regular_extension, check_regular_extension_directory,
-    check_subtype, check_type, check_value, check_value_in_set)
+    check_directory, check_file, check_length, check_subtype, check_type,
+    check_value, check_value_in_set)
 from pyanno4rt.tools import filter_dict
 
 # %% Class definition
@@ -158,31 +158,30 @@ class Configuration():
         # Get the check map
         check_map = {
             'label': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_length, reference=1, sign='>=')),
             'modality': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=('photon', 'proton'))),
             'imaging_path': (
-                partial(check_type, types=str),
-                partial(check_regular_extension, extensions=('.mat', '.p')),
-                partial(check_regular_extension_directory, extensions=(
-                    '.dcm',), no_directory=('.mat', '.p'))),
+                partial(check_type, options=str),
+                partial(check_file, options=('.mat', '.p')),
+                partial(check_directory, options=('.dcm',), alt=('.mat', '.p'))
+                ),
             'dose_matrix_path': (
-                partial(check_type, types=str),
-                partial(check_regular_extension, extensions=(
-                    '.mat', '.npy', 'npz'))),
+                partial(check_type, options=str),
+                partial(check_file, options=('.mat', '.npy', 'npz'))),
             'dose_resolution': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=(int, float)),
                 partial(check_length, reference=3, sign='=='),
-                partial(check_value, reference=1, sign='>=', is_vector=True)),
+                partial(check_value, reference=1, sign='>=')),
             'min_log_level': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=(
                     'debug', 'info', 'warning', 'error', 'critical'))),
             'number_of_fractions': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=1, sign='>='))}
 
         # Loop over the inputs

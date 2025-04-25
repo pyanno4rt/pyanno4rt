@@ -1,4 +1,4 @@
-"""Value set check function test."""
+"""Value-in-set check function test."""
 
 # Authors: Moritz Müller, Tim Ortkamp
 
@@ -13,32 +13,32 @@ from pyanno4rt.checking import check_value_in_set
 # %% Test definition
 
 
-# Define the valid argument sets
+# Define the supported argument sets
 @mark.parametrize(
     'label, data, options, value_condition',
     [('label', 'A', ('A', 1), None), ('label', ['A'], ('A', 1), None),
-     ('label', 'A', {'valid': ('A', 1), 'invalid': (1, 2)}, 'valid'),
-     ('label', ['A'], {'valid': ('A', 1), 'invalid': (1, 2)}, 'valid')],
+     ('label', 'A', {'supp.': ('A', 1), 'unsupp.': (1, 2)}, 'supp.'),
+     ('label', ['A'], {'supp.': ('A', 1), 'unsupp.': (1, 2)}, 'supp.')],
     ids=['no value_condition, string data', 'no value_condition, list data',
          'value_condition, string data', 'value_condition, list data'])
-def test_check_value_in_set_valid(label, data, options, value_condition):
-    """Test the 'check_value_in_set' function with valid input."""
+def test_check_value_in_set_positive(label, data, options, value_condition):
+    """Test the 'check_value_in_set' function with supported input."""
 
     # Assert the run-through of the function
     assert check_value_in_set(label, data, options, value_condition) is None
 
 
-# Define the invalid argument sets
+# Define the unsupported argument sets
 @mark.parametrize(
     'label, data, options, value_condition',
     [('label', 'A', (1, 2), None), ('label', ['A'], (1, 2), None),
-     ('label', 'A', {'valid': ('A', 1), 'invalid': (1, 2)}, 'invalid'),
-     ('label', ['A'], {'valid': ('A', 1), 'invalid': (1, 2)}, 'invalid')],
+     ('label', 'A', {'supp.': ('A', 1), 'unsupp.': (1, 2)}, 'unsupp.'),
+     ('label', ['A'], {'supp.': ('A', 1), 'unsupp.': (1, 2)}, 'unsupp.')],
     ids=['no value_condition, string data', 'no value_condition, list data',
          'value_condition, string data', 'value_condition, list data'])
-def test_check_value_in_set_error(label, data, options, value_condition):
-    """Test the 'check_value_in_set' function with invalid input."""
+def test_check_value_in_set_negative(label, data, options, value_condition):
+    """Test the 'check_value_in_set' function with unsupported input."""
 
-    # Assert the raise of a ValueError exception
+    # Assert the raise of an exception
     with raises(ValueError):
         check_value_in_set(label, data, options, value_condition)

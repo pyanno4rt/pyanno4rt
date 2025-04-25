@@ -174,50 +174,50 @@ class TuneSpaceRF():
         # Get the check map
         check_map = {
             'n_estimators': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=int),
+                partial(check_value, reference=0, sign='>')),
             'criterion': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=('entropy', 'gini'))),
             'max_depth': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=int),
+                partial(check_value, reference=0, sign='>')),
             'min_samples_split': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=float),
-                partial(check_value, reference=0, sign='>=', is_vector=True),
-                partial(check_value, reference=1, sign='<=', is_vector=True)),
+                partial(check_subtype, options=float),
+                partial(check_value, reference=0, sign='>='),
+                partial(check_value, reference=1, sign='<=')),
             'min_samples_leaf': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=float),
-                partial(check_value, reference=0, sign='>=', is_vector=True),
-                partial(check_value, reference=1, sign='<=', is_vector=True)),
+                partial(check_subtype, options=float),
+                partial(check_value, reference=0, sign='>='),
+                partial(check_value, reference=1, sign='<=')),
             'min_weight_fraction_leaf': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=float),
-                partial(check_value, reference=0, sign='>=', is_vector=True),
-                partial(check_value, reference=1, sign='<=', is_vector=True)),
+                partial(check_subtype, options=float),
+                partial(check_value, reference=0, sign='>='),
+                partial(check_value, reference=1, sign='<=')),
             'max_features': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>=', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=int),
+                partial(check_value, reference=0, sign='>=')),
             'bootstrap': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=(False, True))),
             'class_weight': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=(None, 'balanced'))),
             'ccp_alpha': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=float),
-                partial(check_value, reference=0, sign='>=', is_vector=True),
-                partial(check_value, reference=1, sign='<=', is_vector=True))}
+                partial(check_subtype, options=float),
+                partial(check_value, reference=0, sign='>='),
+                partial(check_value, reference=1, sign='<='))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

@@ -310,21 +310,22 @@ class Optimization():
         # Get the check map
         check_map = {
             'components': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=1, sign='>='),
-                partial(check_subtype, types=tuple(maps.COMPONENTS.values()))),
+                partial(check_subtype, options=tuple(maps.COMPONENTS.values()))
+                ),
             'method': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=tuple(maps.METHODS))),
             'solver': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options={
                     'lexicographic': ('scipy',),
                     'pareto': ('pymoo',),
                     'weighted-sum': ('ipyopt', 'proxmin', 'pypop7', 'scipy')},
                     value_condition=conditions['method'])),
             'algorithm': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options={
                     'weighted-sum/ipyopt': ('mumps',),
                     'weighted-sum/proxmin': ('admm', 'pgm', 'sdmm'),
@@ -336,31 +337,27 @@ class Optimization():
                         f"{conditions['method']}/"
                         f"{conditions['solver']}"))),
             'initial_strategy': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=(
                     'data-medoid', 'target-coverage', 'warm-start'))),
             'initial_fluence_vector': (
-                partial(check_type, types={
+                partial(check_type, options={
                     'data-medoid': type(None),
                     'target-coverage': type(None),
                     'warm-start': list},
                     type_condition=conditions['initial_strategy']),
-                partial(check_value, reference=0, sign='>=', is_vector=True)),
+                partial(check_value, reference=0, sign='>=')),
             'lower_variable_bounds': (
-                partial(check_type, types=(type(None), int, float, list)),
-                partial(check_value, reference=0, sign='>=',
-                        is_vector=isinstance(
-                            conditions['lower_variable_bounds'], list))),
+                partial(check_type, options=(type(None), int, float, list)),
+                partial(check_value, reference=0, sign='>=')),
             'upper_variable_bounds': (
-                partial(check_type, types=(type(None), int, float, list)),
-                partial(check_value, reference=0, sign='>=',
-                        is_vector=isinstance(
-                            conditions['upper_variable_bounds'], list))),
+                partial(check_type, options=(type(None), int, float, list)),
+                partial(check_value, reference=0, sign='>=')),
             'maximum_iterations': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=1, sign='>=')),
             'tolerance': (
-                partial(check_type, types=float),
+                partial(check_type, options=float),
                 partial(check_value, reference=0, sign='>'))}
 
         # Loop over the inputs

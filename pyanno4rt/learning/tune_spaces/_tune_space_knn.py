@@ -125,20 +125,20 @@ class TuneSpaceKNN():
         # Get the check map
         check_map = {
             'n_neighbors': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>=', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=int),
+                partial(check_value, reference=0, sign='>=')),
             'weights': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=('distance', 'uniform'))),
             'leaf_size': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=int),
+                partial(check_value, reference=0, sign='>')),
             'p': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True))}
+                partial(check_type, options=list),
+                partial(check_subtype, options=int),
+                partial(check_value, reference=0, sign='>'))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

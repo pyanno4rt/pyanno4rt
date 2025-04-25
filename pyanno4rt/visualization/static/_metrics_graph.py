@@ -126,7 +126,7 @@ class MetricsGraph():
 
                     # Add the AUC-ROC value to the plot
                     axis[row_number, column_number].annotate(
-                        f'r"AUC$=$"{round(auc_rocs[i][modes[j]]["value"], 4)}',
+                        r"AUC$=$"f'{round(auc_rocs[i][modes[j]]["value"], 4)}',
                         xy=(0.82, 0.03), fontsize=8)
 
                     # Add the plot grid

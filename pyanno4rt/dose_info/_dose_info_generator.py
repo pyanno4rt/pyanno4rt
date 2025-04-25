@@ -180,7 +180,7 @@ class DoseInfoGenerator():
         # Check the dose resolution with the dose-influence matrix dimensions
         check_dose_matrix(
             dose_information['cube_dimensions'],
-            dose_information['dose_influence_matrix'].shape[0])
+            dose_information['dose_influence_matrix'])
 
         # Enter the dose information dictionary into the datahub
         hub.dose_information = dose_information

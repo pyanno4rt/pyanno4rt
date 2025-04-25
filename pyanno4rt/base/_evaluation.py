@@ -153,28 +153,28 @@ class Evaluation():
         # Get the check map
         check_map = {
             'dvh_type': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=(
                     'cumulative', 'differential'))),
             'number_of_points': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=1, sign='>=')),
             'reference_volume': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>=', is_vector=True),
-                partial(check_value, reference=100, sign='<=', is_vector=True)
+                partial(check_type, options=list),
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>='),
+                partial(check_value, reference=100, sign='<=')
                 ),
             'reference_dose': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>=', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>=')),
             'display_segments': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=str)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=str)),
             'display_metrics': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=str),
+                partial(check_type, options=list),
+                partial(check_subtype, options=str),
                 partial(check_value_in_set, options=(
                     'mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI')))}
 

@@ -142,29 +142,29 @@ class TuneSpaceSVM():
         # Get the check map
         check_map = {
             'C': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>')),
             'kernel': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=(
                     'linear', 'rbf', 'poly', 'sigmoid'))),
             'degree': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=int),
+                partial(check_value, reference=0, sign='>')),
             'gamma': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>')),
             'tol': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>')),
             'class_weight': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=(None, 'balanced')))}
 
         # Loop over the dictionary items

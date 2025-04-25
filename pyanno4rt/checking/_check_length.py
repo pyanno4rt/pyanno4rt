@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from numpy import ndarray
 from operator import eq, ge, gt, le, lt
 
 # %% Function definition
@@ -11,7 +12,7 @@ from operator import eq, ge, gt, le, lt
 
 def check_length(label, data, reference, sign):
     """
-    Check if the length of a vector-type object is invalid.
+    Check if the length of a value is correct.
 
     Parameters
     ----------
@@ -19,7 +20,7 @@ def check_length(label, data, reference, sign):
         Label for the item to be checked.
 
     data : list, tuple or ndarray
-        Vector-type object with length property.
+        Input value to be checked.
 
     reference : int
         Reference value for the length comparison.
@@ -30,19 +31,17 @@ def check_length(label, data, reference, sign):
     Raises
     ------
     ValueError
-        If the vector-type object has an invalid length.
+        If the value has an incorrect length.
     """
 
-    # Check if an input is passed
-    if data is not None:
+    # Map the operators
+    operator_dict = {'==': eq, '>=': ge, '>': gt, '<=': le, '<': lt}
 
-        # Create the operator dictionary
-        operator_dict = {'==': eq, '>=': ge, '>': gt, '<=': le, '<': lt}
+    # Check if the value is iterable but the length is incorrect
+    if (isinstance(data, (list, tuple, ndarray))
+            and not operator_dict[sign](len(data), reference)):
 
-        # Check if the length of the vector-type object is invalid
-        if not operator_dict[sign](len(data), reference):
-
-            # Raise an error to indicate an invalid vector length
-            raise ValueError(
-                f"The treatment plan parameter '{label}' has length "
-                f"{len(data)}, but should be {sign} {reference}!")
+        # Raise an error
+        raise ValueError(
+            f"The treatment plan parameter '{label}' has length "
+            f"{len(data)}, but should be {sign} {reference}!")

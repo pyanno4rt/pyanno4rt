@@ -5,9 +5,9 @@
 # %% Function definition
 
 
-def check_type(label, data, types, type_condition=None):
+def check_type(label, data, options, type_condition=None):
     """
-    Check if the input data type is invalid.
+    Check if a value type is supported.
 
     Parameters
     ----------
@@ -15,10 +15,10 @@ def check_type(label, data, types, type_condition=None):
         Label for the item to be checked.
 
     data
-        Input data with arbitrary type to be checked.
+        Input value to be checked.
 
-    types : tuple or dict
-        Tuple or dictionary with the allowed data types.
+    options : tuple or dict
+        Tuple or dictionary with the type options.
 
     type_condition : None or str, default=None
         Value of the conditional (only used if types is a dictionary).
@@ -26,22 +26,26 @@ def check_type(label, data, types, type_condition=None):
     Raises
     ------
     TypeError
-        If the input data has an invalid type.
+        If the value type is unsupported.
     """
 
-    # Check if no condition applies but the data type is invalid
-    if type_condition is None and not isinstance(data, types):
+    # Check if no type condition applies
+    if type_condition is None:
 
-        # Raise an error to indicate an invalid data type
-        raise TypeError(
-            f"The treatment plan parameter '{label}' has data type "
-            f"{type(data)}, but should be from {types}!")
+        # Check if an unsupported type has been passed
+        if not isinstance(data, options):
 
-    # Check if a condition applies but the data type is invalid
-    if (type_condition is not None
-            and not isinstance(data, types[type_condition])):
+            # Raise an error
+            raise TypeError(
+                f"The treatment plan parameter '{label}' has data type "
+                f"{type(data)}, but should be from {options}!")
 
-        # Raise an error to indicate an invalid data type
-        raise TypeError(
-            f"The treatment plan parameter '{label}' has data type "
-            f"{type(data)}, but should be from {types[type_condition]}!")
+    else:
+
+        # Check if an unsupported type has been passed
+        if not isinstance(data, options[type_condition]):
+
+            # Raise an error
+            raise TypeError(
+                f"The treatment plan parameter '{label}' has data type "
+                f"{type(data)}, but should be from {options[type_condition]}!")

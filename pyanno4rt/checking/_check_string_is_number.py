@@ -7,7 +7,7 @@
 
 def check_string_is_number(label, data):
     """
-    Check if a string can be converted to an integer.
+    Check if a string value can be converted to an integer.
 
     Parameters
     ----------
@@ -15,25 +15,25 @@ def check_string_is_number(label, data):
         Label for the item to be checked.
 
     data : str
-        String to be converted to integer.
+        Input value to be checked.
 
     Raises
     ------
     ValueError
-        If the string has an invalid literal for integer conversion.
+        If the string value has an unsupported literal for integer conversion.
     """
 
-    # Check if the data is string
+    # Check if the value is a string
     if isinstance(data, str):
 
         try:
 
-            # Convert the data to integer
+            # Convert the value to integer
             int(data)
 
         except ValueError as error:
 
-            # Raise an error to indicate an invalid literal
+            # Raise an error
             raise ValueError(
-                f"The treatment plan parameter '{label}' is a string, but "
-                "it has an invalid literal for int() with base 10!") from error
+                f"The treatment plan parameter '{label}' is a string, but has "
+                "an unsupported literal for int() with base 10!") from error

@@ -9,33 +9,33 @@ from numpy import prod
 # %% Function definition
 
 
-def check_dose_matrix(dose_shape, dose_matrix_rows):
+def check_dose_matrix(dose_shape, dose_matrix):
     """
-    Check the equality between the number of dose voxels calculated from the \
-    dose resolution inputs and implied by the dose-influence matrix.
+    Check the dose-influence matrix.
 
     Parameters
     ----------
     dose_shape : tuple
-        Tuple with the number of dose grid points per axis, calculated from \
-        the dose resolution inputs.
+        Tuple with the number of dose grid points per axis.
 
-    dose_matrix_rows : int
-        Number of rows in the dose-influence matrix (the number of voxels in \
-        the dose grid).
+    dose_matrix : object of class :class:`~scipy.sparse.csr_matrix`
+        The object used to represent the sparse dose-influence matrix.
 
     Raises
     ------
     ValueError
-        If the product of the elements in dose_shape is not equal to the \
-        value of dose_matrix_rows.
+        If the product of the elements in `dose_shape` is not equal to the \
+        value of `dose_matrix_rows`.
     """
 
-    # Check if the calculated and implied number of dose voxels differs
-    if prod(dose_shape) != dose_matrix_rows:
+    # Get the number of voxels from the dose matrix
+    number_of_voxels = dose_matrix.shape[0]
 
-        # Raise an error to indicate a difference in the number of dose voxels
+    # Check if the calculated and implied number of dose voxels differs
+    if prod(dose_shape) != number_of_voxels:
+
+        # Raise an error
         raise ValueError(
             "The dose grid resolution from the treatment plan implies "
             f"{prod(dose_shape)} voxels, but the length of the first "
-            f"dimension of the dose-influence matrix is {dose_matrix_rows}!")
+            f"dimension of the dose-influence matrix is {number_of_voxels}!")

@@ -120,44 +120,44 @@ class DynamicFeature():
         # Get the check functions for the function argument
         check_argument = {
             'Dose Gradient': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=('x', 'y', 'z'))),
             'Dose Moment': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_length, reference=3, sign='=='),
                 check_string_is_number),
             'Dose Subvolume': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=(
                     'x1of2', 'x2of2', 'x1of3', 'x2of3', 'x3of3', 'y1of2',
                     'y2of2', 'y1of3', 'y2of3', 'y3of3', 'z1of2', 'z2of2',
                     'z1of3', 'z2of3', 'z3of3'))),
             'Dx': (
-                partial(check_type, types=(int, float)),
+                partial(check_type, options=(int, float)),
                 partial(check_value, reference=0, sign='>'),
                 partial(check_value, reference=100, sign='<')),
             'Vx': (
-                partial(check_type, types=(int, float)),
+                partial(check_type, options=(int, float)),
                 partial(check_value, reference=0, sign='>'),
                 partial(check_value, reference=100, sign='<')),
             'other': (
-                partial(check_type, types=type(None)),)}
+                partial(check_type, options=type(None)),)}
 
         # Get the check map
         check_map = {
             'column': (
-                partial(check_type, types=str),),
+                partial(check_type, options=str),),
             'segment': (
-                partial(check_type, types=str),),
+                partial(check_type, options=str),),
             'function': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=tuple(maps.FEATURES))),
             'argument': check_argument[
                 inputs['function'] if inputs['function'] in (
                     'Dx', 'Vx', 'Dose Gradient', 'Dose Moment',
                     'Dose Subvolume') else 'other'],
             'scale': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=(
                     'metric', 'nominal', 'ordinal')))}
 
@@ -260,11 +260,11 @@ class StaticFeature():
         # Get the check map
         check_map = {
             'column': (
-                partial(check_type, types=str),),
+                partial(check_type, options=str),),
             'value': (
-                partial(check_type, types=(int, float, str)),),
+                partial(check_type, options=(int, float, str)),),
             'scale': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=(
                     'metric', 'nominal', 'ordinal')))}
 
@@ -375,17 +375,17 @@ class Label():
         # Get the check map
         check_map = {
             'column': (
-                partial(check_type, types=str),),
+                partial(check_type, options=str),),
             'viewpoint': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=(
                     'early', 'late', 'long-term', 'longitudinal', 'profile'))),
             'time_variable': (
-                partial(check_type, types=(type(None), str)),),
+                partial(check_type, options=(type(None), str)),),
             'bounds': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(type(None), int, float)))}
+                partial(check_subtype, options=(type(None), int, float)))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

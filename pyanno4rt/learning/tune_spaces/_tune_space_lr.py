@@ -126,20 +126,20 @@ class TuneSpaceLR():
         # Get the check map
         check_map = {
             'C': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>')),
             'penalty': (
-                partial(check_type, types=list),
-                partial(check_value_in_set, options=(
-                    'l1', 'l2', 'elasticnet'))),
+                partial(check_type, options=list),
+                partial(check_value_in_set, options=('l1', 'l2', 'elasticnet'))
+                ),
             'tol': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>')),
             'class_weight': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=(None, 'balanced')))}
 
         # Loop over the dictionary items

@@ -11,7 +11,7 @@ from os.path import isdir, isfile
 
 def check_path(label, data):
     """
-    Check if a file or directory path is invalid.
+    Check if a file or directory path is valid.
 
     Parameters
     ----------
@@ -19,7 +19,7 @@ def check_path(label, data):
         Label for the item to be checked.
 
     data : str
-        Path to the file or directory.
+        Input value to be checked.
 
     Raises
     ------
@@ -30,7 +30,7 @@ def check_path(label, data):
     # Check if the path references an invalid file or directory
     if data is not None and not (isdir(data) or isfile(data)):
 
-        # Raise an error to indicate an invalid value
+        # Raise an error
         raise IOError(
             f"The treatment plan parameter '{label}' neither leads to a valid "
             "file nor a directory!")

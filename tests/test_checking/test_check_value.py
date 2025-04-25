@@ -13,27 +13,27 @@ from pyanno4rt.checking import check_value
 # %% Test definition
 
 
-# Define the valid argument sets
+# Define the supported argument sets
 @mark.parametrize(
-    'label, data, reference, sign, is_vector',
-    [('label', None, 1, '==', False), ('label', 1, 1, '==', False),
-     ('label', (1, 2, 3, 4), 5, '<', True)],
+    'label, data, reference, sign',
+    [('label', None, 1, '=='), ('label', 1, 1, '=='),
+     ('label', (1, 2, 3, 4), 5, '<')],
     ids=['no data', 'scalar', 'vector'])
-def test_check_value_valid(label, data, reference, sign, is_vector):
-    """Test the 'check_value' function with valid input."""
+def test_check_value_positive(label, data, reference, sign):
+    """Test the 'check_value' function with supported input."""
 
     # Assert the run-through of the function
-    assert check_value(label, data, reference, sign, is_vector) is None
+    assert check_value(label, data, reference, sign) is None
 
 
-# Define the invalid argument sets
+# Define the unsupported argument sets
 @mark.parametrize(
-    'label, data, reference, sign, is_vector',
-    [('label', 1, 2, '>=', False), ('label', (1, 2, 3, 4), 5, '==', True)],
+    'label, data, reference, sign',
+    [('label', 1, 2, '>='), ('label', (1, 2, 3, 4), 5, '==')],
     ids=['scalar', 'vector'])
-def test_check_value_invalid(label, data, reference, sign, is_vector):
-    """Test the 'check_value' function with invalid input."""
+def test_check_value_negative(label, data, reference, sign):
+    """Test the 'check_value' function with unsupported input."""
 
-    # Assert the raise of a ValueError exception
+    # Assert the raise of an exception
     with raises(ValueError):
-        check_value(label, data, reference, sign, is_vector)
+        check_value(label, data, reference, sign)

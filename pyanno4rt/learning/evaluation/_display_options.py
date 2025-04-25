@@ -113,11 +113,11 @@ class DisplayOptions():
         # Get the check map
         check_map = {
             'graphs': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=(
                     'AUC-ROC', 'AUC-PR', 'F1'))),
             'kpis': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=(
                     'Logloss', 'Brier score', 'Subset accuracy',
                     'Cohen Kappa', 'Hamming loss', 'Jaccard score',

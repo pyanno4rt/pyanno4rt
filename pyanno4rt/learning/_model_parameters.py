@@ -11,9 +11,8 @@ from os.path import abspath
 # %% Internal package import
 
 from pyanno4rt.checking import (
-    check_length, check_path, check_regular_extension,
-    check_regular_extension_directory, check_subtype, check_type,
-    check_value, check_value_in_set)
+    check_directory, check_file, check_length, check_path, check_subtype,
+    check_type, check_value, check_value_in_set)
 from pyanno4rt.learning.evaluation import DisplayOptions
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import filter_dict
@@ -309,69 +308,69 @@ class ModelParameters():
 
         check_map = {
             'model_label': (
-                partial(check_type, types=str),),
+                partial(check_type, options=str),),
             'model_type': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=(
                     'forest', 'logistic', 'naive_bayes', 'neighbors',
                     'neural_network', 'svm', 'tree'))),
             'model_folder_path': (
-                partial(check_type, types=(type(None), str)),
+                partial(check_type, options=(type(None), str)),
                 partial(check_path)),
             'data_path': (
-                partial(check_type, types={
+                partial(check_type, options={
                     True: (type(None), str), False: str},
                     type_condition=isinstance(
                         inputs.get('model_folder_path'), str)),
-                partial(check_regular_extension, extensions=('.csv',)),
-                partial(check_regular_extension_directory, extensions=(
-                    '.jpg', '.npy', '.npz', '.png'), no_directory=('.csv',))),
+                partial(check_file, options=('.csv',)),
+                partial(check_directory, options=(
+                    '.jpg', '.npy', '.npz', '.png'), alt=('.csv',))),
             'data_columns': (
-                partial(check_type, types={
+                partial(check_type, options={
                     True: (type(None), list), False: list},
                     type_condition=isinstance(
                         inputs.get('model_folder_path'), str)),
                 partial(check_length, reference=2, sign='>=')),
             'preprocessing': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=str),
+                partial(check_type, options=list),
+                partial(check_subtype, options=str),
                 partial(check_value_in_set, options=tuple(maps.TRANSFORMERS))),
             'architecture': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=(
                     'vanilla', 'vanilla input-convex'))),
             'max_hidden_layers': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=1, sign='>=')),
             'tune_space': (
-                partial(check_type, types=tuple(maps.SPACES.values())),),
+                partial(check_type, options=tuple(maps.SPACES.values())),),
             'tune_evaluations': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=0, sign='>')),
             'tune_score': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=tuple(
                     ('AUC', *maps.LOSSES)))),
             'tune_splits': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=1, sign='>=')),
             'tune_repeats': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=1, sign='>=')),
             'inspect': (
-                partial(check_type, types=bool),),
+                partial(check_type, options=bool),),
             'evaluate': (
-                partial(check_type, types=bool),),
+                partial(check_type, options=bool),),
             'oof_splits': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=1, sign='>=')),
             'oof_repeats': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=1, sign='>=')),
             'write_features': (
-                partial(check_type, types=bool),),
+                partial(check_type, options=bool),),
             'display_options': (
-                partial(check_type, types=DisplayOptions),)}
+                partial(check_type, options=DisplayOptions),)}
 
         # Check if the data path is None
         if inputs['data_path'] is None:

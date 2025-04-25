@@ -154,32 +154,32 @@ class TuneSpaceNN():
         # Get the check map
         check_map = {
             'hidden_neuron_number': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=int),
+                partial(check_value, reference=0, sign='>')),
             'hidden_activation': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=(
                     'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
                     'softplus', 'swish'))),
             'hidden_dropout_rate': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>=', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>=')),
             'batch_size': (
-                partial(check_type, types=list),
-                partial(check_subtype, types=int),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_type, options=list),
+                partial(check_subtype, options=int),
+                partial(check_value, reference=0, sign='>')),
             'learning_rate': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(int, float)),
-                partial(check_value, reference=0, sign='>', is_vector=True)),
+                partial(check_subtype, options=(int, float)),
+                partial(check_value, reference=0, sign='>')),
             'optimizer': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=tuple(maps.NN_OPTS))),
             'loss': (
-                partial(check_type, types=list),
+                partial(check_type, options=list),
                 partial(check_value_in_set, options=tuple(maps.NN_LOSSES)))}
 
         # Loop over the dictionary items

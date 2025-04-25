@@ -13,28 +13,28 @@ from pyanno4rt.checking import check_type
 # %% Test definition
 
 
-# Define the valid argument sets
+# Define the supported argument sets
 @mark.parametrize(
-    'label, data, types, type_condition',
+    'label, data, options, type_condition',
     [('label', 'A', str, None),
-     ('label',  'A', {'valid': str, 'invalid':  int}, 'valid')],
+     ('label',  'A', {'supported': str, 'unsupported':  int}, 'supported')],
     ids=['no type condition', 'type condition'])
-def test_check_type_valid(label, data, types, type_condition):
-    """Test the 'check_type' function with valid input."""
+def test_check_type_positive(label, data, options, type_condition):
+    """Test the 'check_type' function with supported input."""
 
     # Assert the run-through of the function
-    assert check_type(label, data, types, type_condition) is None
+    assert check_type(label, data, options, type_condition) is None
 
 
-# Define the invalid argument sets
+# Define the unsupported argument sets
 @mark.parametrize(
-    'label, data, types, type_condition',
+    'label, data, options, type_condition',
     [('label', 'A', int, None),
-     ('label', 'A', {'valid': str, 'invalid':  int}, 'invalid')],
+     ('label', 'A', {'supported': str, 'unsupported':  int}, 'unsupported')],
     ids=['no type condition', 'type condition'])
-def test_check_type_invalid(label, data, types, type_condition):
-    """Test the 'check_type' function with invalid input."""
+def test_check_type_negative(label, data, options, type_condition):
+    """Test the 'check_type' function with unsupported input."""
 
-    # Assert the raise of a TypeError exception
+    # Assert the raise of an exception
     with raises(TypeError):
-        check_type(label, data, types, type_condition)
+        check_type(label, data, options, type_condition)

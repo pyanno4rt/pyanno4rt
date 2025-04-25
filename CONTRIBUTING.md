@@ -134,6 +134,8 @@ During the development of *pyanno4rt*, we have followed a set of either establis
 	"""Label for the script."""
 
 	# Author(s): Your Name, collaborator name(s)
+	
+	# %% External package import
 
 	"Add external modules here, e.g. 'from numpy import array'"
 	

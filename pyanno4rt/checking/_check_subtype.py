@@ -5,9 +5,9 @@
 # %% Function definition
 
 
-def check_subtype(label, data, types):
+def check_subtype(label, data, options):
     """
-    Check if any element type in a list or tuple is invalid.
+    Check if all subtypes are supported.
 
     Parameters
     ----------
@@ -15,22 +15,22 @@ def check_subtype(label, data, types):
         Label for the item to be checked.
 
     data : list or tuple
-        List or tuple with the element types to be checked.
+        Input value to be checked.
 
-    types : type or tuple
-        Single type or tuple with the allowed element types.
+    options : type or tuple
+        Type or tuple with the type options.
 
     Raises
     ------
     TypeError
-        If one or more elements of the data have an invalid type.
+        If any subtype is unsupported.
     """
 
-    # Check if the data is a list or tuple with invalid element types
+    # Check if the value is a list or tuple with unsupported subtypes
     if (isinstance(data, (list, tuple))
-            and not all(isinstance(element, types) for element in data)):
+            and not all(isinstance(element, options) for element in data)):
 
-        # Raise an error to indicate any element with invalid type
+        # Raise an error
         raise TypeError(
             f"One or more elements of the treatment plan parameter '{label}' "
-            "have an invalid data type!")
+            "have an unsupported data type!")
