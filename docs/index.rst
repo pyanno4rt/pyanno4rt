@@ -2,7 +2,7 @@
    :parser: myst_parser.sphinx_
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :hidden:
 
    installation.md

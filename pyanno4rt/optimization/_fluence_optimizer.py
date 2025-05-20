@@ -635,6 +635,8 @@ class FluenceOptimizer():
 
         # Interpolate the dose cube to the CT grid and multiply by the RBE
         optimized_dose = (
-            zoom(optimized_dose, zooms, order=1)*hub.plan_configuration['RBE'])
+            zoom(optimized_dose, zooms, order=1)
+            *hub.plan_configuration['RBE']
+            *hub.dose_information['number_of_fractions'])
 
         return optimized_dose

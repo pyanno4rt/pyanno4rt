@@ -459,6 +459,9 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             # Load the segment names and types from the imaging path
             self.segments = load_segments_from_path(self.img_path_ledit.text())
 
+            # Clear the parent display combo box
+            self.parent.display_segments_cbox.clear()
+
             # Add the segment names to the parent display combo box
             self.parent.display_segments_cbox.addItems(
                 list(self.segments))

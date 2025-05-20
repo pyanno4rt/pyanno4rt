@@ -38,7 +38,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | -----------------------------: | :------------------------------------ |
 | `python`                       | <font size="3"> >=3.10, <3.12 </font> |
 | `numpy`                        | <font size="3"> >=2.1.3 </font>       |
-| `ipyopt`                       | <font size="3"> >=0.12.9 </font>      |
+| `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
 | `proxmin`                      | <font size="3"> >=0.6.12 </font>      |
 | `absl-py`                      | <font size="3"> >=2.2.2 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
@@ -56,9 +56,9 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |
 | `pyqt5`                        | <font size="3"> >=5.15.10 </font>     |
 | `pyqtgraph`                    | <font size="3"> >=0.13.7 </font>      |
-| `ipython`                      | <font size="3"> >=8.35.0 </font>      |
-| `matplotlib`                   | <font size="3"> >=3.10.1 </font>      |
+| `ipython`                      | <font size="3"> >=8.36.0 </font>      |
+| `matplotlib`                   | <font size="3"> >=3.10.3 </font>      |
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
-Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.5** for development.<br><br>
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.6** for development.<br><br>

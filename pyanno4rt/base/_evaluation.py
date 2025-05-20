@@ -102,7 +102,7 @@ class Evaluation():
                 }.items():
 
             # Update the input argument value
-            inputs[key] = inputs.get(key, default)
+            inputs[key] = inputs.get(key) or default
 
         # Check the input arguments
         self.check(inputs)

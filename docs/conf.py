@@ -122,7 +122,8 @@ autoapi_ignore = [
     '*/random_forest_tcp_window.py', '*/squared_deviation_window.py',
     '*/squared_overdosing_window.py', '*/squared_underdosing_window.py',
     '*/support_vector_machine_ntcp_window.py',
-    '*/support_vector_machine_tcp_window.py']
+    '*/support_vector_machine_tcp_window.py', '*/visualizer.py',
+    '*/_ct_dose_slicing_window.py', '*/_feature_select_window.py']
 
 # -- Custom auto_summary() macro ----------------------------------------------
 

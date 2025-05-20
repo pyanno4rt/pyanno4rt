@@ -10,9 +10,11 @@ The module aims to provide methods and classes to ...
 
 from ._checkable_combo_box import CheckableComboBox
 from ._dvh_widget import DVHWidget
+from ._graph_widget import GraphWidget
 from ._slice_widget import SliceWidget
 
 __all__ = [
     'CheckableComboBox',
     'DVHWidget',
+    'GraphWidget',
     'SliceWidget']

@@ -21,7 +21,8 @@ from pyanno4rt.tools import (
     get_radiobiological_constraints, get_radiobiological_objectives)
 from pyanno4rt.visualization.assets import resources_rc
 from pyanno4rt.visualization._custom_styles import pbutton_composer
-from pyanno4rt.visualization.custom_widgets import DVHWidget, SliceWidget
+from pyanno4rt.visualization.custom_widgets import (
+    DVHWidget, GraphWidget, SliceWidget)
 from pyanno4rt.visualization.design.visualizer import Ui_vis_window
 from pyanno4rt.visualization.static import (
     DosimetricsTable, DVHGraph, IterGraph, MetricsGraph, MetricsTable,
@@ -62,6 +63,8 @@ class Visualizer(QMainWindow, Ui_vis_window):
         self.plan = treatment_plan
 
         # Initialize the widgets
+        self.iter_widget = GraphWidget(self)
+        self.ntcp_widget = GraphWidget(self)
         self.slice_widget = SliceWidget(self)
         self.dvh_widget = DVHWidget(self)
 
@@ -79,6 +82,8 @@ class Visualizer(QMainWindow, Ui_vis_window):
             'close_visualizer_pbutton': pbutton_composer})
 
         # Add the widgets to the layouts
+        self.comp_vals_top_widget_layout.insertWidget(0, self.iter_widget)
+        self.outc_vals_top_widget_layout.insertWidget(0, self.ntcp_widget)
         self.image_top_widget_layout.insertWidget(0, self.slice_widget)
         self.dvh_top_widget_layout.insertWidget(0, self.dvh_widget)
 
@@ -368,6 +373,45 @@ class Visualizer(QMainWindow, Ui_vis_window):
         # Set the initial scroll bar value
         self.slice_selection_sbar.setValue(int((plane_depth-1)/2))
 
+    def add_iter_graphs(self):
+        """."""
+
+        # 
+        self.iter_widget.reset_graph()
+
+        # Check if the plan has already been optimized
+        if (self.plan.fluence_optimizer is not None
+                and 'optimized_dose' in self.plan.datahub.optimization
+                and self.plan.datahub.state >= 3):
+
+            # 
+            self.iter_widget.add_style_and_data(
+                self.plan.datahub.optimization['problem'].tracker)
+
+            # 
+            self.iter_widget.update_graph()
+
+    def add_outc_graphs(self):
+        """."""
+
+        # 
+        self.ntcp_widget.reset_graph()
+
+        # 
+        segmentation = self.plan.datahub.segmentation
+
+        # Check if machine learning components have already been modeled
+        if all(getattr(component, 'model') is not None for component in (
+                get_machine_learning_constraints(segmentation)
+                + get_machine_learning_objectives(segmentation))):
+
+            # 
+            self.ntcp_widget.add_style_and_data(
+                self.plan.datahub.optimization['problem'].tracker)
+
+            # 
+            self.ntcp_widget.update_graph()
+
     def add_images(self):
         """."""
 
@@ -490,6 +534,9 @@ class Visualizer(QMainWindow, Ui_vis_window):
 
         # Disable irrelevant tabs
         self.disable_tabs()
+
+        # 
+        self.add_iter_graphs()
 
         # Add the CT/dose images
         self.add_images()

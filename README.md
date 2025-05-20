@@ -1,3 +1,4 @@
+[![PyPI](https://tinyurl.com/murf7c4m)](https://pypi.org/project/pypop7/)
 [![CI/CD](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml)
 ![Read the Docs](https://img.shields.io/readthedocs/pyanno4rt)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyanno4rt)
@@ -5,6 +6,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/pyanno4rt/pyanno4rt)
 ![GitHub forks](https://img.shields.io/github/forks/pyanno4rt/pyanno4rt)
 [![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=pyanno4rt.pyanno4rt)
 [![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
 [![GitHub Discussions](https://img.shields.io/github/discussions/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/discussions)
 [![GitHub Issues](https://img.shields.io/github/issues/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/issues)
@@ -136,7 +138,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | -----------------------------: | :------------------------------------ |
 | `python`                       | <font size="3"> >=3.10, <3.12 </font> |
 | `numpy`                        | <font size="3"> >=2.1.3 </font>       |
-| `ipyopt`                       | <font size="3"> >=0.12.9 </font>      |
+| `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
 | `proxmin`                      | <font size="3"> >=0.6.12 </font>      |
 | `absl-py`                      | <font size="3"> >=2.2.2 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
@@ -154,12 +156,12 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |
 | `pyqt5`                        | <font size="3"> >=5.15.10 </font>     |
 | `pyqtgraph`                    | <font size="3"> >=0.13.7 </font>      |
-| `ipython`                      | <font size="3"> >=8.35.0 </font>      |
-| `matplotlib`                   | <font size="3"> >=3.10.1 </font>      |
+| `ipython`                      | <font size="3"> >=8.36.0 </font>      |
+| `matplotlib`                   | <font size="3"> >=3.10.3 </font>      |
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
-Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.5** for development.
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.6** for development.
 
 # Development :rocket:
 

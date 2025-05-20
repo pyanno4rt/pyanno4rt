@@ -182,52 +182,52 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         # Get the check map
         check_map = {
             'name': (
-                partial(check_type, types=str),),
+                partial(check_type, options=str),),
             'segment': (
-                partial(check_type, types=str),),
+                partial(check_type, options=str),),
             'component_type': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(
                     check_value_in_set, options=('objective', 'constraint'))),
             'parameter_name': (
-                partial(check_type, types=tuple),
-                partial(check_subtype, types=str)),
+                partial(check_type, options=tuple),
+                partial(check_subtype, options=str)),
             'parameter_category': (
-                partial(check_type, types=tuple),
-                partial(check_subtype, types=str)),
+                partial(check_type, options=tuple),
+                partial(check_subtype, options=str)),
             'embedding': (
-                partial(check_type, types=str),
+                partial(check_type, options=str),
                 partial(check_value_in_set, options=('active', 'passive'))),
             'weight': (
-                partial(check_type, types=(int, float)),
+                partial(check_type, options=(int, float)),
                 partial(check_value, reference=0, sign='>')),
             'rank': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=0, sign='>')),
             'bounds': (
-                partial(check_type, types=(type(None), list)),
+                partial(check_type, options=(type(None), list)),
                 partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, types=(type(None), int, float))),
+                partial(check_subtype, options=(type(None), int, float))),
             'link': (
-                partial(check_type, types=(type(None), list)),
-                partial(check_subtype, types=str)),
+                partial(check_type, options=(type(None), list)),
+                partial(check_subtype, options=str)),
             'identifier': (
-                partial(check_type, types=(type(None), str)),),
+                partial(check_type, options=(type(None), str)),),
             'display': (
-                partial(check_type, types=bool),),
+                partial(check_type, options=bool),),
             'tolerance_dose_50': (
-                partial(check_type, types=(int, float)),
+                partial(check_type, options=(int, float)),
                 partial(check_value, reference=0, sign='>=')),
             'volume_parameter': (
-                partial(check_type, types=(int, float)),),
+                partial(check_type, options=(int, float)),),
             'slope_parameter': (
-                partial(check_type, types=(int, float)),),
+                partial(check_type, options=(int, float)),),
             'alpha': (
-                partial(check_type, types=(int, float)),),
+                partial(check_type, options=(int, float)),),
             'beta': (
-                partial(check_type, types=(int, float)),),
+                partial(check_type, options=(int, float)),),
             'number_of_fractions': (
-                partial(check_type, types=int),
+                partial(check_type, options=int),
                 partial(check_value, reference=0, sign='>'))}
 
         # Loop over the dictionary items

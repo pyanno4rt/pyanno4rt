@@ -1,5 +1,6 @@
 # pyanno4rt: Python-based Advanced Numerical Nonlinear Optimization for Radiotherapy
 
+[![PyPI](https://tinyurl.com/murf7c4m)](https://pypi.org/project/pypop7/)
 [![CI/CD](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml)
 ![Read the Docs](https://img.shields.io/readthedocs/pyanno4rt)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyanno4rt)
@@ -7,6 +8,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/pyanno4rt/pyanno4rt)
 ![GitHub forks](https://img.shields.io/github/forks/pyanno4rt/pyanno4rt)
 [![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=pyanno4rt.pyanno4rt)
 [![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
 [![GitHub Discussions](https://img.shields.io/github/discussions/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/discussions)
 [![GitHub Issues](https://img.shields.io/github/issues/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/issues)
