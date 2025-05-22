@@ -107,6 +107,9 @@ class ConventionalComponent(metaclass=ABCMeta):
 
     adjusted_parameters : bool
         Indicator for the adjustment of the parameters due to fractionation.
+
+    track_id : str
+        Component identifier in the optimization problem tracker.
     """
 
     def __init__(
@@ -147,6 +150,10 @@ class ConventionalComponent(metaclass=ABCMeta):
 
         # Initialize the adjustment indicator
         self.adjusted_parameters = False
+
+        # Initialize the tracker identifier
+        self.track_id = '-'.join(filter(
+            None, (f"{[self.segment]+self.link}", self.name, self.identifier)))
 
     def __eq__(
             self,

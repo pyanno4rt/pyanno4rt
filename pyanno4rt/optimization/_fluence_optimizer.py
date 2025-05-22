@@ -20,8 +20,7 @@ import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import (
    apply, flatten, get_constraint_segments, get_machine_learning_constraints,
    get_machine_learning_objectives, get_radiobiological_constraints,
-   get_radiobiological_objectives, get_objective_segments, reset_outputs,
-   sigmoid)
+   get_radiobiological_objectives, get_objective_segments, reset_outputs)
 
 # %% Class definition
 
@@ -471,64 +470,39 @@ class FluenceOptimizer():
            in problem.tracker.values()):
 
             # Loop over the radiobiological outcome model-based components
-            for name, value in (
-                (component.name, track[-1]/component.weight)
-                for label, track in problem.tracker.items()
-                for component in (
-                        get_radiobiological_objectives(segmentation)
-                        + get_radiobiological_constraints(segmentation))
-                    if component.name in label):
+            for component in (
+                    get_radiobiological_constraints(segmentation)
+                    + get_radiobiological_objectives(segmentation)):
 
-                # Log a message about the (N)TCP prediction
+                # Get the final (N)TCP prediction value
+                value = component.reverse(
+                    problem.tracker[component.track_id][-1]/component.weight)
+
+                # Log a message about the prediction value
                 logger.display_info(
-                    f"{name} for the optimized plan: "
-                    f"{(-1)**('NTCP' not in name)*round(100*value, 2)} % ...")
+                    f"{component.name} for the optimized plan: "
+                    f"{round(100*value, 2)} % ...")
 
             # Loop over the machine learning outcome model-based components
-            for name, value, component in (
-                (component.name, track[-1]/component.weight, component)
-                for label, track in problem.tracker.items()
-                for component in (
-                        get_machine_learning_constraints(segmentation)
-                        + get_machine_learning_objectives(segmentation))
-                    if component.name in label):
+            for component in (
+                    get_machine_learning_constraints(segmentation)
+                    + get_machine_learning_objectives(segmentation)):
 
                 # Process the feature history
                 component.data_model_handler.process_feature_history()
 
-                # Get the boolean value for sigmoidal models
-                is_sigmoidal = any(string in name for string in (
-                    'Logistic Regression', 'Neural Network',
-                    'Support Vector Machine'))
+                # Get the final (N)TCP prediction value
+                value = component.reverse(
+                    problem.tracker[component.track_id][-1]/component.weight)
 
-                # Get the default sigmoid coefficients
-                multiplier, summand = 1, 0
-
-                # Check if a support vector machine is present
-                if 'Support Vector Machine' in name:
-
-                    # Get the support vector machine prediction model
-                    svm = component.model.prediction_model
-
-                    # Get the Platt scaling coefficients
-                    multiplier, summand = -svm.probA_[0], svm.probB_[0]
-
-                # Get the value sign
-                sign = (-1)**('NTCP' not in name)
-
-                # Get the (N)TCP prediction value
-                value = round(
-                    100*(sign*value)**(1-is_sigmoidal)
-                    * ((sign == -1)+sign*sigmoid(value, multiplier, summand))
-                    ** is_sigmoidal, 2)
-
-                # Add the (N)TCP prediction value to the datahub
+                # Add the prediction value to the datahub
                 hub.model_outcomes[
                     component.data_model_handler.model_label] = value
 
-                # Log a message about the (N)TCP prediction
+                # Log a message about the prediction value
                 logger.display_info(
-                    f"{name} for the optimized plan: {value} % ...")
+                    f"{component.name} for the optimized plan: "
+                    f"{round(100*value, 2)} % ...")
 
         # Get the runtime for the fluence optimizer
         optimizer_runtime = round(
@@ -636,7 +610,7 @@ class FluenceOptimizer():
         # Interpolate the dose cube to the CT grid and multiply by the RBE
         optimized_dose = (
             zoom(optimized_dose, zooms, order=1)
-            *hub.plan_configuration['RBE']
-            *hub.dose_information['number_of_fractions'])
+            * hub.plan_configuration['RBE']
+            * hub.dose_information['number_of_fractions'])
 
         return optimized_dose

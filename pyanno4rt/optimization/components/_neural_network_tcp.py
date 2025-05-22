@@ -14,7 +14,7 @@ from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.neural_network import NeuralNetworkModel
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import filter_dict, inverse_sigmoid
+from pyanno4rt.tools import filter_dict, inverse_sigmoid, sigmoid
 
 # %% Class definition
 
@@ -205,6 +205,30 @@ class NeuralNetworkTCP(MachineLearningComponent):
 
         # Transform the component bounds
         self.bounds = sorted(-inverse_sigmoid(bound) for bound in self.bounds)
+
+    def reverse(
+            self,
+            value):
+        """
+        Reverse the component value(s) to the outcome value(s).
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Component value(s).
+
+        Returns
+        -------
+        float or tuple
+            Outcome value(s).
+        """
+
+        # Check if the passed value is tuple or a list
+        if isinstance(value, (tuple, list)):
+
+            return tuple(1-val for val in sigmoid(value, 1, 0))
+
+        return 1-sigmoid(value, 1, 0)
 
     def compute_value(
             self,

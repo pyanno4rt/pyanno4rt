@@ -16,7 +16,7 @@ from pyanno4rt.learning.svm import (
     poly_decision_gradient, rbf_decision_gradient, sigmoid_decision_gradient,
     SupportVectorMachineModel)
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import filter_dict, inverse_sigmoid
+from pyanno4rt.tools import filter_dict, inverse_sigmoid, sigmoid
 
 # %% Class definition
 
@@ -231,6 +231,34 @@ class SupportVectorMachineTCP(MachineLearningComponent):
         self.bounds = sorted(-inverse_sigmoid(
             bound, -self.model.prediction_model.probA_[0],
             self.model.prediction_model.probB_[0]) for bound in self.bounds)
+
+    def reverse(
+            self,
+            value):
+        """
+        Reverse the component value(s) to the outcome value(s).
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Component value(s).
+
+        Returns
+        -------
+        float or tuple
+            Outcome value(s).
+        """
+
+        # Get the prediction model
+        svm = self.model.prediction_model
+
+        # Check if the passed value is tuple or a list
+        if isinstance(value, (tuple, list)):
+
+            return tuple(
+                1-val for val in sigmoid(value, -svm.probA_, svm.probB_))
+
+        return 1-sigmoid(value, -svm.probA_, svm.probB_)
 
     def compute_value(
             self,

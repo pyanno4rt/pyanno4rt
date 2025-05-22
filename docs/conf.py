@@ -64,7 +64,8 @@ myst_sphinx_gallery_config = GalleryConfig(
 #
 html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
-    'logo_only': True
+    'logo_only': True,
+    'prev_next_buttons_location': 'top',
     }
 html_logo = '../logo/logo_white.png'
 

@@ -10,6 +10,10 @@
     background: #000000;
 }
 
+.wy-nav-content {
+    max-width: none;
+}
+
 span.summarylabel {
     background-color: var(--color-foreground-secondary);
     color: var(--color-background-secondary);

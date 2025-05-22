@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from numpy import divide
 from math import isnan
 from pandas import DataFrame
 from pyqtgraph import mkQApp
@@ -391,7 +392,7 @@ class Visualizer(QMainWindow, Ui_vis_window):
             # 
             self.iter_widget.update_graph()
 
-    def add_outc_graphs(self):
+    def add_outcome_graphs(self):
         """."""
 
         # 
@@ -400,14 +401,24 @@ class Visualizer(QMainWindow, Ui_vis_window):
         # 
         segmentation = self.plan.datahub.segmentation
 
+        # Get the outcome model-based components
+        components = (
+            get_machine_learning_constraints(segmentation)
+            + get_machine_learning_objectives(segmentation)
+            + get_radiobiological_constraints(segmentation)
+            + get_radiobiological_objectives(segmentation))
+
         # Check if machine learning components have already been modeled
-        if all(getattr(component, 'model') is not None for component in (
-                get_machine_learning_constraints(segmentation)
-                + get_machine_learning_objectives(segmentation))):
+        if len(components) > 0:
+
+            # 
+            tracker = self.plan.datahub.optimization['problem'].tracker
 
             # 
             self.ntcp_widget.add_style_and_data(
-                self.plan.datahub.optimization['problem'].tracker)
+                {component.track_id: component.reverse(
+                    divide(tracker[component.track_id], component.weight))
+                 for component in components})
 
             # 
             self.ntcp_widget.update_graph()
@@ -537,6 +548,9 @@ class Visualizer(QMainWindow, Ui_vis_window):
 
         # 
         self.add_iter_graphs()
+
+        # 
+        self.add_outcome_graphs()
 
         # Add the CT/dose images
         self.add_images()

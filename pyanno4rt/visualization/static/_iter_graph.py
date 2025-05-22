@@ -11,9 +11,7 @@ from numpy import ceil, floor
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import (
-    get_all_constraints, get_all_objectives, get_constraint_segments,
-    get_objective_segments)
+from pyanno4rt.tools import get_all_constraints, get_all_objectives
 
 # %% Set options
 
@@ -41,49 +39,21 @@ class IterGraph():
         # Log a message about the plot opening
         hub.logger.display_info("Opening iterative component value plot ...")
 
-        def get_plotting_information():
-            """Get the labels for the plot legend."""
-
-            # Determine the segment/component groups
-            groups = (tuple(zip(
-                get_objective_segments(segmentation),
-                get_all_objectives(segmentation)))
-                + tuple(zip(
-                    get_constraint_segments(segmentation),
-                    get_all_constraints(segmentation))))
-
-            # Convert the groups into an appropriate format
-            groups = (
-                (group[0], group[1].name) if group[1].link is None
-                else ("[{}]".format(", ".join([group[0]]+group[1].link)),
-                      group[1].name)
-                for group in groups)
-
-            # Get the display flags from the objectives
-            display_flags = [
-                component.display for component in (
-                    get_all_objectives(segmentation)
-                    + get_all_constraints(segmentation))]
-
-            # Build the legend labels
-            legend_labels = [
-                r" $\rightarrow$ ".join(
-                    (group[0], group[1])) for index, group in enumerate(groups)
-                if display_flags[index]]
-
-            return legend_labels, display_flags
-
         # Get the segmentation data
         segmentation = hub.segmentation
 
-        # Get the legend labels and display flags
-        legend_labels, display_flags = get_plotting_information()
+        # Get the track labels and display flags
+        labels, flags = tuple(zip(*(
+            (component.track_id, component.display)
+            for component in (
+                    get_all_objectives(segmentation)
+                    + get_all_constraints(segmentation)))))
 
         # Get the tracks from the datahub which should be displayed
         tracker = {
             track[0]: track[1] for index, track in enumerate(
                 hub.optimization['problem'].tracker.items())
-            if display_flags[index]}
+            if flags[index]}
 
         # Determine the step length on the x-axis
         x_step = min(
@@ -97,9 +67,9 @@ class IterGraph():
              (5e-7, 5e-6, 5e-5, 5e-4, 5e-3, 5e-2, 5e-1, 5e0, 5e1, 5e2, 5e3,
               5e4, 5e5, 5e6, 5e7),
              key=lambda x: abs(ceil((
-                 max(max([value for value in track if value is not None])
+                 max(max(value for value in track if value is not None)
                      for track in tracker.values())
-                 - min(min([value for value in track if value is not None])
+                 - min(min(value for value in track if value is not None)
                        for track in tracker.values()))/x)-20))
 
         # Create a figure and subplots
@@ -122,25 +92,23 @@ class IterGraph():
         axis.set_xticks(tuple(i*x_step for i in range(int(ceil(max(
             len(track) for track in tracker.values())/x_step))+1)))
         axis.set_yticks(tuple(i*y_step for i in range(
-            int(floor(min(min([
-                value for value in track if value is not None])
+            int(floor(min(min(
+                value for value in track if value is not None)
                 for track in tracker.values())/y_step))-1,
-            int(ceil(max(max([
-                value for value in track if value is not None])
+            int(ceil(max(max(
+                value for value in track if value is not None)
                 for track in tracker.values())/y_step))+1)))
 
         # Set the font sizes for the tick labels
-        for label in axis.get_xticklabels():
-            label.set_fontsize(9)
-        for label in axis.get_yticklabels():
+        for label in axis.get_xticklabels() + axis.get_yticklabels():
             label.set_fontsize(9)
 
         # Set the x- and y-limits
         axis.set_xlim(0, max(len(track) for track in tracker.values())+x_step)
         axis.set_ylim(
-            min(min([value for value in track if value is not None])
+            min(min(value for value in track if value is not None)
                 for track in tracker.values()) - y_step,
-            max(max([value for value in track if value is not None])
+            max(max(value for value in track if value is not None)
                 for track in tracker.values()) + y_step)
 
         # Set the facecolor for the axis
@@ -153,7 +121,7 @@ class IterGraph():
         axis.minorticks_on()
 
         # Set the legend and its facecolor
-        legend = axis.legend(legend_labels, fontsize=9, framealpha=1)
+        legend = axis.legend(labels, fontsize=9, framealpha=1)
         legend.get_frame().set_facecolor('snow')
 
         # Apply a tight layout

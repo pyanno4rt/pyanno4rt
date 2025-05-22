@@ -1,6 +1,6 @@
-[![PyPI](https://tinyurl.com/murf7c4m)](https://pypi.org/project/pypop7/)
 [![CI/CD](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/pyanno4rt/pyanno4rt/actions/workflows/ci-cd.yml)
-![Read the Docs](https://img.shields.io/readthedocs/pyanno4rt)
+[![Read the Docs](https://img.shields.io/readthedocs/pyanno4rt)](https://pyanno4rt.readthedocs.io/en/latest/)
+[![PyPI](https://img.shields.io/badge/PyPI-pyanno4rt-orange.svg)](https://pypi.org/project/pyanno4rt/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyanno4rt)
 [![Coverage Status](https://coveralls.io/repos/github/pyanno4rt/pyanno4rt/badge.svg)](https://coveralls.io/github/pyanno4rt/pyanno4rt)
 ![GitHub Repo stars](https://img.shields.io/github/stars/pyanno4rt/pyanno4rt)

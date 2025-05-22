@@ -111,7 +111,7 @@ class PermutationImportanceBoxplot():
 
                 # Set x- and y-label
                 axis[j].set_xlabel("Feature", fontsize=11)
-                axis[j].set_ylabel(f"Δ {data_zipped[1][j]}", fontsize=11)
+                axis[j].set_ylabel(f"Δ {data_zipped[1][i]}", fontsize=11)
 
                 # Set the axis title
                 axis[j].set_title(

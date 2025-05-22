@@ -96,16 +96,11 @@ class PlanGenerator():
                     f"Setting {category} '{component.name}' for "
                     f"{[segment]+component.link} ...")
 
-            # Get the component key for the base dictionary
-            component_key = '-'.join(filter(
-                None, (f"{[segment]+component.link}", component.name,
-                       component.identifier)))
-
             # Check if the component is already included in the base dictionary
-            if component_key not in base_dict:
+            if component.track_id not in base_dict:
 
                 # Add the instance to the base dictionary
-                base_dict[component_key] = {
+                base_dict[component.track_id] = {
                     'segments': [segment]+component.link,
                     'instance': component}
 
