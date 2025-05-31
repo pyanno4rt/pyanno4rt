@@ -40,7 +40,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `numpy`                        | <font size="3"> >=2.1.3 </font>       |
 | `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
 | `proxmin`                      | <font size="3"> >=0.6.12 </font>      |
-| `absl-py`                      | <font size="3"> >=2.2.2 </font>       |
+| `absl-py`                      | <font size="3"> >=2.3.0 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
 | `scikit-image`                 | <font size="3"> >=0.25.2 </font>      |
 | `h5py`                         | <font size="3"> >=3.13.0 </font>      |
@@ -52,7 +52,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `tensorflow`                   | <font size="3"> >=2.19.0 </font>      |
 | `tensorflow-io-gcs-filesystem` | <font size="3"> ==0.31.0 </font>      |
 | `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
-| `pymoo`                        | <font size="3"> >=0.6.1.3 </font>     |
+| `pymoo`                        | <font size="3"> >=0.6.1.5 </font>     |
 | `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |
 | `pyqt5`                        | <font size="3"> >=5.15.10 </font>     |
 | `pyqtgraph`                    | <font size="3"> >=0.13.7 </font>      |
@@ -61,4 +61,4 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
-Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.6** for development.<br><br>
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.7** for development.<br><br>
