@@ -371,9 +371,9 @@ ipyopt==0.12.10 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:bc20d1ad55c2bd9b56d05e9133f26344f1f1be2d5fce153f9859274bf3201c21 \
     --hash=sha256:bfeb341c949510be81fa6c9feb347f8024aeb63624c0ada8e1d38909fe8e9611 \
     --hash=sha256:e5dce48afdbcf1efdfed16d0e0406186333bcb487f546173254edd58f45e76aa
-ipython==8.36.0 ; python_version >= "3.10" and python_version < "3.12" \
-    --hash=sha256:12b913914d010dcffa2711505ec8be4bf0180742d97f1e5175e51f22086428c1 \
-    --hash=sha256:24658e9fe5c5c819455043235ba59cfffded4a35936eefceceab6b192f7092ff
+ipython==8.37.0 ; python_version >= "3.10" and python_version < "3.12" \
+    --hash=sha256:ca815841e1a41a1e6b73a0b08f3038af9b2252564d01fc405356d34033012216 \
+    --hash=sha256:ed87326596b878932dbcb171e3e698845434d8c61b8d8cd474bf663041a9dcf2
 jax==0.6.1 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:69a4e4506caa5466702bdfd0d7a13d1f9b7281d473885721100a3087fcabf8f9 \
     --hash=sha256:c4dcb93e1d34f80cf7adfa81f3fdab62a5068b69107b7a6117f8742ab37b6779

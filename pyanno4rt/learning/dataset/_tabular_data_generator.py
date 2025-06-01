@@ -480,6 +480,7 @@ class TabularDataGenerator():
                 # Return the dosiomic/radiomic feature map
                 return {
                     label: {
+                        'name': definitions[label]['function'],
                         'segment': definitions[label]['segment'],
                         'class': function.feature_class,
                         'computation': (

@@ -87,8 +87,8 @@ class FeatureCalculator():
             'dose_cube': None,
             'indices': None,
             'paddings': None,
-            'require_cube': ('doseSubvolume', 'doseMoment', 'doseGradient'),
-            'require_spacing': ('doseGradient',),
+            'require_cube': ('Dose Subvolume', 'Dose Moment', 'Dose Gradient'),
+            'require_spacing': ('Dose Gradient',),
             'masks': None}
 
         # Initialize the iteration numbers for synchronization
@@ -336,9 +336,9 @@ class FeatureCalculator():
 
                 # Determine the number of input conditions fulfilled
                 boolean_sum = sum((
-                    any(label in feature
+                    any(label in self.feature_map[feature]['name']
                         for label in self.inputs['require_cube']),
-                    any(label in feature
+                    any(label in self.feature_map[feature]['name']
                         for label in self.inputs['require_spacing'])))
 
                 # Check if the boolean sum is zero
@@ -482,8 +482,10 @@ class FeatureCalculator():
 
                 # Determine the number of input conditions fulfilled
                 boolean_sum = sum((
-                    any(label in feature for label in require_cube),
-                    any(label in feature for label in require_spacing)))
+                    any(label in self.feature_map[feature]['name']
+                        for label in require_cube),
+                    any(label in self.feature_map[feature]['name']
+                        for label in require_spacing)))
 
                 # Check if the boolean sum is zero
                 if boolean_sum == 0:
@@ -500,7 +502,8 @@ class FeatureCalculator():
 
                 # Else, compute the gradient vector for the boolean sum of two
                 return differentiate(
-                    dose, dose_cube,
+                    dose,
+                    dose_cube,
                     fromiter(dose_information['resolution'].values(), float),
                     masks[1])[indices]
 
