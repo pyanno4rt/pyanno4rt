@@ -8,5 +8,5 @@
    installation.md
    development.md
    help_support.md
-   examples
+   notebooks
    autoapi/index

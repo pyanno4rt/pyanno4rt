@@ -1,8 +1,8 @@
-.. _examples:
+.. _notebooks:
 
-========
-Examples
-========
+=========
+Notebooks
+=========
 
 This is a gallery of examples showcasing how *pyanno4rt* can be used. Here we provide Jupyter notebooks to introduce the core functionalities of the code-based and the UI-based interfaces, and also deliver code snippets for essential parts of *pyanno4rt* treatment plans.
 

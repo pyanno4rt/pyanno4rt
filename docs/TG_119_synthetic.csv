@@ -1,4 +1,4 @@
-core_doseMean,core_doseDeviation,core_doseMin,coreDoseMax,lkb_pred,label
+core_mean,core_std,core_min,core_max,lkb_pred,label
 20.87,6.86,5.32,36.92,0.39,0
 25.18,8.11,6.01,39.96,0.2491,0
 30.16,7.89,8.41,43.94,0.8545,0
@@ -26,7 +26,6 @@ core_doseMean,core_doseDeviation,core_doseMin,coreDoseMax,lkb_pred,label
 30.23,8.95,7.27,45.25,0.8994,0
 27.76,8.91,6.56,43.33,0.66,0
 32,9.07,7.67,46.86,0.9689,1
-27.65,8.43,6.78,42.61,0.6082,1
 23.62,7.6,5.92,38.13,0.0871,0
 33.33,9.14,8.19,48.94,0.9903,1
 32.8,9.51,7.76,48.34,0.9873,1
