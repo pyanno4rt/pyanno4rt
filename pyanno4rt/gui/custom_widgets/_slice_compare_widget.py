@@ -55,6 +55,7 @@ class SliceCompareWidget(QWidget):
             rounding=0.1, colorMap=colormap.get(cmap, 'matplotlib'),
             orientation='vertical')
         self.bar.setImageItem(self.dose_image)
+        self.bar.axis.setLabel('Dose')
 
         # 
         self.slice = None

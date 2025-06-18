@@ -155,10 +155,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
         self.embedding = embedding
         self.weight = float(weight)
         self.rank = rank
-        self.bounds = (
-            (0.0, 1.0) if bounds is None or embedding == 'passive' else (
-                0.0 if bounds[0] is None else float(bounds[0]),
-                1.0 if bounds[1] is None else float(bounds[1])))
+        self.bounds = self.convert_bounds(bounds, embedding)
         self.link = [] if link is None else link
         self.identifier = identifier
         self.display = display
@@ -270,6 +267,41 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
         return 'MachineLearningComponent'
 
+    def convert_bounds(
+            self,
+            bounds,
+            embedding):
+        """
+        Convert the bounds to function bounds.
+
+        Parameters
+        ----------
+        bounds : None or list
+            Constraint bounds for the component.
+
+        embedding : {'active', 'passive'}
+            Mode of embedding for the component.
+
+        Returns
+        -------
+        list
+            Lower and upper function bounds.
+        """
+
+        # Get the (N)TCP function sign
+        sign = (-1.0)**('NTCP' not in self.name)
+
+        # Check if the bounds are None
+        if bounds is None or embedding == 'passive':
+
+            # Return the default function bounds
+            return sorted((0.0, sign))
+
+        # Return the transformed function bounds
+        return sorted(
+            (0.0 if bounds[0] is None or bounds[0] < 0 else sign*bounds[0],
+             sign if bounds[1] is None or bounds[1] > 1 else sign*bounds[1]))
+
     def get_parameter_value(self):
         """
         Get the value of the parameters.
@@ -336,12 +368,6 @@ class MachineLearningComponent(metaclass=ABCMeta):
     @abstractmethod
     def add_model(self):
         """Add the machine learning model to the component."""
-
-    @abstractmethod
-    def reverse(
-            self,
-            value):
-        """Reverse the component value(s) to the outcome value(s)."""
 
     @abstractmethod
     def compute_value(

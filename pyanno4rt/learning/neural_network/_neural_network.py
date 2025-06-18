@@ -30,11 +30,6 @@ class NeuralNetworkModel(MachineLearningModel):
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
     for information on the parameters and attributes.
-
-    Attributes
-    ----------
-    optimization_model : object of class `Functional`
-        The object used to represent the optimization model.
     """
 
     def __init__(
@@ -90,9 +85,6 @@ class NeuralNetworkModel(MachineLearningModel):
             tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options, architecture,
             max_hidden_layers)
-
-        # Get the optimization surrogate of the neural network model
-        self.optimization_model = self.get_optimization_model()
 
     def get_hyperparameter_set(
             self,
@@ -166,7 +158,7 @@ class NeuralNetworkModel(MachineLearningModel):
 
         # Build the model architecture
         prediction_model = self.build_network(
-            features.shape[1], labels.ndim, hyperparameters, True)
+            features.shape[1], labels.ndim, hyperparameters)
 
         # Compile and fit the model
         prediction_model = self.compile_and_fit(
@@ -174,39 +166,11 @@ class NeuralNetworkModel(MachineLearningModel):
 
         return prediction_model
 
-    def get_optimization_model(self):
-        """
-        Get the neural network optimization model.
-
-        Returns
-        -------
-        object of class `Functional`
-            The object used to represent the optimization model.
-        """
-
-        # Build the network architecture
-        optimization_model = self.build_network(
-            self.prediction_model.inputs[0].shape[1],
-            self.prediction_model.outputs[0].shape[1],
-            self.hyperparameters, False)
-
-        # Compile the model
-        optimization_model.compile(
-            optimizer=NN_OPTS[self.hyperparameters['optimizer']](
-                learning_rate=self.hyperparameters['learning_rate']),
-            loss=NN_LOSSES[self.hyperparameters['loss']]())
-
-        # Set the network weights
-        optimization_model.set_weights(self.prediction_model.get_weights())
-
-        return optimization_model
-
     def build_network(
             self,
             input_shape,
             output_shape,
-            hyperparameters,
-            squash_output):
+            hyperparameters):
         """
         Build the neural network architecture with the functional API.
 
@@ -221,9 +185,6 @@ class NeuralNetworkModel(MachineLearningModel):
         hyperparameters : dict
             Dictionary with the values of the hyperparameters.
 
-        squash_output : bool
-            Indicator for the squashing of the network output.
-
         Returns
         -------
         object of class 'Functional'
@@ -236,12 +197,12 @@ class NeuralNetworkModel(MachineLearningModel):
             # Get the vanilla input-output convex neural network (IOC-NN)
             return build_vanilla_iocnn(
                 input_shape, output_shape, self.configuration['bias'],
-                hyperparameters, squash_output)
+                hyperparameters)
 
         # Get the vanilla neural network (NN)
         return build_vanilla_nn(
             input_shape, output_shape, self.configuration['bias'],
-            hyperparameters, squash_output)
+            hyperparameters)
 
     def compile_and_fit(
             self,
@@ -396,7 +357,7 @@ class NeuralNetworkModel(MachineLearningModel):
 
         # Build the network architecture
         prediction_model = self.build_network(
-            input_shape, output_shape, hyperparameters, True)
+            input_shape, output_shape, hyperparameters)
 
         # Compile the model
         prediction_model.compile(

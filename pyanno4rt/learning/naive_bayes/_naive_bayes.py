@@ -7,7 +7,6 @@
 from pickle import dump, load
 
 from hyperopt import hp
-from numpy import mean
 from sklearn.naive_bayes import GaussianNB
 
 # %% Internal package import

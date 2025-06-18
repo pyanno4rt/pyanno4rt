@@ -77,9 +77,6 @@ class KNeighborsTCP(MachineLearningComponent):
 
     parameter_value : list
         K-nearest neighbors model parameters.
-
-    bounds : list
-        See 'Parameters'.
     """
 
     def __init__(
@@ -192,33 +189,6 @@ class KNeighborsTCP(MachineLearningComponent):
 
         # Get the k-nearest neighbors model parameters
         self.parameter_value = []
-
-        # Transform the component bounds
-        self.bounds = sorted(-bound for bound in self.bounds)
-
-    def reverse(
-            self,
-            value):
-        """
-        Reverse the component value(s) to the outcome value(s).
-
-        Parameters
-        ----------
-        value : int, float, tuple or list
-            Component value(s).
-
-        Returns
-        -------
-        float or tuple
-            Outcome value(s).
-        """
-
-        # Check if the passed value is tuple or a list
-        if isinstance(value, (tuple, list)):
-
-            return tuple(-val for val in value)
-
-        return -value
 
     def compute_value(
             self,

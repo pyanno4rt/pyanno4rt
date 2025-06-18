@@ -1,4 +1,4 @@
-"""DVH graph."""
+"""Iterative component graph."""
 
 # Author: Tim Ortkamp
 
@@ -6,20 +6,22 @@
 
 from itertools import islice, cycle
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import ceil, linspace
+from numpy import ceil, floor, linspace
 
 # %% Internal package import
 
-from pyanno4rt.tools import filter_dict
+from pyanno4rt.tools import (
+    filter_dict, flatten, get_all_constraints, get_all_objectives)
 
 # %% Class definition
 
 
-class DVHGraph():
+class ComponentGraph():
     """
-    DVH graph class.
+    Iterative component graph class.
 
-    This class provides a plot with the segment-wise DVH values.
+    This class provides a plot with the iteration-wise values of the \
+    optimization functions.
 
     Parameters
     ----------
@@ -29,10 +31,10 @@ class DVHGraph():
     titlesize : int, default=16
         Font size of the title.
 
-    xlabel : str, default='Dose [Gy]'
+    xlabel : str, default='Evaluation step'
         Label for the x-axis.
 
-    ylabel : str, default='Relative volume [%]',
+    ylabel : str, default='Component value',
         Label for the y-axis.
 
     labelsize : int, default=11
@@ -96,8 +98,8 @@ class DVHGraph():
             self,
             title='',
             titlesize=16,
-            xlabel='Dose [Gy]',
-            ylabel='Relative volume [%]',
+            xlabel='Evaluation step',
+            ylabel='Component value',
             labelsize=11,
             linewidth=3,
             ticksize=9,
@@ -119,7 +121,7 @@ class DVHGraph():
             self,
             treatment_plan):
         """
-        Open the DVH graph.
+        Open the iterative component graph.
 
         Parameters
         ----------
@@ -128,32 +130,54 @@ class DVHGraph():
             The object used to represent the treatment plan.
         """
 
-        # Get the DVH data
-        dose_histogram = treatment_plan.datahub.dose_histogram
+        # Get the segmentation and optimization data
+        segmentation, optimization = (
+            getattr(treatment_plan.datahub, attribute) for attribute in (
+                'segmentation', 'optimization'))
 
-        # Get the segment names
-        segments = tuple(
-            segment for segment in (*dose_histogram,)
-            if segment in dose_histogram['display_segments'])
+        # Get all optimization components
+        components = (
+            get_all_objectives(segmentation)
+            + get_all_constraints(segmentation))
+
+        # Get the tracks to be displayed
+        tracker = {
+            component.track_id: (
+                optimization['problem'].tracker[component.track_id])
+            for component in components if component.display}
+
+        # Get the track statistics
+        track_min = min(flatten(tracker.values()))
+        track_max = max(flatten(tracker.values()))
+        track_len = max(len(track) for track in tracker.values())
+        track_num = len(tracker)
 
         # Set the expected number of ticks
         number_of_ticks = 20 if self.ticksize < 17 else 10
 
         # Determine the step length on the x-axis
         x_step = min(
+            sorted(base*10**i for base in (1, 2, 5) for i in range(6)),
+            key=lambda x: abs(ceil(track_len/x)-number_of_ticks))
+
+        # Determine the step length on the y-axis
+        y_step = min(
             sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
-            key=lambda x: abs(ceil(max(dose_histogram['evaluation_points'])/x)
-                              - number_of_ticks))
+            key=lambda x: abs(ceil((track_max-track_min)/x)-number_of_ticks))
+
+        # Set the marker styles
+        markers = tuple(
+            islice(cycle(['o', 's', 'v', 'd', '*', 'X']), track_num))
 
         # Set the colormap
-        colors = get_cmap('tab20b')(linspace(0, 1.0, len(segments)))
+        colors = get_cmap('tab20b')(linspace(0, 1.0, track_num))
 
         # Set the line styles
-        lines = tuple(islice(cycle(["-", "--", ":", "-."]), len(segments)))
+        lines = tuple(islice(cycle(["-", "--", ":", "-."]), track_num))
 
         # Create a dictionary for the track styles
         styles = dict(
-            zip(segments, tuple(zip(colors, lines))))
+            zip(tracker, tuple(zip(markers, colors, lines))))
 
         # Get the figure and axis objects
         figure, axis = subplots(figsize=(14, 8))
@@ -161,15 +185,17 @@ class DVHGraph():
         # Set the plot title
         axis.set_title(label=self.title, fontsize=self.titlesize)
 
-        # Loop over the segments
-        for segment in segments:
+        # Loop over the tracks
+        for track, values in tracker.items():
 
-            # Plot the DVH curve
+            # Plot the track
             axis.plot(
-                dose_histogram['evaluation_points'],
-                100*dose_histogram[segment]['dvh_values'],
-                color=styles[segment][0],
-                linestyle=styles[segment][1],
+                range(1, len(values)+1),
+                values,
+                marker=styles[track][0],
+                markersize=1.5*self.linewidth,
+                color=styles[track][1],
+                linestyle=styles[track][2],
                 linewidth=0.5*self.linewidth)
 
         # Set the x- and y-labels
@@ -180,13 +206,16 @@ class DVHGraph():
         axis.tick_params(axis='both', which='major', labelsize=self.ticksize)
 
         # Set the x- and y-ticks
-        axis.set_xticks(tuple(i*x_step for i in range(
-            int(ceil(max(dose_histogram['evaluation_points']))/x_step)+1)))
-        axis.set_yticks(tuple(i*5 for i in range(number_of_ticks+1)))
+        axis.set_xticks(tuple(
+            i*x_step for i in range(int(ceil(track_len/x_step))+1)))
+        axis.set_yticks(tuple(
+            i*y_step for i in range(
+                int(floor(track_min/y_step))-1,
+                int(ceil(track_max/y_step))+1)))
 
         # Set the x- and y-limits
-        axis.set_xlim(left=-0.05)
-        axis.set_ylim(-1, 101)
+        axis.set_xlim(0, track_len+x_step/2)
+        axis.set_ylim(track_min-y_step/2, track_max+y_step/2)
 
         # Set the facecolor for the axis
         axis.set_facecolor(self.background)
@@ -210,7 +239,7 @@ class DVHGraph():
             axis.minorticks_off()
 
         # Configure the legend
-        legend = axis.legend(segments, fontsize=self.legendsize, framealpha=1)
+        legend = axis.legend(tracker, fontsize=self.legendsize, framealpha=1)
         legend.get_frame().set_facecolor('snow')
 
         # Apply a tight layout
@@ -220,7 +249,7 @@ class DVHGraph():
         figure_manager = get_current_fig_manager()
 
         # Set the window title
-        figure_manager.set_window_title("DVH graph")
+        figure_manager.set_window_title("Iterative component graph")
 
         # Show the full-screen plot
         figure_manager.window.showMaximized()

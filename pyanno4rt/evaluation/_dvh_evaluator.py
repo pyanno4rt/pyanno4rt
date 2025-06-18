@@ -65,7 +65,10 @@ class DVHEvaluator():
         if len(display_segments) == 0:
 
             # Get the display segments from the datahub
-            self.display_segments = tuple(hub.segmentation)
+            self.display_segments = tuple(
+                segment for segment in hub.segmentation
+                if hub.segmentation[segment]['objective'] is not None
+                or hub.segmentation[segment]['constraint'] is not None)
 
         else:
 

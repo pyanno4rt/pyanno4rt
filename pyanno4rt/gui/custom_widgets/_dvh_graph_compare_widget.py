@@ -1,4 +1,4 @@
-"""DVH comparison widget."""
+"""DVH graph comparison widget."""
 
 # Author: Tim Ortkamp
 
@@ -7,56 +7,81 @@
 from itertools import islice, cycle
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
-from pyqtgraph import (colormap, InfiniteLine, mkPen, PlotWidget, SignalProxy)
+from pyqtgraph import colormap, InfiniteLine, mkPen, PlotWidget, SignalProxy
 
 # %% Class definition
 
 
-class DVHCompareWidget(QWidget):
-    """."""
+class DVHGraphCompareWidget(QWidget):
+    """
+    DVH graph comparison widget for the graphical user interface.
 
-    def __init__(self, parent=None):
+    This class sets up a DVH graph comparison widget for the graphical user \
+    interface, including a line plot with the segment-wise (diff.) DVH values.
+
+    Parameters
+    ----------
+    parent : object of class \
+        :class:`~pyanno4rt.gui.windows._compare_window.CompareWindow`, \
+            default=None
+        The object representing the parent window for embedding.
+    """
+
+    def __init__(
+            self,
+            parent=None):
 
         # Call the superclass constructor
         super().__init__()
 
-        # 
+        # Get the parent window
         self.parent = parent
 
-        # Set the vertical layout for the DVH widget
-        dvh_layout = QVBoxLayout(self)
+        # Set the vertical layout for the graph
+        graph_layout = QVBoxLayout(self)
 
-        # 
-        self.plot_graph = PlotWidget()
+        # Initialize the plot widget
+        self.plot_widget = PlotWidget()
 
-        # 
-        dvh_layout.addWidget(self.plot_graph)
+        # Add margins to the widget
+        self.plot_widget.plotItem.setContentsMargins(20, 10, 10, 20)
 
-        self.plot_graph.getPlotItem().hideAxis('bottom')
-        self.plot_graph.getPlotItem().hideAxis('top')
-        self.plot_graph.getPlotItem().hideAxis('left')
-        self.plot_graph.getPlotItem().hideAxis('right')
-        self.plot_graph.getPlotItem().hideButtons()
+        # Generate the vertical and horizontal infinite lines
+        self.vertical_line = InfiniteLine(angle=90)
+        self.horizontal_line = InfiniteLine(angle=0)
 
+        # Add the lines to the widget
+        self.plot_widget.addItem(self.vertical_line)
+        self.plot_widget.addItem(self.horizontal_line)
+
+        # Add the widget to the layout
+        graph_layout.addWidget(self.plot_widget)
+
+        # Initialize the segment names, the DVH data and the display styles
         self.segments = None
         self.dose_histogram = None
-        self.segment_styles = None
+        self.styles = None
 
-        # Create vertical and horizontal infinite lines
-        self.vertical_line = InfiniteLine(angle=90)
-        self.horizontal_line = InfiniteLine(angle=0, movable=False)
+        # Initialize the crosshair update
+        self.crosshair_update = None
 
-        # Disable the pens for the lines
-        self.vertical_line.setPen(None)
-        self.horizontal_line.setPen(None)
+    def add_style_and_data(
+            self,
+            dose_histogram,
+            x_range=None,
+            baseline=None,
+            reference=None):
+        """
+        Add the display styles and data (DVH, x-axis range, comparison plans).
 
-        # Add the lines to the graph
-        self.plot_graph.addItem(self.vertical_line, ignoreBounds=True)
-        self.plot_graph.addItem(self.horizontal_line, ignoreBounds=True)
+        Parameters
+        ----------
+        dose_histogram : dict
+            Dictionary with information on the cumulative or differential \
+            (diff.) dose-volume histogram for each segment.
 
-    def add_style_and_data(self, dose_histogram, x_range=None,
-                           baseline=None, reference=None):
-        """."""
+        x_range : 
+        """
 
         # 
         self.dose_histogram = dose_histogram
@@ -101,7 +126,7 @@ class DVHCompareWidget(QWidget):
         # Set the graph title
         self.plot_graph.setTitle("<span style='color: #FFAE42; "
                                  f"font-size: 11pt'>{self.delta}"
-                                 "dose/fx: %0.2f</span>, "
+                                 "dose: %0.2f</span>, "
                                  "<span style='color: #FFAE42; "
                                  "font-size: 11pt'>vRel: %0.1f</span>"
                                  % (0, 0.0))
@@ -177,23 +202,6 @@ class DVHCompareWidget(QWidget):
         self.parent.minimum_ledit.setText(str(
             round(dosimetrics[event.name()]['min'], 2)))
 
-    def reset_dvh(self):
-        """."""
-
-        self.plot_graph.clear()
-        self.plot_graph.getPlotItem().hideAxis('bottom')
-        self.plot_graph.getPlotItem().hideAxis('top')
-        self.plot_graph.getPlotItem().hideAxis('left')
-        self.plot_graph.getPlotItem().hideAxis('right')
-        self.plot_graph.setTitle(None)
-        if hasattr(self, 'crosshair_update'):
-            delattr(self, 'crosshair_update')
-        self.parent.segment_ledit.clear()
-        self.parent.mean_ledit.clear()
-        self.parent.std_ledit.clear()
-        self.parent.maximum_ledit.clear()
-        self.parent.minimum_ledit.clear()
-
     def select_dvh_curves_from_parent(self, event):
         """."""
 
@@ -228,7 +236,7 @@ class DVHCompareWidget(QWidget):
                 self.plot_graph.setTitle(
                     "<span style='color: #FFAE42; "
                     f"font-size: 11pt'>{self.delta}"
-                    "dose/fx: %0.2f</span>, "
+                    "dose: %0.2f</span>, "
                     "<span style='color: #FFAE42; "
                     "font-size: 11pt'>vRel: %0.1f</span>"
                     % (mouse_point.x(), mouse_point.y()))
@@ -239,7 +247,7 @@ class DVHCompareWidget(QWidget):
                 self.plot_graph.setTitle(
                     "<span style='color: #FFAE42; "
                     f"font-size: 11pt'>{self.delta}"
-                    "dose/fx: %0.2f</span>, "
+                    "dose: %0.2f</span>, "
                     "<span style='color: #FFAE42; "
                     "font-size: 11pt'>vRel: %0.1f</span>"
                     % (0, 0.0))
@@ -255,7 +263,7 @@ class DVHCompareWidget(QWidget):
 
             pen = mkPen(color=self.segment_styles[segment][0],
                         style=self.segment_styles[segment][1],
-                        width=1)
+                        width=2)
 
             plot = self.plot_graph.plot(
                 self.dose_histogram['evaluation_points'],
@@ -265,3 +273,20 @@ class DVHCompareWidget(QWidget):
             plot.sigClicked.connect(self.select_dvh_curves_from_parent)
             self.plot_graph.scene().sigMouseClicked.connect(
                 self.unselect_dvh_curves_from_parent)
+
+    def reset_dvh(self):
+        """."""
+
+        self.plot_graph.clear()
+        self.plot_graph.getPlotItem().hideAxis('bottom')
+        self.plot_graph.getPlotItem().hideAxis('top')
+        self.plot_graph.getPlotItem().hideAxis('left')
+        self.plot_graph.getPlotItem().hideAxis('right')
+        self.plot_graph.setTitle(None)
+        if hasattr(self, 'crosshair_update'):
+            delattr(self, 'crosshair_update')
+        self.parent.segment_ledit.clear()
+        self.parent.mean_ledit.clear()
+        self.parent.std_ledit.clear()
+        self.parent.maximum_ledit.clear()
+        self.parent.minimum_ledit.clear()

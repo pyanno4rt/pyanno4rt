@@ -132,30 +132,6 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
 
         return cls(**dictionary)
 
-    def reverse(
-            self,
-            value):
-        """
-        Reverse the component value(s) to the outcome value(s).
-
-        Parameters
-        ----------
-        value : int, float, tuple or list
-            Component value(s).
-
-        Returns
-        -------
-        float or tuple
-            Outcome value(s).
-        """
-
-        # Check if the passed value is tuple or a list
-        if isinstance(value, (tuple, list)):
-
-            return tuple(value)
-
-        return value
-
     def compute_value(
             self,
             dose,

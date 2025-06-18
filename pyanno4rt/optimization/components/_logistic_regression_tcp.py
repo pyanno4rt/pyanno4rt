@@ -5,7 +5,7 @@
 # %% External package import
 
 from copy import deepcopy
-from numpy import array, dot
+from numpy import array, dot, exp
 
 # %% Internal package import
 
@@ -13,7 +13,7 @@ from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.logistic import LogisticRegressionModel
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import filter_dict, inverse_sigmoid, sigmoid
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -78,12 +78,6 @@ class LogisticRegressionTCP(MachineLearningComponent):
 
     parameter_value : list
         Logistic regression model coefficients.
-
-    intercept_value : None or list
-        Logistic regression model intercept.
-
-    bounds : list
-        See 'Parameters'. Transformed by the inverse sigmoid function.
     """
 
     def __init__(
@@ -118,9 +112,6 @@ class LogisticRegressionTCP(MachineLearningComponent):
         # Set the input arguments
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
-
-        # Initialize the intercept value
-        self.intercept_value = None
 
     def to_dict(self):
         """Serialize the component into a dictionary."""
@@ -199,34 +190,6 @@ class LogisticRegressionTCP(MachineLearningComponent):
 
         # Get the logistic regression model parameters
         self.parameter_value = list(self.model.prediction_model.coef_[0])
-        self.intercept_value = list(self.model.prediction_model.intercept_)
-
-        # Transform the component bounds
-        self.bounds = sorted(-inverse_sigmoid(bound) for bound in self.bounds)
-
-    def reverse(
-            self,
-            value):
-        """
-        Reverse the component value(s) to the outcome value(s).
-
-        Parameters
-        ----------
-        value : int, float, tuple or list
-            Component value(s).
-
-        Returns
-        -------
-        float or tuple
-            Outcome value(s).
-        """
-
-        # Check if the passed value is tuple or a list
-        if isinstance(value, (tuple, list)):
-
-            return tuple(1-val for val in sigmoid(value, 1, 0))
-
-        return 1-sigmoid(value, 1, 0)
 
     def compute_value(
             self,
@@ -256,9 +219,8 @@ class LogisticRegressionTCP(MachineLearningComponent):
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        return -(
-            (dot(preprocessed_features, self.parameter_value)
-             + self.intercept_value)[0])
+        return -self.model.predict(
+            preprocessed_features, self.model.prediction_model)
 
     def compute_gradient(
             self,
@@ -287,8 +249,17 @@ class LogisticRegressionTCP(MachineLearningComponent):
         # Compute the feature vector
         raw_features = feature_calculator.featurize(dose, segment)
 
+        # Preprocess the feature vector
+        preprocessed_features = self.model.preprocess(raw_features)
+
+        # Get the model coefficients
+        coefficients = array(self.parameter_value)
+
         # Get the model gradient
-        model_gradient = -array(self.parameter_value)
+        model_gradient = -(
+            exp(dot(preprocessed_features, coefficients))
+            / (1+exp(dot(preprocessed_features, coefficients)))**2
+            * coefficients)
 
         # Compute the preprocessing pipeline gradient
         preprocessing_gradient = (

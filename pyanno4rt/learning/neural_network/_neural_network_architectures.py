@@ -17,8 +17,7 @@ def build_vanilla_iocnn(
         input_shape,
         output_shape,
         bias,
-        hyperparameters,
-        squash_output):
+        hyperparameters):
     """
     Build the vanilla input-output convex neural network architecture.
 
@@ -30,11 +29,11 @@ def build_vanilla_iocnn(
     output_shape : int
         Shape of the output labels.
 
+    bias : int or float
+        Initial network bias.
+
     hyperparameters : dict
         Dictionary with the values of the hyperparameters.
-
-    squash_output : bool
-        Indicator for the squashing of the network output.
 
     Returns
     -------
@@ -63,21 +62,11 @@ def build_vanilla_iocnn(
             activation=hyperparameters['hidden_activation'][layer],
             kernel_constraint=non_neg())(hidden)
 
-    # Check if the network output should be squashed
-    if squash_output:
-
-        # Apply the custom output activation
-        activation = hyperparameters['output_activation']
-
-    else:
-
-        # Apply no output activation
-        activation = None
-
     # Define the output layer
     outputs = Dense(
-        units=output_shape, activation=activation, kernel_constraint=non_neg(),
-        bias_initializer=Constant(log(bias)))(hidden)
+        units=output_shape, activation=hyperparameters['output_activation'],
+        kernel_constraint=non_neg(), bias_initializer=Constant(log(bias))
+        )(hidden)
 
     return Model(inputs, outputs)
 
@@ -86,8 +75,7 @@ def build_vanilla_nn(
         input_shape,
         output_shape,
         bias,
-        hyperparameters,
-        squash_output):
+        hyperparameters):
     """
     Build the vanilla neural network architecture.
 
@@ -99,11 +87,11 @@ def build_vanilla_nn(
     output_shape : int
         Shape of the output labels.
 
+    bias : int or float
+        Initial network bias.
+
     hyperparameters : dict
         Dictionary with the values of the hyperparameters.
-
-    squash_output : bool
-        Indicator for the squashing of the network output.
 
     Returns
     -------
@@ -131,20 +119,9 @@ def build_vanilla_nn(
             units=hyperparameters['hidden_neuron_number'][layer],
             activation=hyperparameters['hidden_activation'][layer])(hidden)
 
-    # Check if the network output should be squashed
-    if squash_output:
-
-        # Apply the custom output activation
-        activation = hyperparameters['output_activation']
-
-    else:
-
-        # Apply no output activation
-        activation = None
-
     # Define the output layer
     outputs = Dense(
-        units=output_shape, activation=activation,
+        units=output_shape, activation=hyperparameters['output_activation'],
         bias_initializer=Constant(log(bias)))(hidden)
 
     return Model(inputs, outputs)

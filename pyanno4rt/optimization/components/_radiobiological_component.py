@@ -357,12 +357,6 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         """Deserialize the component from a dictionary."""
 
     @abstractmethod
-    def reverse(
-            self,
-            value):
-        """Reverse the component value(s) to the outcome value(s)."""
-
-    @abstractmethod
     def compute_value(
             self,
             dose,

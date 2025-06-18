@@ -14,7 +14,7 @@ from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.neural_network import NeuralNetworkModel
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import filter_dict, inverse_sigmoid, sigmoid
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -78,9 +78,6 @@ class NeuralNetworkNTCP(MachineLearningComponent):
 
     parameter_value : list
         Neural network model parameters.
-
-    bounds : list
-        See 'Parameters'. Transformed by the inverse sigmoid function.
     """
 
     def __init__(
@@ -203,28 +200,6 @@ class NeuralNetworkNTCP(MachineLearningComponent):
                 for layer in self.model.prediction_model.get_weights())
             for weight in weights)
 
-        # Transform the component bounds
-        self.bounds = sorted(inverse_sigmoid(bound) for bound in self.bounds)
-
-    def reverse(
-            self,
-            value):
-        """
-        Reverse the component value(s) to the outcome value(s).
-
-        Parameters
-        ----------
-        value : int, float, tuple or list
-            Component value(s).
-
-        Returns
-        -------
-        float or tuple
-            Outcome value(s).
-        """
-
-        return sigmoid(value, 1, 0)
-
     def compute_value(
             self,
             dose,
@@ -255,7 +230,7 @@ class NeuralNetworkNTCP(MachineLearningComponent):
             self.model.preprocess(raw_features), float64)
 
         return self.model.predict(
-            preprocessed_features, self.model.optimization_model)
+            preprocessed_features, self.model.prediction_model)
 
     def compute_gradient(
             self,
@@ -295,7 +270,7 @@ class NeuralNetworkNTCP(MachineLearningComponent):
             tape.watch(preprocessed_features)
 
             # Compute the model output from the features
-            output = self.model.optimization_model(preprocessed_features)
+            output = self.model.prediction_model(preprocessed_features)
 
             # Compute the model gradient
             model_gradient = array(

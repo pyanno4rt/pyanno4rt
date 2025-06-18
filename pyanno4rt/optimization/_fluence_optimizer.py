@@ -475,8 +475,9 @@ class FluenceOptimizer():
                     + get_radiobiological_objectives(segmentation)):
 
                 # Get the final (N)TCP prediction value
-                value = component.reverse(
-                    problem.tracker[component.track_id][-1]/component.weight)
+                value = (
+                    (-1)**('NTCP' not in component.name)
+                    * problem.tracker[component.track_id][-1]/component.weight)
 
                 # Log a message about the prediction value
                 logger.display_info(
@@ -492,8 +493,9 @@ class FluenceOptimizer():
                 component.data_model_handler.process_feature_history()
 
                 # Get the final (N)TCP prediction value
-                value = component.reverse(
-                    problem.tracker[component.track_id][-1]/component.weight)
+                value = (
+                    (-1)**('NTCP' not in component.name)
+                    * problem.tracker[component.track_id][-1]/component.weight)
 
                 # Add the prediction value to the datahub
                 hub.model_outcomes[

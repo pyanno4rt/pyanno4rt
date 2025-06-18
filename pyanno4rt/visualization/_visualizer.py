@@ -4,8 +4,8 @@
 
 # %% External package import
 
-from numpy import divide
 from math import isnan
+from numpy import divide
 from pandas import DataFrame
 from pyqtgraph import mkQApp
 from PyQt5.QtCore import QModelIndex
@@ -15,29 +15,39 @@ from PyQt5.QtWidgets import (
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.tools import (
-    get_conventional_constraints, get_conventional_objectives,
-    get_machine_learning_constraints, get_machine_learning_objectives,
-    get_radiobiological_constraints, get_radiobiological_objectives)
+    get_all_constraints, get_all_objectives, get_conventional_constraints,
+    get_conventional_objectives, get_machine_learning_constraints,
+    get_machine_learning_objectives, get_radiobiological_constraints,
+    get_radiobiological_objectives)
 from pyanno4rt.visualization.assets import resources_rc
-from pyanno4rt.visualization._custom_styles import pbutton_composer
 from pyanno4rt.visualization.custom_widgets import (
-    DVHWidget, GraphWidget, SliceWidget)
-from pyanno4rt.visualization.design.visualizer import Ui_vis_window
+    ComponentGraphWidget, DVHGraphWidget, OutcomeGraphWidget, SliceWidget)
+from pyanno4rt.visualization.design.visualizer import Ui_visualization_window
 from pyanno4rt.visualization.static import (
-    DosimetricsTable, DVHGraph, IterGraph, MetricsGraph, MetricsTable,
-    NTCPGraph, PermutationImportanceBoxplot)
+    ComponentGraph, DosimetricsTable, DVHGraph, MetricsGraph, MetricsTable,
+    OutcomeGraph, PermutationImportanceBoxplot)
+from pyanno4rt.visualization._custom_styles import pbutton_composer
 
 # %% Class definition
 
 
-class Visualizer(QMainWindow, Ui_vis_window):
+class Visualizer(QMainWindow, Ui_visualization_window):
     """
     Visualizer class.
 
     This class provides a visual analysis tool as standalone or for the \
     graphical user interface, including different types of visualizations.
+
+    Parameters
+    ----------
+    treatment_plan : 
+
+    parent : 
+
+    Attributes
+    ----------
+    
     """
 
     def __init__(
@@ -57,36 +67,36 @@ class Visualizer(QMainWindow, Ui_vis_window):
         # Set the application style
         self.application.setStyle('Fusion')
 
-        # Get the application from the argument
+        # Get the parent window
         self.parent = parent
 
         # Initialize the base plan
         self.plan = treatment_plan
 
         # Initialize the widgets
-        self.iter_widget = GraphWidget(self)
-        self.ntcp_widget = GraphWidget(self)
+        self.comp_widget = ComponentGraphWidget(self)
+        self.outc_widget = OutcomeGraphWidget(self)
         self.slice_widget = SliceWidget(self)
-        self.dvh_widget = DVHWidget(self)
+        self.dvh_widget = DVHGraphWidget(self)
 
         # Set the stylesheets
         self.set_styles({
-            'open_comp_vals_pbutton': pbutton_composer,
-            'open_outc_vals_pbutton': pbutton_composer,
+            'open_comp_graph_pbutton': pbutton_composer,
+            'open_outc_graph_pbutton': pbutton_composer,
             'open_feat_vals_pbutton': pbutton_composer,
             'open_metrics_graphs_pbutton': pbutton_composer,
             'open_metrics_tables_pbutton': pbutton_composer,
             'open_perm_pbutton': pbutton_composer,
-            'open_dvh_pbutton': pbutton_composer,
+            'open_dvh_graph_pbutton': pbutton_composer,
             'open_ind_pbutton': pbutton_composer,
             'open_image_pbutton': pbutton_composer,
             'close_visualizer_pbutton': pbutton_composer})
 
         # Add the widgets to the layouts
-        self.comp_vals_top_widget_layout.insertWidget(0, self.iter_widget)
-        self.outc_vals_top_widget_layout.insertWidget(0, self.ntcp_widget)
+        self.comp_graph_plot_widget_layout.insertWidget(0, self.comp_widget)
+        self.outc_graph_plot_widget_layout.insertWidget(0, self.outc_widget)
         self.image_top_widget_layout.insertWidget(0, self.slice_widget)
-        self.dvh_top_widget_layout.insertWidget(0, self.dvh_widget)
+        self.dvh_graph_plot_widget_layout.insertWidget(0, self.dvh_widget)
 
         # Set the indicator table as read-only
         self.ind_table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -96,7 +106,7 @@ class Visualizer(QMainWindow, Ui_vis_window):
 
     def mousePressEvent(
             self,
-            event):
+            _):
         """
         Set the mouse press event (overwrites the default event).
 
@@ -169,15 +179,15 @@ class Visualizer(QMainWindow, Ui_vis_window):
 
         # Loop over the field names with 'clicked' events
         for key, value in {
-                'open_comp_vals_pbutton': self.open_iter_graph,
-                'open_outc_vals_pbutton': self.open_ntcp_graph,
-                'open_feat_vals_pbutton': self.open_iter_graph,
+                'open_comp_graph_pbutton': self.open_component_graph,
+                'open_outc_graph_pbutton': self.open_outcome_graph,
+                'open_feat_vals_pbutton': self.open_component_graph,
                 'open_metrics_graphs_pbutton': self.open_metrics_graph,
                 'open_metrics_tables_pbutton': self.open_metrics_table,
                 'open_perm_pbutton': self.open_permutation_importance_boxplot,
-                'open_dvh_pbutton': self.open_dvh_graph,
+                'open_dvh_graph_pbutton': self.open_dvh_graph,
                 'open_ind_pbutton': self.open_dosimetrics_table,
-                'open_image_pbutton': self.open_iter_graph,
+                'open_image_pbutton': self.open_component_graph,
                 'close_visualizer_pbutton': self.close
                 }.items():
 
@@ -205,25 +215,30 @@ class Visualizer(QMainWindow, Ui_vis_window):
         """Disable irrelevant tabs."""
 
         # Get the datahub
-        hub = Datahub()
+        (computed_tomography, segmentation, optimization, model_evaluations,
+         model_inspections, dose_histogram, dosimetrics, state) = (
+             getattr(self.plan.datahub, attribute) for attribute in (
+                 'computed_tomography', 'segmentation', 'optimization',
+                 'model_evaluations', 'model_inspections', 'dose_histogram',
+                 'dosimetrics', 'state'))
 
         # Check if segmentation data is available
-        if hub.segmentation is not None:
+        if segmentation is not None:
 
             # Get all conventional components
             cv_components = (
-                get_conventional_constraints(hub.segmentation)
-                + get_conventional_objectives(hub.segmentation))
+                get_conventional_constraints(segmentation)
+                + get_conventional_objectives(segmentation))
 
             # Get the machine learning model-based components
             ml_components = (
-                get_machine_learning_constraints(hub.segmentation)
-                + get_machine_learning_objectives(hub.segmentation))
+                get_machine_learning_constraints(segmentation)
+                + get_machine_learning_objectives(segmentation))
 
             # Get the radiobiological components
             rb_components = (
-                get_radiobiological_constraints(hub.segmentation)
-                + get_radiobiological_objectives(hub.segmentation))
+                get_radiobiological_constraints(segmentation)
+                + get_radiobiological_objectives(segmentation))
 
         else:
 
@@ -231,77 +246,109 @@ class Visualizer(QMainWindow, Ui_vis_window):
             cv_components, ml_components, rb_components = (), (), ()
 
         # Check if the iteration plot buttons should be disabled
-        if ((hub.state < 3 or
-            (hub.optimization is not None and
-             ('problem' not in hub.optimization or
-              not hasattr(hub.optimization['problem'], 'tracker')
+        if (state < 3 or
+            (optimization is not None and
+             ('problem' not in optimization or
+              not hasattr(optimization['problem'], 'tracker')
               or all(value == [] for value
-                     in hub.optimization['problem'].tracker.values()))))):
-            self.open_comp_vals_pbutton.setEnabled(False)
-            self.open_outc_vals_pbutton.setEnabled(False)
+                     in optimization['problem'].tracker.values())))):
+            self.open_comp_graph_pbutton.setEnabled(False)
+            self.open_outc_graph_pbutton.setEnabled(False)
 
         # Check if the iteration values button should be disabled
         if (not any(objective.display for objective in (
                 *cv_components, *rb_components, *ml_components))):
-            self.open_comp_vals_pbutton.setEnabled(False)
+            self.open_comp_graph_pbutton.setEnabled(False)
 
         # Check if the (N)TCP values button should be disabled
         if (not any(objective.display for objective in (
                 rb_components + ml_components))):
-            self.open_outc_vals_pbutton.setEnabled(False)
+            self.open_outc_graph_pbutton.setEnabled(False)
 
         # Check if the feature iterations button should be disabled
-        if ((hub.state < 3 or
-            (hub.optimization is not None and
-             ('problem' not in hub.optimization or
-              (not hasattr(hub.optimization['problem'], 'tracker')
+        if (state < 3 or
+            (optimization is not None and
+             ('problem' not in optimization or
+              (not hasattr(optimization['problem'], 'tracker')
                or all(value == [] for value
-                      in hub.optimization['problem'].tracker.values()))))
-             or all(objective.model_parameters.write_features is False
-                    for objective in ml_components))):
+                      in optimization['problem'].tracker.values()))))
+            or all(objective.model_parameters.write_features is False
+                   for objective in ml_components)):
             self.open_feat_vals_pbutton.setEnabled(False)
 
         # Check if the metrics tables and graphs buttons should be disabled
-        if ((hub.state < 2 or
-             (not hub.model_evaluations
-              or len(hub.model_evaluations) == 0))):
+        if (state < 2 or
+            (model_evaluations is None
+             or len(model_evaluations) == 0)):
             self.open_metrics_graphs_pbutton.setEnabled(False)
             self.open_metrics_tables_pbutton.setEnabled(False)
 
         # Check if the permutation importance button should be disabled
-        if ((hub.state < 2 or
-             (not hub.model_inspections
-              or len(hub.model_inspections) == 0))):
+        if (state < 2 or
+            (model_inspections is None
+             or len(model_inspections) == 0)):
             self.open_perm_pbutton.setEnabled(False)
 
         # Check if the plan evaluation buttons should be disabled
-        if ((hub.state < 4 or
-             (not hub.dose_histogram and not hub.dosimetrics))):
-            self.open_dvh_pbutton.setEnabled(False)
+        if (state < 4 or
+                (dose_histogram is None and dosimetrics is None)):
+            self.open_dvh_graph_pbutton.setEnabled(False)
             self.open_ind_pbutton.setEnabled(False)
 
         # Check if the CT/dose slice button should be disabled
-        if ((hub.state < 1 or
-             not hub.computed_tomography or not hub.segmentation)):
+        if (state < 1 or
+                computed_tomography is None or segmentation is None):
             self.open_image_pbutton.setEnabled(False)
 
-    def open_iter_graph(self):
+    def open_component_graph(self):
         """Open the iterative component value graph."""
 
+        # Set up the layout parameters
+        inputs = {
+            key: value for key, value in (
+                ('title', self.comp_title_ledit.text()),
+                ('titlesize', self.comp_titlesize_sbox.value()),
+                ('xlabel', self.comp_x_ledit.text()),
+                ('ylabel', self.comp_y_ledit.text()),
+                ('labelsize', self.comp_labelsize_sbox.value()),
+                ('linewidth', self.comp_linewidth_sbox.value()),
+                ('ticksize', self.comp_ticksize_sbox.value()),
+                ('legendsize', self.comp_legendsize_sbox.value()),
+                ('background', self.comp_background_cbox.currentText()),
+                ('gridlines', self.comp_gridlines_check.isChecked()),
+                ('gridcolor', self.comp_gridcolor_cbox.currentText()))
+            if value != ''}
+
         # Initialize the iterative component value graph
-        plotter = IterGraph()
+        plotter = ComponentGraph(**inputs)
 
         # Open the view
-        plotter.view()
+        plotter.view(self.plan)
 
-    def open_ntcp_graph(self):
-        """Open the (N)TCP graph."""
+    def open_outcome_graph(self):
+        """Open the iterative outcome value graph."""
 
-        # Initialize the (N)TCP graph
-        plotter = NTCPGraph()
+        # Set up the layout parameters
+        inputs = {
+            key: value for key, value in (
+                ('title', self.outc_title_ledit.text()),
+                ('titlesize', self.outc_titlesize_sbox.value()),
+                ('xlabel', self.outc_x_ledit.text()),
+                ('ylabel', self.outc_y_ledit.text()),
+                ('labelsize', self.outc_labelsize_sbox.value()),
+                ('linewidth', self.outc_linewidth_sbox.value()),
+                ('ticksize', self.outc_ticksize_sbox.value()),
+                ('legendsize', self.outc_legendsize_sbox.value()),
+                ('background', self.outc_background_cbox.currentText()),
+                ('gridlines', self.outc_gridlines_check.isChecked()),
+                ('gridcolor', self.outc_gridcolor_cbox.currentText()))
+            if value != ''}
+
+        # Initialize the iterative outcome value graph
+        plotter = OutcomeGraph(**inputs)
 
         # Open the view
-        plotter.view()
+        plotter.view(self.plan)
 
     def open_metrics_graph(self):
         """Open the metrics graph."""
@@ -333,11 +380,27 @@ class Visualizer(QMainWindow, Ui_vis_window):
     def open_dvh_graph(self):
         """Open the DVH graph."""
 
+        # Set up the layout parameters
+        inputs = {
+            key: value for key, value in (
+                ('title', self.dvh_title_ledit.text()),
+                ('titlesize', self.dvh_titlesize_sbox.value()),
+                ('xlabel', self.dvh_x_ledit.text()),
+                ('ylabel', self.dvh_y_ledit.text()),
+                ('labelsize', self.dvh_labelsize_sbox.value()),
+                ('linewidth', self.dvh_linewidth_sbox.value()),
+                ('ticksize', self.dvh_ticksize_sbox.value()),
+                ('legendsize', self.dvh_legendsize_sbox.value()),
+                ('background', self.dvh_background_cbox.currentText()),
+                ('gridlines', self.dvh_gridlines_check.isChecked()),
+                ('gridcolor', self.dvh_gridcolor_cbox.currentText()))
+            if value != ''}
+
         # Initialize the DVH graph
-        plotter = DVHGraph()
+        plotter = DVHGraph(**inputs)
 
         # Open the view
-        plotter.view()
+        plotter.view(self.plan)
 
     def open_dosimetrics_table(self):
         """Open the dosimetrics table."""
@@ -374,31 +437,43 @@ class Visualizer(QMainWindow, Ui_vis_window):
         # Set the initial scroll bar value
         self.slice_selection_sbar.setValue(int((plane_depth-1)/2))
 
-    def add_iter_graphs(self):
-        """."""
+    def add_component_tracks(self):
+        """Add the component tracks to the widget."""
 
-        # 
-        self.iter_widget.reset_graph()
+        # Reset the component graph
+        self.comp_widget.reset_graph()
+
+        # Get the segmentation and optimization data
+        segmentation, optimization = (
+            getattr(self.plan.datahub, attribute) for attribute in (
+                'segmentation', 'optimization'))
+
+        # Get all optimization components
+        components = (
+            get_all_objectives(segmentation)
+            + get_all_constraints(segmentation))
 
         # Check if the plan has already been optimized
         if (self.plan.fluence_optimizer is not None
                 and 'optimized_dose' in self.plan.datahub.optimization
                 and self.plan.datahub.state >= 3):
 
-            # 
-            self.iter_widget.add_style_and_data(
-                self.plan.datahub.optimization['problem'].tracker)
+            # Add style and data
+            self.comp_widget.add_style_and_data(
+                {component.track_id: (
+                    optimization['problem'].tracker[component.track_id])
+                    for component in components if component.display})
 
-            # 
-            self.iter_widget.update_graph()
+            # Update the component graph
+            self.comp_widget.update_graph()
 
-    def add_outcome_graphs(self):
-        """."""
+    def add_outcome_tracks(self):
+        """Add the outcome tracks to the widget."""
 
-        # 
-        self.ntcp_widget.reset_graph()
+        # Reset the outcome graph
+        self.outc_widget.reset_graph()
 
-        # 
+        # Get the segmentation data
         segmentation = self.plan.datahub.segmentation
 
         # Get the outcome model-based components
@@ -408,20 +483,23 @@ class Visualizer(QMainWindow, Ui_vis_window):
             + get_radiobiological_constraints(segmentation)
             + get_radiobiological_objectives(segmentation))
 
-        # Check if machine learning components have already been modeled
-        if len(components) > 0:
+        # Check if the plan has already been optimized
+        if (self.plan.fluence_optimizer is not None
+                and 'optimized_dose' in self.plan.datahub.optimization
+                and self.plan.datahub.state >= 3) and len(components) > 0:
 
-            # 
+            # Get the tracker
             tracker = self.plan.datahub.optimization['problem'].tracker
 
-            # 
-            self.ntcp_widget.add_style_and_data(
-                {component.track_id: component.reverse(
-                    divide(tracker[component.track_id], component.weight))
+            # Add style and data
+            self.outc_widget.add_style_and_data(
+                {component.track_id: (
+                    (-1)**('NTCP' not in component.name)
+                    * divide(tracker[component.track_id], component.weight))
                  for component in components})
 
-            # 
-            self.ntcp_widget.update_graph()
+            # Update the outcome graph
+            self.outc_widget.update_graph()
 
     def add_images(self):
         """."""
@@ -454,23 +532,22 @@ class Visualizer(QMainWindow, Ui_vis_window):
                 # Update the slice widget images
                 self.slice_widget.update_images()
 
-    def add_dvh(self):
-        """."""
+    def add_dvh_values(self):
+        """Add the DVH values to the widget."""
 
-        # Reset the DVH
-        self.dvh_widget.reset_dvh()
+        # Reset the DVH graph
+        self.dvh_widget.reset_graph()
 
         # Check if the plan has already been evaluated
-        if (all(getattr(self.plan, unit) is not None for unit in (
-                'dose_histogram', 'dosimetrics'))
+        if (getattr(self.plan, 'dose_histogram') is not None
                 and self.plan.datahub.state == 4):
 
-            # Add style and input data to the DVH widget
+            # Add style and data
             self.dvh_widget.add_style_and_data(
                 self.plan.datahub.dose_histogram)
 
-            # Update the DVH plot
-            self.dvh_widget.update_dvh()
+            # Update the DVH graph
+            self.dvh_widget.update_graph()
 
     def add_indicators(self):
         """."""
@@ -540,23 +617,26 @@ class Visualizer(QMainWindow, Ui_vis_window):
     def launch(self):
         """Launch the visualizer."""
 
+        # Log a message about the visualizer launch
+        self.plan.logger.display_info("Launching visualizer ...")
+
         # Set the window position
         self.position()
 
         # Disable irrelevant tabs
         self.disable_tabs()
 
-        # 
-        self.add_iter_graphs()
+        # Add the component tracks
+        self.add_component_tracks()
 
-        # 
-        self.add_outcome_graphs()
+        # Add the outcome tracks
+        self.add_outcome_tracks()
 
         # Add the CT/dose images
         self.add_images()
 
-        # Add the DVH curves
-        self.add_dvh()
+        # Add the DVH values
+        self.add_dvh_values()
 
         # Add the plan quality indicators
         self.add_indicators()

@@ -28,7 +28,7 @@ from pyanno4rt.gui._custom_styles import (
 from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.main_window import Ui_main_window
 from pyanno4rt.gui.custom_widgets import (
-    CheckableComboBox, DVHWidget, SliceWidget)
+    CheckableComboBox, DVHGraphWidget, SliceWidget)
 from pyanno4rt.gui.windows import (
     CompareWindow, InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow,
     SplashScreenWindow, TreeWindow)
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Initialize the custom widgets
         self.slice_widget = SliceWidget(self)
-        self.dvh_widget = DVHWidget(self)
+        self.dvh_widget = DVHGraphWidget(self)
 
         # Insert the custom widgets into the viewer layouts
         self.tab_slices_layout.insertWidget(0, self.slice_widget)
@@ -764,7 +764,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.slice_widget.reset_images()
 
             # Reset the DVH widget
-            self.dvh_widget.reset_dvh()
+            self.dvh_widget.reset_graph()
 
             # Update the log output
             self.log_window.update_log_output()
@@ -876,7 +876,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                         instance.datahub.dose_histogram)
 
                     # Update the DVH plot
-                    self.dvh_widget.update_dvh()
+                    self.dvh_widget.update_graph()
 
                     # Set the status bar to plan-ready
                     self.status_bar.showMessage(
@@ -923,7 +923,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.slice_widget.reset_images()
 
             # Reset the DVH widget
-            self.dvh_widget.reset_dvh()
+            self.dvh_widget.reset_graph()
 
             # Reset the status bar to the initial message
             self.status_bar.showMessage(
@@ -1163,7 +1163,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.slice_widget.reset_images()
 
         # Reset the DVH widget
-        self.dvh_widget.reset_dvh()
+        self.dvh_widget.reset_graph()
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1638,7 +1638,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.slice_widget.reset_images()
 
         # Reset the DVH widget
-        self.dvh_widget.reset_dvh()
+        self.dvh_widget.reset_graph()
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor((
@@ -1937,7 +1937,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             raise exception
 
         # Reset the DVH widget
-        self.dvh_widget.reset_dvh()
+        self.dvh_widget.reset_graph()
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))
@@ -2226,7 +2226,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.slice_widget.update_images()
 
         # Reset the DVH widget
-        self.dvh_widget.reset_dvh()
+        self.dvh_widget.reset_graph()
 
         # Show the CT/Dose tab
         self.viewer_widget.setCurrentIndex(0)
@@ -2330,7 +2330,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.slice_widget.update_images()
 
         # Reset the DVH widget
-        self.dvh_widget.reset_dvh()
+        self.dvh_widget.reset_graph()
 
         # Update the log output
         self.log_window.update_log_output()
@@ -2410,7 +2410,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.slice_widget.update_images()
 
         # Reset the DVH widget
-        self.dvh_widget.reset_dvh()
+        self.dvh_widget.reset_graph()
 
         # Show the CT/Dose tab
         self.viewer_widget.setCurrentIndex(0)
@@ -2480,14 +2480,14 @@ class MainWindow(QMainWindow, Ui_main_window):
         """Update the GUI after success of the evaluation."""
 
         # Reset the DVH widget
-        self.dvh_widget.reset_dvh()
+        self.dvh_widget.reset_graph()
 
         # Add style and input data to the DVH widget
         self.dvh_widget.add_style_and_data(
             self.plans[self.plan_ledit.text()].datahub.dose_histogram)
 
         # Update the DVH plot
-        self.dvh_widget.update_dvh()
+        self.dvh_widget.update_graph()
 
         # Update the log output
         self.log_window.update_log_output()

@@ -76,9 +76,6 @@ class DecisionTreeTCP(MachineLearningComponent):
 
     parameter_value : list
         Decision tree model parameters.
-
-    bounds : list
-        See 'Parameters'.
     """
 
     def __init__(
@@ -192,33 +189,6 @@ class DecisionTreeTCP(MachineLearningComponent):
         # Get the decision tree model parameters
         self.parameter_value = []
 
-        # Transform the component bounds
-        self.bounds = sorted(-bound for bound in self.bounds)
-
-    def reverse(
-            self,
-            value):
-        """
-        Reverse the component value(s) to the outcome value(s).
-
-        Parameters
-        ----------
-        value : int, float, tuple or list
-            Component value(s).
-
-        Returns
-        -------
-        float or tuple
-            Outcome value(s).
-        """
-
-        # Check if the passed value is tuple or a list
-        if isinstance(value, (tuple, list)):
-
-            return tuple(-val for val in value)
-
-        return -value
-
     def compute_value(
             self,
             dose,
@@ -281,7 +251,7 @@ class DecisionTreeTCP(MachineLearningComponent):
         preprocessed_features = self.model.preprocess(raw_features)
 
         # Compute the model gradient
-        model_gradient = self.model.optimization_model.gradientize(
+        model_gradient = -self.model.optimization_model.gradientize(
             preprocessed_features)
 
         # Compute the preprocessing pipeline gradient

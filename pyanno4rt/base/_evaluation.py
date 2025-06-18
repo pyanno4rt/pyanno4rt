@@ -42,7 +42,8 @@ class Evaluation():
     display_segments : list, default=[]
         Names of the segments to be displayed.
 
-        .. note:: If the default value is used, all segments will be displayed.
+        .. note:: If the default value is used, only the segments associated \
+            with optimization components will be displayed.
 
     display_metrics : list, default=[]
         Names of the evaluation metrics to be displayed.

@@ -13,7 +13,8 @@ from pyqtgraph import mkPen
 
 from pyanno4rt.gui._custom_styles import cbox, sbox, pbutton_composer
 from pyanno4rt.gui.compilations.compare_window import Ui_compare_window
-from pyanno4rt.gui.custom_widgets import DVHCompareWidget, SliceCompareWidget
+from pyanno4rt.gui.custom_widgets import (
+    DVHGraphCompareWidget, SliceCompareWidget)
 from pyanno4rt.tools import get_constraint_segments, get_objective_segments
 
 # %% Class definition
@@ -49,9 +50,9 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.difference_dose_slice_widget = SliceCompareWidget(self, 'seismic')
 
         # 
-        self.baseline_dvh_widget = DVHCompareWidget(self)
-        self.reference_dvh_widget = DVHCompareWidget(self)
-        self.difference_dvh_widget = DVHCompareWidget(self)
+        self.baseline_dvh_widget = DVHGraphCompareWidget(self)
+        self.reference_dvh_widget = DVHGraphCompareWidget(self)
+        self.difference_dvh_widget = DVHGraphCompareWidget(self)
 
         # 
         self.baseline_dose_layout.insertWidget(
@@ -120,10 +121,10 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             self.reference_dose_slice_widget.viewbox)
 
         # 
-        self.baseline_dvh_widget.plot_graph.getPlotItem().vb.setXLink(
-            self.reference_dvh_widget.plot_graph.getPlotItem().vb)
-        self.baseline_dvh_widget.plot_graph.getPlotItem().vb.setYLink(
-            self.reference_dvh_widget.plot_graph.getPlotItem().vb)
+        self.baseline_dvh_widget.plot_widget.getPlotItem().vb.setXLink(
+            self.reference_dvh_widget.plot_widget.getPlotItem().vb)
+        self.baseline_dvh_widget.plot_widget.getPlotItem().vb.setYLink(
+            self.reference_dvh_widget.plot_widget.getPlotItem().vb)
 
     def connect_signals(self):
         """Connect the fields with the event signals."""
@@ -380,18 +381,18 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             for item in items:
                 pen = item.curve.opts['pen']
                 item.curve.setPen(mkPen(
-                    color=pen.color(), style=pen.style(), width=1))
+                    color=pen.color(), style=pen.style(), width=2))
                 if item != event and item.name() == event.name():
-                    if event_pen_width != 4:
+                    if event_pen_width != 5:
                         item.curve.setPen(mkPen(
-                            color=pen.color(), style=pen.style(), width=2))
+                            color=pen.color(), style=pen.style(), width=3))
                     else:
                         item.curve.setPen(mkPen(
-                            color=pen.color(), style=pen.style(), width=1))
+                            color=pen.color(), style=pen.style(), width=2))
                 elif item == event:
-                    if event_pen_width != 4:
+                    if event_pen_width != 5:
                         item.curve.setPen(mkPen(
-                            color=pen.color(), style=pen.style(), width=4))
+                            color=pen.color(), style=pen.style(), width=5))
                     else:
                         self.segment_ledit.clear()
                         self.mean_ledit.clear()
@@ -415,7 +416,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                     pen = item.curve.opts['pen']
                     item.curve.setPen(mkPen(color=pen.color(),
                                             style=pen.style(),
-                                            width=1))
+                                            width=2))
 
                 self.segment_ledit.clear()
                 self.mean_ledit.clear()

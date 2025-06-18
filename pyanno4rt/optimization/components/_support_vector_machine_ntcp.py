@@ -11,12 +11,10 @@ from copy import deepcopy
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.svm import (
-    linear_decision_function, poly_decision_function, rbf_decision_function,
-    sigmoid_decision_function, linear_decision_gradient,
-    poly_decision_gradient, rbf_decision_gradient, sigmoid_decision_gradient,
+    linear_gradient, poly_gradient, rbf_gradient, sigmoid_gradient,
     SupportVectorMachineModel)
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import filter_dict, inverse_sigmoid, sigmoid
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -69,11 +67,8 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
     arguments : dict
         Dictionary with the component input arguments (for serialization).
 
-    decision_function : None or callable
-        Decision function for the fitted kernel type.
-
-    decision_gradient : None or callable
-        Decision gradient for the fitted kernel type.
+    gradient : None or callable
+        Model gradient for the fitted kernel type.
 
     data_model_handler : object of class \
         :class:`~pyanno4rt.learning._data_model_handler.DataModelHandler`
@@ -87,9 +82,6 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
 
     parameter_value : list
         Primal/dual support vector machine model coefficients.
-
-    bounds : list
-        See 'Parameters'. Transformed by the inverse Platt scaling function.
     """
 
     def __init__(
@@ -125,8 +117,8 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
 
-        # Initialize the decision function/gradient
-        self.decision_function, self.decision_gradient = None, None
+        # Initialize the model gradient function
+        self.gradient = None
 
     def to_dict(self):
         """Serialize the component into a dictionary."""
@@ -216,43 +208,13 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
             self.parameter_value = (
                 self.model.prediction_model.dual_coef_[0].tolist())
 
-        # Map the kernel types to the decision functions/gradients
-        decision_map = {
-            'linear': (linear_decision_function, linear_decision_gradient),
-            'poly': (poly_decision_function, poly_decision_gradient),
-            'rbf': (rbf_decision_function, rbf_decision_gradient),
-            'sigmoid': (sigmoid_decision_function, sigmoid_decision_gradient)}
+        # Map the kernel types to the model gradient functions
+        gradient_map = {
+            'linear': linear_gradient, 'poly': poly_gradient,
+            'rbf': rbf_gradient, 'sigmoid': sigmoid_gradient}
 
-        # Get the decision function/gradient
-        self.decision_function, self.decision_gradient = (
-            decision_map[self.model.prediction_model.kernel])
-
-        # Transform the component bounds
-        self.bounds = sorted(inverse_sigmoid(
-            bound, -self.model.prediction_model.probA_[0],
-            self.model.prediction_model.probB_[0]) for bound in self.bounds)
-
-    def reverse(
-            self,
-            value):
-        """
-        Reverse the component value(s) to the outcome value(s).
-
-        Parameters
-        ----------
-        value : int, float, tuple or list
-            Component value(s).
-
-        Returns
-        -------
-        float or tuple
-            Outcome value(s).
-        """
-
-        # Get the prediction model
-        svm = self.model.prediction_model
-
-        return sigmoid(value, -svm.probA_, svm.probB_)
+        # Get the model gradient function
+        self.gradient = gradient_map[self.model.prediction_model.kernel]
 
     def compute_value(
             self,
@@ -282,8 +244,8 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        return self.decision_function(
-            self.model.prediction_model, preprocessed_features)
+        return self.model.predict(
+            preprocessed_features, self.model.prediction_model)
 
     def compute_gradient(
             self,
@@ -316,7 +278,7 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
         preprocessed_features = self.model.preprocess(raw_features)
 
         # Compute the model gradient
-        model_gradient = self.decision_gradient(
+        model_gradient = self.gradient(
             self.model.prediction_model, preprocessed_features)
 
         # Compute the preprocessing pipeline gradient
