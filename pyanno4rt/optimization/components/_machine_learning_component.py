@@ -59,6 +59,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
     link : None or list
         Other segments used for joint evaluation.
 
+    transform : bool, default=False
+        Indicator for the transformation of the outcome function.
+
     identifier : None or str
         Additional string for naming the component.
 
@@ -104,6 +107,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
     link : None or list
         See 'Parameters'.
 
+    transform : bool
+        See 'Parameters'.
+
     identifier : None or str
         See 'Parameters'.
 
@@ -138,6 +144,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
             rank,
             bounds,
             link,
+            transform,
             identifier,
             display):
 
@@ -157,6 +164,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
         self.rank = rank
         self.bounds = self.convert_bounds(bounds, embedding)
         self.link = [] if link is None else link
+        self.transform = transform
         self.identifier = identifier
         self.display = display
 
@@ -190,10 +198,10 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
         return (
             all(self.__dict__[key] == other.__dict__[key] for key in (
-                'name', 'segment', 'component_type', 'link', 'identifier'))
-            and compare_dictionaries(
-                self.model_parameters.to_dict(),
-                other.model_parameters.to_dict()))
+                'name', 'segment', 'component_type', 'link', 'transform',
+                'identifier')) and compare_dictionaries(
+                    self.model_parameters.to_dict(),
+                    other.model_parameters.to_dict()))
 
     def check(
             self,
@@ -241,6 +249,8 @@ class MachineLearningComponent(metaclass=ABCMeta):
             'link': (
                 partial(check_type, options=(type(None), list)),
                 partial(check_subtype, options=str)),
+            'transform': (
+                partial(check_type, options=bool),),
             'identifier': (
                 partial(check_type, options=(type(None), str)),),
             'display': (
@@ -368,6 +378,12 @@ class MachineLearningComponent(metaclass=ABCMeta):
     @abstractmethod
     def add_model(self):
         """Add the machine learning model to the component."""
+
+    @abstractmethod
+    def translate(
+            self,
+            value):
+        """Translate function values to outcome values."""
 
     @abstractmethod
     def compute_value(

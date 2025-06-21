@@ -294,7 +294,7 @@ class SciPySolver():
                     'options': {
                         'disp': False,
                         'verbose': 0,
-                        'initial_tr_radius': 100,
+                        'initial_tr_radius': 10,
                         'sparse_jacobian': None,
                         'factorization_method': None,
                         'maxiter': maximum_iterations},

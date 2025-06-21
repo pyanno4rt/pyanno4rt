@@ -159,9 +159,6 @@ class PlanGenerator():
             # Get the constraint instance
             instance = constraint['instance']
 
-            # Set the weight to the default
-            instance.weight = 1.0
-
             # Overwrite the constraint bounds by the embedding type
             instance.bounds = (
                 instance.bounds if instance.embedding == 'active'

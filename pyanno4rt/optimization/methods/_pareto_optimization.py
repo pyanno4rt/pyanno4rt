@@ -156,7 +156,7 @@ class ParetoOptimization():
                 for segment in segments)
 
             # Compute the constraint function value
-            constraint_value = instance.compute_value(
+            constraint_value = instance.weight * instance.compute_value(
                 tuple(dose[index] for index in indices), segments)
 
             # Return the value of the constraint function

@@ -109,7 +109,7 @@ class DVHGraphCompareWidget(QWidget):
 
         # Set the signal proxy to update the crosshair at mouse moves
         self.crosshair_update = SignalProxy(
-            self.plot_graph.scene().sigMouseMoved, rateLimit=60,
+            self.plot_widget.scene().sigMouseMoved, rateLimit=60,
             slot=self.update_crosshair)
 
         # 
@@ -124,7 +124,7 @@ class DVHGraphCompareWidget(QWidget):
             self.delta = ""
 
         # Set the graph title
-        self.plot_graph.setTitle("<span style='color: #FFAE42; "
+        self.plot_widget.setTitle("<span style='color: #FFAE42; "
                                  f"font-size: 11pt'>{self.delta}"
                                  "dose: %0.2f</span>, "
                                  "<span style='color: #FFAE42; "
@@ -142,20 +142,20 @@ class DVHGraphCompareWidget(QWidget):
         self.y_range = (0, 100)
 
         # 
-        self.plot_graph.plotItem.vb.setLimits(
+        self.plot_widget.plotItem.vb.setLimits(
             xMin=self.x_range[0], xMax=self.x_range[1],
             yMin=self.y_range[0]-0.1, yMax=self.y_range[1]+0.1)
 
         # 
-        self.plot_graph.plotItem.vb.enableAutoRange()
+        self.plot_widget.plotItem.vb.enableAutoRange()
 
-        self.plot_graph.getPlotItem().showAxis('bottom')
-        self.plot_graph.getPlotItem().showAxis('top')
-        self.plot_graph.getPlotItem().showAxis('left')
-        self.plot_graph.getPlotItem().showAxis('right')
+        self.plot_widget.getPlotItem().showAxis('bottom')
+        self.plot_widget.getPlotItem().showAxis('top')
+        self.plot_widget.getPlotItem().showAxis('left')
+        self.plot_widget.getPlotItem().showAxis('right')
 
-        self.plot_graph.showGrid(x=True, y=True, alpha=0.2)
-        self.plot_graph.setLabels(
+        self.plot_widget.showGrid(x=True, y=True, alpha=0.2)
+        self.plot_widget.setLabels(
             left=" ", right=" ", top=" ", bottom=" ")
 
     def get_segment_statistics(self, event):
@@ -223,17 +223,17 @@ class DVHGraphCompareWidget(QWidget):
         coordinates = event[0]
 
         # Check if the coordinates lie within the scene bounding rectangle
-        if self.plot_graph.sceneBoundingRect().contains(coordinates):
+        if self.plot_widget.sceneBoundingRect().contains(coordinates):
 
             # Get the mouse point in the view's coordinate system
-            mouse_point = self.plot_graph.plotItem.vb.mapSceneToView(
+            mouse_point = self.plot_widget.plotItem.vb.mapSceneToView(
                 coordinates)
 
             if (self.x_range[0] <= mouse_point.x() <= self.x_range[1]
                     and self.y_range[0] <= mouse_point.y() <= self.y_range[1]):
 
                 # Update the graph title
-                self.plot_graph.setTitle(
+                self.plot_widget.setTitle(
                     "<span style='color: #FFAE42; "
                     f"font-size: 11pt'>{self.delta}"
                     "dose: %0.2f</span>, "
@@ -244,7 +244,7 @@ class DVHGraphCompareWidget(QWidget):
             else:
 
                 # Update the graph title
-                self.plot_graph.setTitle(
+                self.plot_widget.setTitle(
                     "<span style='color: #FFAE42; "
                     f"font-size: 11pt'>{self.delta}"
                     "dose: %0.2f</span>, "
@@ -265,24 +265,24 @@ class DVHGraphCompareWidget(QWidget):
                         style=self.segment_styles[segment][1],
                         width=2)
 
-            plot = self.plot_graph.plot(
+            plot = self.plot_widget.plot(
                 self.dose_histogram['evaluation_points'],
                 self.dose_histogram[segment]['dvh_values']*100,
                 pen=pen, name=segment, clickable=True)
             plot.sigClicked.connect(self.get_segment_statistics)
             plot.sigClicked.connect(self.select_dvh_curves_from_parent)
-            self.plot_graph.scene().sigMouseClicked.connect(
+            self.plot_widget.scene().sigMouseClicked.connect(
                 self.unselect_dvh_curves_from_parent)
 
     def reset_dvh(self):
         """."""
 
-        self.plot_graph.clear()
-        self.plot_graph.getPlotItem().hideAxis('bottom')
-        self.plot_graph.getPlotItem().hideAxis('top')
-        self.plot_graph.getPlotItem().hideAxis('left')
-        self.plot_graph.getPlotItem().hideAxis('right')
-        self.plot_graph.setTitle(None)
+        self.plot_widget.clear()
+        self.plot_widget.getPlotItem().hideAxis('bottom')
+        self.plot_widget.getPlotItem().hideAxis('top')
+        self.plot_widget.getPlotItem().hideAxis('left')
+        self.plot_widget.getPlotItem().hideAxis('right')
+        self.plot_widget.setTitle(None)
         if hasattr(self, 'crosshair_update'):
             delattr(self, 'crosshair_update')
         self.parent.segment_ledit.clear()

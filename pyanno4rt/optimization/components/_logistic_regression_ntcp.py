@@ -13,7 +13,7 @@ from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.logistic import LogisticRegressionModel
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import filter_dict
+from pyanno4rt.tools import filter_dict, inverse_sigmoid, sigmoid
 
 # %% Class definition
 
@@ -55,6 +55,9 @@ class LogisticRegressionNTCP(MachineLearningComponent):
     link : None or list, default=None
         Other segments used for joint evaluation.
 
+    transform : bool, default=False
+        Indicator for the transformation of the outcome function.
+
     identifier : None or str, default=None
         Additional string for naming the component.
 
@@ -90,6 +93,7 @@ class LogisticRegressionNTCP(MachineLearningComponent):
             rank=1,
             bounds=None,
             link=None,
+            transform=False,
             identifier=None,
             display=True):
 
@@ -106,12 +110,18 @@ class LogisticRegressionNTCP(MachineLearningComponent):
             rank=rank,
             bounds=bounds,
             link=link,
+            transform=transform,
             identifier=identifier,
             display=display)
 
         # Set the input arguments
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
+
+        # Convert the bounds
+        self.bounds = [
+            self.weight*inverse_sigmoid(bound) if transform
+            else self.weight*bound for bound in self.bounds]
 
     def to_dict(self):
         """Serialize the component into a dictionary."""
@@ -191,6 +201,38 @@ class LogisticRegressionNTCP(MachineLearningComponent):
         # Get the logistic regression model parameters
         self.parameter_value = list(self.model.prediction_model.coef_[0])
 
+    def translate(
+            self,
+            value):
+        """
+        Translate function values to outcome values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Function value to translate.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Outcome value.
+        """
+
+        # Check if the transformation should be applied
+        if self.transform:
+
+            # Check if the value is an iterable
+            if isinstance(value, (tuple, list)):
+
+                # Return the transformed value
+                return [sigmoid(val) if val > 0.5 else val for val in value]
+
+            # Return the transformed value
+            return sigmoid(value) if value > 0.5 else value
+
+        # Return the standard value
+        return value
+
     def compute_value(
             self,
             dose,
@@ -219,8 +261,19 @@ class LogisticRegressionNTCP(MachineLearningComponent):
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        return self.model.predict(
+        # Get the outcome prediction
+        prediction = self.model.predict(
             preprocessed_features, self.model.prediction_model)
+
+        # Check if the transformation should be applied
+        if self.transform:
+
+            # Return the transformed value
+            return (
+                inverse_sigmoid(prediction) if prediction > 0.5
+                else prediction)
+
+        return prediction
 
     def compute_gradient(
             self,
@@ -255,11 +308,25 @@ class LogisticRegressionNTCP(MachineLearningComponent):
         # Get the model coefficients
         coefficients = array(self.parameter_value)
 
-        # Get the model gradient
-        model_gradient = (
-            exp(dot(preprocessed_features, coefficients))
-            / (1+exp(dot(preprocessed_features, coefficients)))**2
-            * coefficients)
+        # Check if the transformation should be applied
+        if self.transform:
+
+            # Get the transformed model gradient
+            model_gradient = (
+                array(coefficients) if self.model.predict(
+                    preprocessed_features, self.model.prediction_model) > 0.5
+                else (
+                    exp(dot(preprocessed_features, coefficients))
+                    / (1+exp(dot(preprocessed_features, coefficients)))**2
+                    * coefficients))
+
+        else:
+
+            # Get the standard model gradient
+            model_gradient = (
+                exp(dot(preprocessed_features, coefficients))
+                / (1+exp(dot(preprocessed_features, coefficients)))**2
+                * coefficients)
 
         # Compute the preprocessing pipeline gradient
         preprocessing_gradient = (

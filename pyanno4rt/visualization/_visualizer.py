@@ -493,9 +493,8 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
             # Add style and data
             self.outc_widget.add_style_and_data(
-                {component.track_id: (
-                    (-1)**('NTCP' not in component.name)
-                    * divide(tracker[component.track_id], component.weight))
+                {component.track_id: component.translate(list(
+                    divide(tracker[component.track_id], component.weight)))
                  for component in components})
 
             # Update the outcome graph

@@ -110,7 +110,7 @@ class DVHGraphWidget(QWidget):
 
         # Set the plot limits
         self.plot_widget.plotItem.vb.setLimits(
-            xMin=0, xMax=dose_histogram['evaluation_points'][-1],
+            xMin=0, xMax=1.1*dose_histogram['evaluation_points'][-1],
             yMin=-1, yMax=101)
 
         # Enable the auto-range

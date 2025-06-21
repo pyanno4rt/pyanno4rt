@@ -376,7 +376,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                        self.difference_dvh_widget):
 
             # Get all plot items
-            items = widget.plot_graph.getPlotItem().listDataItems()
+            items = widget.plot_widget.getPlotItem().listDataItems()
 
             for item in items:
                 pen = item.curve.opts['pen']
@@ -410,7 +410,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                            self.difference_dvh_widget):
 
                 # Get all plot items
-                items = widget.plot_graph.getPlotItem().listDataItems()
+                items = widget.plot_widget.getPlotItem().listDataItems()
 
                 for item in items:
                     pen = item.curve.opts['pen']

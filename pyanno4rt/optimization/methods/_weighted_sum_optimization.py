@@ -242,7 +242,7 @@ class WeightedSumOptimization():
                 for segment in segments)
 
             # Compute the constraint function value
-            constraint_value = instance.compute_value(
+            constraint_value = instance.weight * instance.compute_value(
                 tuple(dose[index] for index in indices), segments)
 
             # Check if the constraint value should be tracked
@@ -301,7 +301,7 @@ class WeightedSumOptimization():
 
             # Insert the single Jacobian into the dose Jacobian matrix
             dose_jacobian[row][concatenate(indices)] = (
-                instance.compute_gradient(
+                instance.weight * instance.compute_gradient(
                     tuple(dose[index] for index in indices), segments))
 
         # Compute the Jacobian for each constraint

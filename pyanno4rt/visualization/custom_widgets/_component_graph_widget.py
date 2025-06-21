@@ -122,7 +122,7 @@ class ComponentGraphWidget(QWidget):
 
         # Set the plot limits
         self.plot_widget.plotItem.vb.setLimits(
-            xMin=0, xMax=max(len(track) for track in tracker.values()),
+            xMin=0, xMax=max(len(track) for track in tracker.values())+1,
             yMin=track_min-y_step, yMax=track_max+y_step)
 
         # Enable the auto-range
@@ -342,7 +342,7 @@ class ComponentGraphWidget(QWidget):
 
             # Plot the track
             plot = self.plot_widget.plot(
-                range(len(self.tracker[track])),
+                range(1, len(self.tracker[track])+1),
                 self.tracker[track],
                 pen=pen,
                 symbol=self.styles[track][0],

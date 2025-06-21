@@ -6,7 +6,7 @@
 
 from itertools import islice, cycle
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import ceil, divide, linspace
+from numpy import ceil, divide, linspace, multiply
 
 # %% Internal package import
 
@@ -146,10 +146,10 @@ class OutcomeGraph():
 
         # Get the tracks to be displayed
         tracker = {
-            component.track_id: 100*(
-                (-1)**('NTCP' not in component.name)*divide(
+            component.track_id: component.translate(list(
+                divide(
                     optimization['problem'].tracker[component.track_id],
-                    component.weight))
+                    component.weight)))
             for component in components if component.display}
 
         # Get the track statistics
@@ -190,7 +190,7 @@ class OutcomeGraph():
             # Plot the track
             axis.plot(
                 range(1, len(values)+1),
-                values,
+                multiply(values, 100),
                 marker=styles[track][0],
                 markersize=1.5*self.linewidth,
                 color=styles[track][1],

@@ -112,8 +112,14 @@ class FluenceOptimizer():
                 f"The '{algorithm}' algorithm only allows for unconstrained "
                 "optimization problems - constraints set will be ignored ...")
 
-            # Reset the constraints to the default
-            constraints = {}
+            # Reset the internal constraints
+            hub.optimization['constraints'], constraints = {}, {}
+
+            # Loop over the segments
+            for segment in hub.segmentation:
+
+                # Reset the external constraints
+                hub.segmentation[segment]['constraint'] = None
 
         # Initialize the optimization problem by the selected method
         problem = maps.METHODS[method](backprojection, objectives, constraints)
@@ -492,10 +498,10 @@ class FluenceOptimizer():
                 # Process the feature history
                 component.data_model_handler.process_feature_history()
 
-                # Get the final (N)TCP prediction value
-                value = (
-                    (-1)**('NTCP' not in component.name)
-                    * problem.tracker[component.track_id][-1]/component.weight)
+                # Get the final (N)TCP prediction
+                value = component.translate(
+                    problem.tracker[component.track_id][-1]
+                    / component.weight)
 
                 # Add the prediction value to the datahub
                 hub.model_outcomes[

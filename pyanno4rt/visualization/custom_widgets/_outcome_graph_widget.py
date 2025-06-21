@@ -5,6 +5,7 @@
 # %% External package import
 
 from itertools import islice, cycle
+from numpy import multiply
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from pyqtgraph import colormap, InfiniteLine, mkPen, PlotWidget, SignalProxy
@@ -110,7 +111,7 @@ class OutcomeGraphWidget(QWidget):
 
         # Set the plot limits
         self.plot_widget.plotItem.vb.setLimits(
-            xMin=0, xMax=max(len(track) for track in tracker.values()),
+            xMin=0, xMax=max(len(track) for track in tracker.values())+1,
             yMin=-1, yMax=101)
 
         # Enable the auto-range
@@ -330,8 +331,8 @@ class OutcomeGraphWidget(QWidget):
 
             # Plot the track
             plot = self.plot_widget.plot(
-                range(len(self.tracker[track])),
-                100*self.tracker[track],
+                range(1, len(self.tracker[track])+1),
+                multiply(self.tracker[track], 100),
                 pen=pen,
                 symbol=self.styles[track][0],
                 symbolSize=7,
