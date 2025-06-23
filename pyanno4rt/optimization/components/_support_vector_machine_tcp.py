@@ -5,6 +5,7 @@
 # %% External package import
 
 from copy import deepcopy
+from numpy import array, dot, exp
 
 # %% Internal package import
 
@@ -14,7 +15,7 @@ from pyanno4rt.learning.svm import (
     linear_gradient, poly_gradient, rbf_gradient, sigmoid_gradient,
     SupportVectorMachineModel)
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import filter_dict
+from pyanno4rt.tools import filter_dict, inverse_sigmoid, sigmoid
 
 # %% Class definition
 
@@ -56,6 +57,9 @@ class SupportVectorMachineTCP(MachineLearningComponent):
     link : None or list, default=None
         Other segments used for joint evaluation.
 
+    transform : bool, default=False
+        Indicator for the transformation of the outcome function.
+
     identifier : None or str, default=None
         Additional string for naming the component.
 
@@ -94,6 +98,7 @@ class SupportVectorMachineTCP(MachineLearningComponent):
             rank=1,
             bounds=None,
             link=None,
+            transform=False,
             identifier=None,
             display=True):
 
@@ -110,6 +115,7 @@ class SupportVectorMachineTCP(MachineLearningComponent):
             rank=rank,
             bounds=bounds,
             link=link,
+            transform=transform,
             identifier=identifier,
             display=display)
 
@@ -216,6 +222,94 @@ class SupportVectorMachineTCP(MachineLearningComponent):
         # Get the model gradient function
         self.gradient = gradient_map[self.model.prediction_model.kernel]
 
+        # Convert the bounds
+        self.bounds = [
+            -self.weight*self.reverse(bound) for bound in self.bounds]
+
+    def translate(
+            self,
+            value):
+        """
+        Translate function values to outcome values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Function value to translate.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Outcome value.
+        """
+
+        # Check if the transformation should be applied
+        if self.transform:
+
+            # Check if the value is an iterable
+            if isinstance(value, (tuple, list)):
+
+                # Return a list of transformed outcome values
+                return [
+                    sigmoid(-val, self.multiplier[0], self.summand[0])
+                    if val < -0.5 else -val for val in value]
+
+            # Return a single transformed outcome value
+            return (
+                sigmoid(-value, self.multiplier[0], self.summand[0])
+                if value < -0.5 else -value)
+
+        # Check if the value is an iterable
+        if isinstance(value, (tuple, list)):
+
+            # Return a list of outcome values
+            return [-val for val in value]
+
+        # Return a single outcome value
+        return -value
+
+    def reverse(
+            self,
+            value):
+        """
+        Reverse outcome values to function values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Outcome value to reverse.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Function value.
+        """
+
+        # Check if the transformation should be applied
+        if self.transform:
+
+            # Check if the value is an iterable
+            if isinstance(value, (tuple, list)):
+
+                # Return a list of transformed function values
+                return [
+                    inverse_sigmoid(-val, self.multiplier[0], self.summand[0])
+                    if val < -0.5 else -val for val in value]
+
+            # Return a single transformed function value
+            return (
+                inverse_sigmoid(-value, self.multiplier[0], self.summand[0])
+                if value < -0.5 else -value)
+
+        # Check if the value is an iterable
+        if isinstance(value, (tuple, list)):
+
+            # Return a list of function values
+            return [-val for val in value]
+
+        # Return a single function value
+        return -value
+
     def compute_value(
             self,
             dose,
@@ -244,8 +338,14 @@ class SupportVectorMachineTCP(MachineLearningComponent):
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        return -self.model.predict(
+        # Get the outcome prediction
+        prediction = self.model.predict(
             preprocessed_features, self.model.prediction_model)
+
+        # Clip the prediction for numerical stability
+        prediction = max(1e-16, min(prediction, 1-1e-16))
+
+        return self.reverse(prediction)
 
     def compute_gradient(
             self,
@@ -277,9 +377,21 @@ class SupportVectorMachineTCP(MachineLearningComponent):
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        # Compute the model gradient
-        model_gradient = -self.gradient(
-            self.model.prediction_model, preprocessed_features)
+        # Check if the transformation should be applied
+        if (self.transform and self.model.predict(
+                    preprocessed_features, self.model.prediction_model) > 0.5):
+
+            # Get the transformed model gradient
+            model_gradient = -array(
+                self.multiplier*preprocessed_features.shape[1])
+
+        else:
+
+            # Get the model gradient
+            model_gradient = -(
+                exp(dot(self.multiplier, preprocessed_features))
+                / (1+exp(dot(self.multiplier, preprocessed_features)))**2
+                * self.multiplier)
 
         # Compute the preprocessing pipeline gradient
         preprocessing_gradient = (

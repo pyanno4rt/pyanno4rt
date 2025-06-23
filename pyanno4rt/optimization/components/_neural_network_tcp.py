@@ -5,7 +5,7 @@
 # %% External package import
 
 from copy import deepcopy
-from numpy import array
+from numpy import array, exp
 from tensorflow import cast, float64, GradientTape
 
 # %% Internal package import
@@ -14,7 +14,7 @@ from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.neural_network import NeuralNetworkModel
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import filter_dict
+from pyanno4rt.tools import filter_dict, inverse_sigmoid, sigmoid
 
 # %% Class definition
 
@@ -55,6 +55,9 @@ class NeuralNetworkTCP(MachineLearningComponent):
     link : None or list, default=None
         Other segments used for joint evaluation.
 
+    transform : bool, default=False
+        Indicator for the transformation of the outcome function.
+
     identifier : None or str, default=None
         Additional string for naming the component.
 
@@ -90,6 +93,7 @@ class NeuralNetworkTCP(MachineLearningComponent):
             rank=1,
             bounds=None,
             link=None,
+            transform=False,
             identifier=None,
             display=True):
 
@@ -106,6 +110,7 @@ class NeuralNetworkTCP(MachineLearningComponent):
             rank=rank,
             bounds=bounds,
             link=link,
+            transform=transform,
             identifier=identifier,
             display=display)
 
@@ -200,6 +205,88 @@ class NeuralNetworkTCP(MachineLearningComponent):
                 for layer in self.model.prediction_model.get_weights())
             for weight in weights)
 
+        # Convert the bounds
+        self.bounds = [
+            -self.weight*self.reverse(bound) for bound in self.bounds]
+
+    def translate(
+            self,
+            value):
+        """
+        Translate function values to outcome values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Function value to translate.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Outcome value.
+        """
+
+        # Check if the transformation should be applied
+        if self.transform:
+
+            # Check if the value is an iterable
+            if isinstance(value, (tuple, list)):
+
+                # Return a list of transformed outcome values
+                return [sigmoid(-val) if val < -0.5 else -val for val in value]
+
+            # Return a single transformed outcome value
+            return sigmoid(-value) if value < -0.5 else -value
+
+        # Check if the value is an iterable
+        if isinstance(value, (tuple, list)):
+
+            # Return a list of outcome values
+            return [-val for val in value]
+
+        # Return a single outcome value
+        return -value
+
+    def reverse(
+            self,
+            value):
+        """
+        Reverse outcome values to function values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Outcome value to reverse.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Function value.
+        """
+
+        # Check if the transformation should be applied
+        if self.transform:
+
+            # Check if the value is an iterable
+            if isinstance(value, (tuple, list)):
+
+                # Return a list of transformed function values
+                return [
+                    inverse_sigmoid(-val) if val < -0.5
+                    else -val for val in value]
+
+            # Return a single transformed function value
+            return inverse_sigmoid(-value) if value < -0.5 else -value
+
+        # Check if the value is an iterable
+        if isinstance(value, (tuple, list)):
+
+            # Return a list of function values
+            return [-val for val in value]
+
+        # Return a single function value
+        return -value
+
     def compute_value(
             self,
             dose,
@@ -229,8 +316,14 @@ class NeuralNetworkTCP(MachineLearningComponent):
         preprocessed_features = cast(
             self.model.preprocess(raw_features), float64)
 
-        return -self.model.predict(
+        # Get the outcome prediction
+        prediction = self.model.predict(
             preprocessed_features, self.model.prediction_model)
+
+        # Clip the prediction for numerical stability
+        prediction = max(1e-16, min(prediction, 1-1e-16))
+
+        return self.reverse(prediction)
 
     def compute_gradient(
             self,
@@ -272,9 +365,20 @@ class NeuralNetworkTCP(MachineLearningComponent):
             # Compute the model output from the features
             output = self.model.prediction_model(preprocessed_features)
 
-            # Compute the model gradient
-            model_gradient = -array(
-                tape.gradient(output, preprocessed_features)).reshape(-1)
+            # Check if the transformation should be applied
+            if (self.transform and self.model.predict(
+                    preprocessed_features, self.model.prediction_model) > 0.5):
+
+                # Get the transformed model gradient
+                model_gradient = -array(
+                    tape.gradient(output, preprocessed_features)
+                    ).reshape(-1) / (output - output**2)
+
+            else:
+
+                # Get the standard model gradient
+                model_gradient = -array(
+                    tape.gradient(output, preprocessed_features)).reshape(-1)
 
         # Compute the preprocessing pipeline gradient
         preprocessing_gradient = (

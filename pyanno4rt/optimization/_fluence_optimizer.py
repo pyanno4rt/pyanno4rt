@@ -488,7 +488,7 @@ class FluenceOptimizer():
                 # Log a message about the prediction value
                 logger.display_info(
                     f"{component.name} for the optimized plan: "
-                    f"{round(100*value, 2)} % ...")
+                    f"{'%.2f' % (100*value)} % ...")
 
             # Loop over the machine learning outcome model-based components
             for component in (
@@ -510,7 +510,7 @@ class FluenceOptimizer():
                 # Log a message about the prediction value
                 logger.display_info(
                     f"{component.name} for the optimized plan: "
-                    f"{round(100*value, 2)} % ...")
+                    f"{'%.2f' % (100*value)} % ...")
 
         # Get the runtime for the fluence optimizer
         optimizer_runtime = round(

@@ -55,7 +55,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>-903</y>
+       <y>0</y>
        <width>690</width>
        <height>1589</height>
       </rect>
@@ -2215,6 +2215,26 @@ border-color: rgb(186, 189, 182);</string>
        <string>Tune repeats</string>
       </property>
      </widget>
+     <widget class="QCheckBox" name="transform_check">
+      <property name="geometry">
+       <rect>
+        <x>450</x>
+        <y>234</y>
+        <width>101</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 0px;
+color: rgb(0, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>Transform</string>
+      </property>
+     </widget>
      <zorder>estimators_label</zorder>
      <zorder>embedding_cbox</zorder>
      <zorder>segment_label</zorder>
@@ -2315,6 +2335,7 @@ border-color: rgb(186, 189, 182);</string>
      <zorder>tune_splits_sbox</zorder>
      <zorder>tune_score_cbox</zorder>
      <zorder>tune_repeats_label</zorder>
+     <zorder>transform_check</zorder>
     </widget>
    </widget>
   </widget>

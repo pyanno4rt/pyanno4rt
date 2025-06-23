@@ -29,7 +29,7 @@ class Ui_naive_bayes_tcp_window(object):
         self.scroll_area.setStyleSheet("border-color: transparent;")
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, -587, 690, 1429))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, 0, 690, 1429))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 90, 111, 31))
@@ -624,6 +624,12 @@ class Ui_naive_bayes_tcp_window(object):
         self.priors_minus_tbutton.setIcon(icon3)
         self.priors_minus_tbutton.setIconSize(QtCore.QSize(18, 18))
         self.priors_minus_tbutton.setObjectName("priors_minus_tbutton")
+        self.transform_check = QtWidgets.QCheckBox(self.scroll_contents)
+        self.transform_check.setGeometry(QtCore.QRect(450, 234, 101, 23))
+        self.transform_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.transform_check.setStyleSheet("border: 0px;\n"
+"color: rgb(0, 0, 0);")
+        self.transform_check.setObjectName("transform_check")
         self.scroll_area.setWidget(self.scroll_contents)
         naive_bayes_tcp_window.setCentralWidget(self.body_widget)
 
@@ -692,3 +698,4 @@ class Ui_naive_bayes_tcp_window(object):
         self.tune_repeats_label.setText(_translate("naive_bayes_tcp_window", "Tune repeats"))
         self.priors_plus_tbutton.setToolTip(_translate("naive_bayes_tcp_window", "Add a prior"))
         self.priors_minus_tbutton.setToolTip(_translate("naive_bayes_tcp_window", "Remove the last prior"))
+        self.transform_check.setText(_translate("naive_bayes_tcp_window", "Transform"))

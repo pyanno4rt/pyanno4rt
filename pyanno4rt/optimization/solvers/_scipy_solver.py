@@ -122,7 +122,7 @@ class SciPySolver():
         # Set the base output string
         output_string = (
             f"At iterate {self.counter}: "
-            f"f={round(intermediate_result['fun'], 4)}")
+            f"f={'%.4f' % intermediate_result['fun']}")
 
         # Check if any constraints have been passed
         if 'constraints' in self.arguments.get(self.rank, self.arguments):
@@ -369,7 +369,7 @@ class SciPySolver():
                 # Set the base output string
                 output_string = (
                     f"At iterate {self.counter-1}: "
-                    f"f={round(objective_value, 4)}")
+                    f"f={'%.4f' % objective_value}")
 
                 # Check if the constraint function is included
                 if 'constraint_function' in arguments:
@@ -424,7 +424,7 @@ class SciPySolver():
 
                 # Set the base output string
                 output_string = (
-                    f"At iterate 0: f={round(objective_value, 4)}")
+                    f"At iterate 0: f={'%.4f' % objective_value}")
 
                 # Check if the constraint function is included
                 if 'constraint_function' in self.arguments:

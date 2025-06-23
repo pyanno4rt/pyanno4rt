@@ -55,7 +55,7 @@ border-color: rgb(186, 189, 182);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>-920</y>
+       <y>0</y>
        <width>690</width>
        <height>1619</height>
       </rect>
@@ -1909,6 +1909,26 @@ border-color: rgb(186, 189, 182);</string>
       </property>
       <property name="text">
        <string>Tune repeats</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="transform_check">
+      <property name="geometry">
+       <rect>
+        <x>450</x>
+        <y>234</y>
+        <width>101</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 0px;
+color: rgb(0, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>Transform</string>
       </property>
      </widget>
     </widget>

@@ -29,7 +29,7 @@ class Ui_k_nearest_neighbors_tcp_window(object):
         self.scroll_area.setStyleSheet("border-color: transparent;")
         self.scroll_area.setObjectName("scroll_area")
         self.scroll_contents = QtWidgets.QWidget()
-        self.scroll_contents.setGeometry(QtCore.QRect(0, -817, 690, 1439))
+        self.scroll_contents.setGeometry(QtCore.QRect(0, 0, 690, 1439))
         self.scroll_contents.setObjectName("scroll_contents")
         self.embedding_cbox = QtWidgets.QComboBox(self.scroll_contents)
         self.embedding_cbox.setGeometry(QtCore.QRect(574, 90, 111, 31))
@@ -640,6 +640,12 @@ class Ui_k_nearest_neighbors_tcp_window(object):
         self.tune_repeats_label.setFont(font)
         self.tune_repeats_label.setStyleSheet("border: 0px solid;")
         self.tune_repeats_label.setObjectName("tune_repeats_label")
+        self.transform_check = QtWidgets.QCheckBox(self.scroll_contents)
+        self.transform_check.setGeometry(QtCore.QRect(450, 234, 101, 23))
+        self.transform_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.transform_check.setStyleSheet("border: 0px;\n"
+"color: rgb(0, 0, 0);")
+        self.transform_check.setObjectName("transform_check")
         self.leaf_size_label.raise_()
         self.p_label.raise_()
         self.weights_label.raise_()
@@ -718,6 +724,7 @@ class Ui_k_nearest_neighbors_tcp_window(object):
         self.tune_splits_sbox.raise_()
         self.tune_score_cbox.raise_()
         self.tune_repeats_label.raise_()
+        self.transform_check.raise_()
         self.scroll_area.setWidget(self.scroll_contents)
         k_nearest_neighbors_tcp_window.setCentralWidget(self.body_widget)
 
@@ -790,4 +797,4 @@ class Ui_k_nearest_neighbors_tcp_window(object):
         self.oof_splits_label.setText(_translate("k_nearest_neighbors_tcp_window", "OOF splits"))
         self.oof_repeats_label.setText(_translate("k_nearest_neighbors_tcp_window", "OOF repeats"))
         self.tune_repeats_label.setText(_translate("k_nearest_neighbors_tcp_window", "Tune repeats"))
-
+        self.transform_check.setText(_translate("k_nearest_neighbors_tcp_window", "Transform"))

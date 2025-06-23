@@ -386,6 +386,12 @@ class MachineLearningComponent(metaclass=ABCMeta):
         """Translate function values to outcome values."""
 
     @abstractmethod
+    def reverse(
+            self,
+            value):
+        """Reverse outcome values to function values."""
+
+    @abstractmethod
     def compute_value(
             self,
             dose,

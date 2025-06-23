@@ -118,11 +118,6 @@ class LogisticRegressionNTCP(MachineLearningComponent):
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
 
-        # Convert the bounds
-        self.bounds = [
-            self.weight*inverse_sigmoid(bound) if transform
-            else self.weight*bound for bound in self.bounds]
-
     def to_dict(self):
         """Serialize the component into a dictionary."""
 
@@ -201,6 +196,10 @@ class LogisticRegressionNTCP(MachineLearningComponent):
         # Get the logistic regression model parameters
         self.parameter_value = list(self.model.prediction_model.coef_[0])
 
+        # Convert the bounds
+        self.bounds = [
+            self.weight*self.reverse(bound) for bound in self.bounds]
+
     def translate(
             self,
             value):
@@ -224,13 +223,47 @@ class LogisticRegressionNTCP(MachineLearningComponent):
             # Check if the value is an iterable
             if isinstance(value, (tuple, list)):
 
-                # Return the transformed value
+                # Return a list of transformed outcome values
                 return [sigmoid(val) if val > 0.5 else val for val in value]
 
-            # Return the transformed value
+            # Return a single transformed outcome value
             return sigmoid(value) if value > 0.5 else value
 
-        # Return the standard value
+        # Return a single outcome value
+        return value
+
+    def reverse(
+            self,
+            value):
+        """
+        Reverse outcome values to function values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Outcome value to reverse.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Function value.
+        """
+
+        # Check if the transformation should be applied
+        if self.transform:
+
+            # Check if the value is an iterable
+            if isinstance(value, (tuple, list)):
+
+                # Return a list of transformed function values
+                return [
+                    inverse_sigmoid(val) if val > 0.5
+                    else val for val in value]
+
+            # Return a single transformed function value
+            return inverse_sigmoid(value) if value > 0.5 else value
+
+        # Return a single function value
         return value
 
     def compute_value(
@@ -265,15 +298,10 @@ class LogisticRegressionNTCP(MachineLearningComponent):
         prediction = self.model.predict(
             preprocessed_features, self.model.prediction_model)
 
-        # Check if the transformation should be applied
-        if self.transform:
+        # Clip the prediction for numerical stability
+        prediction = max(1e-16, min(prediction, 1-1e-16))
 
-            # Return the transformed value
-            return (
-                inverse_sigmoid(prediction) if prediction > 0.5
-                else prediction)
-
-        return prediction
+        return self.reverse(prediction)
 
     def compute_gradient(
             self,
@@ -309,20 +337,15 @@ class LogisticRegressionNTCP(MachineLearningComponent):
         coefficients = array(self.parameter_value)
 
         # Check if the transformation should be applied
-        if self.transform:
+        if (self.transform and self.model.predict(
+            preprocessed_features, self.model.prediction_model) > 0.5):
 
             # Get the transformed model gradient
-            model_gradient = (
-                array(coefficients) if self.model.predict(
-                    preprocessed_features, self.model.prediction_model) > 0.5
-                else (
-                    exp(dot(preprocessed_features, coefficients))
-                    / (1+exp(dot(preprocessed_features, coefficients)))**2
-                    * coefficients))
+            model_gradient = array(coefficients)
 
         else:
 
-            # Get the standard model gradient
+            # Get the model gradient
             model_gradient = (
                 exp(dot(preprocessed_features, coefficients))
                 / (1+exp(dot(preprocessed_features, coefficients)))**2

@@ -1028,9 +1028,9 @@ pygame==2.6.1 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:f3935459109da4bb0b3901da9904f0a3e52028a3332a355d298b1673a334cf21 \
     --hash=sha256:f84f15d146d6aa93254008a626c56ef96fed276006202881a47b29757f0cd65a \
     --hash=sha256:fb6e8d0547f30ddc845f4fd1e33070ef548233ad0dbf21f7ecea768883d1bbdc
-pygments==2.19.1 ; python_version >= "3.10" and python_version < "3.12" \
-    --hash=sha256:61c16d2a8576dc0649d9f39e089b5f02bcd27fba10d8fb4dcc28173f7a45151f \
-    --hash=sha256:9ea1544ad55cecf4b8242fab6dd35a93bbce657034b0611ee383099054ab6d8c
+pygments==2.19.2 ; python_version >= "3.10" and python_version < "3.12" \
+    --hash=sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887 \
+    --hash=sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b
 pymoo==0.6.1.5 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:00b5aec75e1ebdb13f537a45b17a33a8fd7ea7437b9bcfdc1a72e56ddf26dd7a \
     --hash=sha256:04a40005d4c18e194a380e360162063577cc1c206d5ca40f0dd463168e0efaf1 \

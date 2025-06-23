@@ -301,7 +301,8 @@ class SupportVectorMachineNTCPWindow(
 
         # Get the component parameters
         (segment, model_parameters, component_type, embedding, weight, rank,
-         bounds, link, identifier, display) = component.arguments.values()
+         bounds, link, transform, identifier, display) = (
+             component.arguments.values())
 
         # Convert the bounds
         lower, upper = (None, None) if bounds is None else bounds
@@ -380,6 +381,7 @@ class SupportVectorMachineNTCPWindow(
 
         # Loop over the fields with 'setCheckState' method
         for key, value in {
+                'transform_check': 2*transform,
                 'write_features_check': 2*model_parameters.write_features,
                 'inspect_model_check': 2*model_parameters.inspect,
                 'evaluate_model_check': 2*model_parameters.evaluate,
@@ -486,6 +488,7 @@ class SupportVectorMachineNTCPWindow(
             link=(
                 None if len(self.segment_link_cbox.currentData()) == 0
                 else self.segment_link_cbox.currentData()),
+            transform=self.transform_check.isChecked(),
             identifier=(
                 None if self.identifier_ledit.text() == ''
                 else self.identifier_ledit.text()),

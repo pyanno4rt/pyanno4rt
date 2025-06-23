@@ -56,6 +56,9 @@ class NaiveBayesTCP(MachineLearningComponent):
     link : None or list, default=None
         Other segments used for joint evaluation.
 
+    transform : bool, default=False
+        Indicator for the transformation of the outcome function.
+
     identifier : None or str, default=None
         Additional string for naming the component.
 
@@ -91,6 +94,7 @@ class NaiveBayesTCP(MachineLearningComponent):
             rank=1,
             bounds=None,
             link=None,
+            transform=False,
             identifier=None,
             display=True):
 
@@ -107,6 +111,7 @@ class NaiveBayesTCP(MachineLearningComponent):
             rank=rank,
             bounds=bounds,
             link=link,
+            transform=transform,
             identifier=identifier,
             display=display)
 
@@ -192,6 +197,62 @@ class NaiveBayesTCP(MachineLearningComponent):
         # Get the naive Bayes model parameters
         self.parameter_value = []
 
+        # Convert the bounds
+        self.bounds = [
+            -self.weight*self.reverse(bound) for bound in self.bounds]
+
+    def translate(
+            self,
+            value):
+        """
+        Translate function values to outcome values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Function value to translate.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Outcome value.
+        """
+
+        # Check if the value is an iterable
+        if isinstance(value, (tuple, list)):
+
+            # Return a list of outcome values
+            return [-val for val in value]
+
+        # Return a single outcome value
+        return -value
+
+    def reverse(
+            self,
+            value):
+        """
+        Reverse outcome values to function values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Outcome value to reverse.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Function value.
+        """
+
+        # Check if the value is an iterable
+        if isinstance(value, (tuple, list)):
+
+            # Return a list of function values
+            return [-val for val in value]
+
+        # Return a single function value
+        return -value
+
     def compute_value(
             self,
             dose,
@@ -220,8 +281,14 @@ class NaiveBayesTCP(MachineLearningComponent):
         # Preprocess the feature vector
         preprocessed_features = self.model.preprocess(raw_features)
 
-        return -self.model.predict(
+        # Get the outcome prediction
+        prediction = self.model.predict(
             preprocessed_features, self.model.prediction_model)
+
+        # Clip the prediction for numerical stability
+        prediction = max(1e-16, min(prediction, 1-1e-16))
+
+        return self.reverse(prediction)
 
     def compute_gradient(
             self,

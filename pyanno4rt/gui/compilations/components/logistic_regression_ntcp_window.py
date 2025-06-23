@@ -622,7 +622,7 @@ class Ui_logistic_regression_ntcp_window(object):
         self.tune_repeats_label.setStyleSheet("border: 0px solid;")
         self.tune_repeats_label.setObjectName("tune_repeats_label")
         self.transform_check = QtWidgets.QCheckBox(self.scroll_contents)
-        self.transform_check.setGeometry(QtCore.QRect(450, 235, 101, 23))
+        self.transform_check.setGeometry(QtCore.QRect(450, 234, 101, 23))
         self.transform_check.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.transform_check.setStyleSheet("border: 0px;\n"
 "color: rgb(0, 0, 0);")
