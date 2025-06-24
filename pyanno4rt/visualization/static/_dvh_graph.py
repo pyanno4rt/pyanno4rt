@@ -117,7 +117,8 @@ class DVHGraph():
 
     def view(
             self,
-            treatment_plan):
+            treatment_plan,
+            identifiers):
         """
         Open the DVH graph.
 
@@ -126,7 +127,13 @@ class DVHGraph():
         treatment_plan : object of class \
             :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
             The object used to represent the treatment plan.
+
+        identifiers : None or list
+            Segment identifiers for filtering.
         """
+
+        # Set the value for the segment identifiers
+        identifiers = [] if identifiers is None else identifiers
 
         # Get the DVH data
         dose_histogram = treatment_plan.datahub.dose_histogram
@@ -135,15 +142,6 @@ class DVHGraph():
         segments = tuple(
             segment for segment in (*dose_histogram,)
             if segment in dose_histogram['display_segments'])
-
-        # Set the expected number of ticks
-        number_of_ticks = 20 if self.ticksize < 17 else 10
-
-        # Determine the step length on the x-axis
-        x_step = min(
-            sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
-            key=lambda x: abs(ceil(max(dose_histogram['evaluation_points'])/x)
-                              - number_of_ticks))
 
         # Set the colormap
         colors = get_cmap('tab20b')(linspace(0, 1.0, len(segments)))
@@ -154,6 +152,22 @@ class DVHGraph():
         # Create a dictionary for the track styles
         styles = dict(
             zip(segments, tuple(zip(colors, lines))))
+
+        # Set the expected number of ticks
+        number_of_ticks = 20 if self.ticksize < 17 else 10
+
+        # Determine the step length on the x-axis
+        x_step = min(
+            sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
+            key=lambda x: abs(ceil(max(dose_histogram['evaluation_points'])/x)
+                              - number_of_ticks))
+
+        # Check if segment identifiers have been passed
+        if len(identifiers) > 0:
+
+            # Reduce the segment names
+            segments = tuple(
+                segment for segment in segments if segment in identifiers)
 
         # Get the figure and axis objects
         figure, axis = subplots(figsize=(14, 8))

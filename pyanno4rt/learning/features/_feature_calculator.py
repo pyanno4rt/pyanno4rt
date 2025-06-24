@@ -227,18 +227,19 @@ class FeatureCalculator():
             def get_subsegment_masks(subsegment):
                 """Get the masks for a single segment."""
 
-                # Initialize the radiomics mask
+                # Initialize the masks
                 radiomics_mask = zeros(ct_dimensions)
+                dose_mask = zeros(dose_dimensions)
 
-                # Insert ones at the indices of the segment
+                # Insert ones at the CT indices of the segment
                 radiomics_mask[unravel_index(
                     segmentation[subsegment]['raw_indices'],
                     ct_dimensions, order='F')] = 1
 
-                # Get the dose mask
-                dose_mask = zoom(
-                    radiomics_mask, (pair[0]/pair[1] for pair in zip(
-                        dose_dimensions, ct_dimensions)), order=0)
+                # Insert ones at the dose indices of the segment
+                dose_mask[unravel_index(
+                    segmentation[subsegment]['resized_indices'],
+                    dose_dimensions, order='F')] = 1
 
                 return (radiomics_mask, dose_mask)
 

@@ -121,7 +121,8 @@ class OutcomeGraph():
 
     def view(
             self,
-            treatment_plan):
+            treatment_plan,
+            identifiers):
         """
         Open the iterative outcome graph.
 
@@ -130,7 +131,13 @@ class OutcomeGraph():
         treatment_plan : object of class \
             :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
             The object used to represent the treatment plan.
+
+        identifiers : None or list
+            Track identifiers for filtering.
         """
+
+        # Set the value for the track identifiers
+        identifiers = [] if identifiers is None else identifiers
 
         # Get the segmentation and optimization data
         segmentation, optimization = (
@@ -156,14 +163,6 @@ class OutcomeGraph():
         track_len = max(len(track) for track in tracker.values())
         track_num = len(tracker)
 
-        # Set the expected number of ticks
-        number_of_ticks = 20 if self.ticksize < 17 else 10
-
-        # Determine the step length on the x-axis
-        x_step = min(
-            sorted(base*10**i for base in (1, 2, 5) for i in range(6)),
-            key=lambda x: abs(ceil(track_len/x)-number_of_ticks))
-
         # Set the marker styles
         markers = tuple(
             islice(cycle(['o', 's', 'v', 'd', '*', 'X']), track_num))
@@ -177,6 +176,22 @@ class OutcomeGraph():
         # Create a dictionary for the track styles
         styles = dict(
             zip(tracker, tuple(zip(markers, colors, lines))))
+
+        # Set the expected number of ticks
+        number_of_ticks = 20 if self.ticksize < 17 else 10
+
+        # Determine the step length on the x-axis
+        x_step = min(
+            sorted(base*10**i for base in (1, 2, 5) for i in range(6)),
+            key=lambda x: abs(ceil(track_len/x)-number_of_ticks))
+
+        # Check if track identifiers have been passed
+        if len(identifiers) > 0:
+
+            # Reduce the tracker
+            tracker = {
+                key: value for key, value in tracker.items()
+                if key in identifiers}
 
         # Get the figure and axis objects
         figure, axis = subplots(figsize=(14, 8))

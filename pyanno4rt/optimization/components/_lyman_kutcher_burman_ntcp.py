@@ -57,6 +57,9 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
     link : None or list, default=None
         Other segments used for joint evaluation.
 
+    transform : bool, default=False
+        Indicator for the transformation of the outcome function.
+
     identifier : None or str, default=None
         Additional string for naming the component.
 
@@ -81,6 +84,7 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
             rank=1,
             bounds=None,
             link=None,
+            transform=False,
             identifier=None,
             display=True):
 
@@ -99,12 +103,17 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
             rank=rank,
             bounds=bounds,
             link=link,
+            transform=transform,
             identifier=identifier,
             display=display)
 
         # Set the input arguments
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
+
+        # Convert the bounds
+        self.bounds = [
+            self.weight*self.reverse(bound) for bound in self.bounds]
 
     def to_dict(self):
         """Serialize the component into a dictionary."""
@@ -132,6 +141,46 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
 
         return cls(**dictionary)
 
+    def translate(
+            self,
+            value):
+        """
+        Translate function values to outcome values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Function value to translate.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Outcome value.
+        """
+
+        # Return the outcome value
+        return value
+
+    def reverse(
+            self,
+            value):
+        """
+        Reverse outcome values to function values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Outcome value to reverse.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Function value.
+        """
+
+        # Return the function value
+        return value
+
     def compute_value(
             self,
             dose,
@@ -153,7 +202,7 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
             Function value.
         """
 
-        return compute(dose, *self.parameter_value)
+        return self.reverse(compute(dose, *self.parameter_value))
 
     def compute_gradient(
             self,

@@ -57,6 +57,9 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
     link : None or list
         Other segments used for joint evaluation.
 
+    transform : bool, default=False
+        Indicator for the transformation of the outcome function.
+
     identifier : None or str
         Additional string for naming the component.
 
@@ -98,6 +101,9 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
     link : list
         See 'Parameters'.
 
+    transform : bool
+        See 'Parameters'.
+
     identifier : None or str
         See 'Parameters'.
 
@@ -124,6 +130,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             rank,
             bounds,
             link,
+            transform,
             identifier,
             display):
 
@@ -144,6 +151,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         self.rank = rank
         self.bounds = self.convert_bounds(bounds, embedding)
         self.link = [] if link is None else link
+        self.transform = transform
         self.identifier = identifier
         self.display = display
 
@@ -172,7 +180,8 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         """
 
         return all(self.__dict__[key] == other.__dict__[key] for key in (
-            'name', 'segment', 'component_type', 'link', 'identifier'))
+            'name', 'segment', 'component_type', 'link', 'transform',
+            'identifier'))
 
     def check(
             self,
@@ -218,6 +227,8 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             'link': (
                 partial(check_type, options=(type(None), list)),
                 partial(check_subtype, options=str)),
+            'transform': (
+                partial(check_type, options=bool),),
             'identifier': (
                 partial(check_type, options=(type(None), str)),),
             'display': (
@@ -355,6 +366,18 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             cls,
             dictionary):
         """Deserialize the component from a dictionary."""
+
+    @abstractmethod
+    def translate(
+            self,
+            value):
+        """Translate function values to outcome values."""
+
+    @abstractmethod
+    def reverse(
+            self,
+            value):
+        """Reverse outcome values to function values."""
 
     @abstractmethod
     def compute_value(

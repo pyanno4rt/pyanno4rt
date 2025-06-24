@@ -27,7 +27,8 @@ from pyanno4rt.visualization.design.visualizer import Ui_visualization_window
 from pyanno4rt.visualization.static import (
     ComponentGraph, DosimetricsTable, DVHGraph, MetricsGraph, MetricsTable,
     OutcomeGraph, PermutationImportanceBoxplot)
-from pyanno4rt.visualization._custom_styles import pbutton_composer
+from pyanno4rt.visualization._custom_styles import (
+    pbutton, tab_bright, tab_dark)
 
 # %% Class definition
 
@@ -81,16 +82,20 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Set the stylesheets
         self.set_styles({
-            'open_comp_graph_pbutton': pbutton_composer,
-            'open_outc_graph_pbutton': pbutton_composer,
-            'open_feat_vals_pbutton': pbutton_composer,
-            'open_metrics_graphs_pbutton': pbutton_composer,
-            'open_metrics_tables_pbutton': pbutton_composer,
-            'open_perm_pbutton': pbutton_composer,
-            'open_dvh_graph_pbutton': pbutton_composer,
-            'open_ind_pbutton': pbutton_composer,
-            'open_image_pbutton': pbutton_composer,
-            'close_visualizer_pbutton': pbutton_composer})
+            'categories_widget': tab_dark,
+            'tab_problem': tab_bright,
+            'tab_model': tab_bright,
+            'tab_plan': tab_bright,
+            'open_comp_graph_pbutton': pbutton,
+            'open_outc_graph_pbutton': pbutton,
+            'open_feat_vals_pbutton': pbutton,
+            'open_metrics_graphs_pbutton': pbutton,
+            'open_metrics_tables_pbutton': pbutton,
+            'open_perm_pbutton': pbutton,
+            'open_dvh_graph_pbutton': pbutton,
+            'open_ind_pbutton': pbutton,
+            'open_image_pbutton': pbutton,
+            'close_visualizer_pbutton': pbutton})
 
         # Add the widgets to the layouts
         self.comp_graph_plot_widget_layout.insertWidget(0, self.comp_widget)
@@ -211,8 +216,8 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             # Connect the 'valueChanged' event
             getattr(self, key).valueChanged.connect(value)
 
-    def disable_tabs(self):
-        """Disable irrelevant tabs."""
+    def disable_buttons(self):
+        """Disable irrelevant buttons."""
 
         # Get the datahub
         (computed_tomography, segmentation, optimization, model_evaluations,
@@ -323,7 +328,11 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         plotter = ComponentGraph(**inputs)
 
         # Open the view
-        plotter.view(self.plan)
+        plotter.view(
+            self.plan,
+            [item.name() for item in
+             self.comp_widget.plot_widget.getPlotItem().curves
+             if item.isVisible()])
 
     def open_outcome_graph(self):
         """Open the iterative outcome value graph."""
@@ -348,7 +357,11 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         plotter = OutcomeGraph(**inputs)
 
         # Open the view
-        plotter.view(self.plan)
+        plotter.view(
+            self.plan,
+            [item.name() for item in
+             self.outc_widget.plot_widget.getPlotItem().curves
+             if item.isVisible()])
 
     def open_metrics_graph(self):
         """Open the metrics graph."""
@@ -400,7 +413,11 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         plotter = DVHGraph(**inputs)
 
         # Open the view
-        plotter.view(self.plan)
+        plotter.view(
+            self.plan,
+            [item.name() for item in
+             self.dvh_widget.plot_widget.getPlotItem().curves
+             if item.isVisible()])
 
     def open_dosimetrics_table(self):
         """Open the dosimetrics table."""
@@ -622,8 +639,8 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         # Set the window position
         self.position()
 
-        # Disable irrelevant tabs
-        self.disable_tabs()
+        # Disable irrelevant buttons
+        self.disable_buttons()
 
         # Add the component tracks
         self.add_component_tracks()

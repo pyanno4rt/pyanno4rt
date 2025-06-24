@@ -6,7 +6,7 @@
 # %% External package import
 
 from ipyopt import Problem
-from numpy import array, indices
+from numpy import around, array, indices
 
 # %% Internal package import
 
@@ -112,7 +112,14 @@ class IpyoptSolver():
         """
 
         # Set the base output string
-        output_string = f"At iterate {args[1]}: f={round(args[2], 4)}"
+        output_string = f"At iterate {args[1]}: f={'%.4f' % args[2]}"
+
+        # Check if any constraints have been passed
+        if self.arguments['m'] > 0:
+
+            # Extend the output string
+            output_string = (
+                f"{output_string}, viol_g={around(args[3], 4)}")
 
         # Log a message about the intermediate function values
         Datahub().logger.display_info(output_string)
@@ -182,7 +189,8 @@ class IpyoptSolver():
         def objective(fluence):
             """Get the objective."""
 
-            return problem_instance.objective(fluence)
+            out = problem_instance.objective(fluence)
+            return out
 
         def gradient(fluence, out):
             """Get the gradient of the objective."""
@@ -239,7 +247,7 @@ class IpyoptSolver():
                 'dual_inf_tol': 1e-4,
                 'constr_viol_tol': 1e-4,
                 'compl_inf_tol': 1e-4,
-                'acceptable_iter': 3,
+                'acceptable_iter': 5,
                 'acceptable_tol': 1e10,
                 'acceptable_constr_viol_tol': 1e-2,
                 'acceptable_dual_inf_tol': 1e10,
@@ -248,7 +256,7 @@ class IpyoptSolver():
                 'max_iter': maximum_iterations,
                 'mu_strategy': 'adaptive',
                 'hessian_approximation': 'limited-memory',
-                'limited_memory_max_history': 6,
+                'limited_memory_max_history': 50,
                 'limited_memory_initialization': 'scalar2',
                 'linear_solver': algorithm}}
 

@@ -133,6 +133,9 @@ background-color: rgb(0, 0, 0);</string>
             <height>0</height>
            </size>
           </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(0, 0, 0);</string>
+          </property>
           <property name="currentIndex">
            <number>0</number>
           </property>
@@ -177,6 +180,9 @@ background-color: rgb(211, 215, 207);</string>
              <layout class="QVBoxLayout" name="tab_problem_layout">
               <item>
                <widget class="QTabWidget" name="tab_problem_fields">
+                <property name="styleSheet">
+                 <string notr="true">color: rgb(0, 0, 0); background-color: rgb(207, 215, 211);</string>
+                </property>
                 <property name="currentIndex">
                  <number>0</number>
                 </property>
@@ -3042,6 +3048,11 @@ background-color: rgb(211, 215, 207);</string>
              <layout class="QVBoxLayout" name="tab_model_layout">
               <item>
                <widget class="QTabWidget" name="tab_model_fields">
+                <property name="styleSheet">
+                 <string notr="true">color: rgb(0, 0, 0);
+selection-color: rgb(211, 215, 207);
+background-color: rgb(211, 215, 207);</string>
+                </property>
                 <property name="currentIndex">
                  <number>0</number>
                 </property>
@@ -3348,6 +3359,11 @@ background-color: rgb(211, 215, 207);</string>
              <layout class="QVBoxLayout" name="tab_plan_layout">
               <item>
                <widget class="QTabWidget" name="tab_plan_fields">
+                <property name="styleSheet">
+                 <string notr="true">color: rgb(0, 0, 0);
+selection-color: rgb(211, 215, 207);
+background-color: rgb(211, 215, 207);</string>
+                </property>
                 <property name="currentIndex">
                  <number>0</number>
                 </property>

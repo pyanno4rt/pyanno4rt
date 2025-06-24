@@ -119,7 +119,8 @@ class ComponentGraph():
 
     def view(
             self,
-            treatment_plan):
+            treatment_plan,
+            identifiers=None):
         """
         Open the iterative component graph.
 
@@ -128,7 +129,13 @@ class ComponentGraph():
         treatment_plan : object of class \
             :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
             The object used to represent the treatment plan.
+
+        ids : None or list
+            Track identifiers for filtering.
         """
+
+        # Set the value for the track identifiers
+        identifiers = [] if identifiers is None else identifiers
 
         # Get the segmentation and optimization data
         segmentation, optimization = (
@@ -178,6 +185,14 @@ class ComponentGraph():
         # Create a dictionary for the track styles
         styles = dict(
             zip(tracker, tuple(zip(markers, colors, lines))))
+
+        # Check if track identifiers have been passed
+        if len(identifiers) > 0:
+
+            # Reduce the tracker
+            tracker = {
+                key: value for key, value in tracker.items()
+                if key in identifiers}
 
         # Get the figure and axis objects
         figure, axis = subplots(figsize=(14, 8))

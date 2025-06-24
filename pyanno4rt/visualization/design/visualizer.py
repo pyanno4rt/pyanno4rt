@@ -58,6 +58,7 @@ class Ui_visualization_window(object):
         self.widget_layout.addWidget(self.meta_settings_left_widget, 0, 0, 1, 1)
         self.categories_widget = QtWidgets.QTabWidget(self.central_widget)
         self.categories_widget.setMinimumSize(QtCore.QSize(916, 0))
+        self.categories_widget.setStyleSheet("background-color: rgb(0, 0, 0);")
         self.categories_widget.setIconSize(QtCore.QSize(36, 50))
         self.categories_widget.setDocumentMode(True)
         self.categories_widget.setObjectName("categories_widget")
@@ -72,6 +73,7 @@ class Ui_visualization_window(object):
         self.tab_problem_layout = QtWidgets.QVBoxLayout()
         self.tab_problem_layout.setObjectName("tab_problem_layout")
         self.tab_problem_fields = QtWidgets.QTabWidget(self.tab_problem)
+        self.tab_problem_fields.setStyleSheet("color: rgb(0, 0, 0); background-color: rgb(207, 215, 211);")
         self.tab_problem_fields.setDocumentMode(True)
         self.tab_problem_fields.setObjectName("tab_problem_fields")
         self.comp_graph_widget = QtWidgets.QWidget()
@@ -1053,6 +1055,9 @@ class Ui_visualization_window(object):
         self.tab_model_layout = QtWidgets.QVBoxLayout()
         self.tab_model_layout.setObjectName("tab_model_layout")
         self.tab_model_fields = QtWidgets.QTabWidget(self.tab_model)
+        self.tab_model_fields.setStyleSheet("color: rgb(0, 0, 0);\n"
+"selection-color: rgb(211, 215, 207);\n"
+"background-color: rgb(211, 215, 207);")
         self.tab_model_fields.setDocumentMode(True)
         self.tab_model_fields.setObjectName("tab_model_fields")
         self.metrics_widget = QtWidgets.QWidget()
@@ -1167,6 +1172,9 @@ class Ui_visualization_window(object):
         self.tab_plan_layout = QtWidgets.QVBoxLayout()
         self.tab_plan_layout.setObjectName("tab_plan_layout")
         self.tab_plan_fields = QtWidgets.QTabWidget(self.tab_plan)
+        self.tab_plan_fields.setStyleSheet("color: rgb(0, 0, 0);\n"
+"selection-color: rgb(211, 215, 207);\n"
+"background-color: rgb(211, 215, 207);")
         self.tab_plan_fields.setDocumentMode(True)
         self.tab_plan_fields.setObjectName("tab_plan_fields")
         self.image_widget = QtWidgets.QWidget()

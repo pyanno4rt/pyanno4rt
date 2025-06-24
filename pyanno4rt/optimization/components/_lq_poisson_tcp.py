@@ -60,6 +60,9 @@ class LQPoissonTCP(RadiobiologicalComponent):
     link : None or list, default=None
         Other segments used for joint evaluation.
 
+    transform : bool, default=False
+        Indicator for the transformation of the outcome function.
+
     identifier : None or str, default=None
         Additional string for naming the component.
 
@@ -85,6 +88,7 @@ class LQPoissonTCP(RadiobiologicalComponent):
             rank=1,
             bounds=None,
             link=None,
+            transform=False,
             identifier=None,
             display=True):
 
@@ -104,12 +108,17 @@ class LQPoissonTCP(RadiobiologicalComponent):
             rank=rank,
             bounds=bounds,
             link=link,
+            transform=transform,
             identifier=identifier,
             display=display)
 
         # Set the input arguments
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
+
+        # Convert the bounds
+        self.bounds = [
+            -self.weight*self.reverse(bound) for bound in self.bounds]
 
     def to_dict(self):
         """Serialize the component into a dictionary."""
@@ -137,6 +146,58 @@ class LQPoissonTCP(RadiobiologicalComponent):
 
         return cls(**dictionary)
 
+    def translate(
+            self,
+            value):
+        """
+        Translate function values to outcome values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Function value to translate.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Outcome value.
+        """
+
+        # Check if the value is an iterable
+        if isinstance(value, (tuple, list)):
+
+            # Return a list of outcome values
+            return [-val for val in value]
+
+        # Return a single outcome value
+        return -value
+
+    def reverse(
+            self,
+            value):
+        """
+        Reverse outcome values to function values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Outcome value to reverse.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Function value.
+        """
+
+        # Check if the value is an iterable
+        if isinstance(value, (tuple, list)):
+
+            # Return a list of function values
+            return [-val for val in value]
+
+        # Return a single function value
+        return -value
+
     def compute_value(
             self,
             dose,
@@ -158,7 +219,7 @@ class LQPoissonTCP(RadiobiologicalComponent):
             Function value.
         """
 
-        return compute(dose, *self.parameter_value)
+        return self.reverse(compute(dose, *self.parameter_value))
 
     def compute_gradient(
             self,
@@ -228,7 +289,7 @@ def compute(dose, alpha, beta, volume_parameter, number_of_fractions):
     # Estimate the normalized slope at 50% tumor control
     normalized_slope = (log(2)*log(len(dose)/log(2)))/2
 
-    return -0.5**exp((2*normalized_slope/log(2)) * (1-eud/tolerance_dose_50))
+    return 0.5**exp((2*normalized_slope/log(2)) * (1-eud/tolerance_dose_50))
 
 
 @njit
