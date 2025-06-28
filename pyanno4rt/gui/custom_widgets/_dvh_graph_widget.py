@@ -86,8 +86,7 @@ class DVHGraphWidget(QWidget):
             if segment in dose_histogram['display_segments'])
 
         # Set the colormap
-        colors = colormap.get('tab20b', 'matplotlib').getLookupTable(
-            nPts=len(self.segments))
+        colors = colormap.get('tab20b').getLookupTable(nPts=len(self.segments))
 
         # Set the line styles
         linestyles = tuple(islice(

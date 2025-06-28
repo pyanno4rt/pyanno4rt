@@ -156,12 +156,6 @@ class DVHGraph():
         # Set the expected number of ticks
         number_of_ticks = 20 if self.ticksize < 17 else 10
 
-        # Determine the step length on the x-axis
-        x_step = min(
-            sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
-            key=lambda x: abs(ceil(max(dose_histogram['evaluation_points'])/x)
-                              - number_of_ticks))
-
         # Check if segment identifiers have been passed
         if len(identifiers) > 0:
 
@@ -192,6 +186,12 @@ class DVHGraph():
 
         # Configure the axis ticks
         axis.tick_params(axis='both', which='major', labelsize=self.ticksize)
+
+        # Determine the step length on the x-axis
+        x_step = min(
+            sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
+            key=lambda x: abs(ceil(max(dose_histogram['evaluation_points'])/x)
+                              - number_of_ticks))
 
         # Set the x- and y-ticks
         axis.set_xticks(tuple(i*x_step for i in range(

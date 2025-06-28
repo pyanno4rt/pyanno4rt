@@ -5,7 +5,8 @@
 # %% External package import
 
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import array, ceil, linspace, nan, sort, unravel_index
+from numpy import (
+    array, ceil, divide, linspace, nan, multiply, sort, unravel_index)
 from PyQt5.QtWidgets import QMainWindow
 from pyqtgraph import mkPen
 
@@ -15,7 +16,10 @@ from pyanno4rt.gui._custom_styles import cbox, sbox, pbutton_composer
 from pyanno4rt.gui.compilations.compare_window import Ui_compare_window
 from pyanno4rt.gui.custom_widgets import (
     DVHGraphCompareWidget, SliceCompareWidget)
-from pyanno4rt.tools import get_constraint_segments, get_objective_segments
+from pyanno4rt.tools import (
+    get_constraint_segments, get_objective_segments,
+    get_machine_learning_constraints, get_machine_learning_objectives,
+    get_radiobiological_constraints, get_radiobiological_objectives)
 
 # %% Class definition
 
@@ -72,6 +76,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             'plane_cbox': cbox,
             'opacity_sbox': sbox,
             'joint_dvh_pbutton': pbutton_composer,
+            'joint_outcome_pbutton': pbutton_composer,
             'close_compare_pbutton': pbutton_composer})
 
         # Loop over the QComboBox and QSpinBox elements
@@ -79,9 +84,6 @@ class CompareWindow(QMainWindow, Ui_compare_window):
 
             # Install the custom event filter
             getattr(self, box).installEventFilter(parent)
-
-        # 
-        self.joint_ntcp_pbutton.setEnabled(False)
 
         # Set the view box links
         self.set_links()
@@ -191,6 +193,9 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.joint_dvh_pbutton.clicked.connect(self.open_joint_dvh)
 
         # 
+        self.joint_outcome_pbutton.clicked.connect(self.open_joint_outcome)
+
+        # 
         self.close_compare_pbutton.clicked.connect(self.close)
 
     def add_plans(self, baseline, reference):
@@ -274,6 +279,24 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.baseline_dvh_widget.update_dvh(joint_segments)
         self.reference_dvh_widget.update_dvh(joint_segments)
         self.difference_dvh_widget.update_dvh(joint_segments)
+
+        # Check if any of the plans has no ML components
+        if any(len(
+                get_machine_learning_constraints(segmentation)
+                + get_machine_learning_objectives(segmentation)
+                + get_radiobiological_constraints(segmentation)
+                + get_radiobiological_objectives(segmentation)) == 0
+                for segmentation in (
+                        self.baseline.datahub.segmentation,
+                        self.reference.datahub.segmentation)):
+
+            # Disable the button
+            self.joint_outcome_pbutton.setEnabled(False)
+
+        else:
+
+            # Enable the button
+            self.joint_outcome_pbutton.setEnabled(True)
 
     def set_titles(
             self,
@@ -425,7 +448,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                 self.minimum_ledit.clear()
 
     def open_joint_dvh(self):
-        """Open the joint DVH plot."""
+        """Open the joint DVH graph."""
 
         # Get the segmentation dictionaries
         baseline_segmentation = self.baseline.datahub.segmentation
@@ -443,47 +466,47 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                 + get_objective_segments(reference_segmentation)))
 
         # Get the colormap
-        colors = get_cmap('jet')(linspace(0, 1.0, len(segments)))
+        colors = get_cmap('tab20b')(linspace(0, 1.0, len(segments)))
 
-        # Create a figure and subplots
+        # Get the figure and axis objects
         figure, axis = subplots(figsize=(14, 8))
 
         # Loop over the segments
         for index, segment in enumerate(segments):
 
-            # Add the baseline DVH curves
+            # Plot the baseline DVH curves
             axis.plot(
                 baseline_dvh['evaluation_points'],
-                baseline_dvh[segment]['dvh_values']*100,
-                linewidth=1.7,
+                100*baseline_dvh[segment]['dvh_values'],
+                linewidth=1.5,
                 color=colors[index],
                 linestyle='-',
                 label=f'{segment} (baseline) ')
 
-            # Add the reference DVH curves
+            # Plot the reference DVH curves
             axis.plot(
                 reference_dvh['evaluation_points'],
-                reference_dvh[segment]['dvh_values']*100,
-                linewidth=1.7,
+                100*reference_dvh[segment]['dvh_values'],
+                linewidth=1.5,
                 color=colors[index],
                 linestyle='--',
                 label=f'{segment} (reference) ')
 
-        # Set x- and y-label
-        axis.set_xlabel("Dose per fraction [Gy]", fontsize=16)
+        # Set the x- and y-labels
+        axis.set_xlabel("Dose [Gy]", fontsize=16)
         axis.set_ylabel("Relative volume [%]", fontsize=16)
 
-        # Change the tick label sizes for both axes
+        # Configure the axis ticks
         axis.tick_params(axis='both', which='major', labelsize=13)
 
         # Determine the step length on the x-axis
         x_step = min(
-            (0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100),
+            sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
             key=lambda x: abs(ceil(max(
                 baseline_dvh['evaluation_points'][-1],
                 reference_dvh['evaluation_points'][-1])/x)-20))
 
-        # Set x- and y-ticks
+        # Set the x- and y-ticks
         axis.set_xticks(tuple(i*x_step for i in range(int(ceil(max(
                 baseline_dvh['evaluation_points'][-1],
                 reference_dvh['evaluation_points'][-1]))/x_step)+1)))
@@ -502,12 +525,12 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             which='minor', color='lightgray', linestyle=':', linewidth=0.5)
         axis.minorticks_on()
 
-        # Set the legend and its facecolor
+        # Configure the legend
         _, labels = axis.get_legend_handles_labels()
         legend = axis.legend(labels, fontsize=13, framealpha=1)
         legend.get_frame().set_facecolor('snow')
 
-        # Apply a tight layout to the figure
+        # Apply a tight layout
         figure.tight_layout()
 
         # Get the figure manager
@@ -515,9 +538,131 @@ class CompareWindow(QMainWindow, Ui_compare_window):
 
         # Set the window title
         figure_manager.set_window_title(
-            "pyanno4rt - joint dose-volume histogram (DVH)")
+            "pyanno4rt - joint DVH graph")
 
-        # Show the plot in screen size
+        # Show the full-screen plot
+        figure_manager.window.showMaximized()
+
+    def open_joint_outcome(self):
+        """Open the joint iterative outcome graph."""
+
+        # Get the segmentation dictionaries
+        baseline_segmentation = self.baseline.datahub.segmentation
+        reference_segmentation = self.reference.datahub.segmentation
+
+        # Get the dose histogram dictionaries
+        baseline_opt = self.baseline.datahub.optimization
+        reference_opt = self.reference.datahub.optimization
+
+        # Get the outcome model-based optimization components
+        baseline_components, reference_components = ((
+            get_machine_learning_constraints(segmentation)
+            + get_machine_learning_objectives(segmentation)
+            + get_radiobiological_constraints(segmentation)
+            + get_radiobiological_objectives(segmentation))
+            for segmentation in (baseline_segmentation, reference_segmentation)
+            )
+
+        # Get the baseline tracks to be displayed
+        baseline_tracker = {
+            component.track_id: component.translate(list(
+                divide(
+                    baseline_opt['problem'].tracker[component.track_id],
+                    component.weight)))
+            for component in baseline_components if component.display}
+
+        # Get the reference tracks to be displayed
+        reference_tracker = {
+            component.track_id: component.translate(list(
+                divide(
+                    reference_opt['problem'].tracker[component.track_id],
+                    component.weight)))
+            for component in reference_components if component.display}
+
+        # Get the track statistics
+        track_len = max(
+            len(track) for tracker in (baseline_tracker, reference_tracker)
+            for track in tracker.values())
+        track_num = len(baseline_tracker) + len(reference_tracker)
+
+        # Set the colormap
+        colors = get_cmap('tab20b')(linspace(0, 1.0, track_num))
+
+        # Determine the step length on the x-axis
+        x_step = min(
+            sorted(base*10**i for base in (1, 2, 5) for i in range(6)),
+            key=lambda x: abs(ceil(track_len/x)-20))
+
+        # Get the figure and axis objects
+        figure, axis = subplots(figsize=(14, 8))
+
+        # Set the plot title
+        axis.set_title(label='', fontsize=16)
+
+        # Loop over the tracks
+        for index, (track, values) in enumerate(baseline_tracker.items()):
+
+            # Plot the track
+            axis.plot(
+                range(1, len(values)+1),
+                multiply(values, 100),
+                color=colors[index],
+                linestyle='-',
+                linewidth=1.5,
+                label=f'{track} (baseline) ')
+
+        # Loop over the reference tracks
+        for index, (track, values) in enumerate(reference_tracker.items()):
+
+            # Plot the track
+            axis.plot(
+                range(1, len(values)+1),
+                multiply(values, 100),
+                color=colors[len(baseline_tracker)+index],
+                linestyle='--',
+                linewidth=1.5,
+                label=f'{track} (reference) ')
+
+        # Set the x- and y-labels
+        axis.set_xlabel(xlabel="Evaluation step", fontsize=16)
+        axis.set_ylabel(ylabel="Outcome value [%]", fontsize=16)
+
+        # Configure the axis ticks
+        axis.tick_params(axis='both', which='major', labelsize=13)
+
+        # Set the x- and y-ticks
+        axis.set_xticks(tuple(
+            i*x_step for i in range(int(ceil(track_len/x_step))+1)))
+        axis.set_yticks(tuple(100*i/20 for i in range(21)))
+
+        # Set the x- and y-limits
+        axis.set_xlim(0, track_len+x_step/2)
+        axis.set_ylim(-1, 101)
+
+        # Set the facecolor for the axis
+        axis.set_facecolor('whitesmoke')
+
+        # Specify the grid with a subgrid
+        axis.grid(which='major', color='lightgray', linewidth=0.8)
+        axis.grid(
+            which='minor', color='lightgray', linestyle=':', linewidth=0.5)
+        axis.minorticks_on()
+
+        # Configure the legend
+        _, labels = axis.get_legend_handles_labels()
+        legend = axis.legend(labels, fontsize=13, framealpha=1)
+        legend.get_frame().set_facecolor('snow')
+
+        # Apply a tight layout
+        figure.tight_layout()
+
+        # Get the figure manager
+        figure_manager = get_current_fig_manager()
+
+        # Set the window title
+        figure_manager.set_window_title("Iterative outcome graph")
+
+        # Show the full-screen plot
         figure_manager.window.showMaximized()
 
     def evaluate_dosimetrics(

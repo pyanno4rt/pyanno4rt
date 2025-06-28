@@ -87,8 +87,8 @@ class OutcomeGraphWidget(QWidget):
             cycle(['o', 's', 't', 'd', 'star', 'x']), track_num))
 
         # Set the colormap
-        colors = colormap.get('tab20b', 'matplotlib').getLookupTable(
-            nPts=track_num)
+        colors = colormap.get(
+            'tab20b', 'matplotlib').getLookupTable(nPts=track_num)
 
         # Set the line styles
         linestyles = tuple(islice(

@@ -1052,9 +1052,6 @@ border-color: rgb(186, 189, 182);</string>
           <property name="spacing">
            <number>10</number>
           </property>
-          <property name="rightMargin">
-           <number>35</number>
-          </property>
           <item>
            <widget class="QPushButton" name="joint_dvh_pbutton">
             <property name="sizePolicy">
@@ -1065,13 +1062,13 @@ border-color: rgb(186, 189, 182);</string>
             </property>
             <property name="minimumSize">
              <size>
-              <width>121</width>
+              <width>161</width>
               <height>31</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>121</width>
+              <width>161</width>
               <height>31</height>
              </size>
             </property>
@@ -1090,7 +1087,7 @@ border-color: rgb(186, 189, 182);</string>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="joint_ntcp_pbutton">
+           <widget class="QPushButton" name="joint_outcome_pbutton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1099,13 +1096,13 @@ border-color: rgb(186, 189, 182);</string>
             </property>
             <property name="minimumSize">
              <size>
-              <width>121</width>
+              <width>161</width>
               <height>31</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>121</width>
+              <width>161</width>
               <height>31</height>
              </size>
             </property>
@@ -1119,7 +1116,7 @@ border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
             </property>
             <property name="text">
-             <string>Show joint NTCP</string>
+             <string>Show joint outcome</string>
             </property>
            </widget>
           </item>
