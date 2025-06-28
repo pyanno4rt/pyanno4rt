@@ -5,7 +5,7 @@
 # %% External package import
 
 from copy import deepcopy
-from numpy import array, dot, exp
+from numpy import array
 
 # %% Internal package import
 
@@ -197,8 +197,8 @@ class LogisticRegressionTCP(MachineLearningComponent):
         self.parameter_value = list(self.model.prediction_model.coef_[0])
 
         # Convert the bounds
-        self.bounds = [
-            -self.weight*self.reverse(bound) for bound in self.bounds]
+        self.bounds = sorted(
+            self.weight*self.reverse(bound) for bound in self.bounds)
 
     def translate(
             self,
@@ -224,10 +224,11 @@ class LogisticRegressionTCP(MachineLearningComponent):
             if isinstance(value, (tuple, list)):
 
                 # Return a list of transformed outcome values
-                return [sigmoid(-val) if val < -0.5 else -val for val in value]
+                return [
+                    sigmoid(-4*val-2) if val > -0.5 else -val for val in value]
 
             # Return a single transformed outcome value
-            return sigmoid(-value) if value < -0.5 else -value
+            return sigmoid(-4*value-2) if value > -0.5 else -value
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
@@ -263,11 +264,12 @@ class LogisticRegressionTCP(MachineLearningComponent):
 
                 # Return a list of transformed function values
                 return [
-                    inverse_sigmoid(-val) if val < -0.5
+                    -0.25*inverse_sigmoid(val)-0.5 if val < 0.5
                     else -val for val in value]
 
             # Return a single transformed function value
-            return inverse_sigmoid(-value) if value < -0.5 else -value
+            return (
+                -0.25*inverse_sigmoid(value)-0.5 if value < 0.5 else -value)
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
@@ -311,7 +313,7 @@ class LogisticRegressionTCP(MachineLearningComponent):
             preprocessed_features, self.model.prediction_model)
 
         # Clip the prediction for numerical stability
-        prediction = max(1e-16, min(prediction, 1-1e-16))
+        prediction = max(1e-6, min(prediction, 1-1e-6))
 
         return self.reverse(prediction)
 
@@ -348,20 +350,23 @@ class LogisticRegressionTCP(MachineLearningComponent):
         # Get the model coefficients
         coefficients = array(self.parameter_value)
 
+        # Get the outcome prediction
+        prediction = self.model.predict(
+            preprocessed_features, self.model.prediction_model)
+
+        # Clip the prediction for numerical stability
+        prediction = max(1e-6, min(prediction, 1-1e-6))
+
         # Check if the transformation should be applied
-        if (self.transform and self.model.predict(
-            preprocessed_features, self.model.prediction_model) > 0.5):
+        if self.transform and prediction < 0.5:
 
             # Get the transformed model gradient
-            model_gradient = -array(coefficients)
+            model_gradient = -0.25*array(coefficients)
 
         else:
 
             # Get the model gradient
-            model_gradient = -(
-                exp(dot(preprocessed_features, coefficients))
-                / (1+exp(dot(preprocessed_features, coefficients)))**2
-                * coefficients)
+            model_gradient = -(prediction - prediction**2) * coefficients
 
         # Compute the preprocessing pipeline gradient
         preprocessing_gradient = (

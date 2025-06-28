@@ -315,7 +315,7 @@ class NeuralNetworkNTCPWindow(QMainWindow, Ui_neural_network_ntcp_window):
         lower, upper = (None, None) if bounds is None else bounds
 
         # Get the data columns list
-        self.data_columns = model_parameters['data_columns']
+        self.data_columns = model_parameters.data_columns
 
         # Get the tune space
         tune_space = model_parameters.tune_space

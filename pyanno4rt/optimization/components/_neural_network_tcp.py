@@ -5,8 +5,8 @@
 # %% External package import
 
 from copy import deepcopy
-from numpy import array, exp
-from tensorflow import cast, float64, GradientTape
+from numpy import array
+from tensorflow import cast, clip_by_value, float64, GradientTape
 
 # %% Internal package import
 
@@ -206,8 +206,8 @@ class NeuralNetworkTCP(MachineLearningComponent):
             for weight in weights)
 
         # Convert the bounds
-        self.bounds = [
-            -self.weight*self.reverse(bound) for bound in self.bounds]
+        self.bounds = sorted(
+            self.weight*self.reverse(bound) for bound in self.bounds)
 
     def translate(
             self,
@@ -233,10 +233,11 @@ class NeuralNetworkTCP(MachineLearningComponent):
             if isinstance(value, (tuple, list)):
 
                 # Return a list of transformed outcome values
-                return [sigmoid(-val) if val < -0.5 else -val for val in value]
+                return [
+                    sigmoid(-4*val-2) if val > -0.5 else -val for val in value]
 
             # Return a single transformed outcome value
-            return sigmoid(-value) if value < -0.5 else -value
+            return sigmoid(-4*value-2) if value > -0.5 else -value
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
@@ -272,11 +273,12 @@ class NeuralNetworkTCP(MachineLearningComponent):
 
                 # Return a list of transformed function values
                 return [
-                    inverse_sigmoid(-val) if val < -0.5
+                    -0.25*inverse_sigmoid(val)-0.5 if val < 0.5
                     else -val for val in value]
 
             # Return a single transformed function value
-            return inverse_sigmoid(-value) if value < -0.5 else -value
+            return (
+                -0.25*inverse_sigmoid(value)-0.5 if value < 0.5 else -value)
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
@@ -321,7 +323,7 @@ class NeuralNetworkTCP(MachineLearningComponent):
             preprocessed_features, self.model.prediction_model)
 
         # Clip the prediction for numerical stability
-        prediction = max(1e-16, min(prediction, 1-1e-16))
+        prediction = max(1e-6, min(prediction, 1-1e-6))
 
         return self.reverse(prediction)
 
@@ -362,23 +364,26 @@ class NeuralNetworkTCP(MachineLearningComponent):
             # Watch the gradient operations on the preprocessed features
             tape.watch(preprocessed_features)
 
-            # Compute the model output from the features
-            output = self.model.prediction_model(preprocessed_features)
+            # Get the outcome prediction
+            prediction = self.model.prediction_model(preprocessed_features)
+
+            # Clip the prediction for numerical stability
+            prediction = clip_by_value(prediction, 1e-6, 1-1e-6)
 
             # Check if the transformation should be applied
-            if (self.transform and self.model.predict(
-                    preprocessed_features, self.model.prediction_model) > 0.5):
+            if self.transform and prediction < 0.5:
 
                 # Get the transformed model gradient
                 model_gradient = -array(
-                    tape.gradient(output, preprocessed_features)
-                    ).reshape(-1) / (output - output**2)
+                    tape.gradient(prediction, preprocessed_features)
+                    ).reshape(-1) / (prediction - prediction**2)
 
             else:
 
                 # Get the standard model gradient
                 model_gradient = -array(
-                    tape.gradient(output, preprocessed_features)).reshape(-1)
+                    tape.gradient(prediction, preprocessed_features)
+                    ).reshape(-1)
 
         # Compute the preprocessing pipeline gradient
         preprocessing_gradient = (

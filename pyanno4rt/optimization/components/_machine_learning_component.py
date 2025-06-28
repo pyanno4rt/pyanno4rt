@@ -298,19 +298,16 @@ class MachineLearningComponent(metaclass=ABCMeta):
             Lower and upper function bounds.
         """
 
-        # Get the (N)TCP function sign
-        sign = (-1.0)**('NTCP' not in self.name)
-
         # Check if the bounds are None
         if bounds is None or embedding == 'passive':
 
             # Return the default function bounds
-            return sorted((0.0, sign))
+            return (0.0, 1.0)
 
         # Return the transformed function bounds
         return sorted(
-            (0.0 if bounds[0] is None or bounds[0] < 0 else sign*bounds[0],
-             sign if bounds[1] is None or bounds[1] > 1 else sign*bounds[1]))
+            (0.0 if bounds[0] is None or bounds[0] < 0 else float(bounds[0]),
+             1.0 if bounds[1] is None or bounds[1] > 1 else float(bounds[1])))
 
     def get_parameter_value(self):
         """

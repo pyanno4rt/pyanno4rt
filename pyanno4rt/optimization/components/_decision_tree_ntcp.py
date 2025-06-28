@@ -271,7 +271,7 @@ class DecisionTreeNTCP(MachineLearningComponent):
             preprocessed_features, self.model.optimization_model)
 
         # Clip the prediction for numerical stability
-        prediction = max(1e-16, min(prediction, 1-1e-16))
+        prediction = max(1e-6, min(prediction, 1-1e-6))
 
         return self.reverse(prediction)
 

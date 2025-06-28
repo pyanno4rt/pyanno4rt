@@ -196,8 +196,8 @@ class KNeighborsTCP(MachineLearningComponent):
         self.parameter_value = []
 
         # Convert the bounds
-        self.bounds = [
-            -self.weight*self.reverse(bound) for bound in self.bounds]
+        self.bounds = sorted(
+            self.weight*self.reverse(bound) for bound in self.bounds)
 
     def translate(
             self,
@@ -284,7 +284,7 @@ class KNeighborsTCP(MachineLearningComponent):
             preprocessed_features, self.model.prediction_model)
 
         # Clip the prediction for numerical stability
-        prediction = max(1e-16, min(prediction, 1-1e-16))
+        prediction = max(1e-6, min(prediction, 1-1e-6))
 
         return self.reverse(prediction)
 

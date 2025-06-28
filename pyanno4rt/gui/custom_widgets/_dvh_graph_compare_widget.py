@@ -89,28 +89,23 @@ class DVHGraphCompareWidget(QWidget):
         self.baseline = baseline
         self.reference = reference
 
-        # 
-        self.segments = tuple(segment for segment in self.dose_histogram
-                              if segment not in ('evaluation_points',
-                                                 'display_segments'))
+        # Get the segment names
+        self.segments = tuple(
+            segment for segment in (*dose_histogram,)
+            if segment in dose_histogram['display_segments'])
 
-        # Get the colormap
-        colors = colormap.get('jet', 'matplotlib').getLookupTable(
+        # Set the colormap
+        colors = colormap.get('tab20b', 'matplotlib').getLookupTable(
             nPts=len(self.segments))
 
         # Set the line styles
-        line_styles = tuple(islice(cycle([Qt.SolidLine, Qt.DashLine,
-                                          Qt.DotLine, Qt.DashDotLine]),
-                                   len(self.segments)))
+        linestyles = tuple(islice(
+            cycle([Qt.SolidLine, Qt.DashLine, Qt.DotLine, Qt.DashDotLine]),
+            len(self.segments)))
 
-        # Create a dictionary with the segment styles
-        self.segment_styles = dict(
-            zip(self.segments, tuple(zip(colors, line_styles))))
-
-        # Set the signal proxy to update the crosshair at mouse moves
-        self.crosshair_update = SignalProxy(
-            self.plot_widget.scene().sigMouseMoved, rateLimit=60,
-            slot=self.update_crosshair)
+        # Create a dictionary for the DVH styles
+        self.styles = dict(
+            zip(self.segments, tuple(zip(colors, linestyles))))
 
         # 
         if all(plan is not None for plan in (baseline, reference)):
@@ -123,13 +118,15 @@ class DVHGraphCompareWidget(QWidget):
             # 
             self.delta = ""
 
-        # Set the graph title
-        self.plot_widget.setTitle("<span style='color: #FFAE42; "
-                                 f"font-size: 11pt'>{self.delta}"
-                                 "dose: %0.2f</span>, "
-                                 "<span style='color: #FFAE42; "
-                                 "font-size: 11pt'>vRel: %0.1f</span>"
-                                 % (0, 0.0))
+        # Set the plot title
+        self.plot_widget.setTitle(
+            "<span style='color: #FFAE42; font-size: 10pt'>"
+            f"{self.delta}dose: %0.2f, volume: %0.2f</span>" % (0.00, 0.00))
+
+        # Set the plot labels
+        self.plot_widget.setLabels(
+            left="Relative volume [%]", bottom="Dose [Gy]",
+            right=" ", top=" ")
 
         # 
         if x_range is None:
@@ -138,25 +135,29 @@ class DVHGraphCompareWidget(QWidget):
                 min(0, min(self.dose_histogram['evaluation_points'])),
                 max(self.dose_histogram['evaluation_points']))
 
-        # 
-        self.y_range = (0, 100)
-
-        # 
+        # Set the plot limits
         self.plot_widget.plotItem.vb.setLimits(
-            xMin=self.x_range[0], xMax=self.x_range[1],
-            yMin=self.y_range[0]-0.1, yMax=self.y_range[1]+0.1)
+            xMin=self.x_range[0], xMax=1.1*self.x_range[1], yMin=-1, yMax=101)
 
-        # 
+        # Enable the auto-range
         self.plot_widget.plotItem.vb.enableAutoRange()
 
-        self.plot_widget.getPlotItem().showAxis('bottom')
-        self.plot_widget.getPlotItem().showAxis('top')
-        self.plot_widget.getPlotItem().showAxis('left')
-        self.plot_widget.getPlotItem().showAxis('right')
+        # Add the legend
+        self.plot_widget.addLegend(
+            offset=(-0.2, 0.2),
+            labelTextSize=(
+                '9pt' if len(self.segments) <= 13
+                else '6pt' if len(self.segments) <= 23
+                else '3pt' if len(self.segments) <= 33
+                else '0pt'))
 
-        self.plot_widget.showGrid(x=True, y=True, alpha=0.2)
-        self.plot_widget.setLabels(
-            left=" ", right=" ", top=" ", bottom=" ")
+        # Show the grid
+        self.plot_widget.showGrid(x=True, y=True, alpha=0.3)
+
+        # Set the signal proxy to update the crosshair at mouse moves
+        self.crosshair_update = SignalProxy(
+            self.plot_widget.scene().sigMouseMoved, rateLimit=60,
+            slot=self.update_crosshair)
 
     def get_segment_statistics(self, event):
         """."""
@@ -219,72 +220,83 @@ class DVHGraphCompareWidget(QWidget):
             event):
         """Update the crosshair at mouse moves."""
 
-        # Get the coordinates from the triggered event
+        # Get the event coordinates
         coordinates = event[0]
 
-        # Check if the coordinates lie within the scene bounding rectangle
+        # Check if the coordinates are within the scene bounding rectangle
         if self.plot_widget.sceneBoundingRect().contains(coordinates):
 
-            # Get the mouse point in the view's coordinate system
+            # Get the mouse point in the viewbox coordinate system
             mouse_point = self.plot_widget.plotItem.vb.mapSceneToView(
                 coordinates)
 
-            if (self.x_range[0] <= mouse_point.x() <= self.x_range[1]
-                    and self.y_range[0] <= mouse_point.y() <= self.y_range[1]):
-
-                # Update the graph title
-                self.plot_widget.setTitle(
-                    "<span style='color: #FFAE42; "
-                    f"font-size: 11pt'>{self.delta}"
-                    "dose: %0.2f</span>, "
-                    "<span style='color: #FFAE42; "
-                    "font-size: 11pt'>vRel: %0.1f</span>"
-                    % (mouse_point.x(), mouse_point.y()))
-
-            else:
-
-                # Update the graph title
-                self.plot_widget.setTitle(
-                    "<span style='color: #FFAE42; "
-                    f"font-size: 11pt'>{self.delta}"
-                    "dose: %0.2f</span>, "
-                    "<span style='color: #FFAE42; "
-                    "font-size: 11pt'>vRel: %0.1f</span>"
-                    % (0, 0.0))
+            # Get the limits of the viewbox
+            limits = self.plot_widget.plotItem.vb.getState()['limits']
 
             # Update the positions of vertical and horizontal lines
             self.vertical_line.setPos(mouse_point.x())
             self.horizontal_line.setPos(mouse_point.y())
+
+            # Check if the mouse point is within the limits
+            if ((0 <= mouse_point.x() <= limits['xLimits'][1])
+                    and 0 <= mouse_point.y() <= 100):
+
+                # Set the point to the current mouse point
+                point = (mouse_point.x(), mouse_point.y())
+
+            else:
+
+                # Set the point to default
+                point = (0.00, 0.00)
+
+            # Update the graph title
+            self.plot_widget.setTitle(
+                "<span style='color: #FFAE42; font-size: 10pt'>"
+                f"{self.delta}dose: %0.2f, volume: %0.2f</span>" % point)
 
     def update_dvh(self, segments):
         """."""
 
         for segment in segments:
 
-            pen = mkPen(color=self.segment_styles[segment][0],
-                        style=self.segment_styles[segment][1],
+            pen = mkPen(color=self.styles[segment][0],
+                        style=self.styles[segment][1],
                         width=2)
 
             plot = self.plot_widget.plot(
                 self.dose_histogram['evaluation_points'],
-                self.dose_histogram[segment]['dvh_values']*100,
-                pen=pen, name=segment, clickable=True)
+                100*self.dose_histogram[segment]['dvh_values'],
+                pen=pen,
+                name=segment,
+                clickable=True)
+
             plot.sigClicked.connect(self.get_segment_statistics)
             plot.sigClicked.connect(self.select_dvh_curves_from_parent)
             self.plot_widget.scene().sigMouseClicked.connect(
                 self.unselect_dvh_curves_from_parent)
 
     def reset_dvh(self):
-        """."""
+        """Reset the DVH graph."""
 
+        # Clear the plot graph
         self.plot_widget.clear()
+
+        # Hide the axes
         self.plot_widget.getPlotItem().hideAxis('bottom')
         self.plot_widget.getPlotItem().hideAxis('top')
         self.plot_widget.getPlotItem().hideAxis('left')
         self.plot_widget.getPlotItem().hideAxis('right')
+
+        # Clear the title
         self.plot_widget.setTitle(None)
+
+        # Check if the widget has a crosshair update attribute
         if hasattr(self, 'crosshair_update'):
+
+            # Remove the attribute
             delattr(self, 'crosshair_update')
+
+        # Clear the dosimetrics line editors
         self.parent.segment_ledit.clear()
         self.parent.mean_ledit.clear()
         self.parent.std_ledit.clear()

@@ -192,6 +192,11 @@ class DosimetricsEvaluator():
                     # Check if the target dose level exists
                     if not isnan(target_dose):
 
+                        # Upscale the target dose
+                        target_dose = (
+                            hub.dose_information['number_of_fractions']
+                            * target_dose)
+
                         # Set the dose threshold
                         threshold = 0.95*target_dose
 

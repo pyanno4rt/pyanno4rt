@@ -2660,14 +2660,16 @@ class MainWindow(QMainWindow, Ui_main_window):
         baseline = self.plans[self.baseline_ledit.text()]
         reference = self.plans[self.reference_cbox.currentText()]
 
-        # Check if the CT cubes have different shapes
-        if (baseline.datahub.computed_tomography['cubeHU'].shape !=
-                reference.datahub.computed_tomography['cubeHU'].shape):
+        # Check if the plans have different CT shapes or segments
+        if ((baseline.datahub.computed_tomography['cubeHU'].shape !=
+             reference.datahub.computed_tomography['cubeHU'].shape)
+            or (tuple(baseline.datahub.segmentation) !=
+                tuple(reference.datahub.segmentation))):
 
             # Define the output string
             message = ("Baseline and reference plan have different CT cube "
-                       "dimensions. Only plans with equal dimensions can be "
-                       "compared!")
+                       "dimensions or segmented structures. Only plans with "
+                       "equal dimensions and segments can be compared!")
 
             # Show an information message box
             QMessageBox.information(self, 'pyanno4rt', message)
