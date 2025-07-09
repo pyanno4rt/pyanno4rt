@@ -4,6 +4,24 @@
 
 # %% Style definitions
 
+# Set the stylesheet for the standard combo box fields
+cbox = ('''
+        QComboBox {
+            color: rgb(0, 0, 0);
+            selection-color: rgb(0, 0, 0);
+            background-color: rgb(238, 238, 236);
+            border: 1px solid;
+            border-color: rgb(186, 189, 182);
+            }
+        QComboBox QAbstractItemView {
+            color: rgb(0, 0, 0);
+            background-color: rgb(238, 238, 236);
+            }
+        QComboBox:disabled {
+            color: rgb(153, 153, 153);
+            }
+        ''')
+
 # Set the stylesheet for the push buttons
 pbutton = ('''
            QPushButton {

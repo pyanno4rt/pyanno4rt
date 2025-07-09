@@ -237,6 +237,12 @@ class MachineLearningModel(metaclass=ABCMeta):
                     self.configuration['feature_values'],
                     self.configuration['label_values'])
 
+            # Else, check if the model has already been inspected
+            elif model_label in hub.model_inspections:
+
+                # Delete the previous results
+                del hub.model_inspections[model_label]
+
             # Check if the model should be evaluated
             if evaluate_model:
 
@@ -247,6 +253,12 @@ class MachineLearningModel(metaclass=ABCMeta):
                 self.evaluate(
                     self.configuration['feature_values'],
                     self.configuration['label_values'])
+
+            # Else, check if the model has already been evaluated
+            elif model_label in hub.model_evaluations:
+
+                # Delete the previous results
+                del hub.model_evaluations[model_label]
 
         # Update the display options in the datahub
         hub.model_instances[self.model_label]['display_options'] = (

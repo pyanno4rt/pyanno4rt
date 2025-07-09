@@ -112,7 +112,7 @@ class MetricsTable():
             column_colors = cm.BuPu(full(len((*dataframes[i][2],)), 0.1))
 
             # Set the title for the table
-            axis[i, 0].set_title(model_names[i], fontweight='semibold')
+            axis[i, 0].set_title(model_names[i], fontweight='semibold', pad=10)
 
             # Generate the table from the dataframe
             table = axis[i, 0].table(

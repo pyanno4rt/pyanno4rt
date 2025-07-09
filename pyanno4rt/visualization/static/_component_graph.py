@@ -198,7 +198,9 @@ class ComponentGraph():
         figure, axis = subplots(figsize=(14, 8))
 
         # Set the plot title
-        axis.set_title(label=self.title, fontsize=self.titlesize)
+        axis.set_title(
+            label=self.title, fontsize=self.titlesize, fontweight='semibold',
+            pad=10)
 
         # Loop over the tracks
         for track, values in tracker.items():

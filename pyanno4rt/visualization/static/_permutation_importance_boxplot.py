@@ -1,152 +1,211 @@
-"""Permutation importance boxplot."""
+"""Permutation importance boxplots."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
-from IPython import get_ipython
-from matplotlib.pyplot import get_current_fig_manager, subplots
+from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
+from numpy import linspace
 from pandas import DataFrame
-from seaborn import boxplot as sns_boxplot
+from seaborn import boxplot
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import (
-    get_machine_learning_constraints, get_machine_learning_objectives)
-
-# %% Set options
-
-try:
-    get_ipython().run_line_magic('matplotlib', 'qt5')
-except AttributeError:
-    pass
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
 
 class PermutationImportanceBoxplot():
     """
-    Permutation importance boxplot class.
+    Permutation importance boxplots class.
 
-    This class provides a permutation importance boxplot for the data-driven \
-    models.
+    This class provides (sorted) boxplots with the permutation importance \
+    statistics of the outcome prediction models.
+
+    Parameters
+    ----------
+    title : str, default=''
+        Title of the plot.
+
+    titlesize : int, default=16
+        Font size of the title.
+
+    xlabel : str, default='Feature'
+        Label for the x-axis.
+
+    labelsize : int, default=11
+        Font size of the labels.
+
+    ticksize : int, default=9
+        Font size of the axis ticks.
+
+    tickangle : int, default=15
+        Rotation angle of the axis ticks.
+
+    background : {'lightgray', 'white', 'whitesmoke'}, default='whitesmoke'
+        Background color for the plot.
+
+    gridlines : bool, default=True
+        Indicator for the display of the gridlines.
+
+    gridcolor : {'black', 'darkgray', 'lightgray'}, default='lightgray'
+        Color of the gridlines.
+
+    Attributes
+    ----------
+    title : str
+        See 'Parameters'.
+
+    titlesize : int
+        See 'Parameters'.
+
+    xlabel : str
+        See 'Parameters'.
+
+    labelsize : int
+        See 'Parameters'.
+
+    ticksize : int
+        See 'Parameters'.
+
+    tickangle : int
+        See 'Parameters'.
+
+    background : {'lightgray', 'white', 'whitesmoke'}
+        See 'Parameters'.
+
+    gridlines : bool
+        See 'Parameters'.
+
+    gridcolor : {'black', 'darkgray', 'lightgray'}
+        See 'Parameters'.
     """
 
-    def view(self):
-        """Open the permutation importance boxplot."""
+    def __init__(
+            self,
+            title='',
+            titlesize=16,
+            xlabel='Feature',
+            labelsize=11,
+            ticksize=9,
+            tickangle=15,
+            background='whitesmoke',
+            gridlines=True,
+            gridcolor='lightgray'):
 
-        def create_subtitle(figure, grid, title):
-            """Create a row subtitle."""
+        # Get the input arguments
+        inputs = filter_dict(vars(), remove_keys=('self',))
 
-            # Add the subplot grid
-            row = figure.add_subplot(grid)
+        # Loop over the input arguments
+        for key, value in inputs.items():
 
-            # Set the row title
-            row.set_title(f"{title}\n", fontweight='semibold', pad=20)
+            # Set the attribute
+            setattr(self, key, value)
 
-            # Turn the row frame off
-            row.set_frame_on(False)
+    def view(
+            self,
+            treatment_plan,
+            model_name,
+            domain,
+            number_of_features):
+        """
+        Open the permutation importance boxplots.
 
-            # Hide the axis
-            row.axis('off')
+        Parameters
+        ----------
+        treatment_plan : object of class \
+            :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
+            The object used to represent the treatment plan.
 
-        # Initialize the datahub
-        hub = Datahub()
+        model_name : str
+            Identifier for the outcome model.
 
-        # Log a message about the plot opening
-        hub.logger.display_info("Opening permutation importance boxplot ...")
+        domain : {'Training', 'Out-of-folds'}
+            Domain of the permutation importance statistics.
 
-        # Get the inspection data
-        data = tuple((
-            key,
-            value['permutation_importance']['score'],
+        number_of_features : int
+            Number of features to be displayed.
+        """
+
+        # Get the datasets and inspection results
+        datasets, inspection = (
+            getattr(treatment_plan.datahub, attribute) for attribute in (
+                'datasets', 'model_inspections'))
+
+        # Get the plot data
+        data = list((
+            model_name,
+            inspection[model_name]['permutation_importance']['score'],
             DataFrame(
-                data=value['permutation_importance']['Training'],
-                columns=hub.datasets[key]['feature_names']),
-            DataFrame(
-                data=value['permutation_importance']['Out-of-folds'],
-                columns=hub.datasets[key]['feature_names']))
-            for key, value in hub.model_inspections.items()
-            if any(component.model_parameters.model_label == key
-                   for component in (
-                           get_machine_learning_constraints(hub.segmentation)
-                           + get_machine_learning_objectives(hub.segmentation))
-                   ))
+                data=inspection[model_name]['permutation_importance'][domain],
+                columns=datasets[model_name]['feature_names'])))
 
-        # Unzip the data into the separate elements
-        data_zipped = list(zip(*data))
+        # Preprocess the permutation importance values
+        data[2] = data[2].reindex(
+            data[2].mean().sort_values(ascending=False).index,
+            axis=1).iloc[:, :number_of_features]
 
-        # Get the number of features to display
-        number_to_display = tuple(
-            min((10, len(value['feature_names'])))
-            for key, value in hub.datasets.items())
+        # Set the colormap
+        colors = get_cmap('tab20b')(
+            linspace(0, 1.0, len(datasets[model_name]['feature_names'])))
 
-        # Preprocess the training permutation importances
-        data_zipped[2] = tuple(dataframe.reindex(
-            dataframe.mean().sort_values(ascending=False).index,
-            axis=1).iloc[:, :number_to_display[i]]
-            for i, dataframe in enumerate(data_zipped[2]))
+        # Get the figure and axis objects
+        figure, axis = subplots(figsize=(14, 8))
 
-        # Preprocess the out-of-folds permutation importances
-        data_zipped[3] = tuple(dataframe.reindex(
-            dataframe.mean().sort_values(ascending=False).index,
-            axis=1).iloc[:, :number_to_display[i]]
-            for i, dataframe in enumerate(data_zipped[3]))
+        # Set the plot title
+        axis.set_title(
+            label=(f'{data[0]} ({domain}): top-{number_of_features} features'
+                   if self.title == '' else self.title),
+            fontsize=self.titlesize, fontweight='semibold', pad=10)
 
-        # Loop over the number of inspected models
-        for i, _ in enumerate(data_zipped[0]):
+        # Plot the permutation importance data
+        boxplot(
+            data=data[2], palette=colors[:number_of_features].tolist(),
+            ax=axis)
 
-            # Create a figure and subplots
-            figure, axis = subplots(nrows=2, ncols=1, figsize=(14, 8))
+        # Set the x- and y-labels
+        axis.set_xlabel(xlabel=self.xlabel, fontsize=self.labelsize)
+        axis.set_ylabel(ylabel=f'Δ {data[1]}', fontsize=self.labelsize)
 
-            # Plot the training permutation importance boxplot
-            sns_boxplot(data=data_zipped[2][i], ax=axis[0])
+        # Configure the axis ticks
+        axis.tick_params(axis='both', which='major', labelsize=self.ticksize)
 
-            # Plot the out-of-folds permutation importance boxplot
-            sns_boxplot(data=data_zipped[3][i], ax=axis[1])
+        # Rotate the tick labels for the x-axis
+        axis.tick_params(axis='x', labelrotation=self.tickangle)
 
-            # Loop over the training and out-of-folds subsets
-            for j, subset in enumerate(('Training', 'Out-of-folds')):
+        # Set the facecolor for the axis
+        axis.set_facecolor(self.background)
 
-                # Set x- and y-label
-                axis[j].set_xlabel("Feature", fontsize=11)
-                axis[j].set_ylabel(f"Δ {data_zipped[1][i]}", fontsize=11)
+        # Specify the grid with a subgrid
+        axis.grid(which='major', color=self.gridcolor, linewidth=0.8)
+        axis.grid(
+            which='minor', color=self.gridcolor, linestyle=':', linewidth=0.5)
 
-                # Set the axis title
-                axis[j].set_title(
-                    f'{data_zipped[0][i]} ({subset}): '
-                    f'top-{number_to_display[i]} features',
-                    fontweight='semibold', pad=20)
+        # Check if the grid should be displayed
+        if self.gridlines:
 
-                # Change the tick label sizes for both axes
-                axis[j].tick_params(axis='both', which='major', labelsize=9)
+            # Enable the grids
+            axis.grid(True)
+            axis.minorticks_on()
 
-                # Rotate the tick labels
-                axis[j].tick_params(axis='x', labelrotation=15)
+        else:
 
-                # Set the facecolor
-                axis[j].set_facecolor("whitesmoke")
+            # Disable the grids
+            axis.grid(False)
+            axis.minorticks_off()
 
-                # Specify the grid properties
-                axis[j].grid(which='major', color='lightgray', linewidth=0.8)
-                axis[j].grid(
-                    which='minor', color='lightgray', linestyle=':',
-                    linewidth=0.5)
-                axis[j].minorticks_on()
+        # Hide the axis behind the boxplots
+        axis.set_axisbelow(True)
 
-                # Hide the axis behind the boxplots
-                axis[j].set_axisbelow(True)
+        # Apply a tight layout
+        figure.tight_layout()
 
-            # Apply a tight layout
-            figure.tight_layout()
+        # Get the figure manager
+        figure_manager = get_current_fig_manager()
 
-            # Get the figure manager
-            figure_manager = get_current_fig_manager()
+        # Set the window title
+        figure_manager.set_window_title("Permutation importance boxplots")
 
-            # Set the window title
-            figure_manager.set_window_title(
-                "pyanno4rt - permutation importance boxplot")
-
-            # Show the full-screen plot
-            figure_manager.window.showMaximized()
+        # Show the full-screen plot
+        figure_manager.window.showMaximized()

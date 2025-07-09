@@ -22,13 +22,14 @@ from pyanno4rt.tools import (
     get_radiobiological_objectives)
 from pyanno4rt.visualization.assets import resources_rc
 from pyanno4rt.visualization.custom_widgets import (
-    ComponentGraphWidget, DVHGraphWidget, OutcomeGraphWidget, SliceWidget)
+    ComponentGraphWidget, DVHGraphWidget, OutcomeGraphWidget,
+    PermutationImportanceWidget, SliceWidget)
 from pyanno4rt.visualization.design.visualizer import Ui_visualization_window
 from pyanno4rt.visualization.static import (
     ComponentGraph, DosimetricsTable, DVHGraph, MetricsGraph, MetricsTable,
     OutcomeGraph, PermutationImportanceBoxplot)
 from pyanno4rt.visualization._custom_styles import (
-    pbutton, tab_bright, tab_dark)
+    cbox, pbutton, tab_bright, tab_dark)
 
 # %% Class definition
 
@@ -42,9 +43,13 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
     Parameters
     ----------
-    treatment_plan : 
+    treatment_plan : object of class \
+        :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
+        The object used to represent the treatment plan.
 
-    parent : 
+    parent : object of class \
+        :class:`~pyanno4rt.gui.windows._main_window.MainWindow`, default=None
+        The object representing the parent window for embedding.
 
     Attributes
     ----------
@@ -68,15 +73,16 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         # Set the application style
         self.application.setStyle('Fusion')
 
-        # Get the parent window
-        self.parent = parent
-
         # Initialize the base plan
         self.plan = treatment_plan
+
+        # Get the parent window
+        self.parent = parent
 
         # Initialize the widgets
         self.comp_widget = ComponentGraphWidget(self)
         self.outc_widget = OutcomeGraphWidget(self)
+        self.perm_widget = PermutationImportanceWidget(self)
         self.slice_widget = SliceWidget(self)
         self.dvh_widget = DVHGraphWidget(self)
 
@@ -86,20 +92,31 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             'tab_problem': tab_bright,
             'tab_model': tab_bright,
             'tab_plan': tab_bright,
+            'comp_background_cbox': cbox,
+            'comp_gridcolor_cbox': cbox,
+            'outc_background_cbox': cbox,
+            'outc_gridcolor_cbox': cbox,
             'open_comp_graph_pbutton': pbutton,
             'open_outc_graph_pbutton': pbutton,
             'open_feat_vals_pbutton': pbutton,
             'open_metrics_graphs_pbutton': pbutton,
             'open_metrics_tables_pbutton': pbutton,
-            'open_perm_pbutton': pbutton,
+            'model_name_cbox': cbox,
+            'domain_cbox': cbox,
+            'perm_background_cbox': cbox,
+            'perm_gridcolor_cbox': cbox,
+            'open_perm_graph_pbutton': pbutton,
+            'open_image_pbutton': pbutton,
+            'dvh_background_cbox': cbox,
+            'dvh_gridcolor_cbox': cbox,
             'open_dvh_graph_pbutton': pbutton,
             'open_ind_pbutton': pbutton,
-            'open_image_pbutton': pbutton,
             'close_visualizer_pbutton': pbutton})
 
         # Add the widgets to the layouts
         self.comp_graph_plot_widget_layout.insertWidget(0, self.comp_widget)
         self.outc_graph_plot_widget_layout.insertWidget(0, self.outc_widget)
+        self.perm_graph_plot_widget_layout.insertWidget(0, self.perm_widget)
         self.image_top_widget_layout.insertWidget(0, self.slice_widget)
         self.dvh_graph_plot_widget_layout.insertWidget(0, self.dvh_widget)
 
@@ -189,7 +206,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
                 'open_feat_vals_pbutton': self.open_component_graph,
                 'open_metrics_graphs_pbutton': self.open_metrics_graph,
                 'open_metrics_tables_pbutton': self.open_metrics_table,
-                'open_perm_pbutton': self.open_permutation_importance_boxplot,
+                'open_perm_graph_pbutton': self.open_importance_boxplots,
                 'open_dvh_graph_pbutton': self.open_dvh_graph,
                 'open_ind_pbutton': self.open_dosimetrics_table,
                 'open_image_pbutton': self.open_component_graph,
@@ -292,7 +309,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         if (state < 2 or
             (model_inspections is None
              or len(model_inspections) == 0)):
-            self.open_perm_pbutton.setEnabled(False)
+            self.open_perm_graph_pbutton.setEnabled(False)
 
         # Check if the plan evaluation buttons should be disabled
         if (state < 4 or
@@ -304,155 +321,6 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         if (state < 1 or
                 computed_tomography is None or segmentation is None):
             self.open_image_pbutton.setEnabled(False)
-
-    def open_component_graph(self):
-        """Open the iterative component value graph."""
-
-        # Set up the layout parameters
-        inputs = {
-            key: value for key, value in (
-                ('title', self.comp_title_ledit.text()),
-                ('titlesize', self.comp_titlesize_sbox.value()),
-                ('xlabel', self.comp_x_ledit.text()),
-                ('ylabel', self.comp_y_ledit.text()),
-                ('labelsize', self.comp_labelsize_sbox.value()),
-                ('linewidth', self.comp_linewidth_sbox.value()),
-                ('ticksize', self.comp_ticksize_sbox.value()),
-                ('legendsize', self.comp_legendsize_sbox.value()),
-                ('background', self.comp_background_cbox.currentText()),
-                ('gridlines', self.comp_gridlines_check.isChecked()),
-                ('gridcolor', self.comp_gridcolor_cbox.currentText()))
-            if value != ''}
-
-        # Initialize the iterative component value graph
-        plotter = ComponentGraph(**inputs)
-
-        # Open the view
-        plotter.view(
-            self.plan,
-            [item.name() for item in
-             self.comp_widget.plot_widget.getPlotItem().curves
-             if item.isVisible()])
-
-    def open_outcome_graph(self):
-        """Open the iterative outcome value graph."""
-
-        # Set up the layout parameters
-        inputs = {
-            key: value for key, value in (
-                ('title', self.outc_title_ledit.text()),
-                ('titlesize', self.outc_titlesize_sbox.value()),
-                ('xlabel', self.outc_x_ledit.text()),
-                ('ylabel', self.outc_y_ledit.text()),
-                ('labelsize', self.outc_labelsize_sbox.value()),
-                ('linewidth', self.outc_linewidth_sbox.value()),
-                ('ticksize', self.outc_ticksize_sbox.value()),
-                ('legendsize', self.outc_legendsize_sbox.value()),
-                ('background', self.outc_background_cbox.currentText()),
-                ('gridlines', self.outc_gridlines_check.isChecked()),
-                ('gridcolor', self.outc_gridcolor_cbox.currentText()))
-            if value != ''}
-
-        # Initialize the iterative outcome value graph
-        plotter = OutcomeGraph(**inputs)
-
-        # Open the view
-        plotter.view(
-            self.plan,
-            [item.name() for item in
-             self.outc_widget.plot_widget.getPlotItem().curves
-             if item.isVisible()])
-
-    def open_metrics_graph(self):
-        """Open the metrics graph."""
-
-        # Initialize the metrics graph
-        plotter = MetricsGraph()
-
-        # Open the view
-        plotter.view()
-
-    def open_metrics_table(self):
-        """Open the metrics table."""
-
-        # Initialize the metrics table
-        plotter = MetricsTable()
-
-        # Open the view
-        plotter.view()
-
-    def open_permutation_importance_boxplot(self):
-        """Open the permutation importance boxplot."""
-
-        # Initialize the permutation importance boxplot
-        plotter = PermutationImportanceBoxplot()
-
-        # Open the view
-        plotter.view()
-
-    def open_dvh_graph(self):
-        """Open the DVH graph."""
-
-        # Set up the layout parameters
-        inputs = {
-            key: value for key, value in (
-                ('title', self.dvh_title_ledit.text()),
-                ('titlesize', self.dvh_titlesize_sbox.value()),
-                ('xlabel', self.dvh_x_ledit.text()),
-                ('ylabel', self.dvh_y_ledit.text()),
-                ('labelsize', self.dvh_labelsize_sbox.value()),
-                ('linewidth', self.dvh_linewidth_sbox.value()),
-                ('ticksize', self.dvh_ticksize_sbox.value()),
-                ('legendsize', self.dvh_legendsize_sbox.value()),
-                ('background', self.dvh_background_cbox.currentText()),
-                ('gridlines', self.dvh_gridlines_check.isChecked()),
-                ('gridcolor', self.dvh_gridcolor_cbox.currentText()))
-            if value != ''}
-
-        # Initialize the DVH graph
-        plotter = DVHGraph(**inputs)
-
-        # Open the view
-        plotter.view(
-            self.plan,
-            [item.name() for item in
-             self.dvh_widget.plot_widget.getPlotItem().curves
-             if item.isVisible()])
-
-    def open_dosimetrics_table(self):
-        """Open the dosimetrics table."""
-
-        # Initialize the dosimetrics table
-        plotter = DosimetricsTable()
-
-        # Open the view
-        plotter.view()
-
-    def adjust_slider_by_orientation(self):
-        """Adjust the slider for slice selection by the orientation."""
-
-        # Create a mapping between planes and axes
-        mapping = {'axial': 2, 'coronal': 0, 'sagittal': 1}
-
-        # Check if the slice widget already stores a CT cube
-        if self.slice_widget.ct_cube is not None:
-
-            # Get the depth of the slice widget's CT cube
-            plane_depth = self.slice_widget.ct_cube.shape[
-                mapping[self.plane_cbox.currentText()]]
-
-        else:
-
-            # Get the depth of the current plan's CT cube
-            plane_depth = self.plans[
-                self.plan_ledit.text()].datahub.computed_tomography[
-                    'cube_dimensions'][mapping[self.plane_cbox.currentText()]]
-
-        # Set the range of the slice selection scroll bar
-        self.slice_selection_sbar.setRange(0, plane_depth-1)
-
-        # Set the initial scroll bar value
-        self.slice_selection_sbar.setValue(int((plane_depth-1)/2))
 
     def add_component_tracks(self):
         """Add the component tracks to the widget."""
@@ -516,6 +384,45 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
             # Update the outcome graph
             self.outc_widget.update_graph()
+
+    def add_importance_boxplots(self):
+        """."""
+
+        # Get the model inspections from the datahub
+        model_inspections = self.plan.datahub.model_inspections
+
+        # Reset the importance boxplots
+        self.perm_widget.reset_boxplots()
+
+        # Check if the plan has already been evaluated
+        if (model_inspections is not None
+                and len(model_inspections) > 0
+                and self.plan.datahub.state >= 2):
+
+            # Get the permutation importance data
+            importances = {
+                key: value['permutation_importance']
+                for key, value in self.plan.datahub.model_inspections.items()
+                if 'permutation_importance' in value}
+
+            # Add the model names
+            self.model_name_cbox.addItems(importances)
+
+            # Get the number of features
+            number_of_features = importances[
+                self.model_name_cbox.currentText()]['Training'].shape[1]
+
+            # Set the initial range for the top-k features
+            self.num_features_sbox.setRange(1, number_of_features)
+
+            # Set the initial value for the top-k features
+            self.num_features_sbox.setValue(min(5, number_of_features))
+
+            # Add style and data
+            self.perm_widget.add_style_and_data(importances)
+
+            # Update the importance boxplots
+            self.perm_widget.update_boxplots()
 
     def add_images(self):
         """."""
@@ -630,6 +537,171 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
                     self.ind_table_widget.setItem(row, column, item)
 
+    def open_component_graph(self):
+        """Open the iterative component value graph."""
+
+        # Set up the layout parameters
+        inputs = {
+            key: value for key, value in (
+                ('title', self.comp_title_ledit.text()),
+                ('titlesize', self.comp_titlesize_sbox.value()),
+                ('xlabel', self.comp_x_ledit.text()),
+                ('ylabel', self.comp_y_ledit.text()),
+                ('labelsize', self.comp_labelsize_sbox.value()),
+                ('linewidth', self.comp_linewidth_sbox.value()),
+                ('ticksize', self.comp_ticksize_sbox.value()),
+                ('legendsize', self.comp_legendsize_sbox.value()),
+                ('background', self.comp_background_cbox.currentText()),
+                ('gridlines', self.comp_gridlines_check.isChecked()),
+                ('gridcolor', self.comp_gridcolor_cbox.currentText()))
+            if value != ''}
+
+        # Initialize the iterative component value graph
+        plotter = ComponentGraph(**inputs)
+
+        # Open the view
+        plotter.view(
+            self.plan,
+            [item.name() for item in
+             self.comp_widget.plot_widget.getPlotItem().curves
+             if item.isVisible()])
+
+    def open_outcome_graph(self):
+        """Open the iterative outcome value graph."""
+
+        # Set up the layout parameters
+        inputs = {
+            key: value for key, value in (
+                ('title', self.outc_title_ledit.text()),
+                ('titlesize', self.outc_titlesize_sbox.value()),
+                ('xlabel', self.outc_x_ledit.text()),
+                ('ylabel', self.outc_y_ledit.text()),
+                ('labelsize', self.outc_labelsize_sbox.value()),
+                ('linewidth', self.outc_linewidth_sbox.value()),
+                ('ticksize', self.outc_ticksize_sbox.value()),
+                ('legendsize', self.outc_legendsize_sbox.value()),
+                ('background', self.outc_background_cbox.currentText()),
+                ('gridlines', self.outc_gridlines_check.isChecked()),
+                ('gridcolor', self.outc_gridcolor_cbox.currentText()))
+            if value != ''}
+
+        # Initialize the iterative outcome value graph
+        plotter = OutcomeGraph(**inputs)
+
+        # Open the view
+        plotter.view(
+            self.plan,
+            [item.name() for item in
+             self.outc_widget.plot_widget.getPlotItem().curves
+             if item.isVisible()])
+
+    def open_metrics_graph(self):
+        """Open the metrics graph."""
+
+        # Initialize the metrics graph
+        plotter = MetricsGraph()
+
+        # Open the view
+        plotter.view()
+
+    def open_metrics_table(self):
+        """Open the metrics table."""
+
+        # Initialize the metrics table
+        plotter = MetricsTable()
+
+        # Open the view
+        plotter.view()
+
+    def open_importance_boxplots(self):
+        """Open the permutation importance boxplot."""
+
+        # Set up the layout parameters
+        inputs = {
+            key: value for key, value in (
+                ('title', self.perm_title_ledit.text()),
+                ('titlesize', self.perm_titlesize_sbox.value()),
+                ('xlabel', self.perm_x_ledit.text()),
+                ('labelsize', self.perm_labelsize_sbox.value()),
+                ('ticksize', self.perm_ticksize_sbox.value()),
+                ('tickangle', self.perm_tickangle_sbox.value()),
+                ('background', self.perm_background_cbox.currentText()),
+                ('gridlines', self.perm_gridlines_check.isChecked()),
+                ('gridcolor', self.perm_gridcolor_cbox.currentText()))
+            if value != ''}
+
+        # Initialize the permutation importance boxplot
+        plotter = PermutationImportanceBoxplot(**inputs)
+
+        # Open the view
+        plotter.view(
+            self.plan, self.model_name_cbox.currentText(),
+            self.domain_cbox.currentText(), self.num_features_sbox.value())
+
+    def open_dvh_graph(self):
+        """Open the DVH graph."""
+
+        # Set up the layout parameters
+        inputs = {
+            key: value for key, value in (
+                ('title', self.dvh_title_ledit.text()),
+                ('titlesize', self.dvh_titlesize_sbox.value()),
+                ('xlabel', self.dvh_x_ledit.text()),
+                ('ylabel', self.dvh_y_ledit.text()),
+                ('labelsize', self.dvh_labelsize_sbox.value()),
+                ('linewidth', self.dvh_linewidth_sbox.value()),
+                ('ticksize', self.dvh_ticksize_sbox.value()),
+                ('legendsize', self.dvh_legendsize_sbox.value()),
+                ('background', self.dvh_background_cbox.currentText()),
+                ('gridlines', self.dvh_gridlines_check.isChecked()),
+                ('gridcolor', self.dvh_gridcolor_cbox.currentText()))
+            if value != ''}
+
+        # Initialize the DVH graph
+        plotter = DVHGraph(**inputs)
+
+        # Open the view
+        plotter.view(
+            self.plan,
+            [item.name() for item in
+             self.dvh_widget.plot_widget.getPlotItem().curves
+             if item.isVisible()])
+
+    def open_dosimetrics_table(self):
+        """Open the dosimetrics table."""
+
+        # Initialize the dosimetrics table
+        plotter = DosimetricsTable()
+
+        # Open the view
+        plotter.view()
+
+    def adjust_slider_by_orientation(self):
+        """Adjust the slider for slice selection by the orientation."""
+
+        # Create a mapping between planes and axes
+        mapping = {'axial': 2, 'coronal': 0, 'sagittal': 1}
+
+        # Check if the slice widget already stores a CT cube
+        if self.slice_widget.ct_cube is not None:
+
+            # Get the depth of the slice widget's CT cube
+            plane_depth = self.slice_widget.ct_cube.shape[
+                mapping[self.plane_cbox.currentText()]]
+
+        else:
+
+            # Get the depth of the current plan's CT cube
+            plane_depth = self.plans[
+                self.plan_ledit.text()].datahub.computed_tomography[
+                    'cube_dimensions'][mapping[self.plane_cbox.currentText()]]
+
+        # Set the range of the slice selection scroll bar
+        self.slice_selection_sbar.setRange(0, plane_depth-1)
+
+        # Set the initial scroll bar value
+        self.slice_selection_sbar.setValue(int((plane_depth-1)/2))
+
     def launch(self):
         """Launch the visualizer."""
 
@@ -647,6 +719,9 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Add the outcome tracks
         self.add_outcome_tracks()
+
+        # Add the permutation importance boxplots
+        self.add_importance_boxplots()
 
         # Add the CT/dose images
         self.add_images()
