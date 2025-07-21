@@ -27,4 +27,4 @@ def brier_loss(true_labels, predicted_labels):
         Brier score loss value.
     """
 
-    return -brier_score_loss(true_labels, predicted_labels)
+    return brier_score_loss(true_labels, predicted_labels)

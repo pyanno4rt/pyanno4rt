@@ -230,7 +230,7 @@ class SupportVectorMachineNTCP(MachineLearningComponent):
         # Get the Platt scaling parameters
         self.multiplier, self.summand = (
             -self.model.prediction_model.probA_,
-            self.model.prediction_model.probB_)
+            -self.model.prediction_model.probB_)
 
         # Convert the bounds
         self.bounds = [

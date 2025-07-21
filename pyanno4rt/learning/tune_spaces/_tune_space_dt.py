@@ -25,7 +25,7 @@ class TuneSpaceDT():
     Parameters
     ----------
     criterion : None or list, default=None
-        Options ('gini', 'entropy') for the split quality measure.
+        Options ('entropy', 'gini', 'log_loss') for the split quality measure.
 
     splitter : None or list, default=None
         Options ('best', 'random') for the splitting strategy at each node.
@@ -101,7 +101,7 @@ class TuneSpaceDT():
 
         # Set the default argument values
         defaults = {
-            'criterion': ['gini', 'entropy'],
+            'criterion': ['entropy', 'gini', 'log_loss'],
             'splitter': ['best', 'random'],
             'max_depth': [5],
             'min_samples_split': [0.0, 1.0],
@@ -167,7 +167,8 @@ class TuneSpaceDT():
         check_map = {
             'criterion': (
                 partial(check_type, options=list),
-                partial(check_value_in_set, options=('entropy', 'gini'))),
+                partial(check_value_in_set, options=(
+                    'entropy', 'gini', 'log_loss'))),
             'splitter': (
                 partial(check_type, options=list),
                 partial(check_value_in_set, options=('best', 'random'))),

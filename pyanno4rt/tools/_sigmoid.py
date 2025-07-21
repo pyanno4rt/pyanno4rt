@@ -33,6 +33,6 @@ def sigmoid(value, multiplier=1, summand=0):
     # Check if the passed value is tuple or a list
     if isinstance(value, (tuple, list)):
 
-        return tuple(1/(1 + exp(-multiplier*val + summand)) for val in value)
+        return tuple(1/(1 + exp(-(multiplier*val + summand))) for val in value)
 
-    return 1/(1 + exp(-multiplier*value + summand))
+    return 1/(1 + exp(-(multiplier*value + summand)))

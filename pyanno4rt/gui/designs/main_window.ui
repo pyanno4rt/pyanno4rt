@@ -1222,7 +1222,7 @@ color: rgb(0, 0, 0);</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <property name="iconSize">
            <size>
@@ -5120,7 +5120,7 @@ border-color: rgb(186, 189, 182);</string>
                      </font>
                     </property>
                     <property name="text">
-                     <string>Reference dose [Gy/fx]</string>
+                     <string>Reference dose [Gy]</string>
                     </property>
                    </widget>
                   </item>

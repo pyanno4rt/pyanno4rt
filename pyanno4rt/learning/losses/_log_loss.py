@@ -28,6 +28,6 @@ def log_loss(true_labels, predicted_labels):
         Log loss value.
     """
 
-    return -binary_crossentropy(
+    return binary_crossentropy(
         cast(true_labels, float64),
         cast(predicted_labels, float64)).numpy().mean()

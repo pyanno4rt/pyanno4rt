@@ -6,7 +6,6 @@
 
 from numpy import (
     array, array_equal, empty, fromiter, pad, unravel_index, vstack, zeros)
-from scipy.ndimage import zoom
 
 # %% Internal package import
 

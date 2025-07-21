@@ -5,7 +5,7 @@
 # %% External package import
 
 from numpy import array, clip, dstack, prod
-from pydicom.pixel_data_handlers.util import apply_modality_lut
+from pydicom.pixels import apply_modality_lut
 from scipy.interpolate import interp1d
 
 # %% Function definition

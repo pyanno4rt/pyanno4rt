@@ -474,7 +474,8 @@ class MachineLearningModel(metaclass=ABCMeta):
 
                 # Compute the training and validation scores
                 scores = [
-                    -scorers[self.configuration['tune_score']](
+                    (-1)**(self.configuration['tune_score'] == 'AUC')
+                    * scorers[self.configuration['tune_score']](
                         labels, self.predict(features, prediction_model))
                     for features, labels in (split[:2], split[2:])]
 
