@@ -317,7 +317,6 @@ class SoftDecisionTree():
             # Optimize the weights and outcomes
             result = shgo(
                 loss, bounds, n=100, iters=1, sampling_method='sobol')
-            print(result)
 
             # Update the node parameters
             node.set_weight(result.x[:-2])
@@ -407,7 +406,7 @@ class SoftDecisionTree():
             self.root.evaluate_subtree_gradient(sample)[1:]
             for sample in features]
 
-# # %% Test
+# %% Test
 
 # from pandas import DataFrame
 # from sklearn.datasets import load_iris
@@ -416,7 +415,7 @@ class SoftDecisionTree():
 
 # X, y = load_iris(return_X_y=True)
 # X = X[:, [1, 3]]
-# y = (y >= 1).astype(int)
+# y = (y == 1).astype(int)
 # soft_tree = SoftDecisionTree(maximum_depth=3, tolerance=1e-3).fit(X, y)
 # hard_tree = DecisionTreeClassifier(max_depth=3).fit(X, y)
 
@@ -428,7 +427,7 @@ class SoftDecisionTree():
 # hard_auc = roc_auc_score(df['Ground Truth'], df['Hard'])
 # soft_auc = roc_auc_score(df['Ground Truth'], df['Soft'])
 
-# # %% Plot
+# %% Plot
 
 # from numpy import arange, meshgrid, array, ravel
 # import matplotlib.pyplot as plt

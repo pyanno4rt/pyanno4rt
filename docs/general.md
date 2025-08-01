@@ -73,7 +73,7 @@
 	<li> Dataset import, handling & preprocessing </li>
 	<li> 24-type dosiomic & radiomic feature catalogue </li>
 	<li> 7 internal ML models (decision tree, KNN, logistic regression, naive Bayes, neural network, random forest, SVM) with individual preprocessing, inspection & evaluation units + Bayesian hyperparameter tuning </li>
-	<li> External model loading via folder paths </li>
+	<li> External model loading from local folders </li>
 </ul>
 
 <h3>Plan evaluation tools</h3>
@@ -91,5 +91,5 @@
 			<li> CT/Dose preview </li>
 		</ul>
 	</li>
-	<li> (Standalone) PyQt/Matplotlib visualization window </li>
+	<li> (Standalone) PyQt5/Matplotlib visualization window </li>
 </ul>

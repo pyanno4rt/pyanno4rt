@@ -9,11 +9,12 @@ decision tree models.
 
 # Author: Tim Ortkamp
 
-from ._decision_tree import DecisionTreeModel
 from ._optimizable_decision_tree import OptimizableDecisionTree
 from ._soft_decision_tree import SoftDecisionTree
 
+from ._decision_tree import DecisionTreeModel
+
 __all__ = [
-    'DecisionTreeModel',
     'OptimizableDecisionTree',
-    'SoftDecisionTree']
+    'SoftDecisionTree',
+    'DecisionTreeModel']

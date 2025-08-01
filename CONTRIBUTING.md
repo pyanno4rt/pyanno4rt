@@ -9,7 +9,7 @@ We encourage and value all types of contributions regardless of experience level
 > If you enjoy *pyanno4rt*, but just don't have time to contribute, that's fine. There are other easy ways to support the project and show your appreciation, which we would also be very happy about:
 > - Star the project :star:
 > - Cite the project in your work :pencil:
-> - Share the project with others :earth_americas:
+> - Share the project with others :globe_with_meridians:
 
 ## Table of Contents :clipboard:
 

@@ -21,7 +21,7 @@
 
 ---
 
-# General :thought_balloon:
+# General :earth_americas:
 
 *pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning.
 
@@ -77,7 +77,7 @@
 	<li> Dataset import, handling & preprocessing </li>
 	<li> 24-type dosiomic & radiomic feature catalogue </li>
 	<li> 7 internal ML models (decision tree, KNN, logistic regression, naive Bayes, neural network, random forest, SVM) with individual preprocessing, inspection & evaluation units + Bayesian hyperparameter tuning </li>
-	<li> External model loading via folder paths </li>
+	<li> External model loading from local folders </li>
 </ul>
 
 <h3>Plan evaluation tools</h3>
@@ -95,7 +95,7 @@
 			<li> CT/Dose preview </li>
 		</ul>
 	</li>
-	<li> (Standalone) PyQt/Matplotlib visualization window </li>
+	<li> (Standalone) PyQt5/Matplotlib visualization window </li>
 </ul>
 
 # Installation :computer:
@@ -157,7 +157,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `pyqt5`                        | <font size="3"> >=5.15.10 </font>     |
 | `pyqtgraph`                    | <font size="3"> >=0.13.7 </font>      |
 | `ipython`                      | <font size="3"> >=8.37.0 </font>      |
-| `matplotlib`                   | <font size="3"> >=3.10.3 </font>      |
+| `matplotlib`                   | <font size="3"> >=3.10.5 </font>      |
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
@@ -198,13 +198,15 @@ Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.7** for develop
 
 <h3>Citation</h3>
 
-If you use *pyanno4rt* in your work, let us now and cite this repository:
+To cite *pyanno4rt*, either use the link in the right sidebar of the Github landing page labeled "Cite this repository" or copy the short-form bib-style paragraph below:
 
 ```tex
-@misc{pyanno4rt2024,
+@software{pyanno4rt2024,
   title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
   author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},
-  year = {2024},
+  version = {1.0.0},
+  license = {GPL-3.0},
+  year = {2025},
   howpublished = {\url{http://github.com/pyanno4rt/pyanno4rt}}
 }
 ```

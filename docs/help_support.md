@@ -16,13 +16,15 @@
 
 <h3>Citation</h3>
 
-If you use *pyanno4rt* in your work, let us now and cite this repository:
+To cite *pyanno4rt*, either use the link in the right sidebar of the Github landing page labeled "Cite this repository" or copy the short-form bib-style paragraph below:
 
 ```tex
-@misc{pyanno4rt2024,
+@software{pyanno4rt2024,
   title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
   author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},
-  year = {2024},
+  version = {1.0.0},
+  license = {GPL-3.0},
+  year = {2025},
   howpublished = {\url{http://github.com/pyanno4rt/pyanno4rt}}
 }
 ```
