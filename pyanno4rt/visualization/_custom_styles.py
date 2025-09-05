@@ -40,12 +40,21 @@ pbutton = ('''
 
 # Set the stylesheets for the tab bars
 tab_bright = ('''
-       QTabBar::tab:selected {
-           background-color: rgb(238, 238, 236);
-           }
-       ''')
+              QTabBar::tab:selected {
+                  background-color: rgb(238, 238, 236);
+                  }
+              ''')
 tab_dark = ('''
-       QTabBar::tab:selected {
-           background-color: rgb(30, 30, 30);
-           }
-       ''')
+            QTabBar::tab:selected {
+                background-color: rgb(30, 30, 30);
+                }
+            ''')
+
+# Set the stylesheet for the tooltip
+tooltip = ('''
+           QToolTip {
+               background-color: #1e1e1e;
+               color: #dddddd;
+               border-color: #1e1e1e;
+               }
+           ''')

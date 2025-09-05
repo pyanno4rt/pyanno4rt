@@ -7,7 +7,12 @@
 from itertools import islice, cycle
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
-from pyqtgraph import colormap, InfiniteLine, mkPen, PlotWidget, SignalProxy
+from pyqtgraph import (
+    colormap, InfiniteLine, mkPen, PlotWidget, setConfigOptions, SignalProxy)
+
+# %% Plotting options
+
+setConfigOptions(antialias=True)
 
 # %% Class definition
 
@@ -101,7 +106,7 @@ class DVHGraphWidget(QWidget):
         # Set the plot title
         self.plot_widget.setTitle(
             "<span style='color: #FFAE42; font-size: 10pt'>"
-            "dose: %0.2f, volume: %0.2f</span>" % (0.00, 0.00))
+            "dose: %0.2f, rel. volume: %0.2f</span>" % (0.00, 0.00))
 
         # Set the plot labels
         self.plot_widget.setLabels(
@@ -165,7 +170,7 @@ class DVHGraphWidget(QWidget):
 
                     # Increase the pen width
                     event.curve.setPen(mkPen(
-                        color=pen.color(), style=pen.style(), width=5))
+                        color=pen.color(), style=pen.style(), width=4))
 
                     # Get the dosimetrics data
                     dosimetrics = self.parent.plan.datahub.dosimetrics
@@ -287,7 +292,7 @@ class DVHGraphWidget(QWidget):
             # Update the graph title
             self.plot_widget.setTitle(
                 "<span style='color: #FFAE42; font-size: 10pt'>"
-                "dose: %0.2f, volume: %0.2f</span>" % point)
+                "dose: %0.2f, rel. volume: %0.2f</span>" % point)
 
     def update_graph(self):
         """Update the DVH graph."""

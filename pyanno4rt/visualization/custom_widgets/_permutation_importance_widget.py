@@ -7,11 +7,17 @@
 from matplotlib.cbook import boxplot_stats
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget
 from pyqtgraph import (
-    colormap, GraphicsObject, mkBrush, mkPen, PlotWidget, QtCore, QtGui)
+    colormap, GraphicsObject, mkBrush, mkPen, PlotWidget, QtCore, QtGui,
+    setConfigOptions)
 
 # %% Internal package import
 
 from pyanno4rt.tools import flatten
+from pyanno4rt.visualization._custom_styles import tooltip
+
+# %% Plotting options
+
+setConfigOptions(antialias=True)
 
 # %% Class definition
 
@@ -203,6 +209,9 @@ class PermutationImportanceWidget(QWidget):
 
         # Add margins to the widget
         self.plot_widget.plotItem.setContentsMargins(20, 10, 10, 20)
+
+        # Set the style sheet for the tooltips
+        self.plot_widget.setStyleSheet(tooltip)
 
         # Add the widget to the layout
         graph_layout.addWidget(self.plot_widget)

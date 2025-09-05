@@ -13,12 +13,16 @@ from numpy import (
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from pyqtgraph import (
     colormap, ColorBarItem, GraphicsLayoutWidget, ImageItem, IsocurveItem,
-    mkColor, mkPen)
+    mkColor, mkPen, setConfigOptions)
 from scipy.ndimage import zoom
 
 # %% Internal package import
 
 from pyanno4rt.tools import arange_with_endpoint
+
+# %% Plotting options
+
+setConfigOptions(antialias=True)
 
 # %% Class definition
 

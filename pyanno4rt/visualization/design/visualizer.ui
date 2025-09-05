@@ -189,7 +189,7 @@ background-color: rgb(211, 215, 207);</string>
                 <property name="documentMode">
                  <bool>true</bool>
                 </property>
-                <widget class="QWidget" name="comp_graph_widget">
+                <widget class="QWidget" name="comp_widget">
                  <attribute name="title">
                   <string>Iterative component values</string>
                  </attribute>
@@ -207,7 +207,7 @@ background-color: rgb(211, 215, 207);</string>
                    <number>10</number>
                   </property>
                   <item>
-                   <layout class="QHBoxLayout" name="comp_graph_widget_layout">
+                   <layout class="QHBoxLayout" name="comp_widget_layout">
                     <item>
                      <widget class="QWidget" name="comp_graph_interact_widget" native="true">
                       <layout class="QVBoxLayout" name="comp_graph_interact_widget_meta_layout">
@@ -1541,7 +1541,7 @@ border-color: rgb(186, 189, 182);</string>
                   </item>
                  </layout>
                 </widget>
-                <widget class="QWidget" name="outc_vals_widget">
+                <widget class="QWidget" name="outc_widget">
                  <attribute name="title">
                   <string>Iterative outcome values</string>
                  </attribute>
@@ -1559,7 +1559,7 @@ border-color: rgb(186, 189, 182);</string>
                    <number>10</number>
                   </property>
                   <item>
-                   <layout class="QHBoxLayout" name="outc_graph_widget_layout">
+                   <layout class="QHBoxLayout" name="outc_widget_layout">
                     <item>
                      <widget class="QWidget" name="outc_graph_interact_widget" native="true">
                       <layout class="QVBoxLayout" name="outc_graph_interact_widget_meta_layout">
@@ -2893,28 +2893,248 @@ border-color: rgb(186, 189, 182);</string>
                   </item>
                  </layout>
                 </widget>
-                <widget class="QWidget" name="feat_vals_widget">
+                <widget class="QWidget" name="feat_widget">
                  <attribute name="title">
                   <string>Iterative feature values</string>
                  </attribute>
                  <layout class="QVBoxLayout" name="feat_vals_meta_layout">
+                  <property name="leftMargin">
+                   <number>10</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>10</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>10</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>10</number>
+                  </property>
                   <item>
-                   <layout class="QVBoxLayout" name="feat_vals_layout">
+                   <layout class="QHBoxLayout" name="feat_widget_layout">
                     <item>
-                     <layout class="QHBoxLayout" name="feat_vals_top_layout">
-                      <item>
-                       <widget class="QWidget" name="feat_vals_top_widget" native="true">
-                        <property name="minimumSize">
-                         <size>
-                          <width>0</width>
-                          <height>187</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">border: 1px solid;
+                     <widget class="QWidget" name="feat_graph_interact_widget" native="true">
+                      <layout class="QVBoxLayout" name="comp_graph_interact_widget_meta_layout_4">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <layout class="QVBoxLayout" name="feat_graph_interact_widget_layout">
+                         <item>
+                          <widget class="QWidget" name="feat_graph_plot_widget" native="true">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>187</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border: 1px solid;
 border-color: rgb(211, 215, 207);</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="feat_vals_top_meta_layout">
+                           </property>
+                           <layout class="QVBoxLayout" name="comp_graph_plot_widget_meta_layout_5">
+                            <property name="spacing">
+                             <number>0</number>
+                            </property>
+                            <property name="leftMargin">
+                             <number>0</number>
+                            </property>
+                            <property name="topMargin">
+                             <number>0</number>
+                            </property>
+                            <property name="rightMargin">
+                             <number>0</number>
+                            </property>
+                            <property name="bottomMargin">
+                             <number>0</number>
+                            </property>
+                            <item>
+                             <layout class="QVBoxLayout" name="feat_graph_plot_widget_layout">
+                              <property name="spacing">
+                               <number>0</number>
+                              </property>
+                             </layout>
+                            </item>
+                           </layout>
+                          </widget>
+                         </item>
+                         <item>
+                          <layout class="QGridLayout" name="feat_graph_controls_layout">
+                           <item row="0" column="1">
+                            <widget class="QLabel" name="feature_label">
+                             <property name="minimumSize">
+                              <size>
+                               <width>281</width>
+                               <height>31</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>31</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <weight>75</weight>
+                               <bold>true</bold>
+                              </font>
+                             </property>
+                             <property name="text">
+                              <string>Feature name</string>
+                             </property>
+                             <property name="alignment">
+                              <set>Qt::AlignCenter</set>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="0" column="0">
+                            <widget class="QLabel" name="model_label">
+                             <property name="minimumSize">
+                              <size>
+                               <width>281</width>
+                               <height>31</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>31</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <weight>75</weight>
+                               <bold>true</bold>
+                              </font>
+                             </property>
+                             <property name="text">
+                              <string>Model name</string>
+                             </property>
+                             <property name="alignment">
+                              <set>Qt::AlignCenter</set>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="2">
+                            <widget class="QCheckBox" name="show_ntcp_check">
+                             <property name="text">
+                              <string>Show (N)TCP curve</string>
+                             </property>
+                             <property name="checked">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="0">
+                            <widget class="QComboBox" name="model_cbox">
+                             <property name="sizePolicy">
+                              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                               <horstretch>0</horstretch>
+                               <verstretch>0</verstretch>
+                              </sizepolicy>
+                             </property>
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>31</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>31</height>
+                              </size>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="1">
+                            <widget class="QComboBox" name="feature_cbox">
+                             <property name="sizePolicy">
+                              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                               <horstretch>0</horstretch>
+                               <verstretch>0</verstretch>
+                              </sizepolicy>
+                             </property>
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>31</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>31</height>
+                              </size>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                        </layout>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="Line" name="feat_export_vline">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QWidget" name="feat_export_widget" native="true">
+                      <property name="minimumSize">
+                       <size>
+                        <width>141</width>
+                        <height>300</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>141</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <layout class="QVBoxLayout" name="comp_export_widget_meta_layout_4">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <layout class="QVBoxLayout" name="feat_export_widget_layout">
                          <property name="spacing">
                           <number>0</number>
                          </property>
@@ -2931,80 +3151,885 @@ border-color: rgb(211, 215, 207);</string>
                           <number>0</number>
                          </property>
                          <item>
-                          <layout class="QVBoxLayout" name="feat_vals_top_widget_layout">
-                           <property name="spacing">
-                            <number>0</number>
+                          <spacer name="feat_export_top_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
                            </property>
-                          </layout>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>40</height>
+                            </size>
+                           </property>
+                          </spacer>
                          </item>
-                        </layout>
-                       </widget>
-                      </item>
-                      <item>
-                       <layout class="QVBoxLayout" name="feat_vals_options_layout">
-                        <property name="leftMargin">
-                         <number>10</number>
-                        </property>
-                        <property name="rightMargin">
-                         <number>10</number>
-                        </property>
-                        <item>
-                         <spacer name="feat_vals_options_vspacer_top">
-                          <property name="orientation">
-                           <enum>Qt::Vertical</enum>
-                          </property>
-                          <property name="sizeHint" stdset="0">
-                           <size>
-                            <width>20</width>
-                            <height>40</height>
-                           </size>
-                          </property>
-                         </spacer>
-                        </item>
-                        <item>
-                         <widget class="QPushButton" name="open_feat_vals_pbutton">
-                          <property name="minimumSize">
-                           <size>
-                            <width>161</width>
-                            <height>31</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>161</width>
-                            <height>31</height>
-                           </size>
-                          </property>
-                          <property name="cursor">
-                           <cursorShape>PointingHandCursor</cursorShape>
-                          </property>
-                          <property name="styleSheet">
-                           <string notr="true">color: rgb(0, 0, 0);
-background-color: rgb(238, 238, 236);
+                         <item>
+                          <widget class="QLabel" name="feat_title_label">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <pointsize>10</pointsize>
+                             <weight>75</weight>
+                             <bold>true</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Title + Size</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <spacer name="feat_title_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeType">
+                            <enum>QSizePolicy::Fixed</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>3</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item>
+                          <layout class="QHBoxLayout" name="feat_title_layout">
+                           <item>
+                            <widget class="QLineEdit" name="feat_title_ledit">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">background-color: rgb(238, 238, 236);
 border: 1px solid;
 border-color: rgb(186, 189, 182);</string>
-                          </property>
-                          <property name="text">
-                           <string>Open static plot</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <spacer name="feat_vals_options_vspacer_bottom">
-                          <property name="orientation">
-                           <enum>Qt::Vertical</enum>
-                          </property>
-                          <property name="sizeHint" stdset="0">
-                           <size>
-                            <width>20</width>
-                            <height>40</height>
-                           </size>
-                          </property>
-                         </spacer>
-                        </item>
-                       </layout>
-                      </item>
-                     </layout>
+                             </property>
+                             <property name="placeholderText">
+                              <string>None</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <spacer name="feat_title_hspacer">
+                             <property name="orientation">
+                              <enum>Qt::Horizontal</enum>
+                             </property>
+                             <property name="sizeType">
+                              <enum>QSizePolicy::Fixed</enum>
+                             </property>
+                             <property name="sizeHint" stdset="0">
+                              <size>
+                               <width>5</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </spacer>
+                           </item>
+                           <item>
+                            <widget class="QSpinBox" name="feat_titlesize_sbox">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>IBeamCursor</cursorShape>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="buttonSymbols">
+                              <enum>QAbstractSpinBox::PlusMinus</enum>
+                             </property>
+                             <property name="minimum">
+                              <number>1</number>
+                             </property>
+                             <property name="value">
+                              <number>16</number>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                         <item>
+                          <spacer name="feat_title_axis_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeType">
+                            <enum>QSizePolicy::Minimum</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>10</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="feat_axis_label">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <pointsize>10</pointsize>
+                             <weight>75</weight>
+                             <bold>true</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Axis labels + Size</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <spacer name="feat_axis_label_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeType">
+                            <enum>QSizePolicy::Fixed</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>3</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item>
+                          <layout class="QHBoxLayout" name="feat_axis_layout">
+                           <item>
+                            <layout class="QVBoxLayout" name="feat_xy_layout">
+                             <property name="spacing">
+                              <number>10</number>
+                             </property>
+                             <item>
+                              <layout class="QHBoxLayout" name="feat_x_layout">
+                               <property name="spacing">
+                                <number>10</number>
+                               </property>
+                               <property name="leftMargin">
+                                <number>0</number>
+                               </property>
+                               <item>
+                                <widget class="QLabel" name="feat_x_label">
+                                 <property name="minimumSize">
+                                  <size>
+                                   <width>0</width>
+                                   <height>21</height>
+                                  </size>
+                                 </property>
+                                 <property name="maximumSize">
+                                  <size>
+                                   <width>16777215</width>
+                                   <height>21</height>
+                                  </size>
+                                 </property>
+                                 <property name="font">
+                                  <font>
+                                   <pointsize>10</pointsize>
+                                  </font>
+                                 </property>
+                                 <property name="text">
+                                  <string>x</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item>
+                                <widget class="QLineEdit" name="feat_x_ledit">
+                                 <property name="minimumSize">
+                                  <size>
+                                   <width>0</width>
+                                   <height>21</height>
+                                  </size>
+                                 </property>
+                                 <property name="maximumSize">
+                                  <size>
+                                   <width>16777215</width>
+                                   <height>21</height>
+                                  </size>
+                                 </property>
+                                 <property name="font">
+                                  <font>
+                                   <pointsize>10</pointsize>
+                                  </font>
+                                 </property>
+                                 <property name="styleSheet">
+                                  <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                                 </property>
+                                 <property name="placeholderText">
+                                  <string>Evaluation step</string>
+                                 </property>
+                                </widget>
+                               </item>
+                              </layout>
+                             </item>
+                             <item>
+                              <layout class="QHBoxLayout" name="feat_y_layout">
+                               <property name="spacing">
+                                <number>10</number>
+                               </property>
+                               <property name="leftMargin">
+                                <number>0</number>
+                               </property>
+                               <item>
+                                <widget class="QLabel" name="feat_y_label">
+                                 <property name="minimumSize">
+                                  <size>
+                                   <width>0</width>
+                                   <height>21</height>
+                                  </size>
+                                 </property>
+                                 <property name="maximumSize">
+                                  <size>
+                                   <width>16777215</width>
+                                   <height>21</height>
+                                  </size>
+                                 </property>
+                                 <property name="font">
+                                  <font>
+                                   <pointsize>10</pointsize>
+                                  </font>
+                                 </property>
+                                 <property name="text">
+                                  <string>y</string>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item>
+                                <widget class="QLineEdit" name="feat_y_ledit">
+                                 <property name="minimumSize">
+                                  <size>
+                                   <width>0</width>
+                                   <height>21</height>
+                                  </size>
+                                 </property>
+                                 <property name="maximumSize">
+                                  <size>
+                                   <width>16777215</width>
+                                   <height>21</height>
+                                  </size>
+                                 </property>
+                                 <property name="font">
+                                  <font>
+                                   <pointsize>10</pointsize>
+                                  </font>
+                                 </property>
+                                 <property name="styleSheet">
+                                  <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                                 </property>
+                                 <property name="placeholderText">
+                                  <string>Component value</string>
+                                 </property>
+                                </widget>
+                               </item>
+                              </layout>
+                             </item>
+                            </layout>
+                           </item>
+                           <item>
+                            <spacer name="feat_axis_hspacer">
+                             <property name="orientation">
+                              <enum>Qt::Horizontal</enum>
+                             </property>
+                             <property name="sizeType">
+                              <enum>QSizePolicy::Fixed</enum>
+                             </property>
+                             <property name="sizeHint" stdset="0">
+                              <size>
+                               <width>5</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                            </spacer>
+                           </item>
+                           <item>
+                            <widget class="QSpinBox" name="feat_labelsize_sbox">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>IBeamCursor</cursorShape>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="buttonSymbols">
+                              <enum>QAbstractSpinBox::PlusMinus</enum>
+                             </property>
+                             <property name="minimum">
+                              <number>1</number>
+                             </property>
+                             <property name="value">
+                              <number>11</number>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                         <item>
+                          <spacer name="feat_axis_props_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeType">
+                            <enum>QSizePolicy::Minimum</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>10</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="feat_props_label">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <pointsize>10</pointsize>
+                             <weight>75</weight>
+                             <bold>true</bold>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Other Properties</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <spacer name="feat_props_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeType">
+                            <enum>QSizePolicy::Fixed</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>3</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item>
+                          <layout class="QGridLayout" name="feat_props_layout">
+                           <property name="leftMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="horizontalSpacing">
+                            <number>10</number>
+                           </property>
+                           <item row="1" column="0">
+                            <widget class="QSpinBox" name="feat_legendsize_sbox">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>IBeamCursor</cursorShape>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="buttonSymbols">
+                              <enum>QAbstractSpinBox::PlusMinus</enum>
+                             </property>
+                             <property name="minimum">
+                              <number>1</number>
+                             </property>
+                             <property name="value">
+                              <number>9</number>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="0" column="2">
+                            <widget class="QLabel" name="feat_linewidth_label">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="text">
+                              <string>Lines</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="0" column="0">
+                            <widget class="QLabel" name="feat_legendsize_label">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="text">
+                              <string>Legend</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="0" column="1">
+                            <widget class="QLabel" name="feat_ticksize_label">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="text">
+                              <string>Ticks</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="1">
+                            <widget class="QSpinBox" name="feat_ticksize_sbox">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>IBeamCursor</cursorShape>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="buttonSymbols">
+                              <enum>QAbstractSpinBox::PlusMinus</enum>
+                             </property>
+                             <property name="minimum">
+                              <number>1</number>
+                             </property>
+                             <property name="value">
+                              <number>9</number>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="2">
+                            <widget class="QSpinBox" name="feat_linewidth_sbox">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>IBeamCursor</cursorShape>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <property name="buttonSymbols">
+                              <enum>QAbstractSpinBox::PlusMinus</enum>
+                             </property>
+                             <property name="minimum">
+                              <number>1</number>
+                             </property>
+                             <property name="value">
+                              <number>3</number>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                         <item>
+                          <spacer name="feat_props_background_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeType">
+                            <enum>QSizePolicy::Fixed</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>3</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="feat_background_label">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <pointsize>10</pointsize>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>Background color</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QComboBox" name="feat_background_cbox">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>21</height>
+                            </size>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <pointsize>10</pointsize>
+                            </font>
+                           </property>
+                           <property name="cursor">
+                            <cursorShape>PointingHandCursor</cursorShape>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                           </property>
+                           <property name="currentIndex">
+                            <number>1</number>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>white</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>whitesmoke</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>lightgray</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <spacer name="feat_background_grid_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeType">
+                            <enum>QSizePolicy::Fixed</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>5</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item>
+                          <layout class="QHBoxLayout" name="feat_grid_layout">
+                           <item>
+                            <widget class="QCheckBox" name="feat_gridlines_check">
+                             <property name="minimumSize">
+                              <size>
+                               <width>0</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="text">
+                              <string>Grid</string>
+                             </property>
+                             <property name="checked">
+                              <bool>true</bool>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QComboBox" name="feat_gridcolor_cbox">
+                             <property name="minimumSize">
+                              <size>
+                               <width>81</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>21</height>
+                              </size>
+                             </property>
+                             <property name="font">
+                              <font>
+                               <pointsize>10</pointsize>
+                              </font>
+                             </property>
+                             <property name="cursor">
+                              <cursorShape>PointingHandCursor</cursorShape>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                             </property>
+                             <item>
+                              <property name="text">
+                               <string>lightgray</string>
+                              </property>
+                             </item>
+                             <item>
+                              <property name="text">
+                               <string>darkgray</string>
+                              </property>
+                             </item>
+                             <item>
+                              <property name="text">
+                               <string>black</string>
+                              </property>
+                             </item>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                         <item>
+                          <spacer name="feat_grid_open_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeType">
+                            <enum>QSizePolicy::Minimum</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item>
+                          <widget class="QPushButton" name="open_feat_graph_pbutton">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>31</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>31</height>
+                            </size>
+                           </property>
+                           <property name="cursor">
+                            <cursorShape>PointingHandCursor</cursorShape>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">background-color: rgb(238, 238, 236);
+border: 1px solid;
+border-color: rgb(186, 189, 182);</string>
+                           </property>
+                           <property name="text">
+                            <string>Open static plot</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <spacer name="feat_export_bottom_vspacer">
+                           <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>20</width>
+                             <height>40</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                        </layout>
+                       </item>
+                      </layout>
+                     </widget>
                     </item>
                    </layout>
                   </item>

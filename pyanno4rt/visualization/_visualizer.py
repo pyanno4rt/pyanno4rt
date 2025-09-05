@@ -98,7 +98,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             'outc_gridcolor_cbox': cbox,
             'open_comp_graph_pbutton': pbutton,
             'open_outc_graph_pbutton': pbutton,
-            'open_feat_vals_pbutton': pbutton,
+            'open_feat_graph_pbutton': pbutton,
             'open_metrics_graphs_pbutton': pbutton,
             'open_metrics_tables_pbutton': pbutton,
             'model_name_cbox': cbox,
@@ -203,7 +203,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         for key, value in {
                 'open_comp_graph_pbutton': self.open_component_graph,
                 'open_outc_graph_pbutton': self.open_outcome_graph,
-                'open_feat_vals_pbutton': self.open_component_graph,
+                'open_feat_graph_pbutton': self.open_component_graph,
                 'open_metrics_graphs_pbutton': self.open_metrics_graph,
                 'open_metrics_tables_pbutton': self.open_metrics_table,
                 'open_perm_graph_pbutton': self.open_importance_boxplots,
@@ -296,7 +296,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
                       in optimization['problem'].tracker.values()))))
             or all(objective.model_parameters.write_features is False
                    for objective in ml_components)):
-            self.open_feat_vals_pbutton.setEnabled(False)
+            self.open_feat_graph_pbutton.setEnabled(False)
 
         # Check if the metrics tables and graphs buttons should be disabled
         if (state < 2 or
@@ -732,14 +732,19 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         # Add the plan quality indicators
         self.add_indicators()
 
-        # Show the visualization window
-        self.show()
-
         # Check if no parent has been passed
         if self.parent is None:
 
+            # Show the maximized visualization window
+            self.showMaximized()
+
             # Run the application
             self.application.exec_()
+
+        else:
+
+            # Show the visualization window
+            self.show()
 
     def position(self):
         """Set the window position."""

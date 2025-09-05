@@ -8,7 +8,15 @@ from itertools import islice, cycle
 from numpy import multiply
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
-from pyqtgraph import colormap, InfiniteLine, mkPen, PlotWidget, SignalProxy
+from pyqtgraph import colormap, mkPen, PlotWidget, setConfigOptions
+
+# %% Internal package import
+
+from pyanno4rt.visualization._custom_styles import tooltip
+
+# %% Plotting options
+
+setConfigOptions(antialias=True)
 
 # %% Class definition
 
@@ -46,13 +54,8 @@ class OutcomeGraphWidget(QWidget):
         # Add margins to the widget
         self.plot_widget.plotItem.setContentsMargins(20, 10, 10, 20)
 
-        # Generate the vertical and horizontal infinite lines
-        self.vertical_line = InfiniteLine(angle=90)
-        self.horizontal_line = InfiniteLine(angle=0)
-
-        # Add the lines to the widget
-        self.plot_widget.addItem(self.vertical_line)
-        self.plot_widget.addItem(self.horizontal_line)
+        # Set the style sheet for the tooltips
+        self.plot_widget.setStyleSheet(tooltip)
 
         # Add the widget to the layout
         graph_layout.addWidget(self.plot_widget)
@@ -60,9 +63,6 @@ class OutcomeGraphWidget(QWidget):
         # Initialize the component tracker and the display styles
         self.tracker = None
         self.styles = None
-
-        # Initialize the crosshair update
-        self.crosshair_update = None
 
     def add_style_and_data(
             self,
@@ -99,11 +99,6 @@ class OutcomeGraphWidget(QWidget):
         self.styles = dict(
             zip(self.tracker, tuple(zip(markers, colors, linestyles))))
 
-        # Set the plot title
-        self.plot_widget.setTitle(
-            "<span style='color: #FFAE42; font-size: 10pt'>"
-            "step: %0.0f, prediction: %0.2f</span>" % (0, 0.00))
-
         # Set the plot labels
         self.plot_widget.setLabels(
             left="Outcome prediction [%]", bottom="Evaluation step",
@@ -112,7 +107,7 @@ class OutcomeGraphWidget(QWidget):
         # Set the plot limits
         self.plot_widget.plotItem.vb.setLimits(
             xMin=0, xMax=max(len(track) for track in tracker.values())+1,
-            yMin=-1, yMax=101)
+            yMin=-5, yMax=105)
 
         # Enable the auto-range
         self.plot_widget.plotItem.vb.enableAutoRange()
@@ -126,11 +121,6 @@ class OutcomeGraphWidget(QWidget):
 
         # Show the grid
         self.plot_widget.showGrid(x=True, y=True, alpha=0.3)
-
-        # Set the signal proxy to update the crosshair at mouse moves
-        self.crosshair_update = SignalProxy(
-            self.plot_widget.scene().sigMouseMoved, rateLimit=60,
-            slot=self.update_crosshair)
 
     def select_curve(
             self,
@@ -167,7 +157,7 @@ class OutcomeGraphWidget(QWidget):
 
                     # Increase the pen width
                     event.curve.setPen(mkPen(
-                        color=pen.color(), style=pen.style(), width=5))
+                        color=pen.color(), style=pen.style(), width=4))
 
                     # Get the optimization data
                     optimization = self.parent.plan.datahub.optimization
@@ -267,54 +257,6 @@ class OutcomeGraphWidget(QWidget):
             self.parent.outc_rank_ledit.clear()
             self.parent.outc_bounds_ledit.clear()
 
-    def update_crosshair(
-            self,
-            event):
-        """
-        Update the crosshair at mouse moves.
-
-        Parameters
-        ----------
-        event : object of class :class:`~PyQt5.QtCore.QEvent`
-            The object representing the event.
-        """
-
-        # Get the event coordinates
-        coordinates = event[0]
-
-        # Check if the coordinates are within the scene bounding rectangle
-        if self.plot_widget.sceneBoundingRect().contains(coordinates):
-
-            # Get the mouse point in the viewbox coordinate system
-            mouse_point = self.plot_widget.plotItem.vb.mapSceneToView(
-                coordinates)
-
-            # Get the limits of the viewbox
-            limits = self.plot_widget.plotItem.vb.getState()['limits']
-
-            # Update the positions of vertical and horizontal lines
-            self.vertical_line.setPos(mouse_point.x())
-            self.horizontal_line.setPos(mouse_point.y())
-
-            # Check if the mouse point is within the limits
-            if ((0 <= mouse_point.x() <= limits['xLimits'][1])
-                    and (limits['yLimits'][0]
-                         <= mouse_point.y()
-                         <= limits['yLimits'][1])):
-
-                # Set the point to the current mouse point
-                point = (mouse_point.x(), mouse_point.y())
-
-            else:
-
-                # Set the point to default
-                point = (0, 0.00)
-
-            # Update the graph title
-            self.plot_widget.setTitle(
-                "<span style='color: #FFAE42; font-size: 10pt'>"
-                "step: %0.0f, prediction: %0.2f</span>" % point)
-
     def update_graph(self):
         """Update the outcome graph."""
 
@@ -340,6 +282,11 @@ class OutcomeGraphWidget(QWidget):
                 name=track,
                 clickable=True)
 
+            # Add hoverable tooltip to the scatter points
+            plot.scatter.opts.update(
+                hoverable=True,
+                tip='step: {x:0.0f}\nprediction: {y:0.4f} %'.format)
+
             # Connect the plot with the curve selection methods
             plot.sigClicked.connect(self.select_curve)
             self.plot_widget.scene().sigMouseClicked.connect(
@@ -356,15 +303,6 @@ class OutcomeGraphWidget(QWidget):
         self.plot_widget.getPlotItem().hideAxis('top')
         self.plot_widget.getPlotItem().hideAxis('left')
         self.plot_widget.getPlotItem().hideAxis('right')
-
-        # Clear the title
-        self.plot_widget.setTitle(None)
-
-        # Check if the widget has a crosshair update attribute
-        if hasattr(self, 'crosshair_update'):
-
-            # Remove the attribute
-            delattr(self, 'crosshair_update')
 
         # Clear the component line editors
         self.parent.outc_component_ledit.clear()

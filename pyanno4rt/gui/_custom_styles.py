@@ -186,3 +186,12 @@ tbutton_workflow = ('''
                         background-color: rgb(246, 246, 244);
                         }
                     ''')
+
+# Set the stylesheet for the tooltip
+tooltip = ('''
+           QToolTip {
+               background-color: #1e1e1e;
+               color: #dddddd;
+               border-color: #1e1e1e;
+               }
+           ''')

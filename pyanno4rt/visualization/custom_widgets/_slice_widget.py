@@ -11,7 +11,11 @@ from numpy import nan, rot90, transpose, unravel_index, zeros
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from pyqtgraph import (
     colormap, ColorBarItem, GraphicsLayoutWidget, ImageItem, IsocurveItem,
-    mkColor, mkPen)
+    mkColor, mkPen, setConfigOptions)
+
+# %% Plotting options
+
+setConfigOptions(antialias=True)
 
 # %% Class definition
 

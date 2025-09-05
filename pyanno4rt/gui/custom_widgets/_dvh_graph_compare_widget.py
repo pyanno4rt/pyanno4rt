@@ -7,7 +7,12 @@
 from itertools import islice, cycle
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
-from pyqtgraph import colormap, InfiniteLine, mkPen, PlotWidget, SignalProxy
+from pyqtgraph import (
+    colormap, InfiniteLine, mkPen, PlotWidget, setConfigOptions, SignalProxy)
+
+# %% Plotting options
+
+setConfigOptions(antialias=True)
 
 # %% Class definition
 
@@ -121,7 +126,8 @@ class DVHGraphCompareWidget(QWidget):
         # Set the plot title
         self.plot_widget.setTitle(
             "<span style='color: #FFAE42; font-size: 10pt'>"
-            f"{self.delta}dose: %0.2f, volume: %0.2f</span>" % (0.00, 0.00))
+            f"{self.delta}dose: %0.2f, rel. volume: %0.2f</span>"
+            % (0.00, 0.00))
 
         # Set the plot labels
         self.plot_widget.setLabels(
@@ -252,7 +258,7 @@ class DVHGraphCompareWidget(QWidget):
             # Update the graph title
             self.plot_widget.setTitle(
                 "<span style='color: #FFAE42; font-size: 10pt'>"
-                f"{self.delta}dose: %0.2f, volume: %0.2f</span>" % point)
+                f"{self.delta}dose: %0.2f, rel. volume: %0.2f</span>" % point)
 
     def update_dvh(self, segments):
         """."""

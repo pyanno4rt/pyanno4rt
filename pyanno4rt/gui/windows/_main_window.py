@@ -308,7 +308,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.set_initial_plan(treatment_plan)
 
         # Show the window
-        self.show()
+        self.showMaximized()
 
         # Close the splash screen window
         self.splash_screen_window.close()
