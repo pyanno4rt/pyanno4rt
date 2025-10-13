@@ -99,7 +99,8 @@ class EmptyDataGenerator():
             'feature_definitions': configuration['feature_definitions'],
             'tune_folds': configuration['tune_folds'],
             'oof_folds': configuration['oof_folds'],
-            'number_of_samples': configuration['number_of_samples']
+            'number_of_samples': configuration['number_of_samples'],
+            'file': configuration['file']
             }
 
         # Loop over the feature definitions

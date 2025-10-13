@@ -124,23 +124,40 @@ class TabularDataGenerator():
         # Initialize the datahub
         hub = Datahub()
 
-        # Decompose the base tabular dataset
-        data_information = self.decompose(
-            read_csv(self.data_path), self.data_columns)
+        # Get the existing datasets with matching file name
+        matches = tuple(
+            data for data in hub.datasets.values()
+            if data['file'] == self.data_path.split('/')[-1])
 
-        # Check if a time variable has been passed
-        if data_information['time_variable_name']:
+        # Check if at least one dataset matches
+        if len(matches) > 0:
 
-            # Modulate the data information
-            data_information = self.modulate(data_information)
+            # Copy the data information from the first match
+            data_information = matches[0]
 
-        # Binarize the data information
-        data_information = self.binarize(data_information)
+        else:
 
-        # Add the fold numbers
-        data_information = self.add_fold_numbers(
-            data_information, self.tune_splits, self.tune_repeats,
-            self.oof_splits, self.oof_repeats)
+            # Decompose the base tabular dataset
+            data_information = self.decompose(
+                read_csv(self.data_path), self.data_columns)
+
+            # Check if a time variable has been passed
+            if data_information['time_variable_name']:
+
+                # Modulate the data information
+                data_information = self.modulate(data_information)
+
+            # Binarize the data information
+            data_information = self.binarize(data_information)
+
+            # Add the fold numbers
+            data_information = self.add_fold_numbers(
+                data_information, self.tune_splits, self.tune_repeats,
+                self.oof_splits, self.oof_repeats)
+
+            # Add the file name
+            data_information = (
+                data_information | {'file': self.data_path.split('/')[-1]})
 
         # Enter the data information dictionary into the datahub
         hub.datasets |= {self.model_label: data_information}

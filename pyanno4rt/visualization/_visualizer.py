@@ -22,12 +22,12 @@ from pyanno4rt.tools import (
     get_radiobiological_objectives)
 from pyanno4rt.visualization.assets import resources_rc
 from pyanno4rt.visualization.custom_widgets import (
-    ComponentGraphWidget, DVHGraphWidget, OutcomeGraphWidget,
-    PermutationImportanceWidget, SliceWidget)
+    ComponentGraphWidget, DVHGraphWidget, FeatureGraphWidget,
+    OutcomeGraphWidget, PermutationImportanceWidget, SliceWidget)
 from pyanno4rt.visualization.design.visualizer import Ui_visualization_window
 from pyanno4rt.visualization.static import (
-    ComponentGraph, DosimetricsTable, DVHGraph, MetricsGraph, MetricsTable,
-    OutcomeGraph, PermutationImportanceBoxplot)
+    ComponentGraph, DosimetricsTable, DVHGraph, FeatureGraph, MetricsGraph,
+    MetricsTable, OutcomeGraph, PermutationImportanceBoxplot)
 from pyanno4rt.visualization._custom_styles import (
     cbox, pbutton, tab_bright, tab_dark)
 
@@ -82,6 +82,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         # Initialize the widgets
         self.comp_widget = ComponentGraphWidget(self)
         self.outc_widget = OutcomeGraphWidget(self)
+        self.feat_widget = FeatureGraphWidget(self)
         self.perm_widget = PermutationImportanceWidget(self)
         self.slice_widget = SliceWidget(self)
         self.dvh_widget = DVHGraphWidget(self)
@@ -94,18 +95,22 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             'tab_plan': tab_bright,
             'comp_background_cbox': cbox,
             'comp_gridcolor_cbox': cbox,
+            'open_comp_graph_pbutton': pbutton,
             'outc_background_cbox': cbox,
             'outc_gridcolor_cbox': cbox,
-            'open_comp_graph_pbutton': pbutton,
             'open_outc_graph_pbutton': pbutton,
+            'feat_background_cbox': cbox,
+            'feat_gridcolor_cbox': cbox,
             'open_feat_graph_pbutton': pbutton,
+            'model_name_cbox': cbox,
+            'model_cbox': cbox,
+            'feature_cbox': cbox,
             'open_metrics_graphs_pbutton': pbutton,
             'open_metrics_tables_pbutton': pbutton,
-            'model_name_cbox': cbox,
-            'domain_cbox': cbox,
             'perm_background_cbox': cbox,
             'perm_gridcolor_cbox': cbox,
             'open_perm_graph_pbutton': pbutton,
+            'domain_cbox': cbox,
             'open_image_pbutton': pbutton,
             'dvh_background_cbox': cbox,
             'dvh_gridcolor_cbox': cbox,
@@ -115,6 +120,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Add the widgets to the layouts
         self.comp_graph_plot_widget_layout.insertWidget(0, self.comp_widget)
+        self.feat_graph_plot_widget_layout.insertWidget(0, self.feat_widget)
         self.outc_graph_plot_widget_layout.insertWidget(0, self.outc_widget)
         self.perm_graph_plot_widget_layout.insertWidget(0, self.perm_widget)
         self.image_top_widget_layout.insertWidget(0, self.slice_widget)
@@ -203,7 +209,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         for key, value in {
                 'open_comp_graph_pbutton': self.open_component_graph,
                 'open_outc_graph_pbutton': self.open_outcome_graph,
-                'open_feat_graph_pbutton': self.open_component_graph,
+                'open_feat_graph_pbutton': self.open_feature_graph,
                 'open_metrics_graphs_pbutton': self.open_metrics_graph,
                 'open_metrics_tables_pbutton': self.open_metrics_table,
                 'open_perm_graph_pbutton': self.open_importance_boxplots,
@@ -384,6 +390,57 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
             # Update the outcome graph
             self.outc_widget.update_graph()
+
+    def add_feature_tracks(self):
+        """Add the feature tracks to the widget."""
+
+        # Reset the feature graph
+        self.feat_widget.reset_graph()
+
+        # Get the segmentation data
+        segmentation = self.plan.datahub.segmentation
+
+        # Get the ML model-based components
+        components = (
+            get_machine_learning_constraints(segmentation)
+            + get_machine_learning_objectives(segmentation))
+            
+        # Check if the plan has already been optimized
+        if (self.plan.fluence_optimizer is not None
+                and 'optimized_dose' in self.plan.datahub.optimization
+                and self.plan.datahub.state >= 3) and len(components) > 0:
+
+            # Get the feature histories
+            histories = {label: values for label, values in {
+                component.model.model_label: getattr(
+                    component.data_model_handler.feature_calculator,
+                    'feature_history') for component in components}.items()
+                if values}
+
+            # Check if any history has been recorded
+            if len(histories) > 0:
+
+                # Get the tracker
+                tracker = self.plan.datahub.optimization['problem'].tracker
+
+                # Get the outcome data
+                outcomes = {
+                    component.model.model_label: component.translate(list(
+                        divide(tracker[component.track_id], component.weight)))
+                    for component in components}
+
+                # Add the model names
+                self.model_cbox.addItems(list(histories.keys()))
+
+                # Add the feature names
+                self.feature_cbox.addItems(
+                    list(histories[self.model_cbox.currentText()]))
+
+                # Add style and data
+                self.feat_widget.add_style_and_data(histories, outcomes)
+
+                # Update the feature graph
+                self.feat_widget.update_graph()
 
     def add_importance_boxplots(self):
         """."""
@@ -595,6 +652,35 @@ class Visualizer(QMainWindow, Ui_visualization_window):
              self.outc_widget.plot_widget.getPlotItem().curves
              if item.isVisible()])
 
+    def open_feature_graph(self):
+        """Open the iterative feature value graph."""
+
+        # Set up the layout parameters
+        inputs = {
+            key: value for key, value in (
+                ('title', self.feat_title_ledit.text()),
+                ('titlesize', self.feat_titlesize_sbox.value()),
+                ('xlabel', self.feat_x_ledit.text()),
+                ('ylabel', self.feat_y_ledit.text()),
+                ('labelsize', self.feat_labelsize_sbox.value()),
+                ('linewidth', self.feat_linewidth_sbox.value()),
+                ('ticksize', self.feat_ticksize_sbox.value()),
+                ('legendsize', self.feat_legendsize_sbox.value()),
+                ('background', self.feat_background_cbox.currentText()),
+                ('gridlines', self.feat_gridlines_check.isChecked()),
+                ('gridcolor', self.feat_gridcolor_cbox.currentText()))
+            if value != ''}
+
+        # Initialize the iterative feature value graph
+        plotter = FeatureGraph(**inputs)
+
+        # Open the view
+        plotter.view(
+            self.plan,
+            [item.name() for item in
+             self.feat_widget.plot_widget.getPlotItem().curves
+             if item.isVisible()])
+
     def open_metrics_graph(self):
         """Open the metrics graph."""
 
@@ -719,6 +805,9 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Add the outcome tracks
         self.add_outcome_tracks()
+
+        # Add the feature tracks
+        self.add_feature_tracks()
 
         # Add the permutation importance boxplots
         self.add_importance_boxplots()

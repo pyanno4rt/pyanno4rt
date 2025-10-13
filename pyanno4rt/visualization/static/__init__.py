@@ -12,6 +12,7 @@ the visualization window.
 from pyanno4rt.visualization.static._component_graph import ComponentGraph
 from pyanno4rt.visualization.static._dosimetrics_table import DosimetricsTable
 from pyanno4rt.visualization.static._dvh_graph import DVHGraph
+from pyanno4rt.visualization.static._feature_graph import FeatureGraph
 from pyanno4rt.visualization.static._metrics_graph import MetricsGraph
 from pyanno4rt.visualization.static._metrics_table import MetricsTable
 from pyanno4rt.visualization.static._outcome_graph import OutcomeGraph
@@ -22,6 +23,7 @@ __all__ = [
     'ComponentGraph',
     'DosimetricsTable',
     'DVHGraph',
+    'FeatureGraph',
     'MetricsGraph',
     'MetricsTable',
     'OutcomeGraph',

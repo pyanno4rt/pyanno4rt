@@ -144,11 +144,11 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
 | `scikit-image`                 | <font size="3"> >=0.25.2 </font>      |
 | `h5py`                         | <font size="3"> >=3.14.0 </font>      |
-| `pandas`                       | <font size="3"> >=2.3.2 </font>       |
+| `pandas`                       | <font size="3"> >=2.3.3 </font>       |
 | `jax`                          | <font size="3"> >=0.6.2 </font>       |
 | `jaxlib`                       | <font size="3"> >=0.6.2 </font>       |
-| `numba`                        | <font size="3"> >=0.61.2 </font>      |
-| `scikit-learn`                 | <font size="3"> >=1.7.1 </font>       |
+| `numba`                        | <font size="3"> >=0.62.1 </font>      |
+| `scikit-learn`                 | <font size="3"> >=1.7.2 </font>       |
 | `tensorflow`                   | <font size="3"> >=2.20.0 </font>      |
 | `tensorflow-io-gcs-filesystem` | <font size="3"> ==0.31.0 </font>      |
 | `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
@@ -157,11 +157,11 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `pyqt5`                        | <font size="3"> >=5.15.10 </font>     |
 | `pyqtgraph`                    | <font size="3"> >=0.13.7 </font>      |
 | `ipython`                      | <font size="3"> >=8.37.0 </font>      |
-| `matplotlib`                   | <font size="3"> >=3.10.6 </font>      |
+| `matplotlib`                   | <font size="3"> >=3.10.7 </font>      |
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
-Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.0.8** for development.
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.0** for development.
 
 # Development :rocket:
 
