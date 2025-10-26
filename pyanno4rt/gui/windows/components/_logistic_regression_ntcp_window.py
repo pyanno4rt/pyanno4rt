@@ -494,12 +494,12 @@ class LogisticRegressionNTCPWindow(
         icon.addPixmap(QPixmap(icon_path), QIcon.Normal, QIcon.Off)
 
         # Get the component string
-        component_string = ' - '.join((substring for substring in (
-            self.segment_cbox.currentText(), component.name,
-            f'weight: {component.arguments["weight"]}',
+        component_string = ' - '.join((substring for substring in filter(
+            None,
+            (self.segment_cbox.currentText(), component.name,
+            component.arguments['identifier'],
             f'embedding: {component.arguments["embedding"]}',
-            f'link: {component.arguments["link"]}',
-            f'identifier: {component.arguments["identifier"]}')
+            f'weight: {component.arguments["weight"]}'))
             if 'None' not in substring))
 
         # Check if the component item is edited

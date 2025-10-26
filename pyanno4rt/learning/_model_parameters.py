@@ -220,6 +220,19 @@ class ModelParameters():
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
 
+        # Check if a model folder path has been passed
+        if self.inputs['model_folder_path'] is not None:
+
+            # Convert the model folder path into an absolute path
+            self.inputs['model_folder_path'] = abspath(
+                self.inputs['model_folder_path'])
+
+        # Check if a data path has been passed
+        if self.inputs['data_path'] is not None:
+
+            # Convert the data path into an absolute path
+            self.inputs['data_path'] = abspath(self.inputs['data_path'])
+
         # Check the input arguments
         self.check(self.inputs)
 
@@ -228,18 +241,6 @@ class ModelParameters():
 
             # Set the attribute
             setattr(self, *item)
-
-        # Check if a model folder path has been passed
-        if self.model_folder_path is not None:
-
-            # Convert the model folder path into an absolute path
-            self.model_folder_path = abspath(self.model_folder_path)
-
-        # Check if a data path has been passed
-        if self.data_path is not None:
-
-            # Convert the data path into an absolute path
-            self.data_path = abspath(self.data_path)
 
     def to_dict(self):
         """Serialize the model parameters into a dictionary."""

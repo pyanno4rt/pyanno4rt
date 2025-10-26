@@ -183,7 +183,7 @@ class DataModelHandler():
             # Transform the feature history into a dictionary
             self.feature_calculator.feature_history = dict(zip(
                 (*hub.feature_maps[self.model_label],),
-                (*self.feature_calculator.feature_history[1:, :].transpose(),)
+                (*self.feature_calculator.feature_history[2:, :].transpose(),)
                 ))
 
         else:

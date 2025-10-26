@@ -419,7 +419,7 @@ class FeatureCalculator():
         feature_vector = array((*features,)).reshape(1, -1)
 
         # Check if the feature history should be written
-        if self.write_features and self.__iteration__[1] >= 2:
+        if self.write_features and self.__iteration__[1] >= 1:
 
             # Add the feature vector to the history
             self.feature_history = vstack((

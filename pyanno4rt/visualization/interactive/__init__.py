@@ -11,9 +11,5 @@ elements in the visual analysis tool.
 
 from pyanno4rt.visualization.interactive._ct_dose_slicing_window import (
     CtDoseSlicingWindow)
-from pyanno4rt.visualization.interactive._feature_select_window import (
-    FeatureSelectWindow)
 
-__all__ = [
-    'CtDoseSlicingWindow',
-    'FeatureSelectWindow']
+__all__ = ['CtDoseSlicingWindow']

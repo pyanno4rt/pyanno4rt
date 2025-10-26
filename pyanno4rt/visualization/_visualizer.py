@@ -53,7 +53,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
     Attributes
     ----------
-    
+
     """
 
     def __init__(
@@ -404,7 +404,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         components = (
             get_machine_learning_constraints(segmentation)
             + get_machine_learning_objectives(segmentation))
-            
+
         # Check if the plan has already been optimized
         if (self.plan.fluence_optimizer is not None
                 and 'optimized_dose' in self.plan.datahub.optimization
@@ -676,10 +676,12 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Open the view
         plotter.view(
-            self.plan,
-            [item.name() for item in
-             self.feat_widget.plot_widget.getPlotItem().curves
-             if item.isVisible()])
+            (self.feature_cbox.currentText(),
+             self.feat_widget.histories[self.model_cbox.currentText()][
+                self.feature_cbox.currentText()]),
+            (self.model_cbox.currentText(),
+             self.feat_widget.outcomes[self.model_cbox.currentText()]
+             if self.show_ntcp_check.isChecked() else None))
 
     def open_metrics_graph(self):
         """Open the metrics graph."""

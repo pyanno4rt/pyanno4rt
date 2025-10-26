@@ -4,14 +4,13 @@
 
 # %% External package import
 
-from itertools import islice, cycle
-from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import ceil, floor, linspace
+from matplotlib.pyplot import get_current_fig_manager, subplots
+from numpy import ceil, floor, multiply
+from scipy.stats import pearsonr
 
 # %% Internal package import
 
-from pyanno4rt.tools import (
-    filter_dict, flatten, get_all_constraints, get_all_objectives)
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -21,7 +20,7 @@ class FeatureGraph():
     Iterative feature graph class.
 
     This class provides a plot with the iteration-wise values of the \
-    optimization functions.
+    model features.
 
     Parameters
     ----------
@@ -34,7 +33,7 @@ class FeatureGraph():
     xlabel : str, default='Evaluation step'
         Label for the x-axis.
 
-    ylabel : str, default='Component value',
+    ylabel : str, default='Feature value',
         Label for the y-axis.
 
     labelsize : int, default=11
@@ -99,7 +98,7 @@ class FeatureGraph():
             title='',
             titlesize=16,
             xlabel='Evaluation step',
-            ylabel='Component value',
+            ylabel='Feature value',
             labelsize=11,
             linewidth=3,
             ticksize=9,
@@ -119,80 +118,31 @@ class FeatureGraph():
 
     def view(
             self,
-            treatment_plan,
-            identifiers=None):
+            history,
+            outcome):
         """
-        Open the iterative component graph.
+        Open the iterative feature graph.
 
         Parameters
         ----------
-        treatment_plan : object of class \
-            :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
-            The object used to represent the treatment plan.
+        history : tuple
+            Tuple with the feature name and iterative feature values.
 
-        ids : None or list
-            Track identifiers for filtering.
+        outcome : tuple
+            Tuple with the model name and iterative outcome values.
         """
 
-        # Set the value for the track identifiers
-        identifiers = [] if identifiers is None else identifiers
+        # Get the input variables
+        feature_name, feature_values = history
+        model_name, outcome_values = outcome
 
-        # Get the segmentation and optimization data
-        segmentation, optimization = (
-            getattr(treatment_plan.datahub, attribute) for attribute in (
-                'segmentation', 'optimization'))
-
-        # Get all optimization components
-        components = (
-            get_all_objectives(segmentation)
-            + get_all_constraints(segmentation))
-
-        # Get the tracks to be displayed
-        tracker = {
-            component.track_id: (
-                optimization['problem'].tracker[component.track_id])
-            for component in components if component.display}
-
-        # Get the track statistics
-        track_min = min(flatten(tracker.values()))
-        track_max = max(flatten(tracker.values()))
-        track_len = max(len(track) for track in tracker.values())
-        track_num = len(tracker)
+        # Get the feature statistics
+        feature_max = max(feature_values)
+        feature_min = min(feature_values)
+        feature_len = len(feature_values)
 
         # Set the expected number of ticks
         number_of_ticks = 20 if self.ticksize < 17 else 10
-
-        # Determine the step length on the x-axis
-        x_step = min(
-            sorted(base*10**i for base in (1, 2, 5) for i in range(6)),
-            key=lambda x: abs(ceil(track_len/x)-number_of_ticks))
-
-        # Determine the step length on the y-axis
-        y_step = min(
-            sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
-            key=lambda x: abs(ceil((track_max-track_min)/x)-number_of_ticks))
-
-        # Set the marker styles
-        markers = tuple(
-            islice(cycle(['o', 's', 'v', 'd', '*', 'X']), track_num))
-
-        # Set the colormap
-        colors = get_cmap('tab20b')(linspace(0, 1.0, track_num))
-
-        # Set the line styles
-        lines = tuple(islice(cycle(["-", "--", ":", "-."]), track_num))
-
-        # Create a dictionary for the track styles
-        styles = dict(
-            zip(tracker, tuple(zip(markers, colors, lines))))
-
-        # Check if track identifiers have been passed
-        if len(identifiers) > 0:
-
-            # Reduce the tracker
-            tracker = {
-                key: value for key, value in tracker.items()
-                if key in identifiers}
 
         # Get the figure and axis objects
         figure, axis = subplots(figsize=(14, 8))
@@ -202,37 +152,113 @@ class FeatureGraph():
             label=self.title, fontsize=self.titlesize, fontweight='semibold',
             pad=10)
 
-        # Loop over the tracks
-        for track, values in tracker.items():
+        # Check if outcome values are provided
+        if outcome_values is not None:
 
-            # Plot the track
-            axis.plot(
-                range(1, len(values)+1),
-                values,
-                marker=styles[track][0],
+            # Get the outcome statistics
+            outcome_max = max(outcome_values)
+            outcome_min = min(outcome_values)
+
+            # Set the colors for the split y-axis
+            ocolor = '#1f77b4'
+            hcolor = '#e7ba52'
+
+            # Determine the step length on the second y-axis
+            y_step_out = min(
+                sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
+                key=lambda x: abs(
+                    ceil((outcome_max-outcome_min)/x)-number_of_ticks))
+
+            # Create the second y-axis
+            axis2 = axis.twinx()
+
+            # Plot the outcome values
+            axis2.plot(
+                range(1, len(outcome_values)+1),
+                multiply(outcome_values, 100),
+                marker='s',
                 markersize=1.5*self.linewidth,
-                color=styles[track][1],
-                linestyle=styles[track][2],
+                color=ocolor,
+                linestyle='--',
                 linewidth=0.5*self.linewidth)
 
-        # Set the x- and y-labels
+            # Set the y-labels
+            axis.set_ylabel(
+                ylabel=(
+                    self.ylabel if self.ylabel != 'Feature value'
+                    else feature_name),
+                fontsize=self.labelsize, color=hcolor)
+            axis2.set_ylabel('Outcome prediction [%]', color=ocolor)
+
+            # Set the axis colors
+            axis.tick_params(axis='y', colors=hcolor)
+            axis2.tick_params(axis='y', colors=ocolor)
+
+            # Set the y-ticks
+            axis.set_yticks(tuple(
+                i*y_step_out for i in range(
+                    int(floor(outcome_min/y_step_out))-1,
+                    int(ceil(outcome_max/y_step_out))+1)))
+
+            # Set the y-limits
+            axis.set_ylim(outcome_min-y_step_out/2, outcome_max+y_step_out/2)
+
+            # Add the correlation value
+            figure.text(
+                .01, .99,
+                f'ρ={round(pearsonr(feature_values, outcome_values)[0], 4)}',
+                ha='left', va='top', transform=axis.transAxes, color='#ad494a')
+
+        else:
+
+            # Set the purple color for the first y-axis
+            hcolor = '#393b79'
+
+            # Set the first y-label
+            axis.set_ylabel(
+                ylabel=(
+                    self.ylabel if self.ylabel != 'Feature value'
+                    else feature_name),
+                fontsize=self.labelsize)
+
+        # Determine the step length on the shared x-axis
+        x_step = min(
+            sorted(base*10**i for base in (1, 2, 5) for i in range(6)),
+            key=lambda x: abs(ceil(feature_len/x)-number_of_ticks))
+
+        # Determine the step length on the first y-axis
+        y_step = min(
+            sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
+            key=lambda x: abs(
+                ceil((feature_max-feature_min)/x)-number_of_ticks))
+
+        # Plot the feature values
+        axis.plot(
+            range(1, len(feature_values)+1),
+            feature_values,
+            marker='o',
+            markersize=1.5*self.linewidth,
+            color=hcolor,
+            linestyle='-',
+            linewidth=0.5*self.linewidth)
+
+        # Set the x-label
         axis.set_xlabel(xlabel=self.xlabel, fontsize=self.labelsize)
-        axis.set_ylabel(ylabel=self.ylabel, fontsize=self.labelsize)
 
         # Configure the axis ticks
         axis.tick_params(axis='both', which='major', labelsize=self.ticksize)
 
         # Set the x- and y-ticks
         axis.set_xticks(tuple(
-            i*x_step for i in range(int(ceil(track_len/x_step))+1)))
+            i*x_step for i in range(int(ceil(feature_len/x_step))+1)))
         axis.set_yticks(tuple(
             i*y_step for i in range(
-                int(floor(track_min/y_step))-1,
-                int(ceil(track_max/y_step))+1)))
+                int(floor(feature_min/y_step))-1,
+                int(ceil(feature_max/y_step))+1)))
 
         # Set the x- and y-limits
-        axis.set_xlim(0, track_len+x_step/2)
-        axis.set_ylim(track_min-y_step/2, track_max+y_step/2)
+        axis.set_xlim(0, feature_len+x_step/2)
+        axis.set_ylim(feature_min-y_step/2, feature_max+y_step/2)
 
         # Set the facecolor for the axis
         axis.set_facecolor(self.background)
@@ -255,10 +281,6 @@ class FeatureGraph():
             axis.grid(False)
             axis.minorticks_off()
 
-        # Configure the legend
-        legend = axis.legend(tracker, fontsize=self.legendsize, framealpha=1)
-        legend.get_frame().set_facecolor('snow')
-
         # Apply a tight layout
         figure.tight_layout()
 
@@ -266,7 +288,7 @@ class FeatureGraph():
         figure_manager = get_current_fig_manager()
 
         # Set the window title
-        figure_manager.set_window_title("Iterative component graph")
+        figure_manager.set_window_title("Iterative feature graph")
 
         # Show the full-screen plot
         figure_manager.window.showMaximized()
