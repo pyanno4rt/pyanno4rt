@@ -136,6 +136,9 @@ class FeatureGraph():
         feature_name, feature_values = history
         model_name, outcome_values = outcome
 
+        # Scale the outcome values up
+        outcome_values = multiply(outcome_values, 100)
+
         # Get the feature statistics
         feature_max = max(feature_values)
         feature_min = min(feature_values)
@@ -175,7 +178,7 @@ class FeatureGraph():
             # Plot the outcome values
             axis2.plot(
                 range(1, len(outcome_values)+1),
-                multiply(outcome_values, 100),
+                outcome_values,
                 marker='s',
                 markersize=1.5*self.linewidth,
                 color=ocolor,
@@ -195,13 +198,13 @@ class FeatureGraph():
             axis2.tick_params(axis='y', colors=ocolor)
 
             # Set the y-ticks
-            axis.set_yticks(tuple(
+            axis2.set_yticks(tuple(
                 i*y_step_out for i in range(
                     int(floor(outcome_min/y_step_out))-1,
                     int(ceil(outcome_max/y_step_out))+1)))
 
             # Set the y-limits
-            axis.set_ylim(outcome_min-y_step_out/2, outcome_max+y_step_out/2)
+            axis2.set_ylim(outcome_min-y_step_out/2, outcome_max+y_step_out)
 
             # Add the correlation value
             figure.text(
@@ -258,7 +261,7 @@ class FeatureGraph():
 
         # Set the x- and y-limits
         axis.set_xlim(0, feature_len+x_step/2)
-        axis.set_ylim(feature_min-y_step/2, feature_max+y_step/2)
+        axis.set_ylim(feature_min-y_step/2, feature_max+y_step)
 
         # Set the facecolor for the axis
         axis.set_facecolor(self.background)

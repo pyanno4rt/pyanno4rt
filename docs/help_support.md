@@ -25,7 +25,7 @@ To cite *pyanno4rt*, either use the link in the right sidebar of the Github land
   author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},
   version = {1.0.0},
   license = {GPL-3.0},
-  year = {2025},
+  year = {2026},
   howpublished = {\url{http://github.com/pyanno4rt/pyanno4rt}}
 }
 ```

@@ -15,7 +15,6 @@ from scipy.ndimage import zoom
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.initializers import FluenceInitializer
 import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import (
    apply, flatten, get_constraint_segments, get_machine_learning_constraints,
@@ -39,7 +38,7 @@ class FluenceOptimizer():
     method : {'lexicographic', 'pareto', 'weighted-sum'}
         Single- or multi-criteria optimization method.
 
-    solver : {'ipyopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}
+    solver : {'ipyopt', 'pymoo', 'pypop7', 'scipy'}
         Python package to be used for solving the optimization problem.
 
     algorithm : str
@@ -125,11 +124,11 @@ class FluenceOptimizer():
         problem = maps.METHODS[method](backprojection, objectives, constraints)
 
         # Initialize the fluence initializer
-        initializer = FluenceInitializer(
-            initial_strategy, initial_fluence_vector)
+        initializer = maps.INITIALIZERS[initial_strategy](
+            initial_fluence_vector)
 
         # Get the initial fluence vector
-        initial_fluence = initializer.initialize_fluence()
+        initial_fluence = initializer.run()
 
         # Get the decision variable bounds
         variable_bounds = FluenceOptimizer.get_variable_bounds(
@@ -488,7 +487,7 @@ class FluenceOptimizer():
                 # Log a message about the prediction value
                 logger.display_info(
                     f"{component.name} for the optimized plan: "
-                    f"{'%.2f' % (100*value)} % ...")
+                    f"{round(100*value, 2)} % ...")
 
             # Loop over the machine learning outcome model-based components
             for component in (
@@ -510,7 +509,7 @@ class FluenceOptimizer():
                 # Log a message about the prediction value
                 logger.display_info(
                     f"{component.name} for the optimized plan: "
-                    f"{'%.2f' % (100*value)} % ...")
+                    f"{round(100*value, 2)} % ...")
 
         # Get the runtime for the fluence optimizer
         optimizer_runtime = round(

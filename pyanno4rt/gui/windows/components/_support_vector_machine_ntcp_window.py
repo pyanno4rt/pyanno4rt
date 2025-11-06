@@ -22,7 +22,7 @@ from pyanno4rt.learning import ModelParameters
 from pyanno4rt.learning.evaluation import DisplayOptions
 from pyanno4rt.learning.tune_spaces import TuneSpaceSVM
 import pyanno4rt.learning._maps as maps
-from pyanno4rt.optimization.components import SupportVectorMachineNTCP
+from pyanno4rt.optimization.components import SupportVectorMachineOutcome
 from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition
@@ -471,7 +471,7 @@ class SupportVectorMachineNTCPWindow(
                 kpis=self.kpi_cbox.currentData()))
 
         # Get the component
-        component = SupportVectorMachineNTCP(
+        component = SupportVectorMachineOutcome(
             segment=self.segment_cbox.currentText(),
             model_parameters=model_parameters,
             component_type=self.type_cbox.currentText(),

@@ -22,7 +22,7 @@ from pyanno4rt.learning import ModelParameters
 from pyanno4rt.learning.evaluation import DisplayOptions
 from pyanno4rt.learning.tune_spaces import TuneSpaceKNN
 import pyanno4rt.learning._maps as maps
-from pyanno4rt.optimization.components import KNeighborsNTCP
+from pyanno4rt.optimization.components import KNeighborsOutcome
 from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition
@@ -456,7 +456,7 @@ class KNeighborsNTCPWindow(QMainWindow, Ui_k_nearest_neighbors_ntcp_window):
                 kpis=self.kpi_cbox.currentData()))
 
         # Get the component
-        component = KNeighborsNTCP(
+        component = KNeighborsOutcome(
             segment=self.segment_cbox.currentText(),
             model_parameters=model_parameters,
             component_type=self.type_cbox.currentText(),

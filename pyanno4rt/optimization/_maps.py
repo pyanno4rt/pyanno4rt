@@ -5,48 +5,48 @@
 # %% Internal package import
 
 from pyanno4rt.optimization.components import (
-    DecisionTreeNTCP, DecisionTreeTCP, DoseUniformity, EquivalentUniformDose,
-    KNeighborsNTCP, KNeighborsTCP, LogisticRegressionNTCP,
-    LogisticRegressionTCP, LQPoissonTCP, LymanKutcherBurmanNTCP,
-    MaximumDVH, MeanDose, MinimumDVH, NaiveBayesNTCP, NaiveBayesTCP,
-    NeuralNetworkNTCP, NeuralNetworkTCP, RandomForestNTCP, RandomForestTCP,
+    DecisionTreeOutcome, DoseUniformity, EquivalentUniformDose,
+    KNeighborsOutcome, LogisticRegressionOutcome, LQPoissonTCP,
+    LymanKutcherBurmanNTCP, MaximumDVH, MeanDose, MinimumDVH,
+    NaiveBayesOutcome, NeuralNetworkOutcome, RandomForestOutcome,
     SquaredDeviation, SquaredOverdosing, SquaredUnderdosing,
-    SupportVectorMachineNTCP, SupportVectorMachineTCP)
-from pyanno4rt.optimization.methods import (
-    LexicographicOptimization, ParetoOptimization, WeightedSumOptimization)
+    SupportVectorMachineOutcome)
+from pyanno4rt.optimization.initializers import (
+    DataMedoidInitializer, TargetCoverageInitializer, WarmStartInitializer)
+from pyanno4rt.optimization.methods.lexicographic import LexicographicOptimization
+from pyanno4rt.optimization.methods.pareto import ParetoOptimization
+from pyanno4rt.optimization.methods.weighted import WeightedSumOptimization
 from pyanno4rt.optimization.projections import (
     ConstantRBEProjection, DoseProjection)
 from pyanno4rt.optimization.solvers import (
-    IpyoptSolver, ProxminSolver, PymooSolver, PyPop7Solver, SciPySolver)
+    IpyoptSolver, PymooSolver, PyPop7Solver, SciPySolver)
 
 # %% Map definitions
 
 
 COMPONENTS = {
-    'Decision Tree NTCP': DecisionTreeNTCP,
-    'Decision Tree TCP': DecisionTreeTCP,
+    'Decision Tree Outcome': DecisionTreeOutcome,
     'Dose Uniformity': DoseUniformity,
     'Equivalent Uniform Dose': EquivalentUniformDose,
-    'K-Nearest Neighbors NTCP': KNeighborsNTCP,
-    'K-Nearest Neighbors TCP': KNeighborsTCP,
-    'Logistic Regression NTCP': LogisticRegressionNTCP,
-    'Logistic Regression TCP': LogisticRegressionTCP,
+    'K-Nearest Neighbors Outcome': KNeighborsOutcome,
+    'Logistic Regression Outcome': LogisticRegressionOutcome,
     'LQ Poisson TCP': LQPoissonTCP,
     'Lyman-Kutcher-Burman NTCP': LymanKutcherBurmanNTCP,
     'Maximum DVH': MaximumDVH,
     'Mean Dose': MeanDose,
     'Minimum DVH': MinimumDVH,
-    'Naive Bayes NTCP': NaiveBayesNTCP,
-    'Naive Bayes TCP': NaiveBayesTCP,
-    'Neural Network NTCP': NeuralNetworkNTCP,
-    'Neural Network TCP': NeuralNetworkTCP,
-    'Random Forest NTCP': RandomForestNTCP,
-    'Random Forest TCP': RandomForestTCP,
+    'Naive Bayes Outcome': NaiveBayesOutcome,
+    'Neural Network Outcome': NeuralNetworkOutcome,
+    'Random Forest Outcome': RandomForestOutcome,
     'Squared Deviation': SquaredDeviation,
     'Squared Overdosing': SquaredOverdosing,
     'Squared Underdosing': SquaredUnderdosing,
-    'Support Vector Machine NTCP': SupportVectorMachineNTCP,
-    'Support Vector Machine TCP': SupportVectorMachineTCP}
+    'Support Vector Machine Outcome': SupportVectorMachineOutcome}
+
+INITIALIZERS = {
+    'data-medoid': DataMedoidInitializer,
+    'target-coverage': TargetCoverageInitializer,
+    'warm-start': WarmStartInitializer}
 
 METHODS = {
     'lexicographic': LexicographicOptimization,
@@ -59,7 +59,6 @@ PROJECTIONS = {
 
 SOLVERS = {
     'ipyopt': IpyoptSolver,
-    'proxmin': ProxminSolver,
     'pymoo': PymooSolver,
     'pypop7': PyPop7Solver,
     'scipy': SciPySolver}

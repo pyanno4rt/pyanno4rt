@@ -8,9 +8,9 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.checking import (
-    check_subtype, check_type, check_value, check_value_in_set)
 from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import (
+    validate_subtype, validate_type, validate_value, validate_value_in_set)
 
 # %% Class definition
 
@@ -105,8 +105,8 @@ class Evaluation():
             # Update the input argument value
             inputs[key] = inputs.get(key) or default
 
-        # Check the input arguments
-        self.check(inputs)
+        # Validate the input arguments
+        self.validate(inputs)
 
         # Loop over the input arguments
         for key, value in inputs.items():
@@ -139,11 +139,11 @@ class Evaluation():
 
         return cls(**dictionary)
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -151,39 +151,39 @@ class Evaluation():
             Dictionary with the input arguments.
         """
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'dvh_type': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
                     'cumulative', 'differential'))),
             'number_of_points': (
-                partial(check_type, options=int),
-                partial(check_value, reference=1, sign='>=')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=1, sign='>=')),
             'reference_volume': (
-                partial(check_type, options=list),
-                partial(check_subtype, options=(int, float)),
-                partial(check_value, reference=0, sign='>='),
-                partial(check_value, reference=100, sign='<=')
+                partial(validate_type, options=list),
+                partial(validate_subtype, options=(int, float)),
+                partial(validate_value, reference=0, sign='>='),
+                partial(validate_value, reference=100, sign='<=')
                 ),
             'reference_dose': (
-                partial(check_type, options=list),
-                partial(check_subtype, options=(int, float)),
-                partial(check_value, reference=0, sign='>=')),
+                partial(validate_type, options=list),
+                partial(validate_subtype, options=(int, float)),
+                partial(validate_value, reference=0, sign='>=')),
             'display_segments': (
-                partial(check_type, options=list),
-                partial(check_subtype, options=str)),
+                partial(validate_type, options=list),
+                partial(validate_subtype, options=str)),
             'display_metrics': (
-                partial(check_type, options=list),
-                partial(check_subtype, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=list),
+                partial(validate_subtype, options=str),
+                partial(validate_value_in_set, options=(
                     'mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI')))}
 
         # Loop over the inputs
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)

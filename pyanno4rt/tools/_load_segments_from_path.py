@@ -8,8 +8,7 @@ from os.path import splitext
 
 # %% Internal package import
 
-from pyanno4rt.patient import (
-    read_data_from_dcm, read_data_from_mat, read_data_from_p)
+from pyanno4rt.io import DicomHandler, MatHandler
 
 # %% Function definition
 
@@ -36,7 +35,7 @@ def load_segments_from_path(path):
     if splitext(path)[1] == '':
 
         # Read the DICOM segmentation data
-        _, segmentation_data = read_data_from_dcm(path)
+        _, segmentation_data = DicomHandler().read(path)
 
         # Initialize the segment dictionary
         segments = {}
@@ -69,23 +68,12 @@ def load_segments_from_path(path):
     elif splitext(path)[1] == '.mat':
 
         # Read the MATLAB segmentation data
-        _, segmentation_data = read_data_from_mat(path)
+        _, segmentation_data = MatHandler().read(path)
 
         # Generate the segment dictionary
         segments = {
             segment_values[1]: segment_values[2]
             for segment_values in segmentation_data}
-
-    # Else, check if the path leads to a Python file
-    elif splitext(path)[1] == '.p':
-
-        # Get the segmentation data
-        _, segmentation_data = read_data_from_p(path)
-
-        # Get the segments
-        segments = {
-            segment: values['type']
-            for segment, values in segmentation_data.items()}
 
     else:
 

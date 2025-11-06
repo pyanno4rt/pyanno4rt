@@ -8,8 +8,8 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.checking import check_type, check_value_in_set
 from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import validate_type, validate_value_in_set
 
 # %% Class definition
 
@@ -63,8 +63,8 @@ class DisplayOptions():
             key: value if value is not None else defaults[key]
             for key, value in inputs.items()}
 
-        # Check the input arguments
-        self.check(inputs)
+        # Validate the input arguments
+        self.validate(inputs)
 
         # Loop over the input arguments
         for item in inputs.items():
@@ -98,11 +98,11 @@ class DisplayOptions():
 
         return cls(**dictionary)
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -110,15 +110,15 @@ class DisplayOptions():
             Dictionary with the mappings between argument names and values.
         """
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'graphs': (
-                partial(check_type, options=list),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=list),
+                partial(validate_value_in_set, options=(
                     'AUC-ROC', 'AUC-PR', 'F1'))),
             'kpis': (
-                partial(check_type, options=list),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=list),
+                partial(validate_value_in_set, options=(
                     'Logloss', 'Brier score', 'Subset accuracy',
                     'Cohen Kappa', 'Hamming loss', 'Jaccard score',
                     'Precision', 'Recall', 'F1 score', 'MCC', 'AUC')))}
@@ -126,8 +126,8 @@ class DisplayOptions():
         # Loop over the dictionary items
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)

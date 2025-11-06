@@ -31,7 +31,7 @@
 <ul>
 	<li> DICOM files (.dcm) </li>
 	<li> MATLAB files (.mat) </li>
-	<li> Python files (.npy, .npz, .p) </li>
+	<li> Python files (.npy, .npz) </li>
 </ul>
 
 <h3>Easy configuration and management of treatment plans</h3>
@@ -59,12 +59,11 @@
 			<li> Weighted-sum method
 		</ul>
 	</li>
-	<li> 24-type dose-volume & outcome prediction model-based optimization component catalogue
+	<li> 17-type dose-volume & outcome prediction model-based optimization component catalogue
 	</li>
 	<li> Local & global solvers
 		<ul>
 			<li> Interior-point algorithms provided by <a href="https://pypi.org/project/ipyopt/">ipyopt</a> </li>
-			<li> Proximal algorithms provided by <a href="https://pypi.org/project/proxmin/">proxmin</a> </li>
 			<li> Multi-objective algorithms provided by <a href="https://pypi.org/project/pymoo/">pymoo</a> </li>
 			<li> Population-based algorithms provided by <a href="https://pypi.org/project/pypop7/">pypop7</a> </li>
 			<li> Local algorithms provided by <a href="https://pypi.org/project/scipy/">scipy</a> </li>
@@ -139,7 +138,6 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `python`                       | <font size="3"> >=3.10, <3.12 </font> |
 | `numpy`                        | <font size="3"> >=2.2.6 </font>       |
 | `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
-| `proxmin`                      | <font size="3"> >=0.6.12 </font>      |
 | `absl-py`                      | <font size="3"> >=2.3.1 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
 | `scikit-image`                 | <font size="3"> >=0.25.2 </font>      |
@@ -207,7 +205,7 @@ To cite *pyanno4rt*, either use the link in the right sidebar of the Github land
   author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},
   version = {1.0.0},
   license = {GPL-3.0},
-  year = {2025},
+  year = {2026},
   howpublished = {\url{http://github.com/pyanno4rt/pyanno4rt}}
 }
 ```

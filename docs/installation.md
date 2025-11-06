@@ -39,7 +39,6 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `python`                       | <font size="3"> >=3.10, <3.12 </font> |
 | `numpy`                        | <font size="3"> >=2.2.6 </font>       |
 | `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
-| `proxmin`                      | <font size="3"> >=0.6.12 </font>      |
 | `absl-py`                      | <font size="3"> >=2.3.1 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
 | `scikit-image`                 | <font size="3"> >=0.25.2 </font>      |

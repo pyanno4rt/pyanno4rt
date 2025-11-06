@@ -8,9 +8,10 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.checking import (
-    check_length, check_subtype, check_type, check_value, check_value_in_set)
 from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import (
+    validate_length, validate_subtype, validate_type, validate_value,
+    validate_value_in_set)
 
 # %% Class definition
 
@@ -116,8 +117,8 @@ class TuneSpaceDT():
             key: value if value is not None else defaults[key]
             for key, value in inputs.items()}
 
-        # Check the input arguments
-        self.check(inputs)
+        # Validate the input arguments
+        self.validate(inputs)
 
         # Loop over the input arguments
         for item in inputs.items():
@@ -151,11 +152,11 @@ class TuneSpaceDT():
 
         return cls(**dictionary)
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -163,56 +164,56 @@ class TuneSpaceDT():
             Dictionary with the mappings between argument names and values.
         """
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'criterion': (
-                partial(check_type, options=list),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=list),
+                partial(validate_value_in_set, options=(
                     'entropy', 'gini', 'log_loss'))),
             'splitter': (
-                partial(check_type, options=list),
-                partial(check_value_in_set, options=('best', 'random'))),
+                partial(validate_type, options=list),
+                partial(validate_value_in_set, options=('best', 'random'))),
             'max_depth': (
-                partial(check_type, options=list),
-                partial(check_subtype, options=int),
-                partial(check_value, reference=0, sign='>')),
+                partial(validate_type, options=list),
+                partial(validate_subtype, options=int),
+                partial(validate_value, reference=0, sign='>')),
             'min_samples_split': (
-                partial(check_type, options=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, options=float),
-                partial(check_value, reference=0, sign='>='),
-                partial(check_value, reference=1, sign='<=')),
+                partial(validate_type, options=list),
+                partial(validate_length, reference=2, sign='=='),
+                partial(validate_subtype, options=float),
+                partial(validate_value, reference=0, sign='>='),
+                partial(validate_value, reference=1, sign='<=')),
             'min_samples_leaf': (
-                partial(check_type, options=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, options=float),
-                partial(check_value, reference=0, sign='>='),
-                partial(check_value, reference=1, sign='<=')),
+                partial(validate_type, options=list),
+                partial(validate_length, reference=2, sign='=='),
+                partial(validate_subtype, options=float),
+                partial(validate_value, reference=0, sign='>='),
+                partial(validate_value, reference=1, sign='<=')),
             'min_weight_fraction_leaf': (
-                partial(check_type, options=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, options=float),
-                partial(check_value, reference=0, sign='>='),
-                partial(check_value, reference=1, sign='<=')),
+                partial(validate_type, options=list),
+                partial(validate_length, reference=2, sign='=='),
+                partial(validate_subtype, options=float),
+                partial(validate_value, reference=0, sign='>='),
+                partial(validate_value, reference=1, sign='<=')),
             'max_features': (
-                partial(check_type, options=list),
-                partial(check_subtype, options=int),
-                partial(check_value, reference=0, sign='>=')),
+                partial(validate_type, options=list),
+                partial(validate_subtype, options=int),
+                partial(validate_value, reference=0, sign='>=')),
             'class_weight': (
-                partial(check_type, options=list),
-                partial(check_value_in_set, options=(None, 'balanced'))),
+                partial(validate_type, options=list),
+                partial(validate_value_in_set, options=(None, 'balanced'))),
             'ccp_alpha': (
-                partial(check_type, options=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, options=float),
-                partial(check_value, reference=0, sign='>='),
-                partial(check_value, reference=1, sign='<='))}
+                partial(validate_type, options=list),
+                partial(validate_length, reference=2, sign='=='),
+                partial(validate_subtype, options=float),
+                partial(validate_value, reference=0, sign='>='),
+                partial(validate_value, reference=1, sign='<='))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)

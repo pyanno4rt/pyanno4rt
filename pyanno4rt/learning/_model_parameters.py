@@ -10,12 +10,12 @@ from os.path import abspath
 
 # %% Internal package import
 
-from pyanno4rt.checking import (
-    check_directory, check_file, check_length, check_path, check_subtype,
-    check_type, check_value, check_value_in_set)
 from pyanno4rt.learning.evaluation import DisplayOptions
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import (
+    validate_directory, validate_file, validate_length, validate_path,
+    validate_subtype, validate_type, validate_value, validate_value_in_set)
 
 # %% Class definitions
 
@@ -234,7 +234,7 @@ class ModelParameters():
             self.inputs['data_path'] = abspath(self.inputs['data_path'])
 
         # Check the input arguments
-        self.check(self.inputs)
+        self.validate(self.inputs)
 
         # Loop over the input arguments
         for item in self.inputs.items():
@@ -295,11 +295,11 @@ class ModelParameters():
 
         return cls(**dictionary)
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -307,91 +307,93 @@ class ModelParameters():
             Dictionary with the mappings between argument names and values.
         """
 
-        check_map = {
+        validation_map = {
             'model_label': (
-                partial(check_type, options=str),),
+                partial(validate_type, options=str),),
             'model_type': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
                     'forest', 'logistic', 'naive_bayes', 'neighbors',
                     'neural_network', 'svm', 'tree'))),
             'model_folder_path': (
-                partial(check_type, options=(type(None), str)),
-                partial(check_path)),
+                partial(validate_type, options=(type(None), str)),
+                partial(validate_path)),
             'data_path': (
-                partial(check_type, options={
+                partial(validate_type, options={
                     True: (type(None), str), False: str},
                     type_condition=isinstance(
                         inputs.get('model_folder_path'), str)),
-                partial(check_file, options=('.csv',)),
-                partial(check_directory, options=(
+                partial(validate_file, options=('.csv',)),
+                partial(validate_directory, options=(
                     '.jpg', '.npy', '.npz', '.png'), alt=('.csv',))),
             'data_columns': (
-                partial(check_type, options={
+                partial(validate_type, options={
                     True: (type(None), list), False: list},
                     type_condition=isinstance(
                         inputs.get('model_folder_path'), str)),
-                partial(check_length, reference=2, sign='>=')),
+                partial(validate_length, reference=2, sign='>=')),
             'preprocessing': (
-                partial(check_type, options=list),
-                partial(check_subtype, options=str),
-                partial(check_value_in_set, options=tuple(maps.TRANSFORMERS))),
+                partial(validate_type, options=list),
+                partial(validate_subtype, options=str),
+                partial(
+                    validate_value_in_set, options=tuple(maps.TRANSFORMERS))),
             'architecture': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
                     'vanilla', 'vanilla input-convex'))),
             'max_hidden_layers': (
-                partial(check_type, options=int),
-                partial(check_value, reference=1, sign='>=')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=1, sign='>=')),
             'tune_space': (
-                partial(check_type, options=tuple(maps.SPACES.values())),),
+                partial(validate_type, options=tuple(maps.SPACES.values())),),
             'tune_evaluations': (
-                partial(check_type, options=int),
-                partial(check_value, reference=0, sign='>')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=0, sign='>')),
             'tune_score': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=tuple(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=tuple(
                     ('AUC', *maps.LOSSES)))),
             'tune_splits': (
-                partial(check_type, options=int),
-                partial(check_value, reference=1, sign='>=')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=1, sign='>=')),
             'tune_repeats': (
-                partial(check_type, options=int),
-                partial(check_value, reference=1, sign='>=')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=1, sign='>=')),
             'inspect': (
-                partial(check_type, options=bool),),
+                partial(validate_type, options=bool),),
             'evaluate': (
-                partial(check_type, options=bool),),
+                partial(validate_type, options=bool),),
             'oof_splits': (
-                partial(check_type, options=int),
-                partial(check_value, reference=1, sign='>=')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=1, sign='>=')),
             'oof_repeats': (
-                partial(check_type, options=int),
-                partial(check_value, reference=1, sign='>=')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=1, sign='>=')),
             'write_features': (
-                partial(check_type, options=bool),),
+                partial(validate_type, options=bool),),
             'display_options': (
-                partial(check_type, options=DisplayOptions),)}
+                partial(validate_type, options=DisplayOptions),)}
 
         # Check if the data path is None
         if inputs['data_path'] is None:
 
-            # Reduce the check map for the data path
-            check_map['data_path'] = (check_map['data_path'][0],)
+            # Reduce the validation map for the data path
+            validation_map['data_path'] = (validation_map['data_path'][0],)
 
         # Check if the data columns are None
         if inputs['data_columns'] is None:
 
-            # Reduce the check map for the data columns
-            check_map['data_columns'] = (check_map['data_columns'][0],)
+            # Reduce the validation map for the data columns
+            validation_map['data_columns'] = (
+                validation_map['data_columns'][0],)
 
         # Loop over the dictionary items
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)
 
             # Check if the key is 'data_column' and not None

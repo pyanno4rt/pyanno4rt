@@ -9,9 +9,10 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.checking import (
-    check_length, check_subtype, check_type, check_value, check_value_in_set)
 from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import (
+    validate_length, validate_subtype, validate_type, validate_value,
+    validate_value_in_set)
 
 # %% Class definition
 
@@ -134,8 +135,8 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             identifier,
             display):
 
-        # Check the input arguments
-        self.check(
+        # Validate the input arguments
+        self.validate(
             filter_dict(locals(), remove_keys=('self', 'parameter_value'))
             | dict(zip(parameter_name, parameter_value)))
 
@@ -183,11 +184,11 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             'name', 'segment', 'component_type', 'link', 'transform',
             'identifier'))
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -195,66 +196,66 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             Dictionary with the mappings between argument names and values.
         """
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'name': (
-                partial(check_type, options=str),),
+                partial(validate_type, options=str),),
             'segment': (
-                partial(check_type, options=str),),
+                partial(validate_type, options=str),),
             'component_type': (
-                partial(check_type, options=str),
-                partial(
-                    check_value_in_set, options=('objective', 'constraint'))),
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
+                    'objective', 'constraint'))),
             'parameter_name': (
-                partial(check_type, options=tuple),
-                partial(check_subtype, options=str)),
+                partial(validate_type, options=tuple),
+                partial(validate_subtype, options=str)),
             'parameter_category': (
-                partial(check_type, options=tuple),
-                partial(check_subtype, options=str)),
+                partial(validate_type, options=tuple),
+                partial(validate_subtype, options=str)),
             'embedding': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=('active', 'passive'))),
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=('active', 'passive'))),
             'weight': (
-                partial(check_type, options=(int, float)),
-                partial(check_value, reference=0, sign='>')),
+                partial(validate_type, options=(int, float)),
+                partial(validate_value, reference=0, sign='>')),
             'rank': (
-                partial(check_type, options=int),
-                partial(check_value, reference=0, sign='>')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=0, sign='>')),
             'bounds': (
-                partial(check_type, options=(type(None), list)),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, options=(type(None), int, float))),
+                partial(validate_type, options=(type(None), list)),
+                partial(validate_length, reference=2, sign='=='),
+                partial(validate_subtype, options=(type(None), int, float))),
             'link': (
-                partial(check_type, options=(type(None), list)),
-                partial(check_subtype, options=str)),
+                partial(validate_type, options=(type(None), list)),
+                partial(validate_subtype, options=str)),
             'transform': (
-                partial(check_type, options=bool),),
+                partial(validate_type, options=bool),),
             'identifier': (
-                partial(check_type, options=(type(None), str)),),
+                partial(validate_type, options=(type(None), str)),),
             'display': (
-                partial(check_type, options=bool),),
+                partial(validate_type, options=bool),),
             'tolerance_dose_50': (
-                partial(check_type, options=(int, float)),
-                partial(check_value, reference=0, sign='>=')),
+                partial(validate_type, options=(int, float)),
+                partial(validate_value, reference=0, sign='>=')),
             'volume_parameter': (
-                partial(check_type, options=(int, float)),),
+                partial(validate_type, options=(int, float)),),
             'slope_parameter': (
-                partial(check_type, options=(int, float)),),
+                partial(validate_type, options=(int, float)),),
             'alpha': (
-                partial(check_type, options=(int, float)),),
+                partial(validate_type, options=(int, float)),),
             'beta': (
-                partial(check_type, options=(int, float)),),
+                partial(validate_type, options=(int, float)),),
             'number_of_fractions': (
-                partial(check_type, options=int),
-                partial(check_value, reference=0, sign='>'))}
+                partial(validate_type, options=int),
+                partial(validate_value, reference=0, sign='>'))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)
 
     def get_class(self):

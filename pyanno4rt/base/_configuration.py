@@ -9,10 +9,10 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.checking import (
-    check_directory, check_file, check_length, check_subtype, check_type,
-    check_value, check_value_in_set)
 from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import (
+    validate_directory, validate_file, validate_length, validate_subtype,
+    validate_type, validate_value, validate_value_in_set)
 
 # %% Class definition
 
@@ -46,12 +46,12 @@ class Configuration():
             with constant RBE of 1.1
 
     imaging_path : str
-        Path to the CT and segmentation data (.dcm, .mat or .p).
+        Path to the CT and segmentation data (.dcm or .mat).
 
         .. note::
             Requirements:
 
-            - Matlab/Python files should include 'ct' and 'cst' as variables
+            - Matlab files should include 'ct' and 'cst' as variables
             - DICOM folders should include a series of CT files and one \
                 structure file
 
@@ -105,8 +105,8 @@ class Configuration():
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
 
-        # Check the input arguments
-        self.check(inputs)
+        # Validate the input arguments
+        self.validate(inputs)
 
         # Loop over the input arguments
         for key, value in inputs.items():
@@ -143,11 +143,11 @@ class Configuration():
 
         return cls(**dictionary)
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -155,40 +155,41 @@ class Configuration():
             Dictionary with the input arguments.
         """
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'label': (
-                partial(check_type, options=str),
-                partial(check_length, reference=1, sign='>=')),
+                partial(validate_type, options=str),
+                partial(validate_length, reference=1, sign='>=')),
             'modality': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=('photon', 'proton'))),
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=('photon', 'proton'))),
             'imaging_path': (
-                partial(check_type, options=str),
-                partial(check_file, options=('.mat', '.p')),
-                partial(check_directory, options=('.dcm',), alt=('.mat', '.p'))
+                partial(validate_type, options=str),
+                partial(validate_file, options=('.mat',)),
+                partial(
+                    validate_directory, options=('.dcm',), alt=('.mat',))
                 ),
             'dose_matrix_path': (
-                partial(check_type, options=str),
-                partial(check_file, options=('.mat', '.npy', 'npz'))),
+                partial(validate_type, options=str),
+                partial(validate_file, options=('.mat', '.npy', 'npz'))),
             'dose_resolution': (
-                partial(check_type, options=list),
-                partial(check_subtype, options=(int, float)),
-                partial(check_length, reference=3, sign='=='),
-                partial(check_value, reference=1, sign='>=')),
+                partial(validate_type, options=list),
+                partial(validate_subtype, options=(int, float)),
+                partial(validate_length, reference=3, sign='=='),
+                partial(validate_value, reference=1, sign='>=')),
             'min_log_level': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
                     'debug', 'info', 'warning', 'error', 'critical'))),
             'number_of_fractions': (
-                partial(check_type, options=int),
-                partial(check_value, reference=1, sign='>='))}
+                partial(validate_type, options=int),
+                partial(validate_value, reference=1, sign='>='))}
 
         # Loop over the inputs
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)

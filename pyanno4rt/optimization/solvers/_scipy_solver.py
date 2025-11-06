@@ -5,7 +5,6 @@
 
 # %% External package import
 
-from functools import partial
 from numpy import around
 from scipy.optimize import minimize, NonlinearConstraint, SR1
 
@@ -241,8 +240,8 @@ class SciPySolver():
                 # Initialize the rank-wise argument dictionaries
                 arguments = {
                     rank: {
-                        'fun': partial(problem_instance.objective, rank=rank),
-                        'jac': partial(problem_instance.gradient, rank=rank),
+                        'fun': problem_instance.subproblem[rank].objective,
+                        'jac': problem_instance.subproblem[rank].gradient,
                         'method': 'trust-constr',
                         'bounds': tuple(
                             zip(lower_variable_bounds, upper_variable_bounds)),
@@ -255,7 +254,7 @@ class SciPySolver():
                             'factorization_method': 'AugmentedSystem',
                             'maxiter': maximum_iterations},
                         'callback': self.callback}
-                    for rank in problem_instance.objectives}
+                    for rank in problem_instance.subproblem}
 
                 # Loop over the ranks
                 for rank in arguments:
@@ -267,15 +266,13 @@ class SciPySolver():
                         # Update the argument dictionary
                         arguments[rank] |= {
                             'constraints': NonlinearConstraint(
-                                partial(
-                                    problem_instance.constraint, rank=rank),
+                                problem_instance.subproblem[rank].constraint,
                                 lower_constraint_bounds[rank],
                                 upper_constraint_bounds[rank],
-                                jac=partial(
-                                    problem_instance.jacobian, rank=rank),
+                                jac=problem_instance.subproblem[rank].jacobian,
                                 hess=SR1()),
-                            'constraint_function': partial(
-                                problem_instance.constraint, rank=rank)}
+                            'constraint_function': (
+                                problem_instance.subproblem[rank].constraint)}
 
                 # Add the indicator for the 'lexicographic' method
                 arguments |= {'lexicographic': True}
@@ -284,7 +281,6 @@ class SciPySolver():
 
                 # Initialize the arguments dictionary
                 arguments = {
-                    'lexicographic': False,
                     'fun': problem_instance.objective,
                     'jac': problem_instance.gradient,
                     'method': 'trust-constr',
@@ -298,7 +294,8 @@ class SciPySolver():
                         'sparse_jacobian': None,
                         'factorization_method': None,
                         'maxiter': maximum_iterations},
-                    'callback': self.callback}
+                    'callback': self.callback,
+                    'lexicographic': False}
 
                 # Check if any constraints have been passed
                 if ((lower_constraint_bounds, upper_constraint_bounds)
@@ -313,6 +310,9 @@ class SciPySolver():
                             jac=problem_instance.jacobian,
                             hess=SR1()),
                         'constraint_function': problem_instance.constraint}
+
+                # Add the indicator for the 'lexicographic' method
+                arguments |= {'lexicographic': False}
 
         return fun, arguments
 
@@ -343,15 +343,13 @@ class SciPySolver():
         self.counter = 1
 
         # Check if the optimization problem is lexicographic
-        if self.arguments['lexicographic']:
+        if self.arguments.pop('lexicographic'):
 
             # Get all ranks from the arguments dictionary
             ranks = tuple(self.arguments)
 
-            # Get tracker, objectives and constraints from the datahub
-            tracker = hub.optimization['problem'].tracker
-            objectives = hub.optimization['problem'].objectives
-            constraints = hub.optimization['problem'].constraints
+            # Get the subproblem dictionary
+            subproblem = hub.optimization['problem'].subproblem
 
             # Loop over the rank arguments
             for rank, arguments in self.arguments.items():
@@ -402,17 +400,23 @@ class SciPySolver():
 
                     # Get the constraint labels with the index positions
                     constraint_index = {
-                        label: tuple(constraints[next_rank]).index(label)
+                        label: tuple(
+                            subproblem[next_rank].constraints).index(label)
                         for label in (
                                 label for rank in prev_ranks
-                                for label in objectives[rank])}
+                                for label in subproblem[rank].objectives)}
 
                     # Loop over the constraint-index pairs
                     for label, index in constraint_index.items():
 
                         # Adjust the upper bound by the current best value
                         self.arguments[next_rank]['constraints'].ub[index] = (
-                            tracker[label][-1])
+                            subproblem[rank].tracker[label][-1])
+
+                else:
+
+                    # Restore the lexicographic tracker
+                    hub.optimization['problem'].restore_tracker()
 
         else:
 

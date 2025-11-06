@@ -21,7 +21,7 @@ from pyanno4rt.learning import ModelParameters
 from pyanno4rt.learning.evaluation import DisplayOptions
 from pyanno4rt.learning.tune_spaces import TuneSpaceDT
 import pyanno4rt.learning._maps as maps
-from pyanno4rt.optimization.components import DecisionTreeNTCP
+from pyanno4rt.optimization.components import DecisionTreeOutcome
 from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition
@@ -544,7 +544,7 @@ class DecisionTreeNTCPWindow(QMainWindow, Ui_decision_tree_ntcp_window):
                 kpis=self.kpi_cbox.currentData()))
 
         # Get the component
-        component = DecisionTreeNTCP(
+        component = DecisionTreeOutcome(
             segment=self.segment_cbox.currentText(),
             model_parameters=model_parameters,
             component_type=self.type_cbox.currentText(),

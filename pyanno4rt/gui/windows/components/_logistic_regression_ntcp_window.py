@@ -22,7 +22,7 @@ from pyanno4rt.learning import ModelParameters
 from pyanno4rt.learning.evaluation import DisplayOptions
 from pyanno4rt.learning.tune_spaces import TuneSpaceLR
 import pyanno4rt.learning._maps as maps
-from pyanno4rt.optimization.components import LogisticRegressionNTCP
+from pyanno4rt.optimization.components import LogisticRegressionOutcome
 from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition
@@ -448,7 +448,7 @@ class LogisticRegressionNTCPWindow(
                 kpis=self.kpi_cbox.currentData()))
 
         # Get the component
-        component = LogisticRegressionNTCP(
+        component = LogisticRegressionOutcome(
             segment=self.segment_cbox.currentText(),
             model_parameters=model_parameters,
             component_type=self.type_cbox.currentText(),

@@ -9,10 +9,11 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.checking import (
-    check_length, check_subtype, check_type, check_value, check_value_in_set)
 import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import (
+    validate_length, validate_subtype, validate_type, validate_value,
+    validate_value_in_set)
 
 # %% Class definition
 
@@ -94,17 +95,15 @@ class Optimization():
         - 'weighted-sum' : parallel optimization based on a weighted-sum \
             scalarization of the objective function
 
-    solver : {'ipyopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}, default='scipy'
+    solver : {'ipyopt', 'pymoo', 'pypop7', 'scipy'}, default='scipy'
         Python package to be used for solving the optimization problem, see \
         the classes \
         :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
-        :class:`~pyanno4rt.optimization.solvers._proxmin_solver.ProxminSolver`\
         :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
         :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
         :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`.
 
         - 'ipyopt': interior-point algorithms provided by Ipyopt
-        - 'proxmin' : proximal algorithms provided by Proxmin
         - 'pymoo' : multi-objective algorithms provided by Pymoo
         - 'pypop7': population-based algorithms provided by PyPop7
         - 'scipy' : local algorithms provided by SciPy
@@ -118,12 +117,6 @@ class Optimization():
         - solver='ipyopt': {'mumps'}
 
             - 'mumps': multifrontal massively parallel sparse direct solver
-
-        - solver='proxmin' : {'admm', 'pgm', 'sdmm'}
-
-            - 'admm' : alternating direction method of multipliers
-            - 'pgm' : proximal gradient method
-            - 'sdmm' : simultaneous direction method of multipliers
 
         - solver='pymoo' : {'NSGA3'}
 
@@ -146,8 +139,10 @@ class Optimization():
 
     initial_strategy : {'data-medoid', 'target-coverage', 'warm-start'}, \
         default='target-coverage'
-        Initialization strategy for the fluence vector, see the class \
-        :class:`~pyanno4rt.optimization.initializers._fluence_initializer.FluenceInitializer`.
+        Initialization strategy for the fluence vector, see the classes \
+        :class:`~pyanno4rt.optimization.initializers._data_medoid_initializer.DataMedoidInitializer`\
+        :class:`~pyanno4rt.optimization.initializers._target_coverage_initializer.TargetCoverageInitializer`\
+        :class:`~pyanno4rt.optimization.initializers._warm_start_initializer.WarmStartInitializer`.
 
         - 'data-medoid' : fluence vector initialization with respect to data \
             medoid points
@@ -193,7 +188,7 @@ class Optimization():
     method : {'lexicographic', 'pareto', 'weighted-sum'}
         See 'Parameters'.
 
-    solver : {'ipyopt', 'proxmin', 'pymoo', 'pypop7', 'scipy'}
+    solver : {'ipyopt', 'pymoo', 'pypop7', 'scipy'}
         See 'Parameters'.
 
     algorithm : str
@@ -234,8 +229,8 @@ class Optimization():
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
 
-        # Check the input arguments
-        self.check(inputs)
+        # Validate the input arguments
+        self.validate(inputs)
 
         # Loop over the input arguments
         for key, value in inputs.items():
@@ -281,11 +276,11 @@ class Optimization():
 
         return cls(**dictionary)
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -307,28 +302,28 @@ class Optimization():
             # Add the pair to the dictionary
             conditions[key] = inputs.get(key, getattr(self, key, default))
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'components': (
-                partial(check_type, options=list),
-                partial(check_length, reference=1, sign='>='),
-                partial(check_subtype, options=tuple(maps.COMPONENTS.values()))
+                partial(validate_type, options=list),
+                partial(validate_length, reference=1, sign='>='),
+                partial(
+                    validate_subtype, options=tuple(maps.COMPONENTS.values()))
                 ),
             'method': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=tuple(maps.METHODS))),
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=tuple(maps.METHODS))),
             'solver': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options={
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options={
                     'lexicographic': ('scipy',),
                     'pareto': ('pymoo',),
-                    'weighted-sum': ('ipyopt', 'proxmin', 'pypop7', 'scipy')},
+                    'weighted-sum': ('ipyopt', 'pypop7', 'scipy')},
                     value_condition=conditions['method'])),
             'algorithm': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options={
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options={
                     'weighted-sum/ipyopt': ('mumps',),
-                    'weighted-sum/proxmin': ('admm', 'pgm', 'sdmm'),
                     'pareto/pymoo': ('NSGA3',),
                     'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),
                     'lexicographic/scipy': ('trust-constr',),
@@ -337,34 +332,34 @@ class Optimization():
                         f"{conditions['method']}/"
                         f"{conditions['solver']}"))),
             'initial_strategy': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
                     'data-medoid', 'target-coverage', 'warm-start'))),
             'initial_fluence_vector': (
-                partial(check_type, options={
+                partial(validate_type, options={
                     'data-medoid': type(None),
                     'target-coverage': type(None),
                     'warm-start': list},
                     type_condition=conditions['initial_strategy']),
-                partial(check_value, reference=0, sign='>=')),
+                partial(validate_value, reference=0, sign='>=')),
             'lower_variable_bounds': (
-                partial(check_type, options=(type(None), int, float, list)),
-                partial(check_value, reference=0, sign='>=')),
+                partial(validate_type, options=(type(None), int, float, list)),
+                partial(validate_value, reference=0, sign='>=')),
             'upper_variable_bounds': (
-                partial(check_type, options=(type(None), int, float, list)),
-                partial(check_value, reference=0, sign='>=')),
+                partial(validate_type, options=(type(None), int, float, list)),
+                partial(validate_value, reference=0, sign='>=')),
             'maximum_iterations': (
-                partial(check_type, options=int),
-                partial(check_value, reference=1, sign='>=')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=1, sign='>=')),
             'tolerance': (
-                partial(check_type, options=float),
-                partial(check_value, reference=0, sign='>'))}
+                partial(validate_type, options=float),
+                partial(validate_value, reference=0, sign='>'))}
 
         # Loop over the inputs
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)

@@ -9,10 +9,11 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.checking import (
-    check_length, check_subtype, check_type, check_value, check_value_in_set)
 from pyanno4rt.learning import ModelParameters
 from pyanno4rt.tools import compare_dictionaries, filter_dict
+from pyanno4rt.validation import (
+    validate_length, validate_subtype, validate_type, validate_value,
+    validate_value_in_set)
 
 # %% Class definition
 
@@ -28,6 +29,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
     segment : str
         Name of the segment associated with the component.
+
+    outcome_type : {'NTCP', 'TCP'}
+        Type of the outcome variable.
 
     component_type : {'constraint', 'objective'}
         Type of the component.
@@ -74,6 +78,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
         See 'Parameters'.
 
     segment : str
+        See 'Parameters'.
+
+    outcome_type : {'NTCP', 'TCP'}
         See 'Parameters'.
 
     component_type : {'constraint', 'objective'}
@@ -135,6 +142,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
             self,
             name,
             segment,
+            outcome_type,
             component_type,
             parameter_name,
             parameter_category,
@@ -148,12 +156,13 @@ class MachineLearningComponent(metaclass=ABCMeta):
             identifier,
             display):
 
-        # Check the input arguments
-        self.check(filter_dict(locals(), remove_keys=('self',)))
+        # Validate the input arguments
+        self.validate(filter_dict(locals(), remove_keys=('self',)))
 
         # Set the instance attributes from the class arguments
         self.name = name
         self.segment = segment
+        self.outcome_type = outcome_type
         self.component_type = component_type
         self.parameter_name = parameter_name
         self.parameter_category = parameter_category
@@ -177,7 +186,8 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
         # Initialize the tracker identifier
         self.track_id = '-'.join(filter(
-            None, (f"{[self.segment]+self.link}", self.name, self.identifier)))
+            None,
+            (f"{[self.segment]+self.link}", self.name, self.identifier)))
 
     def __eq__(
             self,
@@ -203,11 +213,11 @@ class MachineLearningComponent(metaclass=ABCMeta):
                     self.model_parameters.to_dict(),
                     other.model_parameters.to_dict()))
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -215,54 +225,57 @@ class MachineLearningComponent(metaclass=ABCMeta):
             Dictionary with the mappings between argument names and values.
         """
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'name': (
-                partial(check_type, options=str),),
+                partial(validate_type, options=str),),
             'segment': (
-                partial(check_type, options=str),),
+                partial(validate_type, options=str),),
+            'outcome_type': (
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=('NTCP', 'TCP'))),
             'component_type': (
-                partial(check_type, options=str),
-                partial(
-                    check_value_in_set, options=('constraint', 'objective'))),
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
+                    'constraint', 'objective'))),
             'parameter_name': (
-                partial(check_type, options=tuple),
-                partial(check_subtype, options=str)),
+                partial(validate_type, options=tuple),
+                partial(validate_subtype, options=str)),
             'parameter_category': (
-                partial(check_type, options=tuple),
-                partial(check_subtype, options=str)),
+                partial(validate_type, options=tuple),
+                partial(validate_subtype, options=str)),
             'model_parameters': (
-                partial(check_type, options=ModelParameters),),
+                partial(validate_type, options=ModelParameters),),
             'embedding': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=('active', 'passive'))),
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=('active', 'passive'))),
             'weight': (
-                partial(check_type, options=(int, float)),
-                partial(check_value, reference=0, sign='>')),
+                partial(validate_type, options=(int, float)),
+                partial(validate_value, reference=0, sign='>')),
             'rank': (
-                partial(check_type, options=int),
-                partial(check_value, reference=0, sign='>')),
+                partial(validate_type, options=int),
+                partial(validate_value, reference=0, sign='>')),
             'bounds': (
-                partial(check_type, options=(type(None), list)),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, options=(type(None), int, float))),
+                partial(validate_type, options=(type(None), list)),
+                partial(validate_length, reference=2, sign='=='),
+                partial(validate_subtype, options=(type(None), int, float))),
             'link': (
-                partial(check_type, options=(type(None), list)),
-                partial(check_subtype, options=str)),
+                partial(validate_type, options=(type(None), list)),
+                partial(validate_subtype, options=str)),
             'transform': (
-                partial(check_type, options=bool),),
+                partial(validate_type, options=bool),),
             'identifier': (
-                partial(check_type, options=(type(None), str)),),
+                partial(validate_type, options=(type(None), str)),),
             'display': (
-                partial(check_type, options=bool),)}
+                partial(validate_type, options=bool),)}
 
         # Loop over the dictionary keys
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)
 
     def get_class(self):

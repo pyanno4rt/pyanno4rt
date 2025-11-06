@@ -23,7 +23,7 @@ from pyanno4rt.learning import ModelParameters
 from pyanno4rt.learning.evaluation import DisplayOptions
 from pyanno4rt.learning.tune_spaces import TuneSpaceNB
 import pyanno4rt.learning._maps as maps
-from pyanno4rt.optimization.components import NaiveBayesNTCP
+from pyanno4rt.optimization.components import NaiveBayesOutcome
 from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition

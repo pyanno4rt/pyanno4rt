@@ -5,6 +5,7 @@
 
 # %% External package import
 
+from functools import partial
 from ipyopt import Problem
 from numpy import around, array, indices
 
@@ -221,44 +222,46 @@ class IpyoptSolver():
                 "Lexicographic optimization is not yet implemented for Ipyopt "
                 "...")
 
-        # Initialize the arguments dictionary
-        arguments = {
-            'n': number_of_variables,
-            'x_l': array(lower_variable_bounds),
-            'x_u': array(upper_variable_bounds),
-            'm': number_of_constraints,
-            'g_l': array(lower_constraint_bounds),
-            'g_u': array(upper_constraint_bounds),
-            'sparsity_indices_jac_g': tuple(
-                arr for arr in indices((
-                    number_of_constraints,
-                    number_of_variables)).reshape(2, -1)),
-            'sparsity_indices_h': None,
-            'eval_f': objective,
-            'eval_grad_f': gradient,
-            'eval_g': constraint,
-            'eval_jac_g': jacobian,
-            'eval_h': None,
-            'intermediate_callback': self.callback,
-            'ipopt_options': {
-                'sb': 'yes',
-                'print_level': 0,
-                'tol': 1e-10,
-                'dual_inf_tol': 1e-4,
-                'constr_viol_tol': 1e-4,
-                'compl_inf_tol': 1e-4,
-                'acceptable_iter': 5,
-                'acceptable_tol': 1e10,
-                'acceptable_constr_viol_tol': 1e-2,
-                'acceptable_dual_inf_tol': 1e10,
-                'acceptable_compl_inf_tol': 1e10,
-                'acceptable_obj_change_tol': tolerance,
-                'max_iter': maximum_iterations,
-                'mu_strategy': 'adaptive',
-                'hessian_approximation': 'limited-memory',
-                'limited_memory_max_history': 50,
-                'limited_memory_initialization': 'scalar2',
-                'linear_solver': algorithm}}
+        else:
+
+            # Initialize the arguments dictionary
+            arguments = {
+                'n': number_of_variables,
+                'x_l': array(lower_variable_bounds),
+                'x_u': array(upper_variable_bounds),
+                'm': number_of_constraints,
+                'g_l': array(lower_constraint_bounds),
+                'g_u': array(upper_constraint_bounds),
+                'sparsity_indices_jac_g': tuple(
+                    arr for arr in indices((
+                        number_of_constraints,
+                        number_of_variables)).reshape(2, -1)),
+                'sparsity_indices_h': None,
+                'eval_f': objective,
+                'eval_grad_f': gradient,
+                'eval_g': constraint,
+                'eval_jac_g': jacobian,
+                'eval_h': None,
+                'intermediate_callback': self.callback,
+                'ipopt_options': {
+                    'sb': 'yes',
+                    'print_level': 0,
+                    'tol': 1e-10,
+                    'dual_inf_tol': 1e-4,
+                    'constr_viol_tol': 1e-4,
+                    'compl_inf_tol': 1e-4,
+                    'acceptable_iter': 5,
+                    'acceptable_tol': 1e10,
+                    'acceptable_constr_viol_tol': 1e-2,
+                    'acceptable_dual_inf_tol': 1e10,
+                    'acceptable_compl_inf_tol': 1e10,
+                    'acceptable_obj_change_tol': tolerance,
+                    'max_iter': maximum_iterations,
+                    'mu_strategy': 'adaptive',
+                    'hessian_approximation': 'limited-memory',
+                    'limited_memory_max_history': 50,
+                    'limited_memory_initialization': 'scalar2',
+                    'linear_solver': algorithm}}
 
         return nlp, arguments
 

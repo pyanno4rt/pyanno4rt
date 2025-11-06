@@ -8,11 +8,11 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.checking import (
-    check_length, check_string_is_number, check_subtype, check_type,
-    check_value, check_value_in_set)
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import (
+    validate_length, validate_string_is_number, validate_subtype,
+    validate_type, validate_value, validate_value_in_set)
 
 # %% Class definitions
 
@@ -70,8 +70,8 @@ class DynamicFeature():
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
 
-        # Check the input arguments
-        self.check(inputs)
+        # Validate the input arguments
+        self.validate(inputs)
 
         # Loop over the input arguments
         for item in inputs.items():
@@ -105,11 +105,11 @@ class DynamicFeature():
 
         return cls(**dictionary)
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -117,57 +117,57 @@ class DynamicFeature():
             Dictionary with the mappings between argument names and values.
         """
 
-        # Get the check functions for the function argument
-        check_argument = {
+        # Get the validation functions for the function argument
+        validate_argument = {
             'Dose Gradient': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=('x', 'y', 'z'))),
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=('x', 'y', 'z'))),
             'Dose Moment': (
-                partial(check_type, options=str),
-                partial(check_length, reference=3, sign='=='),
-                check_string_is_number),
+                partial(validate_type, options=str),
+                partial(validate_length, reference=3, sign='=='),
+                validate_string_is_number),
             'Dose Subvolume': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
                     'x1of2', 'x2of2', 'x1of3', 'x2of3', 'x3of3', 'y1of2',
                     'y2of2', 'y1of3', 'y2of3', 'y3of3', 'z1of2', 'z2of2',
                     'z1of3', 'z2of3', 'z3of3'))),
             'Dx': (
-                partial(check_type, options=(int, float)),
-                partial(check_value, reference=0, sign='>'),
-                partial(check_value, reference=100, sign='<')),
+                partial(validate_type, options=(int, float)),
+                partial(validate_value, reference=0, sign='>'),
+                partial(validate_value, reference=100, sign='<')),
             'Vx': (
-                partial(check_type, options=(int, float)),
-                partial(check_value, reference=0, sign='>'),
-                partial(check_value, reference=100, sign='<')),
+                partial(validate_type, options=(int, float)),
+                partial(validate_value, reference=0, sign='>'),
+                partial(validate_value, reference=100, sign='<')),
             'other': (
-                partial(check_type, options=type(None)),)}
+                partial(validate_type, options=type(None)),)}
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'column': (
-                partial(check_type, options=str),),
+                partial(validate_type, options=str),),
             'segment': (
-                partial(check_type, options=str),),
+                partial(validate_type, options=str),),
             'function': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=tuple(maps.FEATURES))),
-            'argument': check_argument[
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=tuple(maps.FEATURES))),
+            'argument': validate_argument[
                 inputs['function'] if inputs['function'] in (
                     'Dx', 'Vx', 'Dose Gradient', 'Dose Moment',
                     'Dose Subvolume') else 'other'],
             'scale': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
                     'metric', 'nominal', 'ordinal')))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)
 
 
@@ -210,8 +210,8 @@ class StaticFeature():
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
 
-        # Check the input arguments
-        self.check(inputs)
+        # Validate the input arguments
+        self.validate(inputs)
 
         # Loop over the input arguments
         for item in inputs.items():
@@ -245,11 +245,11 @@ class StaticFeature():
 
         return cls(**dictionary)
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -257,24 +257,24 @@ class StaticFeature():
             Dictionary with the mappings between argument names and values.
         """
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'column': (
-                partial(check_type, options=str),),
+                partial(validate_type, options=str),),
             'value': (
-                partial(check_type, options=(int, float, str)),),
+                partial(validate_type, options=(int, float, str)),),
             'scale': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
                     'metric', 'nominal', 'ordinal')))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)
 
 
@@ -325,8 +325,8 @@ class Label():
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
 
-        # Check the input arguments
-        self.check(inputs)
+        # Validate the input arguments
+        self.validate(inputs)
 
         # Loop over the input arguments
         for item in inputs.items():
@@ -360,11 +360,11 @@ class Label():
 
         return cls(**dictionary)
 
-    def check(
+    def validate(
             self,
             inputs):
         """
-        Check the input arguments.
+        Validate the input arguments.
 
         Parameters
         ----------
@@ -372,26 +372,26 @@ class Label():
             Dictionary with the mappings between argument names and values.
         """
 
-        # Get the check map
-        check_map = {
+        # Get the validation map
+        validation_map = {
             'column': (
-                partial(check_type, options=str),),
+                partial(validate_type, options=str),),
             'viewpoint': (
-                partial(check_type, options=str),
-                partial(check_value_in_set, options=(
+                partial(validate_type, options=str),
+                partial(validate_value_in_set, options=(
                     'early', 'late', 'long-term', 'longitudinal', 'profile'))),
             'time_variable': (
-                partial(check_type, options=(type(None), str)),),
+                partial(validate_type, options=(type(None), str)),),
             'bounds': (
-                partial(check_type, options=list),
-                partial(check_length, reference=2, sign='=='),
-                partial(check_subtype, options=(type(None), int, float)))}
+                partial(validate_type, options=list),
+                partial(validate_length, reference=2, sign='=='),
+                partial(validate_subtype, options=(type(None), int, float)))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():
 
-            # Loop over the check functions
-            for function in check_map[key]:
+            # Loop over the validation functions
+            for function in validation_map[key]:
 
-                # Run the check function
+                # Run the validation function
                 function(key, value)

@@ -81,8 +81,10 @@ class ComponentGraphWidget(QWidget):
         self.tracker = tracker
 
         # Get the track statistics
-        track_min = min(flatten(tracker.values()))
-        track_max = max(flatten(tracker.values()))
+        track_min = min(
+            value for value in flatten(tracker.values()) if value is not None)
+        track_max = max(
+            value for value in flatten(tracker.values()) if value is not None)
         track_num = len(tracker)
 
         # Set the marker styles
@@ -170,10 +172,27 @@ class ComponentGraphWidget(QWidget):
                     # Get the optimization data
                     optimization = self.parent.plan.datahub.optimization
 
-                    # Get the optimization components
-                    components = (
-                        optimization['problem'].objectives
-                        | optimization['problem'].constraints)
+                    # Check if the 'lexicographic' method is used
+                    if self.parent.plan.optimization.method == 'lexicographic':
+
+                        # Get the objectives and constraints as lists
+                        objectives = list(optimization[
+                            'problem'].objectives.values())
+                        constraints = list(optimization[
+                            'problem'].constraints.values())
+
+                        # Get the optimization components as a dictionary
+                        components = (
+                            {key: value
+                             for dictionary in objectives + constraints
+                             for key, value in dictionary.items()})
+
+                    else:
+
+                        # Get the optimization components
+                        components = (
+                            optimization['problem'].objectives
+                            | optimization['problem'].constraints)
 
                     # Get the selected instance attribute
                     component_type, embedding, weight, rank, bounds = (getattr(
@@ -268,11 +287,8 @@ class ComponentGraphWidget(QWidget):
     def update_graph(self):
         """Update the component graph."""
 
-        # Get the maximum track length
-        track_len = max(len(track) for track in self.tracker.values())
-
         # Loop over the tracks
-        for track in self.tracker:
+        for track, values in self.tracker.items():
 
             # Set the QPen
             pen = mkPen(
@@ -281,12 +297,14 @@ class ComponentGraphWidget(QWidget):
 
             # Plot the track
             plot = self.plot_widget.plot(
-                range(1, len(self.tracker[track])+1),
-                self.tracker[track],
+                range(values.count(None)+1, len(values)+1),
+                list(filter(None, values)),
                 pen=pen,
                 symbol=self.styles[track][0],
                 symbolSize=7,
-                symbolBrush=[self.styles[track][1] for i in range(track_len)],
+                symbolBrush=[
+                    self.styles[track][1]
+                    for i in range(len(list(filter(None, values))))],
                 name=track,
                 clickable=True)
 

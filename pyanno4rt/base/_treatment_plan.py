@@ -10,9 +10,9 @@ from pyanno4rt.logging import Logger
 from pyanno4rt.datahub import Datahub
 
 # Treatment plan configuration
-from pyanno4rt.patient import PatientLoader
+from pyanno4rt.io import PatientLoader
 from pyanno4rt.plan import PlanGenerator
-from pyanno4rt.dose_info import DoseInfoGenerator
+from pyanno4rt.dose import DoseInfoGenerator
 
 # Treatment plan optimization
 from pyanno4rt.optimization import FluenceOptimizer
@@ -25,9 +25,9 @@ from pyanno4rt.evaluation import DosimetricsEvaluator
 from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
-from pyanno4rt.checking import check_type
 from pyanno4rt.tools import (
     apply, get_machine_learning_constraints, get_machine_learning_objectives)
+from pyanno4rt.validation import validate_type
 
 # %% Class definition
 
@@ -77,7 +77,7 @@ class TreatmentPlan():
 
     patient_loader : None or object of class \
         :class:`~pyanno4rt.patient._patient_loader.PatientLoader`
-        The object used to import and type-convert CT and segmentation data.
+        The object used to retrieve the patient CT and segmentation data.
 
     plan_generator : None or object of class \
         :class:`~pyanno4rt.plan._plan_generator.PlanGenerator`
@@ -116,10 +116,10 @@ class TreatmentPlan():
             optimization,
             evaluation):
 
-        # Check the input arguments
-        check_type('configuration', configuration, (dict, Configuration))
-        check_type('optimization', optimization, (dict, Optimization))
-        check_type('evaluation', evaluation, (dict, Evaluation))
+        # Validate the input arguments
+        validate_type('configuration', configuration, (dict, Configuration))
+        validate_type('optimization', optimization, (dict, Optimization))
+        validate_type('evaluation', evaluation, (dict, Evaluation))
 
         # Initialize the plan configuration attribute
         self.configuration = (
@@ -151,8 +151,8 @@ class TreatmentPlan():
     def configure(self):
         """Initialize the configuration classes and process the input data."""
 
-        # Check the configuration parameters
-        self.configuration.check(vars(self.configuration))
+        # Validate the configuration parameters
+        self.configuration.validate(vars(self.configuration))
 
         # Reset the treatment plan label in the datahub
         Datahub.label = self.configuration.label
@@ -241,8 +241,8 @@ class TreatmentPlan():
 
         else:
 
-            # Check the optimization parameters
-            self.optimization.check(vars(self.optimization))
+            # Validate the optimization parameters
+            self.optimization.validate(vars(self.optimization))
 
             # Initialize the fluence optimizer
             self.fluence_optimizer = FluenceOptimizer(
@@ -279,8 +279,8 @@ class TreatmentPlan():
 
         else:
 
-            # Check the evaluation parameters
-            self.evaluation.check(vars(self.evaluation))
+            # Validate the evaluation parameters
+            self.evaluation.validate(vars(self.evaluation))
 
             # Initialize the DVH class
             self.dose_histogram = DVHEvaluator(
@@ -394,8 +394,8 @@ class TreatmentPlan():
                 (self.optimization, optimization),
                 (self.evaluation, evaluation)):
 
-            # Check the update parameters
-            base_object.check(update)
+            # Validate the update parameters
+            base_object.validate(update)
 
             # Loop over the update items
             for key, value in update.items():

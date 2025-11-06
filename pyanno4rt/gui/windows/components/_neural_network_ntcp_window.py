@@ -22,7 +22,7 @@ from pyanno4rt.learning import ModelParameters
 from pyanno4rt.learning.evaluation import DisplayOptions
 from pyanno4rt.learning.tune_spaces import TuneSpaceNN
 import pyanno4rt.learning._maps as maps
-from pyanno4rt.optimization.components import NeuralNetworkNTCP
+from pyanno4rt.optimization.components import NeuralNetworkOutcome
 from pyanno4rt.tools import string_to_numeric
 
 # %% Class definition
@@ -485,7 +485,7 @@ class NeuralNetworkNTCPWindow(QMainWindow, Ui_neural_network_ntcp_window):
                 kpis=self.kpi_cbox.currentData()))
 
         # Get the component
-        component = NeuralNetworkNTCP(
+        component = NeuralNetworkOutcome(
             segment=self.segment_cbox.currentText(),
             model_parameters=model_parameters,
             component_type=self.type_cbox.currentText(),

@@ -30,7 +30,6 @@ include = "pyanno4rt"
 python = ">=3.10, <3.12"
 numpy = ">=2.2.6"
 ipyopt = ">=0.12.10"
-proxmin = ">=0.6.12"
 absl-py = ">=2.3.1"
 pydicom = ">=3.0.1"
 scikit-image = ">=0.25.2"
@@ -73,7 +72,7 @@ myst-sphinx-gallery = ">=0.3.0"
 "Bug Tracker" = "https://github.com/pyanno4rt/pyanno4rt/issues"
 
 [tool.coverage.run]
-omit = ['*/__init__.py', '*/resources_rc.py', '*/_maps.py', '*/_component_window_map.py', '*/_custom_styles.py', '*/compare_window.py', '*/data_columns_window.py', '*/info_window.py', '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py', '*/settings_window.py', '*/splash_screen_window.py', '*/text_window.py', '*/tree_window.py', '*/decision_tree_ntcp_window.py', '*/decision_tree_tcp_window.py', '*/dose_uniformity_window.py', '*/equivalent_uniform_dose_window.py', '*/k_nearest_neighbors_ntcp_window.py', '*/k_nearest_neighbors_tcp_window.py', '*/lkb_ntcp_window.py', '*/logistic_regression_ntcp_window.py', '*/logistic_regression_tcp_window.py', '*/lq_poisson_tcp_window.py', '*/maximum_dvh_window.py', '*/mean_dose_window.py', '*/minimum_dvh_window.py', '*/naive_bayes_ntcp_window.py', '*/naive_bayes_tcp_window.py', '*/neural_network_ntcp_window.py', '*/neural_network_tcp_window.py', '*/random_forest_ntcp_window.py', '*/random_forest_tcp_window.py', '*/squared_deviation_window.py', '*/squared_overdosing_window.py', '*/squared_underdosing_window.py', '*/support_vector_machine_ntcp_window.py', '*/support_vector_machine_tcp_window.py', '*/visualizer.py']
+omit = ['*/__init__.py', '*/resources_rc.py', '*/_maps.py', '*/_component_window_map.py', '*/_custom_styles.py', '*/compare_window.py', '*/data_columns_window.py', '*/info_window.py', '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py', '*/settings_window.py', '*/splash_screen_window.py', '*/text_window.py', '*/tree_window.py', '*/decision_tree_ntcp_window.py', '*/dose_uniformity_window.py', '*/equivalent_uniform_dose_window.py', '*/k_nearest_neighbors_ntcp_window.py', '*/lkb_ntcp_window.py', '*/logistic_regression_ntcp_window.py', '*/lq_poisson_tcp_window.py', '*/maximum_dvh_window.py', '*/mean_dose_window.py', '*/minimum_dvh_window.py', '*/naive_bayes_ntcp_window.py', '*/neural_network_ntcp_window.py', '*/random_forest_ntcp_window.py', '*/squared_deviation_window.py', '*/squared_overdosing_window.py', '*/squared_underdosing_window.py', '*/support_vector_machine_ntcp_window.py', '*/visualizer.py']
 
 [build-system]
 requires = [ "poetry-core" ]

@@ -9,6 +9,11 @@ vector by different strategies.
 
 # Author: Tim Ortkamp
 
-from ._fluence_initializer import FluenceInitializer
+from ._data_medoid_initializer import DataMedoidInitializer
+from ._target_coverage_initializer import TargetCoverageInitializer
+from ._warm_start_initializer import WarmStartInitializer
 
-__all__ = ['FluenceInitializer']
+__all__ = [
+    'DataMedoidInitializer',
+    'TargetCoverageInitializer',
+    'WarmStartInitializer']

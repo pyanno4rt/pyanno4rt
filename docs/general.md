@@ -27,7 +27,7 @@
 <ul>
 	<li> DICOM files (.dcm) </li>
 	<li> MATLAB files (.mat) </li>
-	<li> Python files (.npy, .npz, .p) </li>
+	<li> Python files (.npy, .npz) </li>
 </ul>
 
 <h3>Easy configuration and management of treatment plans</h3>
@@ -55,12 +55,11 @@
 			<li> Weighted-sum method
 		</ul>
 	</li>
-	<li> 24-type dose-volume & outcome prediction model-based optimization component catalogue
+	<li> 17-type dose-volume & outcome prediction model-based optimization component catalogue
 	</li>
 	<li> Local & global solvers
 		<ul>
 			<li> Interior-point algorithms provided by <a href="https://pypi.org/project/ipyopt/">ipyopt</a> </li>
-			<li> Proximal algorithms provided by <a href="https://pypi.org/project/proxmin/">proxmin</a> </li>
 			<li> Multi-objective algorithms provided by <a href="https://pypi.org/project/pymoo/">pymoo</a> </li>
 			<li> Population-based algorithms provided by <a href="https://pypi.org/project/pypop7/">pypop7</a> </li>
 			<li> Local algorithms provided by <a href="https://pypi.org/project/scipy/">scipy</a> </li>

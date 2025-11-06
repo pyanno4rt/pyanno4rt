@@ -154,8 +154,8 @@ class ComponentGraph():
             for component in components if component.display}
 
         # Get the track statistics
-        track_min = min(flatten(tracker.values()))
-        track_max = max(flatten(tracker.values()))
+        track_min = min(filter(None, flatten(tracker.values())))
+        track_max = max(filter(None, flatten(tracker.values())))
         track_len = max(len(track) for track in tracker.values())
         track_num = len(tracker)
 
