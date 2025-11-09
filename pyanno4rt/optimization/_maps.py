@@ -13,9 +13,9 @@ from pyanno4rt.optimization.components import (
     SupportVectorMachineOutcome)
 from pyanno4rt.optimization.initializers import (
     DataMedoidInitializer, TargetCoverageInitializer, WarmStartInitializer)
-from pyanno4rt.optimization.methods.lexicographic import LexicographicOptimization
-from pyanno4rt.optimization.methods.pareto import ParetoOptimization
-from pyanno4rt.optimization.methods.weighted import WeightedSumOptimization
+from pyanno4rt.optimization.problems.lexicographic import LexicographicProblem
+from pyanno4rt.optimization.problems.pareto import ParetoProblem
+from pyanno4rt.optimization.problems.weighted import WeightedSumProblem
 from pyanno4rt.optimization.projections import (
     ConstantRBEProjection, DoseProjection)
 from pyanno4rt.optimization.solvers import (
@@ -48,10 +48,10 @@ INITIALIZERS = {
     'target-coverage': TargetCoverageInitializer,
     'warm-start': WarmStartInitializer}
 
-METHODS = {
-    'lexicographic': LexicographicOptimization,
-    'pareto': ParetoOptimization,
-    'weighted-sum': WeightedSumOptimization}
+PROBLEMS = {
+    'lexicographic': LexicographicProblem,
+    'pareto': ParetoProblem,
+    'weighted-sum': WeightedSumProblem}
 
 PROJECTIONS = {
     'photon': DoseProjection,

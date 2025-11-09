@@ -21,8 +21,8 @@ from pymoo.util.ref_dirs import get_reference_directions
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.tools import (
-    get_all_constraints, get_all_objectives, get_constraint_segments,
-    get_objective_segments)
+    filter_dict, get_all_constraints, get_all_objectives,
+    get_constraint_segments, get_objective_segments)
 
 # %% Class definition
 
@@ -38,33 +38,8 @@ class PymooSolver():
 
     Parameters
     ----------
-    number_of_variables : int
-        Number of decision variables.
-
-    number_of_constraints : int
-        Number of constraints.
-
-    problem_instance : object of class \
-        :class:`~pyanno4rt.optimization.methods._pareto_optimization.ParetoOptimization`\
-        The object representing the (Pareto) optimization problem.
-
-    lower_variable_bounds : list
-        Lower bounds on the decision variables.
-
-    upper_variable_bounds : list
-        Upper bounds on the decision variables.
-
-    lower_constraint_bounds : list
-        Lower bounds on the constraints.
-
-    upper_constraint_bounds : list
-        Upper bounds on the constraints.
-
     algorithm : str
         Label for the solution algorithm.
-
-    initial_fluence : ndarray
-        Initial fluence vector.
 
     maximum_iterations : int
         Maximum number of iterations.
@@ -74,31 +49,32 @@ class PymooSolver():
 
     Attributes
     ----------
+    algorithm : str
+        See 'Parameters'.
+
+    maximum_iterations : int
+        See 'Parameters'.
+
+    tolerance : float
+        See 'Parameters'.
+
     fun : callable
         Minimization function from the Pymoo library.
 
-    algorithm_object : object of class from :mod:`pymoo.algorithms`
-        The object representing the solution algorithm.
+    algorithm : object of class from :mod:`pymoo.algorithms`
+        The object used to represent the solution algorithm.
 
     problem : object of class from :mod:`pymoo.core.problem`
-        The object representing the Pymoo-compatible structure of the \
+        The object used to represent the Pymoo-compatible structure of the \
         multi-objective (Pareto) optimization problem.
 
     termination : object of class from :mod:`pymoo.termination`
-        The object representing the termination criterion.
+        The object used to represent the termination criterion.
     """
 
     def __init__(
             self,
-            number_of_variables,
-            number_of_constraints,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            lower_constraint_bounds,
-            upper_constraint_bounds,
             algorithm,
-            initial_fluence,
             maximum_iterations,
             tolerance):
 
@@ -109,127 +85,66 @@ class PymooSolver():
         hub.logger.display_info(
             f"Initializing Pymoo solver with {algorithm} algorithm ...")
 
-        # Get the callable optimization function and the solver objects
-        self.fun, self.algorithm_object, self.problem, self.termination = (
-            self.configure(
-                number_of_variables, len(get_all_objectives(hub.segmentation)),
-                number_of_constraints, problem_instance, lower_variable_bounds,
-                upper_variable_bounds, lower_constraint_bounds,
-                upper_constraint_bounds, initial_fluence, maximum_iterations,
-                tolerance))
+        # Get the input arguments
+        inputs = filter_dict(vars(), remove_keys=('self',))
+
+        # Loop over the input arguments
+        for key, value in inputs.items():
+
+            # Set the attribute
+            setattr(self, key, value)
+
+        # Initialize the function, algorithm, problem and termination
+        self.fun, self.algorithm, self.problem, self.termination = (
+            None, None, None, None)
 
     def configure(
             self,
-            number_of_variables,
-            number_of_objectives,
-            number_of_constraints,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            lower_constraint_bounds,
-            upper_constraint_bounds,
-            initial_fluence,
-            maximum_iterations,
-            tolerance):
+            problem):
         """
         Configure the Pymoo solver.
 
         Supported algorithms: NSGA-3.
 
         Parameters
-        ----------
-        number_of_variables : int
-            Number of decision variables.
-
-        number_of_objectives : int
-            Number of objective functions.
-
-        number_of_constraints : int
-            Number of constraint functions.
-
-        problem_instance : object of class \
-            :class:`~pyanno4rt.optimization.methods._pareto_optimization.ParetoOptimization`\
-            The object representing the optimization problem.
-
-        lower_variable_bounds : list
-            Lower bounds on the decision variables.
-
-        upper_variable_bounds : list
-            Upper bounds on the decision variables.
-
-        lower_constraint_bounds : list
-            Lower bounds on the constraints.
-
-        upper_constraint_bounds : list
-            Upper bounds on the constraints.
-
-        initial_fluence : ndarray
-            Initial fluence vector.
-
-        maximum_iterations : int
-            Maximum number of iterations.
-
-        tolerance : float
-            Precision goal for the objective function value.
-
-        Returns
-        -------
-        fun : callable
-            Minimization function from the Pymoo library.
-
-        algorithm_object : object of class from :mod:`pymoo.algorithms`
-            The object representing the solution algorithm.
-
-        problem : object of class from :mod:`pymoo.core.problem`
-            The object representing the Pymoo-compatible structure of the \
-            multi-objective (Pareto) optimization problem.
-
-        termination : object of class from :mod:`pymoo.termination`
-            The object representing the termination criterion.
+        ---------
+        problem : object of class \
+            :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
+            The object used to represent the optimization problem.
         """
 
         # Set the optimization function
-        fun = minimize
+        self.fun = minimize
 
         # Initialize the Pymoo problem instance
-        problem = PymooProblem(
-            number_of_variables=number_of_variables,
-            number_of_objectives=number_of_objectives,
-            number_of_constraints=number_of_constraints,
-            problem_instance=problem_instance,
-            lower_variable_bounds=lower_variable_bounds,
-            upper_variable_bounds=[1e12]*len(upper_variable_bounds),
-            lower_constraint_bounds=lower_constraint_bounds,
-            upper_constraint_bounds=upper_constraint_bounds)
+        self.problem = PymooProblem(problem=problem)
 
         # Set the number of evaluation points
         number_of_points = 200
 
         # Get the reference directions
         reference_directions = get_reference_directions(
-            "energy", number_of_objectives, number_of_points, seed=1)
+            "energy", len(problem.objectives), number_of_points, seed=1)
 
         # Initialize and evaluate the initial population
         initial_population = Population.new(
-            "X", 2*max(initial_fluence)*beta(
-                a=0.5, b=0.5, size=(number_of_points, number_of_variables))
-            )
+            "X",
+            2*max(problem.initial_fluence)*beta(a=0.5, b=0.5, size=(
+                number_of_points, len(problem.initial_fluence))))
 
         # Initialize the NSGA-3 algorithm
-        algorithm_object = NSGA3(
+        self.algorithm = NSGA3(
             ref_dirs=reference_directions,
             pop_size=number_of_points,
             n_offsprings=number_of_points,
             sampling=initial_population,
             crossover=UniformCrossover(prob=1.0),
-            mutation=PM(prob=1/number_of_variables, eta=20),
+            mutation=PM(prob=1/len(problem.initial_fluence), eta=20),
             eliminate_duplicates=True)
 
         # Initialize the termination instance
-        termination = DefaultMultiObjectiveTermination(
-            xtol=1e-12, ftol=tolerance, n_max_gen=maximum_iterations)
-
-        return fun, algorithm_object, problem, termination
+        self.termination = DefaultMultiObjectiveTermination(
+            xtol=1e-12, ftol=self.tolerance, n_max_gen=self.maximum_iterations)
 
     def run(
             self,
@@ -253,7 +168,7 @@ class PymooSolver():
 
         # Solve the optimization problem
         result = self.fun(
-            self.problem, self.algorithm_object, self.termination, seed=1,
+            self.problem, self.algorithm, self.termination, seed=1,
             save_history=False, verbose=False, callback=CustomCallback())
 
         return result.X, result.message
@@ -298,7 +213,7 @@ class CustomCallback(Callback):
         Parameters
         ----------
         algorithm : object of class from :mod:`pymoo.algorithms`
-            The object representing the solution algorithm.
+            The object used to represent the solution algorithm.
         """
 
         # Set the base output string
@@ -334,41 +249,14 @@ class PymooProblem(ElementwiseProblem):
 
     Parameters
     ----------
-    number_of_variables : int
-        Number of decision variables.
-
-    number_of_objectives : int
-        Number of objective functions.
-
-    number_of_constraints : int
-        Number of constraint functions.
-
-    problem_instance : object of class \
-        :class:`~pyanno4rt.optimization.methods._pareto_optimization.ParetoOptimization`\
-        The object representing the optimization problem.
-
-    lower_variable_bounds : list
-        Lower bounds on the decision variables.
-
-    upper_variable_bounds : list
-        Upper bounds on the decision variables.
-
-    lower_constraint_bounds : list
-        Lower bounds on the constraints.
-
-    upper_constraint_bounds : list
-        Upper bounds on the constraints.
+    problem : object of class \
+        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`
+        The object used to represent the optimization problem.
 
     Attributes
     ----------
-    problem_instance : object of class \
-        :class:`~pyanno4rt.optimization.methods._pareto_optimization.ParetoOptimization`
-        See 'Parameters'.
-
-    lower_constraint_bounds : list
-        See 'Parameters'.
-
-    upper_constraint_bounds : list
+    problem : object of class \
+        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`
         See 'Parameters'.
 
     Notes
@@ -379,27 +267,18 @@ class PymooProblem(ElementwiseProblem):
 
     def __init__(
             self,
-            number_of_variables,
-            number_of_objectives,
-            number_of_constraints,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            lower_constraint_bounds,
-            upper_constraint_bounds):
+            problem):
 
         # Call the superclass constructor
         super().__init__(
-            n_var=number_of_variables,
-            n_obj=number_of_objectives,
-            n_ieq_constr=2*number_of_constraints,
-            xl=array(lower_variable_bounds),
-            xu=array(upper_variable_bounds))
+            n_var=len(problem.initial_fluence),
+            n_obj=len(problem.objectives),
+            n_ieq_constr=2*len(problem.constraints),
+            xl=array(problem.variable_bounds[0]),
+            xu=array([1e12]*len(problem.variable_bounds[1])))
 
-        # Get the instance attributes from the arguments
-        self.problem_instance = problem_instance
-        self.lower_constraint_bounds = lower_constraint_bounds
-        self.upper_constraint_bounds = upper_constraint_bounds
+        # Get the problem instance
+        self.problem = problem
 
     def _evaluate(
             self,
@@ -426,7 +305,7 @@ class PymooProblem(ElementwiseProblem):
         """
 
         # Get the objective function values
-        objective_values = self.problem_instance.objective(x)
+        objective_values = self.problem.objective(x)
 
         # Set the mixture parameter
         alpha = 0.5
@@ -437,10 +316,10 @@ class PymooProblem(ElementwiseProblem):
             for value in objective_values]
 
         # Get the constraint function values
-        constraint_values = self.problem_instance.constraint(x)
+        constraint_values = self.problem.constraint(x)
 
         # Set the constraint values
         out['G'] = [[
-            self.lower_constraint_bounds[index]-value,
-            value - self.upper_constraint_bounds[index]]
+            self.problem.constraint_bounds[0][index]-value,
+            value - self.problem.constraint_bounds[1][index]]
             for index, value in enumerate(constraint_values)]

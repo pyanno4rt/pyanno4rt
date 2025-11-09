@@ -133,7 +133,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.tab_dvh_layout.insertWidget(0, self.dvh_widget)
 
         # Add the optimization methods to the method combo box
-        self.method_cbox.addItems(list(opt_maps.METHODS))
+        self.method_cbox.addItems(list(opt_maps.PROBLEMS))
         self.method_cbox.model().sort(0)
         self.method_cbox.setCurrentText('weighted-sum')
 

@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from math import inf
 from numpy import array, concatenate, vstack, zeros
 
 # %% Internal package import
@@ -15,26 +16,36 @@ from pyanno4rt.tools import (
 # %% Class definition
 
 
-class WeightedSumOptimization():
+class WeightedSumProblem():
     """
     Weighted-sum optimization problem class.
 
-    This class provides methods to perform weighted-sum optimization. It \
-    features a component tracker and implements the respective objective, \
-    gradient, constraint and constraint Jacobian functions.
+    This class provides methods to build a weighted-sum optimization problem, \
+    including the definition of objectives, constraints, bounds, initial \
+    fluence, and methods to calculate important quantities. It also features \
+    a tracking dictionary with the component-wise evaluations.
 
     Parameters
     ----------
     backprojection : object of class \
         :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
-        The object representing the backprojection rule.
+        The object representing the type of backprojection.
 
     objectives : dict
         Dictionary with the internally configured objectives.
 
     constraints : dict
         Dictionary with the internally configured constraints.
+
+    lower_variable_bounds : None, int, float, or list
+        Lower bound(s) on the decision variables.
+
+    upper_variable_bounds : None, int, float, or list
+        Upper bound(s) on the decision variables.
+
+    initial_fluence : ndarray
+        Initial fluence vector.
 
     Attributes
     ----------
@@ -49,6 +60,15 @@ class WeightedSumOptimization():
     constraints : dict
         See 'Parameters'.
 
+    initial_fluence : ndarray
+        See 'Parameters'.
+
+    variable_bounds : tuple
+        Lower and upper bounds on the decision variables.
+
+    constraint_bounds : tuple
+        Lower and upper bounds on the constraints.
+
     number_of_voxels : int
         Number of dose voxels.
 
@@ -56,30 +76,111 @@ class WeightedSumOptimization():
         Dictionary with the iteration-wise plan component values.
     """
 
+    # Set the problem name
+    name = 'weighted-sum'
+
     def __init__(
             self,
             backprojection,
             objectives,
-            constraints):
+            constraints,
+            lower_variable_bounds,
+            upper_variable_bounds,
+            initial_fluence):
 
         # Initialize the datahub
         hub = Datahub()
 
         # Log a message about the initialization of the class
         hub.logger.display_info(
-            "Initializing weighted-sum optimization method ...")
+            "Initializing weighted-sum optimization problem ...")
 
         # Get the instance attributes from the arguments
         self.backprojection = backprojection
         self.objectives = objectives
         self.constraints = constraints
 
+        # Get the initial fluence
+        self.initial_fluence = initial_fluence
+
+        # Get the variable bounds
+        self.variable_bounds = self.get_variable_bounds(
+            lower_variable_bounds, upper_variable_bounds)
+
+        # Get the constraint bounds
+        self.constraint_bounds = self.get_constraint_bounds()
+
         # Get the number of dose voxels
-        self.number_of_voxels = hub.dose_information['number_of_voxels']
+        self.number_of_voxels = Datahub().dose_information['number_of_voxels']
 
         # Initialize the tracker dictionary
         self.tracker = {
             label: [] for label in tuple(objectives) + tuple(constraints)}
+
+    def get_variable_bounds(
+            self,
+            lower,
+            upper):
+        """
+        Get the lower and upper variable bounds.
+
+        Parameters
+        ----------
+        lower : int, float, list or None
+            Lower bound(s) on the decision variables.
+
+        upper : int, float, list or None
+            Upper bound(s) on the decision variables.
+
+        Returns
+        -------
+        list
+            Lower bounds on the decision variables.
+
+        list
+            Upper bounds on the decision variables.
+        """
+
+        def get_bounds(value, limit):
+            """Get the lower or upper bounds by the input value and limit."""
+
+            # Check if the value is scalar
+            if isinstance(value, (int, float)):
+
+                # Generate a uniform list from the value
+                return [value]*len(self.initial_fluence)
+
+            # Check if the value is None
+            if value is None:
+
+                # Generate a uniform list from the limit
+                return [limit]*len(self.initial_fluence)
+
+            # Generate a cleansed list by replacing None with the limit
+            return [limit if bound is None else bound for bound in value]
+
+        return get_bounds(lower, -inf), get_bounds(upper, inf)
+
+    def get_constraint_bounds(self):
+        """
+        Get the lower and upper constraint bounds.
+
+        Returns
+        -------
+        tuple
+            Lower and upper bounds on the constraints.
+        """
+
+        # Check if no constraints have been passed
+        if len(self.constraints) == 0:
+
+            # Return the default empty bounds
+            return [], []
+
+        # Else, return the unranked, transformed bounds
+        return tuple(zip(*(
+            constraint['instance'].bounds
+            for constraint in self.constraints.values())))
 
     def objective(
             self,

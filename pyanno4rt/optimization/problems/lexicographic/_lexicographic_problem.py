@@ -2,34 +2,47 @@
 
 # Author: Tim Ortkamp
 
+# %% External package import
+
+from math import inf
+
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.optimization.methods.weighted import WeightedSumOptimization
+from pyanno4rt.optimization.problems.weighted import WeightedSumProblem
 
 # %% Class definition
 
 
-class LexicographicOptimization():
+class LexicographicProblem():
     """
     Lexicographic optimization problem class.
 
-    This class provides methods to perform lexicographic optimization. It \
-    features a component tracker and implements the respective objective, \
-    gradient, constraint and constraint Jacobian functions.
+    This class provides methods to build a lexicographic optimization \
+    problem, including the definition of the rank-ordered subproblems, and \
+    methods to calculate important quantities.
 
     Parameters
     ----------
     backprojection : object of class \
         :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
-        The object representing the type of backprojection.
+        The object used to represent the dose-fluence backprojection.
 
     objectives : dict
         Dictionary with the internally configured objectives.
 
     constraints : dict
         Dictionary with the internally configured constraints.
+
+    lower_variable_bounds : None, int, float, or list
+        Lower bound(s) on the decision variables.
+
+    upper_variable_bounds : None, int, float, or list
+        Upper bound(s) on the decision variables.
+
+    initial_fluence : ndarray
+        Initial fluence vector.
 
     Attributes
     ----------
@@ -38,34 +51,34 @@ class LexicographicOptimization():
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
         See 'Parameters'.
 
-    objectives : dict
-        Dictionary with the rank-ordered objectives.
-
-    constraints : dict
-        Dictionary with the rank-ordered constraints.
+    subproblems : dict
+        Dictionary with the rank-ordered subproblems.
 
     tracker : dict
         Dictionary with the iteration-wise plan component values.
     """
 
+    # Set the problem name
+    name = 'lexicographic'
+
     def __init__(
             self,
             backprojection,
             objectives,
-            constraints):
+            constraints,
+            lower_variable_bounds,
+            upper_variable_bounds,
+            initial_fluence):
 
         # Initialize the datahub
         hub = Datahub()
 
         # Log a message about the initialization of the class
         hub.logger.display_info(
-            "Initializing lexicographic optimization method ...")
-
-        # Get the backprojection from the arguments
-        self.backprojection = backprojection
+            "Initializing lexicographic optimization problem ...")
 
         # Get the rank-ordered objectives
-        self.objectives = {
+        objectives = {
             rank: {
                 label: objective for label, objective in objectives.items()
                 if objective['instance'].rank == rank}
@@ -74,30 +87,99 @@ class LexicographicOptimization():
                 for objective in objectives.values()))}
 
         # Initialize the rank-ordered constraints by the "static" constraints
-        self.constraints = {
+        constraints = {
             rank: {
                 label: constraint for label, constraint in constraints.items()
                 if constraint['instance'].rank == rank}
-            for rank in self.objectives}
+            for rank in objectives}
 
         # Loop over the lexicographic layers
-        for rank in self.constraints:
+        for rank in constraints:
 
             # Update the constraints with the "dynamic" constraints
-            self.constraints[rank] |= {
+            constraints[rank] |= {
                 label: constraint for dictionary in (
-                    self.objectives[label] for label in tuple(
-                        self.constraints)[:list(self.constraints).index(rank)])
+                    objectives[label] for label in tuple(
+                        constraints)[:list(constraints).index(rank)])
                 for label, constraint in dictionary.items()}
 
         # Initialize the rank-wise optimization problems
-        self.subproblem = {
-            rank: WeightedSumOptimization(
-                backprojection, self.objectives[rank], self.constraints[rank])
-            for rank in self.objectives}
+        self.subproblems = {
+            rank: WeightedSumProblem(
+                backprojection, objectives[rank], constraints[rank],
+                lower_variable_bounds, upper_variable_bounds, initial_fluence)
+            for rank in objectives}
 
         # Initialize the tracker
         self.tracker = {}
+
+    def get_variable_bounds(
+            self,
+            lower,
+            upper):
+        """
+        Get the lower and upper variable bounds.
+
+        Parameters
+        ----------
+        lower : int, float, list or None
+            Lower bound(s) on the decision variables.
+
+        upper : int, float, list or None
+            Upper bound(s) on the decision variables.
+
+        Returns
+        -------
+        list
+            Lower bounds on the decision variables.
+
+        list
+            Upper bounds on the decision variables.
+        """
+
+        def get_bounds(value, limit):
+            """Get the lower or upper bounds by the input value and limit."""
+
+            # Check if the value is scalar
+            if isinstance(value, (int, float)):
+
+                # Generate a uniform list from the value
+                return [value]*len(self.initial_fluence)
+
+            # Check if the value is None
+            if value is None:
+
+                # Generate a uniform list from the limit
+                return [limit]*len(self.initial_fluence)
+
+            # Generate a cleansed list by replacing None with the limit
+            return [limit if bound is None else bound for bound in value]
+
+        return get_bounds(lower, -inf), get_bounds(upper, inf)
+
+    def get_constraint_bounds(self):
+        """
+        Get the lower and upper constraint bounds.
+
+        Returns
+        -------
+        tuple
+            Lower and upper bounds on the constraints.
+        """
+
+        # Check if no constraints have been passed
+        if len(self.constraints) == 0:
+
+            # Return the default empty bounds
+            return [], []
+
+        # Return the rank-ordered, transformed bounds
+        return tuple({
+            rank: [
+                constraint['instance'].bounds[index]
+                for constraint in rank_constraints.values()]
+            for rank, rank_constraints in self.constraints.items()}
+            for index in range(2))
 
     def objective(
             self,
@@ -124,7 +206,7 @@ class LexicographicOptimization():
             Objective function value.
         """
 
-        return self.subproblem[rank].objective(fluence, track)
+        return self.subproblems[rank].objective(fluence, track)
 
     def gradient(
             self,
@@ -147,7 +229,7 @@ class LexicographicOptimization():
             Fluence gradient vector.
         """
 
-        return self.subproblem[rank].gradient(fluence)
+        return self.subproblems[rank].gradient(fluence)
 
     def constraint(
             self,
@@ -174,7 +256,7 @@ class LexicographicOptimization():
             Constraint function values.
         """
 
-        return self.subproblem[rank].constraint(fluence, track)
+        return self.subproblems[rank].constraint(fluence, track)
 
     def jacobian(
             self,
@@ -197,7 +279,7 @@ class LexicographicOptimization():
             Fluence Jacobian matrix.
         """
 
-        return self.subproblem[rank].jacobian(fluence)
+        return self.subproblems[rank].jacobian(fluence)
 
     def restore_tracker(self):
         """
@@ -211,7 +293,7 @@ class LexicographicOptimization():
 
         # Get the subproblem trackers
         trackers = tuple(
-            problem.tracker for problem in self.subproblem.values())
+            problem.tracker for problem in self.subproblems.values())
 
         # Initialize the lexicographic tracker keys
         self.tracker = {key: [] for key in set().union(*trackers)}

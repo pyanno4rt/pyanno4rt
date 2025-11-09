@@ -865,6 +865,9 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             # Set the window geometry
             self.setGeometry(geometry)
 
+            # Set the window size
+            self.resize(self.parent.screen().size())
+
     def close(self):
         """Close the visualizer."""
 

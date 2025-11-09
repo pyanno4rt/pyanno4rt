@@ -5,13 +5,13 @@
 
 # %% External package import
 
-from functools import partial
 from ipyopt import Problem
 from numpy import around, array, indices
 
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -21,39 +21,14 @@ class IpyoptSolver():
     Ipyopt wrapper class.
 
     This class serves as a wrapper for the interior-point optimization \
-    algorithms from the Ipyopt solver. It takes the problem structure and \
-    defines the method to run the solver.
+    algorithms from the Ipyopt solver. It takes the problem structure, \
+    configures the selected algorithm, and defines the method to run the \
+    solver.
 
     Parameters
     ----------
-    number_of_variables : int
-        Number of decision variables.
-
-    number_of_constraints : int
-        Number of constraints.
-
-    problem_instance : object of class \
-        :class:`~pyanno4rt.optimization.methods._lexicographic_optimization.LexicographicOptimization`\
-        :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`
-        The object representing the optimization problem.
-
-    lower_variable_bounds : list
-        Lower bounds on the decision variables.
-
-    upper_variable_bounds : list
-        Upper bounds on the decision variables.
-
-    lower_constraint_bounds : list
-        Lower bounds on the constraints.
-
-    upper_constraint_bounds : list
-        Upper bounds on the constraints.
-
     algorithm : str
         Label for the solution algorithm.
-
-    initial_fluence : ndarray
-        Initial fluence vector.
 
     maximum_iterations : int
         Maximum number of iterations.
@@ -63,6 +38,15 @@ class IpyoptSolver():
 
     Attributes
     ----------
+    algorithm : str
+        See 'Parameters'.
+
+    maximum_iterations : int
+        See 'Parameters'.
+
+    tolerance : float
+        See 'Parameters'.
+
     nlp : object of class :class:`~ipyopt.Problem`
         The object used to represent the nonlinear optimization problem.
 
@@ -72,15 +56,7 @@ class IpyoptSolver():
 
     def __init__(
             self,
-            number_of_variables,
-            number_of_constraints,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            lower_constraint_bounds,
-            upper_constraint_bounds,
             algorithm,
-            initial_fluence,
             maximum_iterations,
             tolerance):
 
@@ -88,12 +64,17 @@ class IpyoptSolver():
         Datahub().logger.display_info(
             f"Initializing Ipyopt solver with {algorithm} algorithm ...")
 
-        # Get the callable nonlinear problem object and its arguments
-        self.nlp, self.arguments = self.configure(
-            number_of_variables, number_of_constraints, problem_instance,
-            lower_variable_bounds, upper_variable_bounds,
-            lower_constraint_bounds, upper_constraint_bounds, algorithm,
-            maximum_iterations, tolerance)
+        # Get the input arguments
+        inputs = filter_dict(vars(), remove_keys=('self',))
+
+        # Loop over the input arguments
+        for key, value in inputs.items():
+
+            # Set the attribute
+            setattr(self, key, value)
+
+        # Initialize the NLP and the arguments
+        self.nlp, self.arguments = None, None
 
     def callback(
             self,
@@ -122,23 +103,14 @@ class IpyoptSolver():
             output_string = (
                 f"{output_string}, viol_g={around(args[3], 4)}")
 
-        # Log a message about the intermediate function values
+        # Log a message about the intermediate function value(s)
         Datahub().logger.display_info(output_string)
 
         return True
 
     def configure(
             self,
-            number_of_variables,
-            number_of_constraints,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            lower_constraint_bounds,
-            upper_constraint_bounds,
-            algorithm,
-            maximum_iterations,
-            tolerance):
+            problem):
         """
         Configure the Ipyopt solver.
 
@@ -146,124 +118,77 @@ class IpyoptSolver():
 
         Parameters
         ----------
-        number_of_variables : int
-            Number of decision variables.
-
-        number_of_constraints : int
-            Number of constraints.
-
-        problem_instance : object of class \
-            :class:`~pyanno4rt.optimization.methods._lexicographic_optimization.LexicographicOptimization`\
-            :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`
-            The object representing the optimization problem.
-
-        lower_variable_bounds : list
-            Lower bounds on the decision variables.
-
-        upper_variable_bounds : list
-            Upper bounds on the decision variables.
-
-        lower_constraint_bounds : list
-            Lower bounds on the constraints.
-
-        upper_constraint_bounds : list
-            Upper bounds on the constraints.
-
-        algorithm : str
-            Label for the solution algorithm.
-
-        maximum_iterations : int
-            Maximum number of iterations.
-
-        tolerance : float
-            Precision goal for the objective function value.
-
-        Returns
-        -------
-        nlp : class :class:`~ipyopt.Problem`
-            The class used to represent the nonlinear optimization problem.
-
-        arguments : dict
-            Dictionary with the solver arguments.
+        problem : object of class \
+            :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
+            :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+            The object used to represent the optimization problem.
         """
 
         def objective(fluence):
             """Get the objective."""
 
-            out = problem_instance.objective(fluence)
+            out = problem.objective(fluence)
             return out
 
         def gradient(fluence, out):
             """Get the gradient of the objective."""
 
-            out[()] = problem_instance.gradient(fluence)
+            out[()] = problem.gradient(fluence)
             return out
 
         def constraint(fluence, out):
             """Get the constraints."""
 
-            out[()] = problem_instance.constraint(fluence)
+            out[()] = problem.constraint(fluence)
             return out
 
         def jacobian(fluence, out):
             """Get the jacobian of the constraints."""
 
-            out[()] = problem_instance.jacobian(fluence).flatten()
+            out[()] = problem.jacobian(fluence).flatten()
             return out
 
         # Set the optimization problem class
-        nlp = Problem
+        self.nlp = Problem
 
-        # Check if the method is 'lexicographic'
-        if type(problem_instance).__name__ == 'LexicographicOptimization':
-
-            # Raise an error to indicate the missing implementation
-            raise ValueError(
-                "Lexicographic optimization is not yet implemented for Ipyopt "
-                "...")
-
-        else:
-
-            # Initialize the arguments dictionary
-            arguments = {
-                'n': number_of_variables,
-                'x_l': array(lower_variable_bounds),
-                'x_u': array(upper_variable_bounds),
-                'm': number_of_constraints,
-                'g_l': array(lower_constraint_bounds),
-                'g_u': array(upper_constraint_bounds),
-                'sparsity_indices_jac_g': tuple(
-                    arr for arr in indices((
-                        number_of_constraints,
-                        number_of_variables)).reshape(2, -1)),
-                'sparsity_indices_h': None,
-                'eval_f': objective,
-                'eval_grad_f': gradient,
-                'eval_g': constraint,
-                'eval_jac_g': jacobian,
-                'eval_h': None,
-                'intermediate_callback': self.callback,
-                'ipopt_options': {
-                    'sb': 'yes',
-                    'print_level': 0,
-                    'tol': 1e-10,
-                    'dual_inf_tol': 1e-4,
-                    'constr_viol_tol': 1e-4,
-                    'compl_inf_tol': 1e-4,
-                    'acceptable_iter': 5,
-                    'acceptable_tol': 1e10,
-                    'acceptable_constr_viol_tol': 1e-2,
-                    'acceptable_dual_inf_tol': 1e10,
-                    'acceptable_compl_inf_tol': 1e10,
-                    'acceptable_obj_change_tol': tolerance,
-                    'max_iter': maximum_iterations,
-                    'mu_strategy': 'adaptive',
-                    'hessian_approximation': 'limited-memory',
-                    'limited_memory_max_history': 50,
-                    'limited_memory_initialization': 'scalar2',
-                    'linear_solver': algorithm}}
-
-        return nlp, arguments
+        # Initialize the arguments dictionary
+        self.arguments = {
+            'n': len(problem.initial_fluence),
+            'x_l': array(problem.variable_bounds[0]),
+            'x_u': array(problem.variable_bounds[1]),
+            'm': len(problem.constraints),
+            'g_l': array(problem.constraint_bounds[0]),
+            'g_u': array(problem.constraint_bounds[1]),
+            'sparsity_indices_jac_g': tuple(
+                arr for arr in indices((
+                    len(problem.constraints),
+                    len(problem.initial_fluence))).reshape(2, -1)),
+            'sparsity_indices_h': None,
+            'eval_f': objective,
+            'eval_grad_f': gradient,
+            'eval_g': constraint,
+            'eval_jac_g': jacobian,
+            'eval_h': None,
+            'intermediate_callback': self.callback,
+            'ipopt_options': {
+                'sb': 'yes',
+                'print_level': 0,
+                'tol': 1e-10,
+                'dual_inf_tol': 1e-4,
+                'constr_viol_tol': 1e-4,
+                'compl_inf_tol': 1e-4,
+                'acceptable_iter': 5,
+                'acceptable_tol': 1e10,
+                'acceptable_constr_viol_tol': 1e-2,
+                'acceptable_dual_inf_tol': 1e10,
+                'acceptable_compl_inf_tol': 1e10,
+                'acceptable_obj_change_tol': self.tolerance,
+                'max_iter': self.maximum_iterations,
+                'mu_strategy': 'adaptive',
+                'hessian_approximation': 'limited-memory',
+                'limited_memory_max_history': 50,
+                'limited_memory_initialization': 'scalar2',
+                'linear_solver': self.algorithm}}
 
     def run(
             self,

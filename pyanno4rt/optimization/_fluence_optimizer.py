@@ -100,7 +100,7 @@ class FluenceOptimizer():
         FluenceOptimizer.adjust_parameters_for_fractionation(
             objectives | constraints)
 
-        # Initialize the backprojection by the selected modality
+        # Initialize the backprojection
         backprojection = maps.PROJECTIONS[hub.plan_configuration['modality']]()
 
         # Check if the solver ignores any constraints
@@ -120,45 +120,24 @@ class FluenceOptimizer():
                 # Reset the external constraints
                 hub.segmentation[segment]['constraint'] = None
 
-        # Initialize the optimization problem by the selected method
-        problem = maps.METHODS[method](backprojection, objectives, constraints)
+        # Calculate the initial fluence
+        initial_fluence = maps.INITIALIZERS[initial_strategy](
+            initial_fluence_vector).run()
 
-        # Initialize the fluence initializer
-        initializer = maps.INITIALIZERS[initial_strategy](
-            initial_fluence_vector)
+        # Initialize the optimization problem
+        problem = maps.PROBLEMS[method](
+            backprojection, objectives, constraints, lower_variable_bounds,
+            upper_variable_bounds, initial_fluence)
 
-        # Get the initial fluence vector
-        initial_fluence = initializer.run()
-
-        # Get the decision variable bounds
-        variable_bounds = FluenceOptimizer.get_variable_bounds(
-            lower_variable_bounds, upper_variable_bounds, len(initial_fluence))
-
-        # Get the box constraint bounds
-        constraint_bounds = FluenceOptimizer.get_constraint_bounds(
-            method, problem.constraints)
-
-        # Initialize the solver object by the selected solver
-        solver_object = maps.SOLVERS[solver](
-            number_of_variables=len(initial_fluence),
-            number_of_constraints=len(constraints),
-            problem_instance=problem,
-            lower_variable_bounds=variable_bounds[0],
-            upper_variable_bounds=variable_bounds[1],
-            lower_constraint_bounds=constraint_bounds[0],
-            upper_constraint_bounds=constraint_bounds[1],
-            algorithm=algorithm,
-            initial_fluence=initial_fluence,
-            maximum_iterations=maximum_iterations,
+        # Initialize the solver instance
+        solver_instance = maps.SOLVERS[solver](
+            algorithm=algorithm, maximum_iterations=maximum_iterations,
             tolerance=tolerance)
 
         # Enter the optimization dictionary into the datahub
         hub.optimization |= {
             'problem': problem,
-            'initializer': initializer,
-            'initial_fluence': initial_fluence,
-            'initial_strategy': initial_strategy,
-            'solver_object': solver_object,
+            'solver_instance': solver_instance,
             'initial_time': time()-start_time}
 
     @staticmethod
@@ -332,92 +311,6 @@ class FluenceOptimizer():
             if not component['instance'].adjusted_parameters
             and 'dose' in component['instance'].parameter_category))
 
-    @staticmethod
-    def get_variable_bounds(lower, upper, length):
-        """
-        Get the lower and upper variable bounds.
-
-        Parameters
-        ----------
-        lower : int, float, list or None
-            Lower bound(s) on the decision variables.
-
-        upper : int, float, list or None
-            Upper bound(s) on the decision variables.
-
-        length : int
-            Length of the initial fluence vector.
-
-        Returns
-        -------
-        list
-            Lower bounds on the decision variables.
-
-        list
-            Upper bounds on the decision variables.
-        """
-
-        def get_bounds(value, limit):
-            """Get the lower or upper bounds by the input value and limit."""
-
-            # Check if the value is scalar
-            if isinstance(value, (int, float)):
-
-                # Generate a uniform list from the value
-                return [value]*length
-
-            # Check if the value is None
-            if value is None:
-
-                # Generate a uniform list from the limit
-                return [limit]*length
-
-            # Generate a cleansed list by replacing None with the limit
-            return [limit if bound is None else bound for bound in value]
-
-        return get_bounds(lower, -inf), get_bounds(upper, inf)
-
-    @staticmethod
-    def get_constraint_bounds(method, constraints):
-        """
-        Get the lower and upper constraint bounds.
-
-        Parameters
-        ----------
-        method : {'lexicographic', 'pareto', 'weighted-sum'}
-            Single- or multi-criteria optimization method.
-
-        constraints : dict
-            Dictionary with the internally configured problem constraints.
-
-        Returns
-        -------
-        tuple
-            Lower and upper bounds on the constraints.
-        """
-
-        # Check if no constraints have been passed
-        if len(constraints) == 0:
-
-            # Return the default empty bounds
-            return [], []
-
-        # Check if the method is 'lexicographic'
-        if method == 'lexicographic':
-
-            # Return the rank-ordered, transformed bounds
-            return tuple({
-                rank: [
-                    constraint['instance'].bounds[index]
-                    for constraint in rank_constraints.values()]
-                for rank, rank_constraints in constraints.items()}
-                for index in range(2))
-
-        # Else, return the unranked, transformed bounds
-        return tuple(zip(*(
-            constraint['instance'].bounds
-            for constraint in constraints.values())))
-
     def solve(self):
         """Solve the optimization problem."""
 
@@ -425,11 +318,9 @@ class FluenceOptimizer():
         hub = Datahub()
 
         # Get the logger, segmentation data and optimization problem
-        logger, segmentation, problem = (
-            hub.logger, hub.segmentation, hub.optimization['problem'])
-
-        # Reset the tracker and feature history if applicable
-        reset_outputs()
+        logger, segmentation, problem, solver = (
+            hub.logger, hub.segmentation, hub.optimization['problem'],
+            hub.optimization['solver_instance'])
 
         # Log a message about the problem solving
         logger.display_info("Solving optimization problem ...")
@@ -437,13 +328,33 @@ class FluenceOptimizer():
         # Start the solver runtime recording
         start_time = time()
 
+        # Reset the tracker and feature history if applicable
+        reset_outputs()
+
         # Check if the fluence can not be loaded from a copycat
         if 'from_copycat' not in hub.optimization:
 
-            # Solve the optimization problem
+            # Check if a lexicographic problem should be solved
+            if problem.name == 'lexicographic':
+
+                # Get the lexicographic solution method
+                solve = self.solve_lexicography
+
+            # Check if a Pareto problem should be solved
+            elif problem.name == 'pareto':
+
+                # Get the Pareto solution method
+                solve = self.solve_pareto
+
+            # Check if a weighted-sum problem should be solved
+            elif problem.name == 'weighted-sum':
+
+                # Get the weighted-sum solution method
+                solve = self.solve_weighted
+
+            # Run the solution algorithm
             (hub.optimization['optimized_fluence'],
-             hub.optimization['solver_info']) = hub.optimization[
-                 'solver_object'].run(hub.optimization['initial_fluence'])
+             hub.optimization['solver_info']) = solve(solver, problem)
 
         else:
 
@@ -464,7 +375,7 @@ class FluenceOptimizer():
 
             # Log a message about the unsolved problem
             logger.display_info(
-                "Fluence optimizer has not found a feasible solution for the "
+                "Fluence optimizer did not find a feasible solution for the "
                 "treatment plan ...")
 
             # Set the optimized dose to None
@@ -519,6 +430,157 @@ class FluenceOptimizer():
         logger.display_info(
             f"Fluence optimizer took {optimizer_runtime} seconds "
             f"({solver_runtime} seconds for problem solving) ...")
+
+    def solve_lexicography(
+            self,
+            solver,
+            problem):
+        """
+        Solve the lexicographic optimization problem.
+
+        Parameters
+        ----------
+        solver : object of class \
+            :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
+            :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`
+            The object used to represent the solver.
+
+        problem : object of class \
+            :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
+            The object used to represent the lexicographic optimization problem.
+
+        Returns
+        -------
+        ndarray
+            Optimized fluence vector.
+
+        str
+            Description for the cause of termination.
+        """
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Build the lexicographic hierarchy
+        hierarchy = {
+            rank: problem.subproblems[rank] for rank in problem.subproblems}
+
+        # Get all ranks
+        ranks = tuple(hierarchy)
+
+        # Get the initial fluence vector
+        fluence = problem.subproblems[ranks[0]].initial_fluence
+
+        # Loop over the lexicographic ranks
+        for rank, subproblem in hierarchy.items():
+
+            # Log a message about the lexicographic rank
+            hub.logger.display_info(
+                f"Considering lexicography at rank {rank} ...")
+
+            # Configure the solver
+            solver.configure(subproblem)
+
+            # Solve the optimization problem at the current rank
+            fluence, solver_info = solver.run(fluence)
+
+            # Check if the current rank does not equal the final rank
+            if rank != ranks[-1]:
+
+                # Get the next subproblem
+                next_problem = problem.subproblems[ranks[ranks.index(rank)+1]]
+
+                # Overwrite the initial fluence
+                next_problem.initial_fluence = fluence
+
+                # Loop over the dynamic constraints
+                for label in subproblem.objectives:
+
+                    # Get the dynamic constraint threshold
+                    threshold = subproblem.tracker[label][-1]
+
+                    # Update the upper constraint bound
+                    next_problem.constraints[label]['instance'].bounds[1] = (
+                        threshold)
+
+                # Update the constraint bounds
+                next_problem.constraint_bounds = (
+                    next_problem.get_constraint_bounds())
+
+        # Restore the lexicographic tracker
+        hub.optimization['problem'].restore_tracker()
+
+        return fluence, solver_info
+
+    def solve_pareto(
+            self,
+            solver,
+            problem):
+        """
+        Solve the Pareto optimization problem.
+
+        Parameters
+        ----------
+        solver : object of class \
+            :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`
+            The object used to represent the solver.
+
+        problem : object of class \
+            :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`
+            The object used to represent the Pareto optimization problem.
+
+        Returns
+        -------
+        ndarray
+            Optimized fluence vector.
+
+        str
+            Description for the cause of termination.
+        """
+
+        # Configure the solver
+        solver.configure(problem)
+
+        # Solve the optimization problem
+        optimized_fluence, solver_info = solver.run(problem.initial_fluence)
+
+        return optimized_fluence, solver_info
+
+    def solve_weighted(
+            self,
+            solver,
+            problem):
+        """
+        Solve the weighted-sum optimization problem.
+
+        Parameters
+        ----------
+        solver : object of class \
+            :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
+            :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
+            :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`
+            The object used to represent the solver.
+
+        problem : object of class \
+            :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+            The object used to represent the weighted-sum optimization problem.
+
+        Returns
+        -------
+        ndarray
+            Optimized fluence vector.
+
+        str
+            Description for the cause of termination.
+        """
+
+        # Configure the solver
+        solver.configure(problem)
+
+        # Solve the optimization problem
+        optimized_fluence, solver_info = solver.run(problem.initial_fluence)
+
+        return optimized_fluence, solver_info
 
     def compute_dose_3d(
             self,

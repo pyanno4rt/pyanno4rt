@@ -13,6 +13,7 @@ from pypop7.optimizers.es.lmmaes import LMMAES
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -28,34 +29,8 @@ class PyPop7Solver():
 
     Parameters
     ----------
-    number_of_variables : int
-        Number of decision variables.
-
-    number_of_constraints : int
-        Number of constraints.
-
-    problem_instance : object of class \
-        :class:`~pyanno4rt.optimization.methods._lexicographic_optimization.LexicographicOptimization`\
-        :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`
-        The object representing the optimization problem.
-
-    lower_variable_bounds : list
-        Lower bounds on the decision variables.
-
-    upper_variable_bounds : list
-        Upper bounds on the decision variables.
-
-    lower_constraint_bounds : list
-        Lower bounds on the constraints.
-
-    upper_constraint_bounds : list
-        Upper bounds on the constraints.
-
     algorithm : str
         Label for the solution algorithm.
-
-    initial_fluence : ndarray
-        Initial fluence vector.
 
     maximum_iterations : int
         Maximum number of iterations.
@@ -65,8 +40,17 @@ class PyPop7Solver():
 
     Attributes
     ----------
+    algorithm : str
+        See 'Parameters'.
+
+    maximum_iterations : int
+        See 'Parameters'.
+
+    tolerance : float
+        See 'Parameters'.
+
     fun : object
-        The object representing the optimization algorithm.
+        The object used to represent the optimization algorithm.
 
     arguments : dict
         Dictionary with the solver arguments.
@@ -74,15 +58,7 @@ class PyPop7Solver():
 
     def __init__(
             self,
-            number_of_variables,
-            number_of_constraints,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            lower_constraint_bounds,
-            upper_constraint_bounds,
             algorithm,
-            initial_fluence,
             maximum_iterations,
             tolerance):
 
@@ -90,23 +66,21 @@ class PyPop7Solver():
         Datahub().logger.display_info(
             f"Initializing PyPop7 solver with {algorithm} algorithm ...")
 
-        # Get the callable optimization function and its arguments
-        self.fun, self.arguments = self.configure(
-            number_of_variables, problem_instance, lower_variable_bounds,
-            upper_variable_bounds, lower_constraint_bounds,
-            upper_constraint_bounds, algorithm, maximum_iterations, tolerance)
+        # Get the input arguments
+        inputs = filter_dict(vars(), remove_keys=('self',))
+
+        # Loop over the input arguments
+        for key, value in inputs.items():
+
+            # Set the attribute
+            setattr(self, key, value)
+
+        # Initialize the function and the arguments
+        self.fun, self.arguments = None, None
 
     def configure(
             self,
-            number_of_variables,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            lower_constraint_bounds,
-            upper_constraint_bounds,
-            algorithm,
-            maximum_iterations,
-            tolerance):
+            problem):
         """
         Configure the PyPop7 solver.
 
@@ -114,64 +88,34 @@ class PyPop7Solver():
 
         Parameters
         ----------
-        problem_instance : object of class \
-            :class:`~pyanno4rt.optimization.methods._lexicographic_optimization.LexicographicOptimization`\
-            :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`
-            The object representing the optimization problem.
-
-        lower_variable_bounds : list
-            Lower bounds on the decision variables.
-
-        upper_variable_bounds : list
-            Upper bounds on the decision variables.
-
-        lower_constraint_bounds : list
-            Lower bounds on the constraints.
-
-        upper_constraint_bounds : list
-            Upper bounds on the constraints.
-
-        algorithm : str
-            Label for the solution algorithm.
-
-        initial_fluence : ndarray
-            Initial fluence vector.
-
-        maximum_iterations : int
-            Maximum number of iterations.
-
-        tolerance : float
-            Precision goal for the objective function value.
-
-        Returns
-        -------
-        fun : object
-            The object representing the optimization algorithm.
-
-        arguments : dict
-            Dictionary with the solver arguments.
+        problem : object of class \
+            :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+            The object used to represent the optimization problem.
         """
+
+        # Get the number of variables
+        number_of_variables = len(problem.initial_fluence)
 
         # Compute the number of individuals
         number_of_individuals = 4 + int(3*log(number_of_variables))
 
         # Check if the algorithm is 'LMCMA'
-        if algorithm == 'LMCMA':
+        if self.algorithm == 'LMCMA':
 
             # Set the optimization function
-            fun = LMCMA
+            self.fun = LMCMA
 
             # Initialize the arguments dictionary
-            arguments = {
+            self.arguments = {
                 'problem': {
-                    'fitness_function': problem_instance.objective,
+                    'fitness_function': problem.objective,
                     'ndim_problem': number_of_variables,
-                    'lower_boundary': array(lower_variable_bounds),
-                    'upper_boundary': array(upper_variable_bounds)},
+                    'lower_boundary': array(problem.variable_bounds[0]),
+                    'upper_boundary': array(problem.variable_bounds[1])},
                 'options': {
                     'max_function_evaluations': (
-                        number_of_individuals*maximum_iterations),
-                    'early_stopping_tolerance': tolerance,
+                        number_of_individuals*self.maximum_iterations),
+                    'early_stopping_tolerance': self.tolerance,
                     'seed_rng': 0,
                     'sigma': 0.3,
                     'm': number_of_individuals,
@@ -190,19 +134,19 @@ class PyPop7Solver():
         else:
 
             # Set the optimization function
-            fun = LMMAES
+            self.fun = LMMAES
 
             # Initialize the arguments dictionary
-            arguments = {
+            self.arguments = {
                 'problem': {
-                    'fitness_function': problem_instance.objective,
+                    'fitness_function': problem.objective,
                     'ndim_problem': number_of_variables,
-                    'lower_boundary': array(lower_variable_bounds),
-                    'upper_boundary': array(upper_variable_bounds)},
+                    'lower_boundary': array(problem.variable_bounds[0]),
+                    'upper_boundary': array(problem.variable_bounds[1])},
                 'options': {
                     'max_function_evaluations': (
-                        number_of_individuals*maximum_iterations),
-                    'early_stopping_tolerance': tolerance,
+                        number_of_individuals*self.maximum_iterations),
+                    'early_stopping_tolerance': self.tolerance,
                     'seed_rng': 0,
                     'sigma': 0.3,
                     'is_restart': False,
@@ -211,8 +155,6 @@ class PyPop7Solver():
                     'n_parents': int(number_of_individuals/2),
                     'c_s': 2.0*number_of_individuals/number_of_variables,
                     'verbose': 1}}
-
-        return fun, arguments
 
     def run(
             self,

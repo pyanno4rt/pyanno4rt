@@ -312,17 +312,18 @@ class Optimization():
                 ),
             'method': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=tuple(maps.METHODS))),
+                partial(validate_value_in_set, options=tuple(maps.PROBLEMS))),
             'solver': (
                 partial(validate_type, options=str),
                 partial(validate_value_in_set, options={
-                    'lexicographic': ('scipy',),
+                    'lexicographic': ('ipyopt', 'scipy'),
                     'pareto': ('pymoo',),
                     'weighted-sum': ('ipyopt', 'pypop7', 'scipy')},
                     value_condition=conditions['method'])),
             'algorithm': (
                 partial(validate_type, options=str),
                 partial(validate_value_in_set, options={
+                    'lexicographic/ipyopt': ('mumps',),
                     'weighted-sum/ipyopt': ('mumps',),
                     'pareto/pymoo': ('NSGA3',),
                     'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),

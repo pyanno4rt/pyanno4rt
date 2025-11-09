@@ -26,34 +26,8 @@ class SciPySolver():
 
     Parameters
     ----------
-    number_of_variables : int
-        Number of decision variables.
-
-    number_of_constraints : int
-        Number of constraints.
-
-    problem_instance : object of class \
-        :class:`~pyanno4rt.optimization.methods._lexicographic_optimization.LexicographicOptimization`\
-        :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`
-        The object representing the optimization problem.
-
-    lower_variable_bounds : list
-        Lower bounds on the decision variables.
-
-    upper_variable_bounds : list
-        Upper bounds on the decision variables.
-
-    lower_constraint_bounds : list
-        Lower bounds on the constraints.
-
-    upper_constraint_bounds : list
-        Upper bounds on the constraints.
-
     algorithm : str
         Label for the solution algorithm.
-
-    initial_fluence : ndarray
-        Initial fluence vector.
 
     maximum_iterations : int
         Maximum number of iterations.
@@ -63,14 +37,20 @@ class SciPySolver():
 
     Attributes
     ----------
+    algorithm : str
+        See 'Parameters'.
+
+    maximum_iterations : int
+        See 'Parameters'.
+
+    tolerance : float
+        See 'Parameters'.
+
     fun : callable
         Minimization function from the SciPy library.
 
     arguments : dict
         Dictionary with the solver arguments.
-
-    rank : None or int
-        Current rank of the lexicography.
 
     counter : None or int
         Counter for the iterations.
@@ -78,15 +58,7 @@ class SciPySolver():
 
     def __init__(
             self,
-            number_of_variables,
-            number_of_constraints,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            lower_constraint_bounds,
-            upper_constraint_bounds,
             algorithm,
-            initial_fluence,
             maximum_iterations,
             tolerance):
 
@@ -94,17 +66,17 @@ class SciPySolver():
         Datahub().logger.display_info(
             f"Initializing SciPy solver with {algorithm} algorithm ...")
 
-        # Get the callable optimization function and its arguments
-        self.fun, self.arguments = self.configure(
-            problem_instance, lower_variable_bounds, upper_variable_bounds,
-            lower_constraint_bounds, upper_constraint_bounds, algorithm,
-            maximum_iterations, tolerance)
+        # Get the input arguments
+        inputs = filter_dict(vars(), remove_keys=('self',))
 
-        # Initialize the rank indicator
-        self.rank = None
+        # Loop over the input arguments
+        for key, value in inputs.items():
 
-        # Initialize the iteration counter
-        self.counter = None
+            # Set the attribute
+            setattr(self, key, value)
+
+        # Initialize the function, arguments, and iteration counter
+        self.fun, self.arguments, self.counter = None, None, None
 
     def callback(
             self,
@@ -124,7 +96,7 @@ class SciPySolver():
             f"f={'%.4f' % intermediate_result['fun']}")
 
         # Check if any constraints have been passed
-        if 'constraints' in self.arguments.get(self.rank, self.arguments):
+        if 'constraints' in self.arguments:
 
             # Extend the output string
             output_string = (
@@ -139,14 +111,7 @@ class SciPySolver():
 
     def configure(
             self,
-            problem_instance,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            lower_constraint_bounds,
-            upper_constraint_bounds,
-            algorithm,
-            maximum_iterations,
-            tolerance):
+            problem):
         """
         Configure the SciPy solver.
 
@@ -154,167 +119,81 @@ class SciPySolver():
 
         Parameters
         ----------
-        problem_instance : object of class \
-            :class:`~pyanno4rt.optimization.methods._lexicographic_optimization.LexicographicOptimization`\
-            :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`
-            The object representing the optimization problem.
-
-        lower_variable_bounds : list
-            Lower bounds on the decision variables.
-
-        upper_variable_bounds : list
-            Upper bounds on the decision variables.
-
-        lower_constraint_bounds : list
-            Lower bounds on the constraints.
-
-        upper_constraint_bounds : list
-            Upper bounds on the constraints.
-
-        algorithm : str
-            Label for the solution algorithm.
-
-        maximum_iterations : int
-            Maximum number of iterations.
-
-        tolerance : float
-            Precision goal for the objective function value.
-
-        Returns
-        -------
-        fun : callable
-            Minimization function from the SciPy library.
-
-        arguments : dict
-            Dictionary with the solver arguments.
+        problem : object of class \
+            :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
+            :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+            The object used to represent the optimization problem.
         """
 
         # Set the optimization function
-        fun = minimize
+        self.fun = minimize
 
         # Check if the algorithm is 'L-BFGS-B'
-        if algorithm == 'L-BFGS-B':
+        if self.algorithm == 'L-BFGS-B':
 
             # Initialize the argument dictionary
-            arguments = {
-                'lexicographic': False,
-                'fun': problem_instance.objective,
-                'jac': problem_instance.gradient,
+            self.arguments = {
+                'fun': problem.objective,
+                'jac': problem.gradient,
                 'method': 'L-BFGS-B',
-                'bounds': tuple(zip(
-                    lower_variable_bounds, upper_variable_bounds)),
-                'tol': tolerance,
+                'bounds': zip(*problem.variable_bounds),
+                'tol': self.tolerance,
                 'options': {
                     'disp': False,
-                    'ftol': tolerance,
-                    'maxiter': maximum_iterations,
+                    'ftol': self.tolerance,
+                    'maxiter': self.maximum_iterations,
                     'maxls': 20},
                 'callback': self.callback}
 
         # Else, check if the algorithm is 'TNC'
-        elif algorithm == 'TNC':
+        elif self.algorithm == 'TNC':
 
             # Initialize the argument dictionary
-            arguments = {
-                'lexicographic': False,
-                'fun': problem_instance.objective,
-                'jac': problem_instance.gradient,
+            self.arguments = {
+                'fun': problem.objective,
+                'jac': problem.gradient,
                 'method': 'TNC',
-                'bounds': tuple(zip(
-                    lower_variable_bounds, upper_variable_bounds)),
-                'tol': tolerance,
+                'bounds': zip(*problem.variable_bounds),
+                'tol': self.tolerance,
                 'options': {
                     'disp': True,
                     'maxCGit': 0,
                     'eta': -1,
                     'stepmx': 0,
-                    'ftol': tolerance,
-                    'maxfun': maximum_iterations}}
+                    'ftol': self.tolerance,
+                    'maxfun': self.maximum_iterations}}
 
         # Else, check if the algorithm is 'trust-constr'
-        elif algorithm == 'trust-constr':
+        elif self.algorithm == 'trust-constr':
 
-            # Check if the method is 'lexicographic'
-            if type(problem_instance).__name__ == 'LexicographicOptimization':
+            # Initialize the arguments dictionary
+            self.arguments = {
+                'fun': problem.objective,
+                'jac': problem.gradient,
+                'method': 'trust-constr',
+                'bounds': zip(*problem.variable_bounds),
+                'tol': self.tolerance,
+                'options': {
+                    'disp': False,
+                    'verbose': 0,
+                    'initial_tr_radius': 10,
+                    'sparse_jacobian': None,
+                    'factorization_method': None,
+                    'maxiter': self.maximum_iterations},
+                'callback': self.callback}
 
-                # Initialize the rank-wise argument dictionaries
-                arguments = {
-                    rank: {
-                        'fun': problem_instance.subproblem[rank].objective,
-                        'jac': problem_instance.subproblem[rank].gradient,
-                        'method': 'trust-constr',
-                        'bounds': tuple(
-                            zip(lower_variable_bounds, upper_variable_bounds)),
-                        'tol': tolerance,
-                        'options': {
-                            'disp': False,
-                            'verbose': 0,
-                            'initial_tr_radius': 1,
-                            'sparse_jacobian': True,
-                            'factorization_method': 'AugmentedSystem',
-                            'maxiter': maximum_iterations},
-                        'callback': self.callback}
-                    for rank in problem_instance.subproblem}
+            # Check if any constraints have been passed
+            if problem.constraint_bounds != ([], []):
 
-                # Loop over the ranks
-                for rank in arguments:
-
-                    # Check if any constraints have been passed at the rank
-                    if (lower_constraint_bounds[rank],
-                            upper_constraint_bounds[rank]) != ([], []):
-
-                        # Update the argument dictionary
-                        arguments[rank] |= {
-                            'constraints': NonlinearConstraint(
-                                problem_instance.subproblem[rank].constraint,
-                                lower_constraint_bounds[rank],
-                                upper_constraint_bounds[rank],
-                                jac=problem_instance.subproblem[rank].jacobian,
-                                hess=SR1()),
-                            'constraint_function': (
-                                problem_instance.subproblem[rank].constraint)}
-
-                # Add the indicator for the 'lexicographic' method
-                arguments |= {'lexicographic': True}
-
-            else:
-
-                # Initialize the arguments dictionary
-                arguments = {
-                    'fun': problem_instance.objective,
-                    'jac': problem_instance.gradient,
-                    'method': 'trust-constr',
-                    'bounds': tuple(
-                        zip(lower_variable_bounds, upper_variable_bounds)),
-                    'tol': tolerance,
-                    'options': {
-                        'disp': False,
-                        'verbose': 0,
-                        'initial_tr_radius': 10,
-                        'sparse_jacobian': None,
-                        'factorization_method': None,
-                        'maxiter': maximum_iterations},
-                    'callback': self.callback,
-                    'lexicographic': False}
-
-                # Check if any constraints have been passed
-                if ((lower_constraint_bounds, upper_constraint_bounds)
-                        != ([], [])):
-
-                    # Update the argument dictionary
-                    arguments |= {
-                        'constraints': NonlinearConstraint(
-                            problem_instance.constraint,
-                            lower_constraint_bounds,
-                            upper_constraint_bounds,
-                            jac=problem_instance.jacobian,
-                            hess=SR1()),
-                        'constraint_function': problem_instance.constraint}
-
-                # Add the indicator for the 'lexicographic' method
-                arguments |= {'lexicographic': False}
-
-        return fun, arguments
+                # Update the argument dictionary
+                self.arguments |= {
+                    'constraints': NonlinearConstraint(
+                        problem.constraint,
+                        problem.constraint_bounds[0],
+                        problem.constraint_bounds[1],
+                        jac=problem.jacobian,
+                        hess=SR1()),
+                    'cfun': problem.constraint}
 
     def run(
             self,
@@ -336,117 +215,34 @@ class SciPySolver():
             Description for the cause of termination.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Reset the iteration counter
+        # Reset the counter
         self.counter = 1
 
-        # Check if the optimization problem is lexicographic
-        if self.arguments.pop('lexicographic'):
+        # Check if the algorithm is different from 'TNC'
+        if self.arguments['method'] != 'TNC':
 
-            # Get all ranks from the arguments dictionary
-            ranks = tuple(self.arguments)
+            # Get the initial objective value
+            objective_value = self.arguments['fun'](initial_fluence, False)
 
-            # Get the subproblem dictionary
-            subproblem = hub.optimization['problem'].subproblem
+            # Set the base output string
+            output_string = (
+                f"At iterate 0: f={'%.4f' % objective_value}")
 
-            # Loop over the rank arguments
-            for rank, arguments in self.arguments.items():
+            # Check if the constraint function is included
+            if 'cfun' in self.arguments:
 
-                # Log a message about the lexicographic rank
-                hub.logger.display_info(
-                    f"Considering lexicography at rank {rank} ...")
+                # Get the initial constraint value
+                constraint_value = self.arguments.pop('cfun')(
+                    initial_fluence, False)
 
-                # Set the current rank
-                self.rank = rank
-
-                # Get the initial objective value
-                objective_value = arguments['fun'](initial_fluence, False)
-
-                # Set the base output string
+                # Extend the output string
                 output_string = (
-                    f"At iterate {self.counter-1}: "
-                    f"f={'%.4f' % objective_value}")
+                    f"{output_string}, g={around(constraint_value, 4)}")
 
-                # Check if the constraint function is included
-                if 'constraint_function' in arguments:
+            # Log a message about the initial function values
+            Datahub().logger.display_info(output_string)
 
-                    # Get the initial constraint value
-                    constraint_value = arguments.pop('constraint_function')(
-                        initial_fluence, False)
-
-                    # Extend the output string
-                    output_string = (
-                        f"{output_string}, g={around(constraint_value, 4)}")
-
-                # Log a message about the initial function values
-                hub.logger.display_info(output_string)
-
-                # Solve the optimization problem at the current rank
-                result = self.fun(x0=initial_fluence, **arguments)
-
-                # Update the initial fluence for the next rank
-                initial_fluence = result.x
-
-                # Check if the current rank does not equal the final rank
-                if rank != ranks[-1]:
-
-                    # Get the value of the next rank
-                    next_rank = ranks[ranks.index(rank)+1]
-
-                    # Get the previous ranks
-                    prev_ranks = ranks[:ranks.index(next_rank)]
-
-                    # Get the constraint labels with the index positions
-                    constraint_index = {
-                        label: tuple(
-                            subproblem[next_rank].constraints).index(label)
-                        for label in (
-                                label for rank in prev_ranks
-                                for label in subproblem[rank].objectives)}
-
-                    # Loop over the constraint-index pairs
-                    for label, index in constraint_index.items():
-
-                        # Adjust the upper bound by the current best value
-                        self.arguments[next_rank]['constraints'].ub[index] = (
-                            subproblem[rank].tracker[label][-1])
-
-                else:
-
-                    # Restore the lexicographic tracker
-                    hub.optimization['problem'].restore_tracker()
-
-        else:
-
-            # Check if the algorithm is different from 'TNC'
-            if self.arguments['method'] != 'TNC':
-
-                # Get the initial objective value
-                objective_value = self.arguments['fun'](initial_fluence, False)
-
-                # Set the base output string
-                output_string = (
-                    f"At iterate 0: f={'%.4f' % objective_value}")
-
-                # Check if the constraint function is included
-                if 'constraint_function' in self.arguments:
-
-                    # Get the initial constraint value
-                    constraint_value = self.arguments.pop(
-                        'constraint_function')(initial_fluence, False)
-
-                    # Extend the output string
-                    output_string = (
-                        f"{output_string}, g={around(constraint_value, 4)}")
-
-                # Log a message about the initial function values
-                Datahub().logger.display_info(output_string)
-
-            # Solve the optimization problem
-            result = self.fun(
-                x0=initial_fluence,
-                **filter_dict(self.arguments, remove_keys=('lexicographic',)))
+        # Solve the optimization problem
+        result = self.fun(x0=initial_fluence, **self.arguments)
 
         return result.x, result.message

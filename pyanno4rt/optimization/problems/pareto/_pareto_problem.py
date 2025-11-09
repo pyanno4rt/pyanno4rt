@@ -2,6 +2,10 @@
 
 # Author: Tim Ortkamp
 
+# %% External package import
+
+from math import inf
+
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
@@ -11,12 +15,13 @@ from pyanno4rt.tools import (
 # %% Class definition
 
 
-class ParetoOptimization():
+class ParetoProblem():
     """
-    Pareto problem class.
+    Pareto optimization problem class.
 
-    This class provides methods to perform pareto optimization. It implements \
-    the respective objective and constraint functions.
+    This class provides methods to build a Pareto optimization problem, \
+    including the definition of objectives, constraints, bounds, initial \
+    fluence, and methods to calculate important quantities.
 
     Parameters
     ----------
@@ -31,6 +36,15 @@ class ParetoOptimization():
     constraints : dict
         Dictionary with the internally configured constraints.
 
+    lower_variable_bounds : None, int, float, or list
+        Lower bound(s) on the decision variables.
+
+    upper_variable_bounds : None, int, float, or list
+        Upper bound(s) on the decision variables.
+
+    initial_fluence : ndarray
+        Initial fluence vector.
+
     Attributes
     ----------
     backprojection : object of class \
@@ -43,13 +57,28 @@ class ParetoOptimization():
 
     constraints : dict
         See 'Parameters'.
+
+    initial_fluence : ndarray
+        See 'Parameters'.
+
+    variable_bounds : tuple
+        Lower and upper bounds on the decision variables.
+
+    constraint_bounds : tuple
+        Lower and upper bounds on the constraints.
     """
+
+    # Set the problem name
+    name = 'pareto'
 
     def __init__(
             self,
             backprojection,
             objectives,
-            constraints):
+            constraints,
+            lower_variable_bounds,
+            upper_variable_bounds,
+            initial_fluence):
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info(
@@ -59,6 +88,81 @@ class ParetoOptimization():
         self.backprojection = backprojection
         self.objectives = objectives
         self.constraints = constraints
+
+        # Get the initial fluence
+        self.initial_fluence = initial_fluence
+
+        # Get the variable bounds
+        self.variable_bounds = self.get_variable_bounds(
+            lower_variable_bounds, upper_variable_bounds)
+
+        # Get the constraint bounds
+        self.constraint_bounds = self.get_constraint_bounds()
+
+    def get_variable_bounds(
+            self,
+            lower,
+            upper):
+        """
+        Get the lower and upper variable bounds.
+
+        Parameters
+        ----------
+        lower : int, float, list or None
+            Lower bound(s) on the decision variables.
+
+        upper : int, float, list or None
+            Upper bound(s) on the decision variables.
+
+        Returns
+        -------
+        list
+            Lower bounds on the decision variables.
+
+        list
+            Upper bounds on the decision variables.
+        """
+
+        def get_bounds(value, limit):
+            """Get the lower or upper bounds by the input value and limit."""
+
+            # Check if the value is scalar
+            if isinstance(value, (int, float)):
+
+                # Generate a uniform list from the value
+                return [value]*len(self.initial_fluence)
+
+            # Check if the value is None
+            if value is None:
+
+                # Generate a uniform list from the limit
+                return [limit]*len(self.initial_fluence)
+
+            # Generate a cleansed list by replacing None with the limit
+            return [limit if bound is None else bound for bound in value]
+
+        return get_bounds(lower, -inf), get_bounds(upper, inf)
+
+    def get_constraint_bounds(self):
+        """
+        Get the lower and upper constraint bounds.
+
+        Returns
+        -------
+        tuple
+            Lower and upper bounds on the constraints.
+        """
+
+        # Check if no constraints have been passed
+        if len(self.constraints) == 0:
+
+            # Return the default empty bounds
+            return [], []
+
+        # Else, return the unranked, transformed bounds
+        return tuple(zip(*(
+            constraint['instance'].bounds
+            for constraint in self.constraints.values())))
 
     def objective(
             self,

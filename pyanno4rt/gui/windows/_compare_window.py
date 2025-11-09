@@ -45,20 +45,20 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         # Get the application from the argument
         self.parent = parent
 
-        # 
+        #
         self.baseline, self.reference = None, None
 
-        # 
+        #
         self.baseline_dose_slice_widget = SliceCompareWidget(self)
         self.reference_dose_slice_widget = SliceCompareWidget(self)
         self.difference_dose_slice_widget = SliceCompareWidget(self, 'seismic')
 
-        # 
+        #
         self.baseline_dvh_widget = DVHGraphCompareWidget(self)
         self.reference_dvh_widget = DVHGraphCompareWidget(self)
         self.difference_dvh_widget = DVHGraphCompareWidget(self)
 
-        # 
+        #
         self.baseline_dose_layout.insertWidget(
             0, self.baseline_dose_slice_widget)
         self.reference_dose_layout.insertWidget(
@@ -66,7 +66,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.difference_dose_layout.insertWidget(
             0, self.difference_dose_slice_widget)
 
-        # 
+        #
         self.baseline_dvh_layout.insertWidget(0, self.baseline_dvh_widget)
         self.reference_dvh_layout.insertWidget(0, self.reference_dvh_widget)
         self.difference_dvh_layout.insertWidget(0, self.difference_dvh_widget)
@@ -112,7 +112,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
     def set_links(self):
         """."""
 
-        # 
+        #
         self.baseline_dose_slice_widget.viewbox.setXLink(
             self.reference_dose_slice_widget.viewbox)
         self.baseline_dose_slice_widget.viewbox.setYLink(
@@ -122,7 +122,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.difference_dose_slice_widget.viewbox.setYLink(
             self.reference_dose_slice_widget.viewbox)
 
-        # 
+        #
         self.baseline_dvh_widget.plot_widget.getPlotItem().vb.setXLink(
             self.reference_dvh_widget.plot_widget.getPlotItem().vb)
         self.baseline_dvh_widget.plot_widget.getPlotItem().vb.setYLink(
@@ -131,7 +131,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
     def connect_signals(self):
         """Connect the fields with the event signals."""
 
-        # 
+        #
         self.plane_cbox.currentTextChanged.connect(
             self.adjust_slider_by_orientation)
         self.plane_cbox.currentTextChanged.connect(
@@ -141,7 +141,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.plane_cbox.currentTextChanged.connect(
             self.difference_dose_slice_widget.change_orientation)
 
-        # 
+        #
         self.opacity_sbox.valueChanged.connect(
             self.baseline_dose_slice_widget.change_dose_opacity)
         self.opacity_sbox.valueChanged.connect(
@@ -149,7 +149,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.opacity_sbox.valueChanged.connect(
             self.difference_dose_slice_widget.change_dose_opacity)
 
-        # 
+        #
         self.slice_selection_sbar.valueChanged.connect(
             self.baseline_dose_slice_widget.change_image_slice)
         self.slice_selection_sbar.valueChanged.connect(
@@ -157,7 +157,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.slice_selection_sbar.valueChanged.connect(
             self.difference_dose_slice_widget.change_image_slice)
 
-        # 
+        #
         self.disCT_cbox.stateChanged.connect(
             self.baseline_dose_slice_widget.toggle_ct)
         self.disCT_cbox.stateChanged.connect(
@@ -165,7 +165,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.disCT_cbox.stateChanged.connect(
             self.difference_dose_slice_widget.toggle_ct)
 
-        # 
+        #
         self.disDose_cbox.stateChanged.connect(
             self.baseline_dose_slice_widget.toggle_dose)
         self.disDose_cbox.stateChanged.connect(
@@ -173,7 +173,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.disDose_cbox.stateChanged.connect(
             self.difference_dose_slice_widget.toggle_dose)
 
-        # 
+        #
         self.disDoseCon_cbox.stateChanged.connect(
             self.baseline_dose_slice_widget.toggle_dose_contours)
         self.disDoseCon_cbox.stateChanged.connect(
@@ -181,7 +181,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.disDoseCon_cbox.stateChanged.connect(
             self.difference_dose_slice_widget.toggle_dose_contours)
 
-        # 
+        #
         self.disSegm_cbox.stateChanged.connect(
             self.baseline_dose_slice_widget.toggle_segment_contours)
         self.disSegm_cbox.stateChanged.connect(
@@ -189,22 +189,22 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.disSegm_cbox.stateChanged.connect(
             self.difference_dose_slice_widget.toggle_segment_contours)
 
-        # 
+        #
         self.joint_dvh_pbutton.clicked.connect(self.open_joint_dvh)
 
-        # 
+        #
         self.joint_outcome_pbutton.clicked.connect(self.open_joint_outcome)
 
-        # 
+        #
         self.close_compare_pbutton.clicked.connect(self.close)
 
     def add_plans(self, baseline, reference):
         """."""
 
-        # 
+        #
         self.baseline, self.reference = baseline, reference
 
-        # 
+        #
         self.baseline_dose_slice_widget.reset_images()
         self.reference_dose_slice_widget.reset_images()
         self.difference_dose_slice_widget.reset_images()
@@ -217,7 +217,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             baseline.datahub.optimization['optimized_dose'].max(),
             reference.datahub.optimization['optimized_dose'].max())
 
-        # 
+        #
         self.baseline_dose_slice_widget.add_image_data(
             baseline, minimum, maximum)
         self.reference_dose_slice_widget.add_image_data(
@@ -225,20 +225,20 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.difference_dose_slice_widget.add_image_data(
             (baseline, reference), minimum, maximum)
 
-        # 
+        #
         self.adjust_slider_by_orientation()
 
-        # 
+        #
         self.baseline_dose_slice_widget.update_images()
         self.reference_dose_slice_widget.update_images()
         self.difference_dose_slice_widget.update_images()
 
-        # 
+        #
         self.baseline_dvh_widget.reset_dvh()
         self.reference_dvh_widget.reset_dvh()
         self.difference_dvh_widget.reset_dvh()
 
-        # 
+        #
         baseline_dvh = self.evaluate_dvh(
             baseline.datahub.optimization['optimized_dose'],
             baseline.datahub.computed_tomography,
@@ -256,13 +256,13 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             baseline.datahub.segmentation,
             1000)
 
-        # 
+        #
         joint_segments = sorted(tuple(
             set(baseline_dvh['display_segments'])
             & set(reference_dvh['display_segments'])),
             key=lambda t: t[0])
 
-        # 
+        #
         x_range = (
             0, max(baseline_dvh['evaluation_points'][-1],
                    reference_dvh['evaluation_points'][-1]))
@@ -305,7 +305,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             difference_text):
         """."""
 
-        # 
+        #
         self.baseline_label.setText(baseline_text)
         self.reference_label.setText(reference_text)
         self.difference_label.setText(difference_text)
@@ -392,7 +392,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
     def select_dvh_curves(self, event):
         """."""
 
-        # 
+        #
         event_pen_width = event.curve.opts['pen'].width()
 
         for widget in (self.baseline_dvh_widget, self.reference_dvh_widget,
@@ -426,7 +426,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
     def unselect_dvh_curves(self, event):
         """."""
 
-        # 
+        #
         if not event.isAccepted():
 
             for widget in (self.baseline_dvh_widget, self.reference_dvh_widget,
@@ -707,7 +707,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         """Set the window position."""
 
         # Reset the window size
-        self.resize(920, 680)
+        self.resize(self.parent.screen().size())
 
         # Get the window geometry
         geometry = self.geometry()

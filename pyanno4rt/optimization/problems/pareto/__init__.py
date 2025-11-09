@@ -9,6 +9,6 @@ methods.
 
 # Author: Tim Ortkamp
 
-from ._pareto_optimization import ParetoOptimization
+from ._pareto_problem import ParetoProblem
 
-__all__ = ['ParetoOptimization']
+__all__ = ['ParetoProblem']

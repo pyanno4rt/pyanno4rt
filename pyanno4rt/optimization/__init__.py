@@ -10,7 +10,7 @@ the inverse planning problem.
 # Author: Tim Ortkamp
 
 # Import the submodules
-from . import components, initializers, methods, projections, solvers
+from . import components, initializers, problems, projections, solvers
 
 # Import the fluence optimizer
 from ._fluence_optimizer import FluenceOptimizer
@@ -18,7 +18,7 @@ from ._fluence_optimizer import FluenceOptimizer
 __all__ = [
     'components',
     'initializers',
-    'methods',
+    'problems',
     'projections',
     'solvers',
     'FluenceOptimizer']
