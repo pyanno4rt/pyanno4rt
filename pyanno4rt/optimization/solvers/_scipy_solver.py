@@ -11,7 +11,6 @@ from scipy.optimize import minimize, NonlinearConstraint, SR1
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -53,7 +52,7 @@ class SciPySolver():
         Dictionary with the solver arguments.
 
     counter : None or int
-        Counter for the iterations.
+        Iteration counter.
     """
 
     def __init__(
@@ -67,13 +66,9 @@ class SciPySolver():
             f"Initializing SciPy solver with {algorithm} algorithm ...")
 
         # Get the input arguments
-        inputs = filter_dict(vars(), remove_keys=('self',))
-
-        # Loop over the input arguments
-        for key, value in inputs.items():
-
-            # Set the attribute
-            setattr(self, key, value)
+        self.algorithm = algorithm
+        self.maximum_iterations = maximum_iterations
+        self.tolerance = tolerance
 
         # Initialize the function, arguments, and iteration counter
         self.fun, self.arguments, self.counter = None, None, None
@@ -93,7 +88,7 @@ class SciPySolver():
         # Set the base output string
         output_string = (
             f"At iterate {self.counter}: "
-            f"f={'%.4f' % intermediate_result['fun']}")
+            f"f={around(intermediate_result['fun'], 4)}")
 
         # Check if any constraints have been passed
         if 'constraints' in self.arguments:
@@ -226,7 +221,7 @@ class SciPySolver():
 
             # Set the base output string
             output_string = (
-                f"At iterate 0: f={'%.4f' % objective_value}")
+                f"At iterate 0: f={around(objective_value, 4)}")
 
             # Check if the constraint function is included
             if 'cfun' in self.arguments:

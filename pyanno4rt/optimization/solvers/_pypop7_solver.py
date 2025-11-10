@@ -13,7 +13,6 @@ from pypop7.optimizers.es.lmmaes import LMMAES
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -67,13 +66,9 @@ class PyPop7Solver():
             f"Initializing PyPop7 solver with {algorithm} algorithm ...")
 
         # Get the input arguments
-        inputs = filter_dict(vars(), remove_keys=('self',))
-
-        # Loop over the input arguments
-        for key, value in inputs.items():
-
-            # Set the attribute
-            setattr(self, key, value)
+        self.algorithm = algorithm
+        self.maximum_iterations = maximum_iterations
+        self.tolerance = tolerance
 
         # Initialize the function and the arguments
         self.fun, self.arguments = None, None

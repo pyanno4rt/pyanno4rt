@@ -290,6 +290,9 @@ class ComponentGraphWidget(QWidget):
         # Loop over the tracks
         for track, values in self.tracker.items():
 
+            # Get the values different from None
+            filter_values = [value for value in values if value is not None]
+
             # Set the QPen
             pen = mkPen(
                 color=self.styles[track][1], style=self.styles[track][2],
@@ -298,13 +301,13 @@ class ComponentGraphWidget(QWidget):
             # Plot the track
             plot = self.plot_widget.plot(
                 range(values.count(None)+1, len(values)+1),
-                list(filter(None, values)),
+                filter_values,
                 pen=pen,
                 symbol=self.styles[track][0],
                 symbolSize=7,
                 symbolBrush=[
                     self.styles[track][1]
-                    for i in range(len(list(filter(None, values))))],
+                    for i in range(len(filter_values))],
                 name=track,
                 clickable=True)
 

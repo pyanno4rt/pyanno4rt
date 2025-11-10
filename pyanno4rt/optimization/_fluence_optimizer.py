@@ -104,7 +104,8 @@ class FluenceOptimizer():
         backprojection = maps.PROJECTIONS[hub.plan_configuration['modality']]()
 
         # Check if the solver ignores any constraints
-        if len(constraints) > 0 and algorithm not in ('trust-constr', 'mumps'):
+        if len(constraints) > 0 and algorithm not in (
+                'mumps', 'NSGA3', 'trust-constr'):
 
             # Log a message about the ignored constraints
             hub.logger.display_warning(

@@ -11,7 +11,6 @@ from numpy import around, array, indices
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import filter_dict
 
 # %% Class definition
 
@@ -65,13 +64,9 @@ class IpyoptSolver():
             f"Initializing Ipyopt solver with {algorithm} algorithm ...")
 
         # Get the input arguments
-        inputs = filter_dict(vars(), remove_keys=('self',))
-
-        # Loop over the input arguments
-        for key, value in inputs.items():
-
-            # Set the attribute
-            setattr(self, key, value)
+        self.algorithm = algorithm
+        self.maximum_iterations = maximum_iterations
+        self.tolerance = tolerance
 
         # Initialize the NLP and the arguments
         self.nlp, self.arguments = None, None
@@ -94,7 +89,7 @@ class IpyoptSolver():
         """
 
         # Set the base output string
-        output_string = f"At iterate {args[1]}: f={'%.4f' % args[2]}"
+        output_string = f"At iterate {args[1]}: f={around(args[2], 4)}"
 
         # Check if any constraints have been passed
         if self.arguments['m'] > 0:
@@ -114,7 +109,7 @@ class IpyoptSolver():
         """
         Configure the Ipyopt solver.
 
-        Supported algorithms: MUMPS
+        Supported algorithms: MUMPS.
 
         Parameters
         ----------

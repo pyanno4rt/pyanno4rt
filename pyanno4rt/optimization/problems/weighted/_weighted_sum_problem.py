@@ -43,7 +43,7 @@ class WeightedSumProblem():
 
     upper_variable_bounds : None, int, float, or list
         Upper bound(s) on the decision variables.
-
+Initializing
     initial_fluence : ndarray
         Initial fluence vector.
 
@@ -93,7 +93,7 @@ class WeightedSumProblem():
 
         # Log a message about the initialization of the class
         hub.logger.display_info(
-            "Initializing weighted-sum optimization problem ...")
+            "Constructing weighted-sum optimization problem ...")
 
         # Get the instance attributes from the arguments
         self.backprojection = backprojection

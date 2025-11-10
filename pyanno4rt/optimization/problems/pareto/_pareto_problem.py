@@ -82,7 +82,7 @@ class ParetoProblem():
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info(
-            "Initializing Pareto optimization problem ...")
+            "Constructing Pareto optimization problem ...")
 
         # Get the instance attributes from the arguments
         self.backprojection = backprojection
@@ -98,6 +98,10 @@ class ParetoProblem():
 
         # Get the constraint bounds
         self.constraint_bounds = self.get_constraint_bounds()
+
+        # Initialize the tracker dictionary
+        self.tracker = {
+            label: [] for label in tuple(objectives) + tuple(constraints)}
 
     def get_variable_bounds(
             self,

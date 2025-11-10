@@ -20,9 +20,6 @@ from pymoo.util.ref_dirs import get_reference_directions
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.tools import (
-    filter_dict, get_all_constraints, get_all_objectives,
-    get_constraint_segments, get_objective_segments)
 
 # %% Class definition
 
@@ -61,10 +58,10 @@ class PymooSolver():
     fun : callable
         Minimization function from the Pymoo library.
 
-    algorithm : object of class from :mod:`pymoo.algorithms`
+    pymoo_algorithm : object of class from :mod:`pymoo.algorithms`
         The object used to represent the solution algorithm.
 
-    problem : object of class from :mod:`pymoo.core.problem`
+    pymoo_problem : object of class from :mod:`pymoo.core.problem`
         The object used to represent the Pymoo-compatible structure of the \
         multi-objective (Pareto) optimization problem.
 
@@ -86,16 +83,12 @@ class PymooSolver():
             f"Initializing Pymoo solver with {algorithm} algorithm ...")
 
         # Get the input arguments
-        inputs = filter_dict(vars(), remove_keys=('self',))
-
-        # Loop over the input arguments
-        for key, value in inputs.items():
-
-            # Set the attribute
-            setattr(self, key, value)
+        self.algorithm = algorithm
+        self.maximum_iterations = maximum_iterations
+        self.tolerance = tolerance
 
         # Initialize the function, algorithm, problem and termination
-        self.fun, self.algorithm, self.problem, self.termination = (
+        self.fun, self.pymoo_alg, self.pymoo_prob, self.termination = (
             None, None, None, None)
 
     def configure(
@@ -107,7 +100,7 @@ class PymooSolver():
         Supported algorithms: NSGA-3.
 
         Parameters
-        ---------
+        ----------
         problem : object of class \
             :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
             The object used to represent the optimization problem.
@@ -117,7 +110,7 @@ class PymooSolver():
         self.fun = minimize
 
         # Initialize the Pymoo problem instance
-        self.problem = PymooProblem(problem=problem)
+        self.pymoo_prob = PymooProblem(problem=problem)
 
         # Set the number of evaluation points
         number_of_points = 200
@@ -128,12 +121,11 @@ class PymooSolver():
 
         # Initialize and evaluate the initial population
         initial_population = Population.new(
-            "X",
-            2*max(problem.initial_fluence)*beta(a=0.5, b=0.5, size=(
+            "X", 2*max(problem.initial_fluence)*beta(a=0.5, b=0.5, size=(
                 number_of_points, len(problem.initial_fluence))))
 
         # Initialize the NSGA-3 algorithm
-        self.algorithm = NSGA3(
+        self.pymoo_alg = NSGA3(
             ref_dirs=reference_directions,
             pop_size=number_of_points,
             n_offsprings=number_of_points,
@@ -142,20 +134,19 @@ class PymooSolver():
             mutation=PM(prob=1/len(problem.initial_fluence), eta=20),
             eliminate_duplicates=True)
 
-        # Initialize the termination instance
-        self.termination = DefaultMultiObjectiveTermination(
-            xtol=1e-12, ftol=self.tolerance, n_max_gen=self.maximum_iterations)
+        # Check if no constraints have been passed
+        if len(problem.constraints) == 0:
+
+            # Initialize the termination instance
+            self.termination = DefaultMultiObjectiveTermination(
+                xtol=1e-12, cvtol=1e-6, ftol=self.tolerance, period=20,
+                n_max_gen=self.maximum_iterations)
 
     def run(
             self,
             _):
         """
         Run the Pymoo solver.
-
-        Parameters
-        ----------
-        initial_fluence : ndarray
-            Initial fluence vector.
 
         Returns
         -------
@@ -168,8 +159,9 @@ class PymooSolver():
 
         # Solve the optimization problem
         result = self.fun(
-            self.problem, self.algorithm, self.termination, seed=1,
-            save_history=False, verbose=False, callback=CustomCallback())
+            self.pymoo_prob, self.pymoo_alg, self.termination, seed=1,
+            save_history=False, verbose=False,
+            callback=CustomCallback(self.pymoo_prob.problem))
 
         return result.X, result.message
 
@@ -178,31 +170,28 @@ class CustomCallback(Callback):
     """
     Custom callback object for the Pymoo solver.
 
+    Parameters
+    ----------
+    problem : object of class \
+        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
+        The object used to represent the optimization problem.
+
     Attributes
     ----------
-    objective_names : tuple
-        Tuple with the compound names of the objective functions.
-
-    constraint_names : tuple
-        Tuple with the compound names of the constraint functions.
+    problem : object of class \
+        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
+        See 'Parameters'.
     """
 
-    def __init__(self):
+    def __init__(
+            self,
+            problem):
 
         # Call the superclass constructor
         super().__init__()
 
-        # Get the objective names
-        self.objective_names = tuple(
-            f"mod. {objective.name}-{segment}" for objective, segment in zip(
-                get_all_objectives(Datahub().segmentation),
-                get_objective_segments(Datahub().segmentation)))
-
-        # Get the constraint names
-        self.constraint_names = tuple(
-            f"{constraint.name}-{segment}" for constraint, segment in zip(
-                get_all_constraints(Datahub().segmentation),
-                get_constraint_segments(Datahub().segmentation)))
+        # Get the optimization problem
+        self.problem = problem
 
     def notify(
             self,
@@ -216,21 +205,43 @@ class CustomCallback(Callback):
             The object used to represent the solution algorithm.
         """
 
+        # Get the mean objective values
+        objectives = dict(zip(
+            self.problem.objectives, mean(algorithm.pop.get("F"), axis=0)))
+
+        # Loop over the values
+        for label, value in objectives.items():
+
+            # Enter the value into the tracking dictionary
+            self.problem.tracker[label].append(value)
+
         # Set the base output string
         output_string = ', '.join((
-            f"{round(value, 4)} ({name})" for value, name in zip(
-                mean(algorithm.pop.get("F"), axis=0), self.objective_names)))
+            f"{round(value, 4)} ({label})"
+            for label, value in objectives.items()))
 
         # Check if any constraints have been passed
-        if len(self.constraint_names) > 0:
+        if len(self.problem.constraints) > 0:
 
-            # Get the mean values for each constraint
+            # Get the mean constraint values
             values = mean(algorithm.pop.get("G"), axis=0)
+
+            # Generate the constraint dictionary
+            constraints = dict(zip(
+                self.problem.constraints,
+                (self.problem.constraint_bounds[0][i] - values[2*i]
+                 for i, _ in enumerate(self.problem.constraints))))
+
+            # Loop over the values
+            for label, value in constraints.items():
+
+                # Enter the value into the tracking dictionary
+                self.problem.tracker[label].append(value)
 
             # Get the additional string
             add_string = ', '.join((
-                f"{[round(values[i], 4), round(values[i+1], 4)]} ({name})"
-                for i, name in enumerate(self.constraint_names)))
+                f"{round(value, 4)} ({label})"
+                for label, value in constraints.items()))
 
             # Extend the output string
             output_string = f"{output_string}, {add_string}"
@@ -320,6 +331,6 @@ class PymooProblem(ElementwiseProblem):
 
         # Set the constraint values
         out['G'] = [[
-            self.problem.constraint_bounds[0][index]-value,
+            self.problem.constraint_bounds[0][index] - value,
             value - self.problem.constraint_bounds[1][index]]
             for index, value in enumerate(constraint_values)]
