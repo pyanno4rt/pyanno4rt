@@ -153,10 +153,8 @@ class OutcomeGraph():
 
         # Get the tracks to be displayed
         tracker = {
-            component.track_id: component.translate(list(
-                divide(
-                    optimization['problem'].tracker[component.track_id],
-                    component.weight)))
+            component.track_id: component.translate(
+                optimization['problem'].tracker[component.track_id])
             for component in components if component.display}
 
         # Get the track statistics

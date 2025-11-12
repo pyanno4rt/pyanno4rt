@@ -5,7 +5,7 @@
 
 # %% External package import
 
-from numpy import array, mean
+from numpy import array, log, mean
 from numpy.random import beta
 from pymoo.algorithms.moo.nsga3 import NSGA3
 from pymoo.core.callback import Callback
@@ -102,7 +102,7 @@ class PymooSolver():
         Parameters
         ----------
         problem : object of class \
-            :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
+            :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`
             The object used to represent the optimization problem.
         """
 
@@ -113,7 +113,7 @@ class PymooSolver():
         self.pymoo_prob = PymooProblem(problem=problem)
 
         # Set the number of evaluation points
-        number_of_points = 200
+        number_of_points = 4 + int(3*log(len(problem.initial_fluence)))
 
         # Get the reference directions
         reference_directions = get_reference_directions(
@@ -139,7 +139,7 @@ class PymooSolver():
 
             # Initialize the termination instance
             self.termination = DefaultMultiObjectiveTermination(
-                xtol=1e-12, cvtol=1e-6, ftol=self.tolerance, period=20,
+                xtol=1e-12, cvtol=1e-6, ftol=self.tolerance,
                 n_max_gen=self.maximum_iterations)
 
     def run(
@@ -209,12 +209,6 @@ class CustomCallback(Callback):
         objectives = dict(zip(
             self.problem.objectives, mean(algorithm.pop.get("F"), axis=0)))
 
-        # Loop over the values
-        for label, value in objectives.items():
-
-            # Enter the value into the tracking dictionary
-            self.problem.tracker[label].append(value)
-
         # Set the base output string
         output_string = ', '.join((
             f"{round(value, 4)} ({label})"
@@ -231,12 +225,6 @@ class CustomCallback(Callback):
                 self.problem.constraints,
                 (self.problem.constraint_bounds[0][i] - values[2*i]
                  for i, _ in enumerate(self.problem.constraints))))
-
-            # Loop over the values
-            for label, value in constraints.items():
-
-                # Enter the value into the tracking dictionary
-                self.problem.tracker[label].append(value)
 
             # Get the additional string
             add_string = ', '.join((

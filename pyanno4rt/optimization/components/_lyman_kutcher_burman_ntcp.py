@@ -112,8 +112,7 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
             locals(), remove_keys=('self', '__class__'))
 
         # Convert the bounds
-        self.bounds = [
-            self.weight*self.reverse(bound) for bound in self.bounds]
+        self.bounds = [self.reverse(bound) for bound in self.bounds]
 
     def to_dict(self):
         """Serialize the component into a dictionary."""

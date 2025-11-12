@@ -82,7 +82,7 @@ class ParetoProblem():
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info(
-            "Constructing Pareto optimization problem ...")
+            "Building Pareto optimization problem ...")
 
         # Get the instance attributes from the arguments
         self.backprojection = backprojection
@@ -170,7 +170,8 @@ class ParetoProblem():
 
     def objective(
             self,
-            fluence):
+            fluence,
+            track=True):
         """
         Compute the objective function values.
 
@@ -178,6 +179,9 @@ class ParetoProblem():
         ----------
         fluence : ndarray
             Fluence vector.
+
+        track : bool, default=True
+            Indicator for tracking the objective function values.
 
         Returns
         -------
@@ -198,7 +202,7 @@ class ParetoProblem():
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_objective(objective):
+        def compute_single_objective(label, objective):
             """Compute the value of a single objective function."""
 
             # Get the associated segments and the instance
@@ -210,20 +214,27 @@ class ParetoProblem():
                 segmentation[segment]['resized_indices']
                 for segment in segments)
 
-            # Compute the objective function value
-            objective_value = instance.weight * instance.compute_value(
+            # Compute the weighted objective function value
+            value = instance.weight * instance.compute_value(
                 tuple(dose[index] for index in indices), segments)
 
+            # Check if the objective value should be tracked
+            if track:
+
+                # Enter the value into the tracking dictionary
+                self.tracker[label] += (value/instance.weight,)
+
             # Return the objective function value depending on the embedding
-            return objective_value * (instance.embedding == 'active')
+            return value * (instance.embedding == 'active')
 
         return [
-            compute_single_objective(objective)
-            for objective in self.objectives.values()]
+            compute_single_objective(label, objective)
+            for label, objective in self.objectives.items()]
 
     def constraint(
             self,
-            fluence):
+            fluence,
+            track=True):
         """
         Compute the constraint function values.
 
@@ -231,6 +242,9 @@ class ParetoProblem():
         ----------
         fluence : ndarray
             Fluence vector.
+
+        track : bool, default=True
+            Indicator for tracking the constraint function values.
 
         Returns
         -------
@@ -251,7 +265,7 @@ class ParetoProblem():
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_constraint(constraint):
+        def compute_single_constraint(label, constraint):
             """Compute the value of a single constraint function."""
 
             # Get the associated segments and the instance
@@ -264,12 +278,18 @@ class ParetoProblem():
                 for segment in segments)
 
             # Compute the constraint function value
-            constraint_value = instance.compute_value(
+            value = instance.compute_value(
                 tuple(dose[index] for index in indices), segments)
 
+            # Check if the constraint value should be tracked
+            if track:
+
+                # Enter the value into the tracking dictionary
+                self.tracker[label] += (value,)
+
             # Return the value of the constraint function
-            return constraint_value
+            return value
 
         return [
-            compute_single_constraint(constraint)
-            for constraint in self.constraints.values()]
+            compute_single_constraint(label, constraint)
+            for label, constraint in self.constraints.items()]

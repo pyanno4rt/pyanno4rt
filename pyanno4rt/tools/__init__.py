@@ -36,7 +36,6 @@ from ._non_decreasing import non_decreasing
 from ._non_increasing import non_increasing
 from ._monotonic import monotonic
 from ._replace_nan import replace_nan
-from ._reset_outputs import reset_outputs
 from ._sigmoid import sigmoid
 from ._snapshot import snapshot
 from ._string_to_numeric import string_to_numeric
@@ -70,7 +69,6 @@ __all__ = [
     'non_increasing',
     'monotonic',
     'replace_nan',
-    'reset_outputs',
     'sigmoid',
     'snapshot',
     'string_to_numeric']

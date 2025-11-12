@@ -5,7 +5,6 @@
 # %% External package import
 
 from math import isnan
-from numpy import divide
 from pandas import DataFrame
 from pyqtgraph import mkQApp
 from PyQt5.QtCore import QModelIndex
@@ -384,8 +383,8 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
             # Add style and data
             self.outc_widget.add_style_and_data(
-                {component.track_id: component.translate(list(
-                    divide(tracker[component.track_id], component.weight)))
+                {component.track_id: component.translate(
+                    tracker[component.track_id])
                  for component in components})
 
             # Update the outcome graph
@@ -425,8 +424,8 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
                 # Get the outcome data
                 outcomes = {
-                    component.model.model_label: component.translate(list(
-                        divide(tracker[component.track_id], component.weight)))
+                    component.model.model_label: component.translate(
+                        tracker[component.track_id])
                     for component in components}
 
                 # Add the model names

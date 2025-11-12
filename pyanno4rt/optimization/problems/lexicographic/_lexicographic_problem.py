@@ -75,7 +75,7 @@ class LexicographicProblem():
 
         # Log a message about the initialization of the class
         hub.logger.display_info(
-            "Constructing lexicographic optimization problem ...")
+            "Building lexicographic optimization problem ...")
 
         # Get the rank-ordered objectives
         objectives = {

@@ -7,9 +7,8 @@
 from time import time
 
 from functools import reduce
-from math import inf
 from numpy import (
-    ravel_multi_index, setdiff1d, union1d, unravel_index, where, zeros)
+    empty, ravel_multi_index, setdiff1d, union1d, unravel_index, where, zeros)
 from scipy.ndimage import zoom
 
 # %% Internal package import
@@ -19,7 +18,7 @@ import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import (
    apply, flatten, get_constraint_segments, get_machine_learning_constraints,
    get_machine_learning_objectives, get_radiobiological_constraints,
-   get_radiobiological_objectives, get_objective_segments, reset_outputs)
+   get_radiobiological_objectives, get_objective_segments)
 
 # %% Class definition
 
@@ -62,6 +61,31 @@ class FluenceOptimizer():
 
     tolerance : float
         Precision goal for the objective function value.
+
+    Attributes
+    ----------
+    problem : object of class \
+        :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
+        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
+        :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+        The object used to represent the optimization problem.
+        ...
+
+    solver : object of class \
+        :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
+        :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
+        :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
+        :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`
+        The object used to represent the solver.
+
+    initial_time : float
+        Runtime for initializing the optimizer.
+
+    solver_time : float
+        Runtime for solving the optimization problem.
+
+    optimizer_time : float
+        Total runtime for the optimizer.
     """
 
     def __init__(
@@ -118,28 +142,32 @@ class FluenceOptimizer():
             # Loop over the segments
             for segment in hub.segmentation:
 
-                # Reset the external constraints
+                # Reset the segment constraints
                 hub.segmentation[segment]['constraint'] = None
 
         # Calculate the initial fluence
         initial_fluence = maps.INITIALIZERS[initial_strategy](
             initial_fluence_vector).run()
 
-        # Initialize the optimization problem
-        problem = maps.PROBLEMS[method](
+        # Construct the optimization problem
+        self.problem = maps.PROBLEMS[method](
             backprojection, objectives, constraints, lower_variable_bounds,
             upper_variable_bounds, initial_fluence)
 
         # Initialize the solver instance
-        solver_instance = maps.SOLVERS[solver](
+        self.solver = maps.SOLVERS[solver](
             algorithm=algorithm, maximum_iterations=maximum_iterations,
             tolerance=tolerance)
 
+        # Get the initialization runtime
+        self.initial_time = time()-start_time
+
+        # Initialize the solver and optimizer runtimes
+        self.solver_time, self.optimizer_time = None, None
+
         # Enter the optimization dictionary into the datahub
         hub.optimization |= {
-            'problem': problem,
-            'solver_instance': solver_instance,
-            'initial_time': time()-start_time}
+            'problem': self.problem, 'solver_instance': self.solver}
 
     @staticmethod
     def remove_overlap(objectives, constraints):
@@ -318,10 +346,8 @@ class FluenceOptimizer():
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the logger, segmentation data and optimization problem
-        logger, segmentation, problem, solver = (
-            hub.logger, hub.segmentation, hub.optimization['problem'],
-            hub.optimization['solver_instance'])
+        # Get the logger
+        logger = hub.logger
 
         # Log a message about the problem solving
         logger.display_info("Solving optimization problem ...")
@@ -329,126 +355,86 @@ class FluenceOptimizer():
         # Start the solver runtime recording
         start_time = time()
 
-        # Reset the tracker and feature history if applicable
-        reset_outputs()
+        # Reset the optimization outputs
+        self.reset()
 
         # Check if the fluence can not be loaded from a copycat
         if 'from_copycat' not in hub.optimization:
 
-            # Check if a lexicographic problem should be solved
-            if problem.name == 'lexicographic':
-
-                # Get the lexicographic solution method
-                solve = self.solve_lexicography
-
-            # Check if a Pareto problem should be solved
-            elif problem.name == 'pareto':
-
-                # Get the Pareto solution method
-                solve = self.solve_pareto
-
-            # Check if a weighted-sum problem should be solved
-            elif problem.name == 'weighted-sum':
-
-                # Get the weighted-sum solution method
-                solve = self.solve_weighted
+            # Collect the solution methods
+            methods = {
+                'lexicographic': self.solve_lexicography,
+                'pareto': self.solve_pareto,
+                'weighted-sum': self.solve_weighted}
 
             # Run the solution algorithm
             (hub.optimization['optimized_fluence'],
-             hub.optimization['solver_info']) = solve(solver, problem)
+             hub.optimization['solver_info'],
+             hub.optimization['optimized_dose']) = methods[self.problem.name]()
 
         else:
+
+            # Log a message about the loaded fluence
+            logger.display_info(
+                "Retrieving solution from the loaded treatment plan ...")
 
             # Delete the copycat indicator
             del hub.optimization['from_copycat']
 
         # Get the runtime for problem solving
-        solver_runtime = round(time()-start_time, 2)
+        self.solver_time = round(time()-start_time, 2)
 
-        # Check if a solution has been found
-        if hub.optimization['optimized_fluence'] is not None:
-
-            # Compute the optimized dose from the fluence
-            hub.optimization['optimized_dose'] = self.compute_dose_3d(
-                hub.optimization['optimized_fluence'])
-
-        else:
-
-            # Log a message about the unsolved problem
-            logger.display_info(
-                "Fluence optimizer did not find a feasible solution for the "
-                "treatment plan ...")
-
-            # Set the optimized dose to None
-            hub.optimization['optimized_dose'] = None
-
-        # Check if the optimization problem has a tracker dictionary
-        if hasattr(problem, 'tracker') and all(value != [] for value
-           in problem.tracker.values()):
-
-            # Loop over the radiobiological outcome model-based components
-            for component in (
-                    get_radiobiological_constraints(segmentation)
-                    + get_radiobiological_objectives(segmentation)):
-
-                # Get the final (N)TCP prediction value
-                value = (
-                    (-1)**('NTCP' not in component.name)
-                    * problem.tracker[component.track_id][-1]/component.weight)
-
-                # Log a message about the prediction value
-                logger.display_info(
-                    f"{component.name} for the optimized plan: "
-                    f"{round(100*value, 2)} % ...")
-
-            # Loop over the machine learning outcome model-based components
-            for component in (
-                    get_machine_learning_constraints(segmentation)
-                    + get_machine_learning_objectives(segmentation)):
-
-                # Process the feature history
-                component.data_model_handler.process_feature_history()
-
-                # Get the final (N)TCP prediction
-                value = component.translate(
-                    problem.tracker[component.track_id][-1]
-                    / component.weight)
-
-                # Add the prediction value to the datahub
-                hub.model_outcomes[
-                    component.data_model_handler.model_label] = value
-
-                # Log a message about the prediction value
-                logger.display_info(
-                    f"{component.name} for the optimized plan: "
-                    f"{round(100*value, 2)} % ...")
+        # Postprocess the outcome model-based component results
+        self.postprocess()
 
         # Get the runtime for the fluence optimizer
-        optimizer_runtime = round(
-            time()-start_time+hub.optimization['initial_time'], 2)
+        self.optimizer_time = round(time()-start_time+self.initial_time, 2)
 
         # Log a message about the optimization runtimes
         logger.display_info(
-            f"Fluence optimizer took {optimizer_runtime} seconds "
-            f"({solver_runtime} seconds for problem solving) ...")
+            f"Fluence optimizer took {self.optimizer_time} seconds "
+            f"({self.solver_time} seconds for problem solving) ...")
 
-    def solve_lexicography(
-            self,
-            solver,
-            problem):
+    def reset(self):
+        """Reset the optimization and evaluation outputs."""
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Get the segmentation from the datahub
+        segmentation = hub.segmentation
+
+        # Check if a weighted-sum or Pareto problem is solved
+        if self.problem.name in ('pareto', 'weighted-sum'):
+
+            # Reset the problem tracker
+            self.problem.tracker = {key: [] for key in self.problem.tracker}
+
+        # Else, check if lexicographic optimization has been selected
+        elif self.problem.name == 'lexicographic':
+
+            # Loop over the subproblems
+            for subproblem in self.problem.subproblems.values():
+
+                # Reset the subproblem tracker
+                subproblem.tracker = {key: [] for key in subproblem.tracker}
+
+        # Loop over the machine learning model-based components
+        for component in (
+                get_machine_learning_constraints(segmentation)
+                + get_machine_learning_objectives(segmentation)):
+
+            # Get the feature calculator of the component
+            feature_calculator = (
+                component.data_model_handler.feature_calculator)
+
+            # Reset the feature history
+            feature_calculator.feature_history = empty(
+                shape=(1, len(feature_calculator.feature_map)))
+
+    def solve_lexicography(self):
         """
         Solve the lexicographic optimization problem.
-
-        Parameters
-        ----------
-        solver : object of class \
-            :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
-            :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`
-            The object used to represent the solver.
-
-        problem : object of class \
-            :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
-            The object used to represent the lexicographic optimization problem.
 
         Returns
         -------
@@ -459,43 +445,39 @@ class FluenceOptimizer():
             Description for the cause of termination.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Build the lexicographic hierarchy
-        hierarchy = {
-            rank: problem.subproblems[rank] for rank in problem.subproblems}
+        # Get the logger
+        logger = Datahub().logger
 
         # Get all ranks
-        ranks = tuple(hierarchy)
+        ranks = tuple(self.problem.subproblems)
 
         # Get the initial fluence vector
-        fluence = problem.subproblems[ranks[0]].initial_fluence
+        fluence = self.problem.subproblems[ranks[0]].initial_fluence
 
         # Loop over the lexicographic ranks
-        for rank, subproblem in hierarchy.items():
+        for rank, subproblem in self.problem.subproblems.items():
 
             # Log a message about the lexicographic rank
-            hub.logger.display_info(
-                f"Considering lexicography at rank {rank} ...")
+            logger.display_info(f"Considering lexicography at rank {rank} ...")
 
             # Configure the solver
-            solver.configure(subproblem)
+            self.solver.configure(subproblem)
 
             # Solve the optimization problem at the current rank
-            fluence, solver_info = solver.run(fluence)
+            fluence, solver_info = self.solver.run(fluence)
 
             # Check if the current rank does not equal the final rank
             if rank != ranks[-1]:
 
                 # Get the next subproblem
-                next_problem = problem.subproblems[ranks[ranks.index(rank)+1]]
+                next_problem = self.problem.subproblems[
+                    ranks[ranks.index(rank)+1]]
 
                 # Overwrite the initial fluence
                 next_problem.initial_fluence = fluence
 
                 # Loop over the dynamic constraints
-                for label in subproblem.objectives:
+                for label, objective in subproblem.objectives.items():
 
                     # Get the dynamic constraint threshold
                     threshold = subproblem.tracker[label][-1]
@@ -509,27 +491,30 @@ class FluenceOptimizer():
                     next_problem.get_constraint_bounds())
 
         # Restore the lexicographic tracker
-        hub.optimization['problem'].restore_tracker()
+        self.problem.restore_tracker()
 
-        return fluence, solver_info
+        # Check if a solution has been found
+        if fluence is not None:
 
-    def solve_pareto(
-            self,
-            solver,
-            problem):
+            # Compute the optimized dose
+            optimized_dose = self.compute_dose_3d(fluence)
+
+        else:
+
+            # Log a message about the unsolved problem
+            logger.display_info(
+                "Fluence optimizer did not find a feasible solution for the "
+                "lexicographic optimization problem ...")
+
+            # Set the optimized dose to None
+            optimized_dose = None
+
+        return fluence, solver_info, optimized_dose
+
+    def solve_pareto(self):
         """
         Solve the Pareto optimization problem.
 
-        Parameters
-        ----------
-        solver : object of class \
-            :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`
-            The object used to represent the solver.
-
-        problem : object of class \
-            :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`
-            The object used to represent the Pareto optimization problem.
-
         Returns
         -------
         ndarray
@@ -539,33 +524,81 @@ class FluenceOptimizer():
             Description for the cause of termination.
         """
 
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Get the logger, segmentation data and dose information
+        logger, segmentation, dose_information = (
+            hub.logger, hub.segmentation, hub.dose_information)
+
+        # Get the dose-influence matrix
+        dose_matrix = dose_information['dose_influence_matrix']
+
         # Configure the solver
-        solver.configure(problem)
+        self.solver.configure(self.problem)
 
         # Solve the optimization problem
-        optimized_fluence, solver_info = solver.run(problem.initial_fluence)
+        optimized_fluence, solver_info = self.solver.run(
+            self.problem.initial_fluence)
 
-        return optimized_fluence, solver_info
+        # Check if a solution has been found
+        if optimized_fluence is not None:
 
-    def solve_weighted(
-            self,
-            solver,
-            problem):
+            # Log a message about the number of Pareto-optimal solutions
+            logger.display_info(
+                f"Pareto analysis resulted in {optimized_fluence.shape[0]} "
+                "non-dominated solutions ...")
+
+            # Log a message about the selection procedure
+            logger.display_info(
+                "Selecting best solution with respect to the maximum mean "
+                "dose difference between targets and organs at risk ...")
+
+            # Get the indices of relevant targets and OARs
+            target_indices, oar_indices = (reduce(
+                union1d,
+                (segmentation[segment]['resized_indices']
+                 for segment in (get_constraint_segments(segmentation)
+                                 + get_objective_segments(segmentation))
+                 if segmentation[segment]['type'] == string), -1)
+                for string in ('TARGET', 'OAR'))
+
+            # Initialize the score list
+            scores = []
+
+            # Loop over the non-dominated solutions
+            for fluence in optimized_fluence:
+
+                # Calculate the dose vector
+                dose = dose_matrix @ fluence
+
+                # Add the solution-score pair
+                scores.append(
+                    (fluence,
+                     dose[target_indices].mean() - dose[oar_indices].mean()))
+
+            # Sort the results
+            scores = sorted(scores, key=lambda x: x[1])
+
+            # Compute the optimized dose from the "best" fluence
+            optimized_dose = self.compute_dose_3d(scores[0][0])
+
+        else:
+
+            # Log a message about the unsolved problem
+            logger.display_info(
+                "Fluence optimizer did not find a feasible solution for the "
+                "Pareto optimization problem ...")
+
+            # Set the optimized dose to None
+            optimized_dose = None
+
+        return optimized_fluence, solver_info, optimized_dose
+
+    def solve_weighted(self):
         """
         Solve the weighted-sum optimization problem.
 
-        Parameters
-        ----------
-        solver : object of class \
-            :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
-            :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
-            :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`
-            The object used to represent the solver.
-
-        problem : object of class \
-            :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
-            The object used to represent the weighted-sum optimization problem.
-
         Returns
         -------
         ndarray
@@ -575,13 +608,33 @@ class FluenceOptimizer():
             Description for the cause of termination.
         """
 
+        # Get the logger
+        logger = Datahub().logger
+
         # Configure the solver
-        solver.configure(problem)
+        self.solver.configure(self.problem)
 
         # Solve the optimization problem
-        optimized_fluence, solver_info = solver.run(problem.initial_fluence)
+        optimized_fluence, solver_info = self.solver.run(
+            self.problem.initial_fluence)
 
-        return optimized_fluence, solver_info
+        # Check if a solution has been found
+        if optimized_fluence is not None:
+
+            # Compute the optimized dose
+            optimized_dose = self.compute_dose_3d(optimized_fluence)
+
+        else:
+
+            # Log a message about the unsolved problem
+            logger.display_info(
+                "Fluence optimizer did not find a feasible solution for the "
+                "weighted-sum optimization problem ...")
+
+            # Set the optimized dose to None
+            optimized_dose = None
+
+        return optimized_fluence, solver_info, optimized_dose
 
     def compute_dose_3d(
             self,
@@ -603,73 +656,21 @@ class FluenceOptimizer():
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the logger and the segmentation data
-        logger, segmentation = hub.logger, hub.segmentation
-
-        # Get the dose-influence matrix
-        dose_matrix = hub.dose_information['dose_influence_matrix']
-
-        # Get the CT and dose grid dimensions
-        ct_dim, dose_dim = (
-            hub.computed_tomography['cube_dimensions'],
-            hub.dose_information['cube_dimensions'])
-
-        # Check if a single fluence vector is passed
-        if optimized_fluence.ndim == 1:
-
-            # Compute the optimized dose vector from the optimized fluence
-            optimized_dose = dose_matrix @ optimized_fluence
-
-        else:
-
-            # Log a message about the number of Pareto-optimal solutions
-            logger.display_info(
-                f"Pareto analysis resulted in {optimized_fluence.shape[0]} "
-                "trade-off solutions ...")
-
-            # Log a message about the mean dose difference selection criterion
-            logger.display_info(
-                "Selecting best solution with respect to the maximum mean "
-                "dose difference between targets and organs at risk ...")
-
-            # Initialize the current best score
-            best_score = -inf
-
-            # Initialize the current best fluence
-            best_fluence = zeros(optimized_fluence[0].shape)
-
-            # Get the indices of targets and OARs of interest
-            target_indices, oar_indices = (reduce(
-                union1d,
-                (segmentation[segment]['resized_indices']
-                 for segment in (
-                    get_constraint_segments(segmentation)
-                    + get_objective_segments(segmentation))
-                    if segmentation[segment]['type'] == string),
-                -1)
-                for string in ('TARGET', 'OAR'))
-
-            # Loop over the number of trade-off solutions
-            for fluence in optimized_fluence:
-
-                # Compute the dose from the solution
-                dose = dose_matrix @ fluence
-
-                # Calculate the mean dose difference between targets and OARs
-                score = dose[target_indices].mean() - dose[oar_indices].mean()
-
-                # Check if the score is better than the current best score
-                if score > best_score:
-
-                    # Update the best score and the best solution
-                    best_score, best_fluence = score, fluence
-
-            # Compute the optimized dose vector from the best solution
-            optimized_dose = dose_matrix @ best_fluence
+        # Get the logger, segmentation and dose information data
+        logger, dose_information = hub.logger, hub.dose_information
 
         # Log a message about the 3D dose computation
         logger.display_info(
             "Computing dose cube from optimized fluence vector ...")
+
+        # Get the CT and dose grid dimensions
+        ct_dim, dose_dim = (
+            hub.computed_tomography['cube_dimensions'],
+            dose_information['cube_dimensions'])
+
+        # Compute the optimized dose vector from the optimized fluence
+        optimized_dose = (
+            dose_information['dose_influence_matrix'] @ optimized_fluence)
 
         # Reshape the optimized dose vector to the dose cube
         optimized_dose = optimized_dose.reshape(dose_dim, order='F')
@@ -681,6 +682,55 @@ class FluenceOptimizer():
         optimized_dose = (
             zoom(optimized_dose, zooms, order=1)
             * hub.plan_configuration['RBE']
-            * hub.dose_information['number_of_fractions'])
+            * dose_information['number_of_fractions'])
 
         return optimized_dose
+
+    def postprocess(self):
+        """Postprocess the outcome model-based component results."""
+
+        # Initialize the datahub
+        hub = Datahub()
+
+        # Get the logger and the segmentation data
+        logger, segmentation = hub.logger, hub.segmentation
+
+        # Check if the optimization problem has a tracker dictionary
+        if hasattr(self.problem, 'tracker') and all(value != [] for value
+           in self.problem.tracker.values()):
+
+            # Loop over the radiobiological outcome model-based components
+            for component in (
+                    get_radiobiological_constraints(segmentation)
+                    + get_radiobiological_objectives(segmentation)):
+
+                # Get the final (N)TCP prediction value
+                value = (
+                    (-1)**('NTCP' not in component.name)
+                    * self.problem.tracker[component.track_id][-1])
+
+                # Log a message about the prediction value
+                logger.display_info(
+                    f"{component.name} for the optimized plan: "
+                    f"{round(100*value, 2)} % ...")
+
+            # Loop over the machine learning outcome model-based components
+            for component in (
+                    get_machine_learning_constraints(segmentation)
+                    + get_machine_learning_objectives(segmentation)):
+
+                # Process the feature history
+                component.data_model_handler.process_feature_history()
+
+                # Get the final (N)TCP prediction
+                value = component.translate(
+                    self.problem.tracker[component.track_id][-1])
+
+                # Add the prediction value to the datahub
+                hub.model_outcomes[
+                    component.data_model_handler.model_label] = value
+
+                # Log a message about the prediction value
+                logger.display_info(
+                    f"{component.name} for the optimized plan: "
+                    f"{round(100*value, 2)} % ...")

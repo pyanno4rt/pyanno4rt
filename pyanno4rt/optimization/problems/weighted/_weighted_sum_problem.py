@@ -93,7 +93,7 @@ Initializing
 
         # Log a message about the initialization of the class
         hub.logger.display_info(
-            "Constructing weighted-sum optimization problem ...")
+            "Building weighted-sum optimization problem ...")
 
         # Get the instance attributes from the arguments
         self.backprojection = backprojection
@@ -228,18 +228,18 @@ Initializing
                 segmentation[segment]['resized_indices']
                 for segment in segments)
 
-            # Compute the objective function value
-            objective_value = instance.weight * instance.compute_value(
+            # Compute the weighted objective function value
+            value = instance.weight * instance.compute_value(
                 tuple(dose[index] for index in indices), segments)
 
             # Check if the objective value should be tracked
             if track:
 
                 # Enter the value into the tracking dictionary
-                self.tracker[label] += (objective_value,)
+                self.tracker[label] += (value/instance.weight,)
 
             # Return the objective function value depending on the embedding
-            return objective_value * (instance.embedding == 'active')
+            return value * (instance.embedding == 'active')
 
         return sum(
             compute_single_objective(label, objective)
@@ -343,17 +343,17 @@ Initializing
                 for segment in segments)
 
             # Compute the constraint function value
-            constraint_value = instance.compute_value(
+            value = instance.compute_value(
                 tuple(dose[index] for index in indices), segments)
 
             # Check if the constraint value should be tracked
             if track:
 
                 # Enter the value into the tracking dictionary
-                self.tracker[label] += (constraint_value,)
+                self.tracker[label] += (value,)
 
             # Return the value of the constraint function
-            return constraint_value
+            return value
 
         return array([
             compute_single_constraint(label, constraint)

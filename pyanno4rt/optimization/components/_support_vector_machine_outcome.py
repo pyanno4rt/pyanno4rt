@@ -241,14 +241,12 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
         if self.outcome_type == 'TCP':
 
             # Convert the bounds
-            self.bounds = sorted(
-                self.weight*self.reverse(bound) for bound in self.bounds)
+            self.bounds = sorted(self.reverse(bound) for bound in self.bounds)
 
         else:
 
             # Convert the bounds
-            self.bounds = [
-                self.weight*self.reverse(bound) for bound in self.bounds]
+            self.bounds = [self.reverse(bound) for bound in self.bounds]
 
     def translate(
             self,
