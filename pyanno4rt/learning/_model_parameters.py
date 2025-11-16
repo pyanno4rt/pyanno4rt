@@ -199,6 +199,18 @@ class ModelParameters():
             write_features=False,
             display_options=DisplayOptions()):
 
+        # Check if a model folder path has been passed
+        if model_folder_path is not None:
+
+            # Convert the model folder path into an absolute path
+            model_folder_path = abspath(model_folder_path)
+
+        # Check if a data path has been passed
+        if data_path is not None:
+
+            # Convert the data path into an absolute path
+            data_path = abspath(data_path)
+
         # Check if the data columns are None
         if data_columns is None:
 
@@ -219,19 +231,6 @@ class ModelParameters():
 
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
-
-        # Check if a model folder path has been passed
-        if self.inputs['model_folder_path'] is not None:
-
-            # Convert the model folder path into an absolute path
-            self.inputs['model_folder_path'] = abspath(
-                self.inputs['model_folder_path'])
-
-        # Check if a data path has been passed
-        if self.inputs['data_path'] is not None:
-
-            # Convert the data path into an absolute path
-            self.inputs['data_path'] = abspath(self.inputs['data_path'])
 
         # Check the input arguments
         self.validate(self.inputs)

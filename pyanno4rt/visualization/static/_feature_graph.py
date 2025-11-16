@@ -136,9 +136,6 @@ class FeatureGraph():
         feature_name, feature_values = history
         model_name, outcome_values = outcome
 
-        # Scale the outcome values up
-        outcome_values = multiply(outcome_values, 100)
-
         # Get the feature statistics
         feature_max = max(feature_values)
         feature_min = min(feature_values)
@@ -157,6 +154,9 @@ class FeatureGraph():
 
         # Check if outcome values are provided
         if outcome_values is not None:
+
+            # Scale the outcome values up
+            outcome_values = multiply(outcome_values, 100)
 
             # Get the outcome statistics
             outcome_max = max(outcome_values)

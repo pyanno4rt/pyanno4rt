@@ -95,7 +95,7 @@ def snapshot(
     # Check if any required attribute is missing
     if (any(getattr(instance, attribute) is None for attribute in (
             'logger', 'datahub', 'patient_loader', 'plan_generator',
-            'dose_info_generator', 'fluence_optimizer'))
+            'dose_generator', 'fluence_optimizer'))
             or instance.datahub.state < 3):
 
         # Raise an error to indicate a missing attribute

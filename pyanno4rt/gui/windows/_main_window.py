@@ -27,8 +27,7 @@ from pyanno4rt.gui._custom_styles import (
     pbutton_workflow, sbox, selector, tab, tbutton_composer, tbutton_workflow)
 from pyanno4rt.gui.assets import resources_rc
 from pyanno4rt.gui.compilations.main_window import Ui_main_window
-from pyanno4rt.gui.custom_widgets import (
-    CheckableComboBox, DVHGraphWidget, SliceWidget)
+from pyanno4rt.gui.custom_widgets import DVHGraphWidget, SliceWidget
 from pyanno4rt.gui.windows import (
     CompareWindow, InfoWindow, LogWindow, PlanCreationWindow, SettingsWindow,
     SplashScreenWindow, TreeWindow)
@@ -37,9 +36,9 @@ import pyanno4rt.optimization._maps as opt_maps
 from pyanno4rt.optimization.components import (
     ConventionalComponent, MachineLearningComponent, RadiobiologicalComponent)
 from pyanno4rt.tools import (
-    add_square_brackets, apply, copycat, get_machine_learning_constraints,
+    add_square_brackets, apply, get_machine_learning_constraints,
     get_machine_learning_objectives, load_list_from_file,
-    load_segments_from_path, snapshot, string_to_numeric)
+    load_segments_from_path, string_to_numeric)
 
 # %% Class definition
 
@@ -143,18 +142,6 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.solver_cbox.setCurrentText('scipy')
         self.update_by_solver()
 
-        # Initialize the custom combo box for the display segments
-        self.display_segments_cbox = CheckableComboBox()
-        self.horizontal_layout.addWidget(self.display_segments_cbox)
-
-        # Initialize the custom combo box for the display metrics
-        self.display_metrics_cbox = CheckableComboBox()
-        self.horizontal_layout.addWidget(self.display_metrics_cbox)
-
-        # Add the display metrics items
-        self.display_metrics_cbox.addItems(
-            ['mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI'])
-
         # Get the base input objects
         self.base_configuration = self.get_configuration()
         self.base_optimization = self.get_optimization()
@@ -215,8 +202,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             'n_points_sbox': sbox,
             'ref_vol_ledit': ledit,
             'ref_dose_ledit': ledit,
-            'display_segments_cbox': cbox,
-            'display_metrics_cbox': cbox,
             'update_evaluation_pbutton': pbutton_composer,
             'reset_evaluation_pbutton': pbutton_composer,
             'clear_evaluation_pbutton': pbutton_composer,
@@ -244,8 +229,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'modality_cbox', 'log_level_cbox', 'nfx_sbox', 'method_cbox',
                 'solver_cbox', 'algorithm_cbox', 'init_strat_cbox',
                 'ref_plan_cbox', 'max_iter_sbox', 'dvh_type_cbox',
-                'n_points_sbox', 'display_segments_cbox',
-                'display_metrics_cbox', 'reference_cbox', 'plane_cbox',
+                'n_points_sbox', 'reference_cbox', 'plane_cbox',
                 'opacity_sbox'):
 
             # Install the custom event filter
@@ -650,7 +634,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             try:
 
                 # Activate the treatment plan
-                self.activate(copycat(TreatmentPlan, path))
+                self.activate(TreatmentPlan.load(path))
 
             except FileNotFoundError as exception:
 
@@ -673,10 +657,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Get the additional parameters from the settings window
             includes = self.settings_window.current[3]
 
-            # Make a snapshot of the treatment plan
-            snapshot(
-                self.plans[self.plan_ledit.text()], ''.join((path, '/')),
-                *includes)
+            # Take a snapshot of the treatment plan
+            self.plans[self.plan_ledit.text()].save(
+                ''.join((path, '/')), *includes)
 
     def drop_tpi(self):
         """Drop a treatment plan."""
@@ -806,7 +789,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Check if the instance has already been configured
             if (all(getattr(instance, unit) is not None for unit in (
-                   'patient_loader', 'plan_generator', 'dose_info_generator'))
+                   'patient_loader', 'plan_generator', 'dose_generator'))
                     and instance.datahub.state >= 1):
 
                 # Add the CT cube to the slice widget
@@ -1142,22 +1125,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Raise the exception
             raise exception
-
-        # Clear the display segments
-        self.display_segments_cbox.clear()
-
-        # Add the segment items to the display segments
-        self.display_segments_cbox.addItems(list(self.segments))
-
-        # Loop over the display segment items
-        for item in (
-                self.display_segments_cbox.model().item(index)
-                for index in range(self.display_segments_cbox.count())):
-
-            # Set the item to checked or unchecked
-            item.setCheckState(2*(
-                item.text() in instance.evaluation.display_segments or
-                instance.evaluation.display_segments == []))
 
         # Reset the slice widget
         self.slice_widget.reset_images()
@@ -1653,7 +1620,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Check if the instance has already been configured
         if (all(getattr(instance, unit) is not None for unit in (
-                'patient_loader', 'plan_generator', 'dose_info_generator'))
+                'patient_loader', 'plan_generator', 'dose_generator'))
                 and instance.datahub.state >= 1):
 
             # Reset the datahub state
@@ -1975,38 +1942,6 @@ class MainWindow(QMainWindow, Ui_main_window):
             '' if evaluation.reference_dose == []
             else str(evaluation.reference_dose)[1:-1])
 
-        # Clear the display segments
-        self.display_segments_cbox.clear()
-
-        # Add the segment items to the display segments
-        self.display_segments_cbox.addItems(list(self.segments))
-
-        # Loop over the display segment items
-        for item in (
-                self.display_segments_cbox.model().item(index)
-                for index in range(self.display_segments_cbox.count())):
-
-            # Set the item to checked or unchecked
-            item.setCheckState(2*(
-                item.text() in evaluation.display_segments or
-                evaluation.display_segments == []))
-
-        # Update the line edit text
-        self.display_segments_cbox.updateText()
-
-        # Loop over the display metrics items
-        for item in (
-                self.display_metrics_cbox.model().item(index)
-                for index in range(self.display_metrics_cbox.count())):
-
-            # Set the item to checked or unchecked
-            item.setCheckState(2*(
-                item.text() in evaluation.display_metrics or
-                evaluation.display_metrics == []))
-
-        # Update the line edit text
-        self.display_metrics_cbox.updateText()
-
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))
 
@@ -2024,18 +1959,6 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Reset the reference dose values
         self.ref_dose_ledit.clear()
-
-        # Loop over the display segments
-        for index in range(self.display_segments_cbox.count()):
-
-            # Reset the display segments to checked
-            self.display_segments_cbox.model().item(index).setCheckState(2)
-
-        # Loop over the display metrics
-        for index in range(self.display_metrics_cbox.count()):
-
-            # Reset the display metric to checked
-            self.display_metrics_cbox.model().item(index).setCheckState(2)
 
     def get_evaluation(self):
         """
@@ -2062,9 +1985,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 else loads(reference_volume)),
             'reference_dose': (
                 [] if reference_dose == ''
-                else loads(reference_dose)),
-            'display_segments': self.display_segments_cbox.currentData(),
-            'display_metrics': self.display_metrics_cbox.currentData()
+                else loads(reference_dose))
             }
 
         return evaluation

@@ -6,10 +6,10 @@
 
 from copy import deepcopy
 from functools import partial
-from os.path import abspath, dirname, isdir, isfile
+from os.path import abspath, dirname
 from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import (
-    QComboBox, QFileDialog, QMainWindow, QMenu, QMessageBox, QSpinBox)
+    QComboBox, QFileDialog, QMainWindow, QMenu, QSpinBox)
 
 # %% Internal package import
 
@@ -318,6 +318,9 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
             # Set the imaging path field cursor position to zero
             self.img_path_ledit.setCursorPosition(0)
 
+        # Get the segments
+        self.segments = load_segments_from_path(self.img_path_ledit.text())
+
     def add_dose_matrix_path(self):
         """Add the dose-influence matrix from a folder."""
 
@@ -456,23 +459,6 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
                 # Transfer the item clone
                 self.parent.components_lwidget.addItem(item_clone)
 
-            # Load the segment names and types from the imaging path
-            self.segments = load_segments_from_path(self.img_path_ledit.text())
-
-            # Clear the parent display combo box
-            self.parent.display_segments_cbox.clear()
-
-            # Add the segment names to the parent display combo box
-            self.parent.display_segments_cbox.addItems(
-                list(self.segments))
-
-            # Loop over the parent display segments
-            for index in range(self.parent.display_segments_cbox.count()):
-
-                # Reset the parent display segments to checked
-                self.parent.display_segments_cbox.model().item(
-                    index).setCheckState(2)
-
             # Initialize the treatment plan from the main window
             self.parent.initialize()
 
@@ -499,40 +485,9 @@ class PlanCreationWindow(QMainWindow, Ui_plan_creation_window):
                 'dose_path_ledit', 'dose_path_tbutton', 'dose_res_ledit_x',
                 'dose_res_ledit_y', 'dose_res_ledit_z', 'components_lwidget'))
 
-        # Get the imaging path
-        path = self.img_path_ledit.text()
-
-        # Check if the imaging path leads to a file
-        if any((isfile(path), isdir(path))):
-
-            try:
-
-                # Load the segment names and types
-                self.segments = load_segments_from_path(path)
-
-                # Set the boolean indicator to True
-                loaded_segments = True
-
-            except Exception as exception:
-
-                # Reset the imaging path field
-                self.img_path_ledit.setText('')
-
-                # Show a warning message box
-                QMessageBox.warning(self, "pyanno4rt", str(exception))
-
-                # Set the boolean indicator to False
-                loaded_segments = False
-
-        else:
-
-            # Set the boolean indicator to False by default
-            loaded_segments = False
-
         # Check if any condition blocks the addition of components
         if (self.plan_ledit.text() == ''
-                or self.ref_plan_cbox.currentText() != 'None'
-                or not loaded_segments):
+                or self.ref_plan_cbox.currentText() != 'None'):
 
             # Disable the component 'plus' button
             self.components_plus_tbutton.setEnabled(False)

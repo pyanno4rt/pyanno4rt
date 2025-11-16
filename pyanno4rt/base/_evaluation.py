@@ -39,28 +39,6 @@ class Evaluation():
         .. note:: If the default value is used, reference dose levels will be \
             determined automatically.
 
-    display_segments : list, default=[]
-        Names of the segments to be displayed.
-
-        .. note:: If the default value is used, only the segments associated \
-            with optimization components will be displayed.
-
-    display_metrics : list, default=[]
-        Names of the evaluation metrics to be displayed.
-
-        .. note:: If the default value is used, all metrics will be displayed.
-
-            Currently available:
-
-            - 'mean': mean dose
-            - 'std': standard deviation of the dose
-            - 'max': maximum dose
-            - 'min': minimum dose
-            - 'Dx': dose quantile(s) for level x (~reference_volume)
-            - 'Vx': volume quantile(s) for level x (~reference_dose)
-            - 'CI': conformity index
-            - 'HI': homogeneity index
-
     Attributes
     ----------
     dvh_type : {'cumulative', 'differential'}
@@ -74,12 +52,6 @@ class Evaluation():
 
     reference_dose : list
         See 'Parameters'.
-
-    display_segments : list
-        See 'Parameters'.
-
-    display_metrics : list
-        See 'Parameters'.
     """
 
     def __init__(
@@ -87,9 +59,7 @@ class Evaluation():
             dvh_type='cumulative',
             number_of_points=1000,
             reference_volume=None,
-            reference_dose=None,
-            display_segments=None,
-            display_metrics=None):
+            reference_dose=None):
 
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
@@ -98,8 +68,6 @@ class Evaluation():
         for key, default in {
                 'reference_volume': [2, 5, 50, 95, 98],
                 'reference_dose': [],
-                'display_segments': [],
-                'display_metrics': []
                 }.items():
 
             # Update the input argument value
@@ -169,15 +137,7 @@ class Evaluation():
             'reference_dose': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_value, reference=0, sign='>=')),
-            'display_segments': (
-                partial(validate_type, options=list),
-                partial(validate_subtype, options=str)),
-            'display_metrics': (
-                partial(validate_type, options=list),
-                partial(validate_subtype, options=str),
-                partial(validate_value_in_set, options=(
-                    'mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI')))}
+                partial(validate_value, reference=0, sign='>='))}
 
         # Loop over the inputs
         for key, value in inputs.items():

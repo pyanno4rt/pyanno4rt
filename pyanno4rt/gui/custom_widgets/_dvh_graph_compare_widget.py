@@ -85,10 +85,10 @@ class DVHGraphCompareWidget(QWidget):
             Dictionary with information on the cumulative or differential \
             (diff.) dose-volume histogram for each segment.
 
-        x_range : 
+        x_range :
         """
 
-        # 
+        #
         self.dose_histogram = dose_histogram
         self.x_range = x_range
         self.baseline = baseline
@@ -96,8 +96,7 @@ class DVHGraphCompareWidget(QWidget):
 
         # Get the segment names
         self.segments = tuple(
-            segment for segment in (*dose_histogram,)
-            if segment in dose_histogram['display_segments'])
+            key for key in dose_histogram if key != 'evaluation_points')
 
         # Set the colormap
         colors = colormap.get(
@@ -112,15 +111,15 @@ class DVHGraphCompareWidget(QWidget):
         self.styles = dict(
             zip(self.segments, tuple(zip(colors, linestyles))))
 
-        # 
+        #
         if all(plan is not None for plan in (baseline, reference)):
 
-            # 
+            #
             self.delta = "Δ"
 
         else:
 
-            # 
+            #
             self.delta = ""
 
         # Set the plot title
@@ -134,7 +133,7 @@ class DVHGraphCompareWidget(QWidget):
             left="Relative volume [%]", bottom="Dose [Gy]",
             right=" ", top=" ")
 
-        # 
+        #
         if x_range is None:
 
             self.x_range = (
@@ -168,44 +167,44 @@ class DVHGraphCompareWidget(QWidget):
     def get_segment_statistics(self, event):
         """."""
 
-        # 
+        #
         if self.baseline and not self.reference:
 
-            # 
+            #
             dosimetrics = self.baseline.datahub.dosimetrics
 
-        # 
+        #
         elif self.reference and not self.baseline:
 
-            # 
+            #
             dosimetrics = self.reference.datahub.dosimetrics
 
-        # 
+        #
         if self.baseline and self.reference:
 
-            # 
+            #
             dosimetrics = self.parent.evaluate_dosimetrics(
                 self.baseline.datahub.optimization['optimized_dose']
                 - self.reference.datahub.optimization['optimized_dose'],
                 self.baseline.datahub.computed_tomography,
                 self.baseline.datahub.segmentation)
 
-        # 
+        #
         self.parent.segment_ledit.setText(event.name())
 
-        # 
+        #
         self.parent.mean_ledit.setText(str(
             round(dosimetrics[event.name()]['mean'], 2)))
 
-        # 
+        #
         self.parent.std_ledit.setText(str(
             round(dosimetrics[event.name()]['std'], 2)))
 
-        # 
+        #
         self.parent.maximum_ledit.setText(str(
             round(dosimetrics[event.name()]['max'], 2)))
 
-        # 
+        #
         self.parent.minimum_ledit.setText(str(
             round(dosimetrics[event.name()]['min'], 2)))
 
@@ -218,7 +217,7 @@ class DVHGraphCompareWidget(QWidget):
     def unselect_dvh_curves_from_parent(self, event):
         """."""
 
-        # 
+        #
         self.parent.unselect_dvh_curves(event)
 
     def update_crosshair(

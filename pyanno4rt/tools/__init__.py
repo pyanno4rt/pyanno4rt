@@ -29,6 +29,7 @@ from ._get_objective_segments import get_objective_segments
 from ._get_radiobiological_constraints import get_radiobiological_constraints
 from ._get_radiobiological_objectives import get_radiobiological_objectives
 from ._identity import identity
+from ._inverse_salu import inverse_salu
 from ._inverse_sigmoid import inverse_sigmoid
 from ._load_list_from_file import load_list_from_file
 from ._load_segments_from_path import load_segments_from_path
@@ -36,6 +37,7 @@ from ._non_decreasing import non_decreasing
 from ._non_increasing import non_increasing
 from ._monotonic import monotonic
 from ._replace_nan import replace_nan
+from ._salu import salu
 from ._sigmoid import sigmoid
 from ._snapshot import snapshot
 from ._string_to_numeric import string_to_numeric
@@ -62,6 +64,7 @@ __all__ = [
     'get_radiobiological_constraints',
     'get_radiobiological_objectives',
     'identity',
+    'inverse_salu',
     'inverse_sigmoid',
     'load_list_from_file',
     'load_segments_from_path',
@@ -69,6 +72,7 @@ __all__ = [
     'non_increasing',
     'monotonic',
     'replace_nan',
+    'salu',
     'sigmoid',
     'snapshot',
     'string_to_numeric']

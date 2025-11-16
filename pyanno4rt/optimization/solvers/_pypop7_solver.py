@@ -6,7 +6,7 @@
 
 # %% External package import
 
-from numpy import array, log
+from numpy import array, clip, log
 from pypop7.optimizers.es.lmcma import LMCMA
 from pypop7.optimizers.es.lmmaes import LMMAES
 
@@ -110,8 +110,9 @@ class PyPop7Solver():
                 'options': {
                     'max_function_evaluations': (
                         number_of_individuals*self.maximum_iterations),
-                    'early_stopping_tolerance': self.tolerance,
-                    'seed_rng': 0,
+                    'early_stopping_threshold': self.tolerance,
+                    'early_stopping_evaluations': number_of_individuals*50,
+                    'seed_rng': 42,
                     'sigma': 0.3,
                     'm': number_of_individuals,
                     'base_m': 4,
@@ -141,8 +142,9 @@ class PyPop7Solver():
                 'options': {
                     'max_function_evaluations': (
                         number_of_individuals*self.maximum_iterations),
-                    'early_stopping_tolerance': self.tolerance,
-                    'seed_rng': 0,
+                    'early_stopping_threshold': self.tolerance,
+                    'early_stopping_evaluations': number_of_individuals*50,
+                    'seed_rng': 42,
                     'sigma': 0.3,
                     'is_restart': False,
                     'n_evolution_paths': number_of_individuals,
@@ -177,5 +179,9 @@ class PyPop7Solver():
 
         # Solve the optimization problem
         result = self.fun(**self.arguments).optimize()
+
+        # Clip the optimal fluence to account for negative values
+        result['best_so_far_x'] = clip(
+            result['best_so_far_x'], a_min=0, a_max=None)
 
         return result['best_so_far_x'], result['termination_signal']

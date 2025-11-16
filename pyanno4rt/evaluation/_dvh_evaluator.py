@@ -30,9 +30,6 @@ class DVHEvaluator():
     number_of_points : int
         Number of (evenly-spaced) DVH evaluation points.
 
-    display_segments : list
-        Names of the segments to be displayed.
-
     Attributes
     ----------
     dvh_type : {'cumulative', 'differential'}
@@ -40,16 +37,12 @@ class DVHEvaluator():
 
     number_of_points : int
         See 'Parameters'.
-
-    display_segments : tuple
-        See 'Parameters'.
     """
 
     def __init__(
             self,
             dvh_type,
-            number_of_points,
-            display_segments):
+            number_of_points):
 
         # Initialize the datahub
         hub = Datahub()
@@ -60,20 +53,6 @@ class DVHEvaluator():
         # Get the instance attributes from the arguments
         self.dvh_type = dvh_type
         self.number_of_points = number_of_points
-
-        # Check if the length of the "display_segments" argument is zero
-        if len(display_segments) == 0:
-
-            # Get the display segments from the datahub
-            self.display_segments = tuple(
-                segment for segment in hub.segmentation
-                if hub.segmentation[segment]['objective'] is not None
-                or hub.segmentation[segment]['constraint'] is not None)
-
-        else:
-
-            # Get the display segments from the argument
-            self.display_segments = tuple(display_segments)
 
     def evaluate(
             self,
@@ -153,9 +132,6 @@ class DVHEvaluator():
                     hub.computed_tomography['cube_dimensions'],
                     dose_histogram['evaluation_points'])}
             for segment in hub.segmentation}
-
-        # Add the segment names to be displayed
-        dose_histogram['display_segments'] = self.display_segments
 
         # Enter the dose histogram dictionary into the datahub
         hub.dose_histogram = dose_histogram

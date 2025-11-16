@@ -31,18 +31,16 @@ class Configuration():
 
         .. note:: To prevent overwriting processes, choose a unique label for \
             each treatment plan!
-        .. note:: To prevent memory issues, keep the label unchanged if \
-            possible, once set!
 
     modality : {'photon', 'proton'}
         Treatment modality.
 
         .. note::
             - modality='photon': \
-            :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
+                :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
             with neutral RBE of 1.0
             - modality='proton': \
-            :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`\
+                :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`\
             with constant RBE of 1.1
 
     imaging_path : str
@@ -51,7 +49,8 @@ class Configuration():
         .. note::
             Requirements:
 
-            - Matlab files should include 'ct' and 'cst' as variables
+            - Matlab files should include 'ct' and 'cst' as variables, \
+                with a structure similar to matRad (https://e0404.github.io/matRad/)
             - DICOM folders should include a series of CT files and one \
                 structure file
 
@@ -102,6 +101,10 @@ class Configuration():
             min_log_level='info',
             number_of_fractions=30):
 
+        # Convert the paths into absolute values
+        imaging_path = abspath(imaging_path)
+        dose_matrix_path = abspath(dose_matrix_path)
+
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
 
@@ -113,10 +116,6 @@ class Configuration():
 
             # Set the attribute
             setattr(self, key, value)
-
-        # Convert the paths into absolute values
-        self.imaging_path = abspath(self.imaging_path)
-        self.dose_matrix_path = abspath(self.dose_matrix_path)
 
     def to_dict(self):
         """Serialize the object into a dictionary."""
@@ -166,9 +165,7 @@ class Configuration():
             'imaging_path': (
                 partial(validate_type, options=str),
                 partial(validate_file, options=('.mat',)),
-                partial(
-                    validate_directory, options=('.dcm',), alt=('.mat',))
-                ),
+                partial(validate_directory, options=('.dcm',), alt=('.mat',))),
             'dose_matrix_path': (
                 partial(validate_type, options=str),
                 partial(validate_file, options=('.mat', '.npy', 'npz'))),

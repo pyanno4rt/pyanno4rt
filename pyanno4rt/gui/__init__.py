@@ -9,7 +9,7 @@ The module aims to provide methods and classes to ...
 # Author: Tim Ortkamp
 
 # Import the graphical user interface
-from ._gui import GraphicalUserInterface
+from ._graphical_user_interface import GraphicalUserInterface
 
 # Import the submodules
 from . import custom_widgets, windows

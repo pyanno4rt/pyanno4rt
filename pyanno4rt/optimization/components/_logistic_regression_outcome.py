@@ -13,7 +13,8 @@ from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.logistic import LogisticRegressionModel
 from pyanno4rt.optimization.components import MachineLearningComponent
-from pyanno4rt.tools import filter_dict, inverse_sigmoid, sigmoid
+from pyanno4rt.tools import (
+    filter_dict, inverse_salu, inverse_sigmoid, salu, sigmoid)
 
 # %% Class definition
 
@@ -201,16 +202,8 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         # Get the logistic regression model parameters
         self.parameter_value = list(self.model.prediction_model.coef_[0])
 
-        # Check if the outcome is 'TCP'
-        if self.outcome_type == 'TCP':
-
-            # Convert the bounds
-            self.bounds = sorted(self.reverse(bound) for bound in self.bounds)
-
-        else:
-
-            # Convert the bounds
-            self.bounds = [self.reverse(bound) for bound in self.bounds]
+        # Convert the bounds
+        self.bounds = sorted(self.reverse(bound) for bound in self.bounds)
 
     def translate(
             self,
@@ -235,16 +228,8 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         # Check if the transformation should be applied
         if self.transform:
 
-            # Check if the value is an iterable
-            if isinstance(value, (tuple, list)):
-
-                # Return a list of transformed outcome values
-                return [
-                    sigmoid(sign*4*val-2) if val > sign*0.5
-                    else sign*val for val in value]
-
-            # Return a single transformed outcome value
-            return sigmoid(sign*4*value-2) if value > sign*0.5 else sign*value
+            # Return the transformed outcome value
+            return sigmoid(inverse_salu(value, sign))
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
@@ -278,18 +263,8 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         # Check if the transformation should be applied
         if self.transform:
 
-            # Check if the value is an iterable
-            if isinstance(value, (tuple, list)):
-
-                # Return a list of transformed function values
-                return [
-                    sign*0.25*inverse_sigmoid(val)+sign*0.5
-                    if sign*val > sign*0.5 else sign*val for val in value]
-
-            # Return a single transformed function value
-            return (
-                sign*0.25*inverse_sigmoid(value)+sign*0.5
-                if sign*value > sign*0.5 else sign*value)
+            # Return the transformed function value
+            return salu(inverse_sigmoid(value), sign)
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):

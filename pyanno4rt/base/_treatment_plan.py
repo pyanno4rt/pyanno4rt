@@ -12,7 +12,7 @@ from pyanno4rt.datahub import Datahub
 # Treatment plan configuration
 from pyanno4rt.io import PatientLoader
 from pyanno4rt.plan import PlanGenerator
-from pyanno4rt.dose import DoseInfoGenerator
+from pyanno4rt.dose import DoseGenerator
 
 # Treatment plan optimization
 from pyanno4rt.optimization import FluenceOptimizer
@@ -26,7 +26,8 @@ from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
 from pyanno4rt.tools import (
-    apply, get_machine_learning_constraints, get_machine_learning_objectives)
+    apply, copycat, get_machine_learning_constraints,
+    get_machine_learning_objectives, snapshot)
 from pyanno4rt.validation import validate_type
 
 # %% Class definition
@@ -67,40 +68,38 @@ class TreatmentPlan():
         :class:`~pyanno4rt.base._evaluation.Evaluation`
         See 'Parameters'.
 
-    logger : None or object of class \
-        :class:`~pyanno4rt.logging._logger.Logger`
+    logger : object of class :class:`~pyanno4rt.logging._logger.Logger`
         The object used to print and store logging messages.
 
-    datahub : None or object of class \
-        :class:`~pyanno4rt.datahub._datahub.Datahub`
+    datahub : object of class :class:`~pyanno4rt.datahub._datahub.Datahub`
         The object used to manage and distribute information units.
 
     patient_loader : None or object of class \
-        :class:`~pyanno4rt.patient._patient_loader.PatientLoader`
-        The object used to retrieve the patient CT and segmentation data.
+        :class:`~pyanno4rt.io._patient_loader.PatientLoader`
+        The object used to retrieve the CT and segmentation data.
 
     plan_generator : None or object of class \
         :class:`~pyanno4rt.plan._plan_generator.PlanGenerator`
-        The object used to set and type-convert plan properties.
+        The object used to set the plan properties.
 
-    dose_info_generator : None or object of class \
-        :class:`~pyanno4rt.dose_info._dose_info_generator.DoseInfoGenerator`
-        The object used to specify and type-convert dose (grid) properties.
+    dose_generator : None or object of class \
+        :class:`~pyanno4rt.dose._dose_generator.DoseGenerator`
+        The object used to set the dose properties.
 
     fluence_optimizer : None or object of class \
         :class:`~pyanno4rt.optimization._fluence_optimizer.FluenceOptimizer`
         The object used to solve the fluence optimization problem.
 
     dose_histogram : None or object of class \
-        :class:`~pyanno4rt.evaluation._dvh.DVHEvaluator`
+        :class:`~pyanno4rt.evaluation._dvh_evaluator.DVHEvaluator`
         The object used to evaluate the dose-volume histogram (DVH).
 
     dosimetrics : None or object of class \
-        :class:`~pyanno4rt.evaluation._dosimetrics.DosimetricsEvaluator`
+        :class:`~pyanno4rt.evaluation._dosimetrics_evaluator.DosimetricsEvaluator`
         The object used to evaluate the dosimetrics.
 
     visualizer : None or object of class \
-        :class:`~pyanno4rt.visualization._visualization_window.VisualizationWindow`
+        :class:`~pyanno4rt.visualization._visualizer.Visualizer`
         The object used to visualize the treatment plan.
 
     Example
@@ -136,25 +135,28 @@ class TreatmentPlan():
             evaluation if not isinstance(evaluation, dict)
             else Evaluation.from_dict(evaluation))
 
-        # Initialize the instance attributes
+        # Initialize the plan subclasses
         self.logger = Logger(
             self.configuration.label, self.configuration.min_log_level)
         self.datahub = Datahub(self.configuration.label, self.logger)
         self.patient_loader = None
         self.plan_generator = None
-        self.dose_info_generator = None
+        self.dose_generator = None
         self.fluence_optimizer = None
         self.dose_histogram = None
         self.dosimetrics = None
         self.visualizer = None
 
+        # Initialize the state
+        self.datahub.state = 0
+
     def configure(self):
-        """Initialize the configuration classes and process the input data."""
+        """Configure the treatment plan."""
 
         # Validate the configuration parameters
         self.configuration.validate(vars(self.configuration))
 
-        # Reset the treatment plan label in the datahub
+        # Set the treatment plan label in the datahub
         Datahub.label = self.configuration.label
 
         # Initialize the patient loader
@@ -172,28 +174,27 @@ class TreatmentPlan():
         # Generate the plan information
         self.plan_generator.generate()
 
-        # Initialize the dose information generator
-        self.dose_info_generator = DoseInfoGenerator(
-            number_of_fractions=self.configuration.number_of_fractions,
+        # Initialize the dose generator
+        self.dose_generator = DoseGenerator(
             dose_matrix_path=self.configuration.dose_matrix_path,
-            dose_resolution=self.configuration.dose_resolution)
+            dose_resolution=self.configuration.dose_resolution,
+            number_of_fractions=self.configuration.number_of_fractions)
 
         # Generate the dose information
-        self.dose_info_generator.generate()
+        self.dose_generator.generate()
 
-        # Increment the state
+        # Set the state
         self.datahub.state = 1
 
     def model(self):
-        """Add the machine learning outcome models to the components."""
+        """Model the treatment plan outcome."""
 
-        # Reset the treatment plan label in the datahub
+        # Set the treatment plan label in the datahub
         Datahub.label = self.configuration.label
 
         # Check if the plan has not been configured yet
-        if any(getattr(self, attribute) is None for attribute in (
-                'logger', 'datahub', 'patient_loader', 'plan_generator',
-                'dose_info_generator')):
+        if None in (
+                self.patient_loader, self.plan_generator, self.dose_generator):
 
             # Log a message about the non-configured plan
             self.logger.display_error(
@@ -201,7 +202,7 @@ class TreatmentPlan():
 
         else:
 
-            # Get the segmentation dictionary
+            # Get the segmentation data
             segmentation = Datahub().segmentation
 
             # Add the machine learning outcome models to the components
@@ -209,33 +210,33 @@ class TreatmentPlan():
                 get_machine_learning_constraints(segmentation)
                 + get_machine_learning_objectives(segmentation)))
 
-            # Increment the state
+            # Set the state
             self.datahub.state = 2
 
     def optimize(self):
-        """Initialize the optimization classes and solve the problem."""
+        """Optimize the treatment plan."""
 
-        # Reset the treatment plan label in the datahub
+        # Set the treatment plan label in the datahub
         Datahub.label = self.configuration.label
 
-        # Get the segmentation dictionary
+        # Get the segmentation data
         segmentation = Datahub().segmentation
 
         # Check if the plan has not been configured yet
-        if any(getattr(self, attribute) is None for attribute in (
-                'logger', 'datahub', 'patient_loader', 'plan_generator',
-                'dose_info_generator')):
+        if None in (
+                self.patient_loader, self.plan_generator, self.dose_generator):
 
             # Log a message about the non-configured plan
             self.logger.display_error(
                 "Please configure the treatment plan before optimization!")
 
-        # Check if machine learning components have not been modeled
-        elif any(getattr(component, 'model') is None for component in (
+        # Check if any machine learning component has not been modeled
+        elif None in (
+                component.model for component in
                 get_machine_learning_constraints(segmentation)
-                + get_machine_learning_objectives(segmentation))):
+                + get_machine_learning_objectives(segmentation)):
 
-            # Log a message about the non-modeled components
+            # Log a message about the non-modeled component
             self.logger.display_error(
                 "Please add the machine learning models before optimization!")
 
@@ -260,17 +261,17 @@ class TreatmentPlan():
             # Solve the optimization problem
             self.fluence_optimizer.solve()
 
-            # Increment the state
+            # Set the state
             self.datahub.state = 3
 
     def evaluate(self):
-        """Initialize the evaluation classes and compute the plan metrics."""
+        """Evaluate the treatment plan."""
 
-        # Reset the treatment plan label in the datahub
+        # Set the treatment plan label in the datahub
         Datahub.label = self.configuration.label
 
         # Check if the plan has not been optimized yet
-        if (getattr(self, 'fluence_optimizer') is None
+        if (self.fluence_optimizer is None
                 or 'optimized_dose' not in Datahub().optimization):
 
             # Log a message about the non-optimized plan
@@ -282,45 +283,42 @@ class TreatmentPlan():
             # Validate the evaluation parameters
             self.evaluation.validate(vars(self.evaluation))
 
-            # Initialize the DVH class
+            # Initialize the DVH evaluator
             self.dose_histogram = DVHEvaluator(
                 dvh_type=self.evaluation.dvh_type,
-                number_of_points=self.evaluation.number_of_points,
-                display_segments=self.evaluation.display_segments)
+                number_of_points=self.evaluation.number_of_points)
 
-            # Initialize the dosimetrics class
-            self.dosimetrics = DosimetricsEvaluator(
-                reference_volume=self.evaluation.reference_volume,
-                reference_dose=self.evaluation.reference_dose,
-                display_segments=self.evaluation.display_segments,
-                display_metrics=self.evaluation.display_metrics)
-
-            # Compute the dose-volume histogram from the optimized dose
+            # Compute the dose-volume histogram
             self.dose_histogram.evaluate(
                 self.datahub.optimization['optimized_dose'])
 
-            # Compute the dosimetrics from the optimized dose
+            # Initialize the dosimetrics evaluator
+            self.dosimetrics = DosimetricsEvaluator(
+                reference_volume=self.evaluation.reference_volume,
+                reference_dose=self.evaluation.reference_dose)
+
+            # Compute the dosimetrics
             self.dosimetrics.evaluate(
                 self.datahub.optimization['optimized_dose'])
 
-            # Increment the state
+            # Set the state
             self.datahub.state = 4
 
     def visualize(
             self,
             parent=None):
         """
-        Initialize and launch the visualization interface.
+        Visualize the treatment plan.
 
         Parameters
         ----------
         parent : None or object of class \
             :class:`~pyanno4rt.gui.windows._main_window.MainWindow`, \
                 default=None
-            The object used as a parent window for the visualization interface.
+            The object used as a parent window for the visualizer.
         """
 
-        # Reset the treatment plan label in the datahub
+        # Set the treatment plan label in the datahub
         Datahub.label = self.configuration.label
 
         # Initialize the visualizer
@@ -333,9 +331,9 @@ class TreatmentPlan():
         self.visualizer.launch()
 
     def compose(self):
-        """Compose the treatment plan by cycling the workflow."""
+        """Compose the treatment plan."""
 
-        # Reset the treatment plan label in the datahub
+        # Set the treatment plan label in the datahub
         Datahub.label = self.configuration.label
 
         # Cycle the workflow
@@ -349,7 +347,7 @@ class TreatmentPlan():
             self,
             inputs):
         """
-        Update the treatment plan by the input dictionary.
+        Update the treatment plan.
 
         Parameters
         ----------
@@ -418,3 +416,82 @@ class TreatmentPlan():
                     # Update the components in the datahub
                     self.plan_generator.set_optimization_components(
                         verbose=False)
+
+    def state(self):
+        """Get the current state of the treatment plan."""
+
+        # Set the treatment plan label in the datahub
+        Datahub.label = self.configuration.label
+
+        # Define the states
+        states = {
+            0: 'initialized', 1: 'configured', 2: 'modeled', 3: 'optimized',
+            4: 'evaluated'}
+
+        return states[self.datahub.state]
+
+    def save(
+            self,
+            path,
+            include_patient_data=False,
+            include_dose_matrix=False,
+            include_model_data=False,
+            include_optimum=False):
+        """
+        Save a treatment plan.
+
+        Parameters
+        ----------
+        path : str
+            Directory path for the snapshot (folder).
+
+        include_patient_data : bool, default=False
+            Indicator for the storage of the external patient data, i.e., \
+            CT and segmentation data.
+
+        include_dose_matrix : bool, default=False
+            Indicator for the storage of the dose-influence matrix.
+
+        include_model_data : bool, default=False
+            Indicator for the storage of the outcome model-related datasets.
+
+        include_optimum : bool, default=False
+            Indicator for the storage of the optimized fluence array.
+
+        Notes
+        -----
+        See :func:`~pyanno4rt.tools._snapshot.snapshot` for details.
+        """
+
+        # Take a snapshot
+        snapshot(
+            self, path, include_patient_data, include_dose_matrix,
+            include_model_data, include_optimum)
+
+    @staticmethod
+    def load(
+            path,
+            ignore_optimum=False):
+        """
+        Load a treatment plan from a snapshot. See \
+        :func:`~pyanno4rt.tools._copycat.copycat` for details.
+
+        Parameters
+        ----------
+        path : str
+            Directory path of the snapshot.
+
+        ignore_optimum : bool
+            Indicator for ignoring the optimal fluence file (if available).
+
+        Returns
+        -------
+        object of class :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
+            The object used to represent the treatment plan.
+
+        Notes
+        -----
+        See :func:`~pyanno4rt.tools._copycat.copycat` for details.
+        """
+
+        return copycat(TreatmentPlan, path, ignore_optimum)

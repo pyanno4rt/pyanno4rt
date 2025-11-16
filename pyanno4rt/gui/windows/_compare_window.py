@@ -258,8 +258,8 @@ class CompareWindow(QMainWindow, Ui_compare_window):
 
         #
         joint_segments = sorted(tuple(
-            set(baseline_dvh['display_segments'])
-            & set(reference_dvh['display_segments'])),
+            set(key for key in baseline_dvh if key != 'evaluation_points')
+            & set(key for key in reference_dvh if key != 'evaluation_points')),
             key=lambda t: t[0])
 
         #
@@ -383,9 +383,6 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                     computed_tomography['cube_dimensions'],
                     dose_histogram['evaluation_points'])}
             for segment in segmentation}
-
-        # Add the segment names to be displayed
-        dose_histogram['display_segments'] = (*segmentation,)
 
         return dose_histogram
 

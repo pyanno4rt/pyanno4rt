@@ -12,7 +12,7 @@ from numpy import log
 
 def inverse_sigmoid(value, multiplier=1, summand=0):
     """
-    Calculate the inverse sigmoid function value.
+    Calculate the inverse sigmoid function value(s).
 
     Parameters
     ----------
@@ -36,8 +36,8 @@ def inverse_sigmoid(value, multiplier=1, summand=0):
 
         return tuple(
             (log(val/(1-val))-summand)/multiplier if val not in (0, 1)
-            else inf if val == 1 else -inf for val in value)
+            else -1**(val == 0)*inf for val in value)
 
     return (
         (log(value/(1-value))-summand)/multiplier if value not in (0, 1)
-        else inf if value == 1 else -inf)
+        else -1**(value == 0)*inf)

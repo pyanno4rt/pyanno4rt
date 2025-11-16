@@ -1,4 +1,4 @@
-"""Dose information generation."""
+"""Dose generation."""
 
 # Author: Tim Ortkamp
 
@@ -18,9 +18,9 @@ from pyanno4rt.validation import validate_dose_matrix
 # %% Class definition
 
 
-class DoseInfoGenerator():
+class DoseGenerator():
     """
-    Dose information generation class.
+    Dose generation class.
 
     This class provides methods to generate the dose information dictionary \
     for the management and retrieval of dose grid properties and dose-related \
@@ -28,41 +28,41 @@ class DoseInfoGenerator():
 
     Parameters
     ----------
-    number_of_fractions : int
-        Number of fractions according to the treatment scheme.
-
     dose_matrix_path : str
         Path to the dose-influence matrix file (.mat, .npy or .npz).
 
     dose_resolution : list
         Size of the dose grid in [`mm`] per dimension.
 
+    number_of_fractions : int
+        Number of fractions according to the treatment scheme.
+
     Attributes
     ----------
-    number_of_fractions : int
-        See 'Parameters'.
-
     dose_matrix_path : str
         See 'Parameters'.
 
     dose_resolution : tuple
         See 'Parameters'.
+
+    number_of_fractions : int
+        See 'Parameters'.
     """
 
     def __init__(
             self,
-            number_of_fractions,
             dose_matrix_path,
-            dose_resolution):
+            dose_resolution,
+            number_of_fractions):
 
         # Log a message about the initialization of the class
         Datahub().logger.display_info(
             "Initializing dose information generator ...")
 
         # Get the instance attributes from the arguments
-        self.number_of_fractions = number_of_fractions
         self.dose_matrix_path = dose_matrix_path
         self.dose_resolution = tuple(dose_resolution)
+        self.number_of_fractions = number_of_fractions
 
     def generate(self):
         """Generate the dose information dictionary."""

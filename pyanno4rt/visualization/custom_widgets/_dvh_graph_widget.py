@@ -87,8 +87,7 @@ class DVHGraphWidget(QWidget):
 
         # Get the segment names
         self.segments = tuple(
-            segment for segment in (*dose_histogram,)
-            if segment in dose_histogram['display_segments'])
+            key for key in dose_histogram if key != 'evaluation_points')
 
         # Set the colormap
         colors = colormap.get('tab20b', 'matplotlib').getLookupTable(

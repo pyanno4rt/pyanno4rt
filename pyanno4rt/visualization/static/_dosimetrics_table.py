@@ -40,18 +40,8 @@ class DosimetricsTable():
         # Log a message about the plot opening
         hub.logger.display_info("Opening dosimetrics table ...")
 
-        # Get the dosimetrics dictionary filtered by segment and metrics
-        dosimetrics = {
-            segment: {
-                metric: hub.dosimetrics[segment][metric]
-                for metric in hub.dosimetrics[segment]
-                if any(display_metric in metric
-                       for display_metric in hub.dosimetrics['display_metrics']
-                       )}
-            for segment in hub.dosimetrics['display_segments']}
-
         # Convert the dosimetrics dictionary into a dataframe
-        dataframe = DataFrame(dosimetrics).transpose().astype(float)
+        dataframe = DataFrame(hub.dosimetrics).transpose().astype(float)
 
         # Create a figure and subplots
         figure, axis = subplots(figsize=(14, 8))

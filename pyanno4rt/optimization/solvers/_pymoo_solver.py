@@ -113,7 +113,7 @@ class PymooSolver():
         self.pymoo_prob = PymooProblem(problem=problem)
 
         # Set the number of evaluation points
-        number_of_points = 4 + int(3*log(len(problem.initial_fluence)))
+        number_of_points = 200
 
         # Get the reference directions
         reference_directions = get_reference_directions(
@@ -139,8 +139,8 @@ class PymooSolver():
 
             # Initialize the termination instance
             self.termination = DefaultMultiObjectiveTermination(
-                xtol=1e-12, cvtol=1e-6, ftol=self.tolerance,
-                n_max_gen=self.maximum_iterations)
+                xtol=1e-12, cvtol=1e-8, ftol=self.tolerance, n_skip=5,
+                period=50, n_max_gen=self.maximum_iterations)
 
     def run(
             self,
@@ -274,7 +274,7 @@ class PymooProblem(ElementwiseProblem):
             n_obj=len(problem.objectives),
             n_ieq_constr=2*len(problem.constraints),
             xl=array(problem.variable_bounds[0]),
-            xu=array([1e12]*len(problem.variable_bounds[1])))
+            xu=array([1e1]*len(problem.variable_bounds[1])))
 
         # Get the problem instance
         self.problem = problem

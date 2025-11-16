@@ -48,7 +48,7 @@ class GraphicalUserInterface():
         self.main_window.application.exec_()
 
     def fetch(self):
-        """Get the treatment plan dictionary of the GUI."""
+        """Get the treatment plan dictionary."""
 
         return self.main_window.plans
 

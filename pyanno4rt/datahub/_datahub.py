@@ -155,7 +155,7 @@ class Datahub():
         # Check if arguments are passed
         if args:
 
-            # Set the instance and the class label to the same value
+            # Set the instance and class labels to the same value
             self.label = Datahub.label = args[0]
 
             # Set the logging object

@@ -34,21 +34,15 @@ class Optimization():
         Currently available:
 
         - \
-            :class:`~pyanno4rt.optimization.components._decision_tree_ntcp.DecisionTreeNTCP`
-        - \
-            :class:`~pyanno4rt.optimization.components._decision_tree_tcp.DecisionTreeTCP`
+            :class:`~pyanno4rt.optimization.components._decision_tree_outcome.DecisionTreeOutcome`
         - \
             :class:`~pyanno4rt.optimization.components._dose_uniformity.DoseUniformity`
         - \
             :class:`~pyanno4rt.optimization.components._equivalent_uniform_dose.EquivalentUniformDose`
         - \
-            :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_ntcp.KNeighborsNTCP`
+            :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_outcome.KNeighborsOutcome`
         - \
-            :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_tcp.KNeighborsTCP`
-        - \
-            :class:`~pyanno4rt.optimization.components._logistic_regression_ntcp.LogisticRegressionNTCP`
-        - \
-            :class:`~pyanno4rt.optimization.components._logistic_regression_tcp.LogisticRegressionTCP`
+            :class:`~pyanno4rt.optimization.components._logistic_regression_outcome.LogisticRegressionOutcome`
         - \
             :class:`~pyanno4rt.optimization.components._lq_poisson_tcp.LQPoissonTCP`
         - \
@@ -57,17 +51,11 @@ class Optimization():
         - :class:`~pyanno4rt.optimization.components._mean_dose.MeanDose`
         - :class:`~pyanno4rt.optimization.components._minimum_dvh.MinimumDVH`
         - \
-            :class:`~pyanno4rt.optimization.components._naive_bayes_ntcp.NaiveBayesNTCP`
+            :class:`~pyanno4rt.optimization.components._naive_bayes_outcome.NaiveBayesOutcome`
         - \
-            :class:`~pyanno4rt.optimization.components._naive_bayes_tcp.NaiveBayesTCP`
+            :class:`~pyanno4rt.optimization.components._neural_network_outcome.NeuralNetworkOutcome`
         - \
-            :class:`~pyanno4rt.optimization.components._neural_network_ntcp.NeuralNetworkNTCP`
-        - \
-            :class:`~pyanno4rt.optimization.components._neural_network_tcp.NeuralNetworkTCP`
-        - \
-            :class:`~pyanno4rt.optimization.components._random_forest_ntcp.RandomForestNTCP`
-        - \
-            :class:`~pyanno4rt.optimization.components._random_forest_tcp.RandomForestTCP`
+            :class:`~pyanno4rt.optimization.components._random_forest_outcome.RandomForestOutcome`
         - \
             :class:`~pyanno4rt.optimization.components._squared_deviation.SquaredDeviation`
         - \
@@ -75,19 +63,17 @@ class Optimization():
         - \
             :class:`~pyanno4rt.optimization.components._squared_underdosing.SquaredUnderdosing`
         - \
-            :class:`~pyanno4rt.optimization.components._support_vector_machine_ntcp.SupportVectorMachineNTCP`
-        - \
-            :class:`~pyanno4rt.optimization.components._support_vector_machine_tcp.SupportVectorMachineTCP`
+            :class:`~pyanno4rt.optimization.components._support_vector_machine_outcome.SupportVectorMachineOutcome`
 
-        .. note:: To prevent overwriting processes, make use of the \
-            identifier argument for components of the same type and segment!
+        .. note:: To prevent overwriting processes, multiple components for \
+            one segment and type should be set using the identifier argument!
 
     method : {'lexicographic', 'pareto', 'weighted-sum'}, \
         default='weighted-sum'
         Single- or multi-criteria optimization method, see the classes \
-        :class:`~pyanno4rt.optimization.methods._lexicographic_optimization.LexicographicOptimization`\
-        :class:`~pyanno4rt.optimization.methods._pareto_optimization.ParetoOptimization`\
-        :class:`~pyanno4rt.optimization.methods._weighted_sum_optimization.WeightedSumOptimization`.
+        :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
+        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
+        :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`.
 
         - 'lexicographic' : sequential optimization based on a preference order
         - 'pareto' : parallel optimization based on the criterion of pareto \
@@ -153,7 +139,7 @@ class Optimization():
 
         .. note:: Data-medoid initialization works best for a single \
             dataset or multiple datasets with high similarity. Otherwise, the \
-            data medoid point may lose its individual representativeness.
+            data medoid point may lack representativeness.
 
     initial_fluence_vector : None or list, default=None
         Initial fluence vector for the optimization problem, only used if \
@@ -165,8 +151,7 @@ class Optimization():
     upper_variable_bounds : None, int, float, or list, default=None
         Upper bound(s) on the decision variables.
 
-    .. note:: There are two options to set lower and upper bounds for the \
-        variables:
+    .. note:: There are two options to set lower and upper variable bounds:
 
             1) Passing a single numeric value translates into uniform \
                 bounds across all variables (where None for the lower \
@@ -353,7 +338,7 @@ class Optimization():
                 partial(validate_type, options=int),
                 partial(validate_value, reference=1, sign='>=')),
             'tolerance': (
-                partial(validate_type, options=float),
+                partial(validate_type, options=(int, float)),
                 partial(validate_value, reference=0, sign='>'))}
 
         # Loop over the inputs

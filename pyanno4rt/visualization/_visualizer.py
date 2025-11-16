@@ -488,7 +488,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Check if the plan has already been configured
         if (all(getattr(self.plan, unit) is not None for unit in (
-               'patient_loader', 'plan_generator', 'dose_info_generator'))
+               'patient_loader', 'plan_generator', 'dose_generator'))
                 and self.plan.datahub.state >= 1):
 
             # Add the CT cube to the slice widget
@@ -539,22 +539,9 @@ class Visualizer(QMainWindow, Ui_visualization_window):
                 'dose_histogram', 'dosimetrics'))
                 and self.plan.datahub.state == 4):
 
-            # Get the display segments and metrics
-            display_segments = self.plan.datahub.dosimetrics[
-                'display_segments']
-            display_metrics = self.plan.datahub.dosimetrics['display_metrics']
-
-            # Get the filtered dosimetrics dictionary
-            dosimetrics = {
-                segment: {
-                    metric: self.plan.datahub.dosimetrics[segment][metric]
-                    for metric in self.plan.datahub.dosimetrics[segment]
-                    if any(display_metric in metric
-                           for display_metric in display_metrics)}
-                for segment in display_segments}
-
             # Convert the dosimetrics dictionary into a dataframe
-            dataframe = DataFrame(dosimetrics).transpose().astype(float)
+            dataframe = DataFrame(
+                self.plan.datahub.dosimetrics).transpose().astype(float)
 
             # Set the number of rows and columns
             self.ind_table_widget.setRowCount(0)

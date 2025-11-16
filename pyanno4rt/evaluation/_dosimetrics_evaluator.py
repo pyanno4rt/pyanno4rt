@@ -33,12 +33,6 @@ class DosimetricsEvaluator():
     reference_dose : list
         Reference dose values for which to evaluate the DVH values.
 
-    display_segments : list
-        Names of the segments to be displayed.
-
-    display_metrics : list
-        Names of the evaluation metrics to be displayed.
-
     Attributes
     ----------
     reference_volume : tuple
@@ -46,20 +40,12 @@ class DosimetricsEvaluator():
 
     reference_dose : tuple
         See 'Parameters'.
-
-    display_segments : tuple
-        See 'Parameters'.
-
-    display_metrics : tuple
-        See 'Parameters'.
     """
 
     def __init__(
             self,
             reference_volume,
-            reference_dose,
-            display_segments,
-            display_metrics):
+            reference_dose):
 
         # Initialize the datahub
         hub = Datahub()
@@ -70,29 +56,6 @@ class DosimetricsEvaluator():
         # Get the sorted reference volumes and doses from the arguments
         self.reference_volume, self.reference_dose = map(tuple, map(
             sorted, (reference_volume, reference_dose)))
-
-        # Check if the length of the "display_segments" argument is zero
-        if len(display_segments) == 0:
-
-            # Get the display segments from the datahub
-            self.display_segments = tuple(hub.segmentation)
-
-        else:
-
-            # Get the display segments from the argument
-            self.display_segments = tuple(display_segments)
-
-        # Check if the length of the "display_metrics" argument is zero
-        if len(display_metrics) == 0:
-
-            # Get the default display metrics
-            self.display_metrics = (
-                'mean', 'std', 'max', 'min', 'Dx', 'Vx', 'CI', 'HI')
-
-        else:
-
-            # Get the display metrics from the argument
-            self.display_metrics = tuple(display_metrics)
 
     def evaluate(
             self,
@@ -212,10 +175,6 @@ class DosimetricsEvaluator():
                         dosimetrics[segment][f'HI_{level}Gy'] = (
                             ((interpolator(0.95)-interpolator(0.05))
                              / target_dose) * 100)
-
-        # Add the segment and metric names to be displayed
-        dosimetrics['display_segments'] = self.display_segments
-        dosimetrics['display_metrics'] = self.display_metrics
 
         # Enter the dosimetrics dictionary into the datahub
         hub.dosimetrics = dosimetrics

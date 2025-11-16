@@ -9,6 +9,6 @@ information dictionary.
 
 # Author: Tim Ortkamp
 
-from ._dose_info_generator import DoseInfoGenerator
+from ._dose_generator import DoseGenerator
 
-__all__ = ['DoseInfoGenerator']
+__all__ = ['DoseGenerator']

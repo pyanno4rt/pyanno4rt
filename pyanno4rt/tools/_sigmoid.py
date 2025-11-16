@@ -11,7 +11,7 @@ from numpy import exp
 
 def sigmoid(value, multiplier=1, summand=0):
     """
-    Calculate the sigmoid function value.
+    Calculate the sigmoid function value(s).
 
     Parameters
     ----------

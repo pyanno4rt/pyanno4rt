@@ -140,8 +140,8 @@ class DVHGraph():
 
         # Get the segment names
         segments = tuple(
-            segment for segment in (*dose_histogram,)
-            if segment in dose_histogram['display_segments'])
+            segment for segment in dose_histogram
+            if segment != 'evaluation_points')
 
         # Set the colormap
         colors = get_cmap('tab20b')(linspace(0, 1.0, len(segments)))
