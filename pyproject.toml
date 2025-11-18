@@ -7,6 +7,7 @@ authors = [ "Tim Ortkamp <tim.ortkamp@gmx.de>" ]
 readme = "README.md"
 repository = "https://github.com/pyanno4rt/pyanno4rt"
 documentation = "https://pyanno4rt.readthedocs.io/en/latest/"
+keywords = [ "python", "data-science", "machine-learning", "optimization", "outcome-prediction", "radiotherapy-treatment-planning" ]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -15,6 +16,10 @@ classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Topic :: Education",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -27,7 +32,7 @@ classifiers = [
 include = "pyanno4rt"
 
 [tool.poetry.dependencies]
-python = ">=3.10, <3.12"
+python = ">=3.10, <4.0"
 numpy = ">=2.2.6"
 ipyopt = ">=0.12.10"
 absl-py = ">=2.3.1"
@@ -40,25 +45,24 @@ jaxlib = ">=0.6.2"
 numba = ">=0.62.1"
 scikit-learn = ">=1.7.2"
 tensorflow = ">=2.20.0"
-tensorflow-io-gcs-filesystem = "0.31.0"
 hyperopt = ">=0.2.7"
 pymoo = ">=0.6.1.5"
 pyqt5-qt5 = "5.15.2"
 pyqt5 = "5.15.10"
 pyqtgraph = ">=0.14.0"
-ipython = ">=8.37.0"
 matplotlib = ">=3.10.7"
 seaborn = ">=0.13.2"
 pypop7 = ">=0.0.82"
 
 [tool.poetry.group.dev.dependencies]
 pyqtwebengine-qt5 = "5.15.2"
+ipython = ">=8.37.0"
 spyder = ">=6.1.0"
 spyder-kernels = ">=3.1.1"
 jupyter = ">=1.1.1"
 sphinx = ">=8.1.3"
 sphinx-rtd-theme = ">=3.0.2"
-sphinx-autoapi = "3.0.0"
+sphinx-autoapi = "3.6.0"
 myst-nb = ">=1.3.0"
 pytest = ">=9.0.1"
 pytest-cov = ">=7.0.0"
@@ -72,7 +76,7 @@ myst-sphinx-gallery = ">=0.3.0"
 "Bug Tracker" = "https://github.com/pyanno4rt/pyanno4rt/issues"
 
 [tool.coverage.run]
-omit = ['*/__init__.py', '*/resources_rc.py', '*/_maps.py', '*/_component_window_map.py', '*/_custom_styles.py', '*/compare_window.py', '*/data_columns_window.py', '*/info_window.py', '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py', '*/settings_window.py', '*/splash_screen_window.py', '*/text_window.py', '*/tree_window.py', '*/decision_tree_ntcp_window.py', '*/dose_uniformity_window.py', '*/equivalent_uniform_dose_window.py', '*/k_nearest_neighbors_ntcp_window.py', '*/lkb_ntcp_window.py', '*/logistic_regression_ntcp_window.py', '*/lq_poisson_tcp_window.py', '*/maximum_dvh_window.py', '*/mean_dose_window.py', '*/minimum_dvh_window.py', '*/naive_bayes_ntcp_window.py', '*/neural_network_ntcp_window.py', '*/random_forest_ntcp_window.py', '*/squared_deviation_window.py', '*/squared_overdosing_window.py', '*/squared_underdosing_window.py', '*/support_vector_machine_ntcp_window.py', '*/visualizer.py']
+omit = ['*/assets/*', '*/compilations/*', '*/designs/*']
 
 [build-system]
 requires = [ "poetry-core" ]

@@ -18,51 +18,24 @@ class MatHandler():
     """
     MATLAB file handler class.
 
-    This class provides methods to load planning data from MATLAB files and \
-    generate the CT and segmentation dictionaries.
+    This class provides methods to handle patient imaging data from MATLAB \
+    files and generate the CT and segmentation dictionaries.
     """
 
     def __init__(self):
 
         pass
 
-    def extract(
+    def load(
             self,
             path):
         """
-        Extract the data from the path.
+        Load the patient imaging data.
 
         Parameters
         ----------
         path : str
-            Path to the MATLAB file.
-
-        Returns
-        -------
-        dict
-            Dictionary with information on the CT images.
-
-        dict
-            Dictionary with information on the segments.
-        """
-
-        # Read the data
-        computed_tomography, segmentation = self.read(path)
-
-        return (
-            self.generate_ct(computed_tomography),
-            self.generate_segmentation(segmentation))
-
-    def read(
-            self,
-            path):
-        """
-        Read the data from the path.
-
-        Parameters
-        ----------
-        path : str
-            Path to the MATLAB file.
+            Path to the patient imaging data.
 
         Returns
         -------
@@ -76,7 +49,16 @@ class MatHandler():
         # Load the file
         data = loadmat(path, simplify_cells=True)
 
-        return data['ct'], data['cst']
+        return (
+            self.generate_ct(data['ct']),
+            self.generate_segmentation(data['cst']))
+
+    def save(
+            self,
+            computed_tomography,
+            segmentation,
+            path):
+        """Save the patient imaging data."""
 
     def generate_ct(
             self,

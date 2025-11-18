@@ -390,35 +390,78 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         """."""
 
         #
-        event_pen_width = event.curve.opts['pen'].width()
+        triples = tuple(zip(*(
+            widget.plot_widget.getPlotItem().listDataItems()
+            for widget in (
+                    self.baseline_dvh_widget, self.reference_dvh_widget,
+                    self.difference_dvh_widget))))
 
-        for widget in (self.baseline_dvh_widget, self.reference_dvh_widget,
-                       self.difference_dvh_widget):
+        #
+        for triple in triples:
 
-            # Get all plot items
-            items = widget.plot_widget.getPlotItem().listDataItems()
+            #
+            if any(item.curve == event for item in triple):
 
-            for item in items:
-                pen = item.curve.opts['pen']
-                item.curve.setPen(mkPen(
-                    color=pen.color(), style=pen.style(), width=2))
-                if item != event and item.name() == event.name():
-                    if event_pen_width != 5:
-                        item.curve.setPen(mkPen(
-                            color=pen.color(), style=pen.style(), width=3))
-                    else:
-                        item.curve.setPen(mkPen(
-                            color=pen.color(), style=pen.style(), width=2))
-                elif item == event:
-                    if event_pen_width != 5:
-                        item.curve.setPen(mkPen(
-                            color=pen.color(), style=pen.style(), width=5))
-                    else:
-                        self.segment_ledit.clear()
-                        self.mean_ledit.clear()
-                        self.std_ledit.clear()
-                        self.maximum_ledit.clear()
-                        self.minimum_ledit.clear()
+                #
+                clicked = next(item for item in triple if item.curve == event)
+
+                #
+                linked = [item for item in triple if item.curve != event]
+
+                #
+                cpen = clicked.curve.opts['pen']
+
+                #
+                if cpen.width() != 5:
+
+                    #
+                    clicked.curve.setPen(mkPen(
+                        color=cpen.color(), style=cpen.style(), width=5))
+
+                    #
+                    for link in linked:
+
+                        #
+                        lpen = link.curve.opts['pen']
+
+                        #
+                        link.curve.setPen(mkPen(
+                            color=lpen.color(), style=lpen.style(), width=3))
+
+                else:
+
+                    #
+                    clicked.curve.setPen(mkPen(
+                        color=cpen.color(), style=cpen.style(), width=2))
+
+                    #
+                    self.segment_ledit.clear()
+                    self.mean_ledit.clear()
+                    self.std_ledit.clear()
+                    self.maximum_ledit.clear()
+                    self.minimum_ledit.clear()
+
+                    #
+                    for link in linked:
+
+                        #
+                        lpen = link.curve.opts['pen']
+
+                        #
+                        link.curve.setPen(mkPen(
+                            color=lpen.color(), style=lpen.style(), width=2))
+
+            else:
+
+                #
+                for item in triple:
+
+                    #
+                    pen = item.curve.opts['pen']
+
+                    #
+                    item.curve.setPen(mkPen(
+                        color=pen.color(), style=pen.style(), width=2))
 
     def unselect_dvh_curves(self, event):
         """."""

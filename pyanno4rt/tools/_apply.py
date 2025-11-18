@@ -5,7 +5,7 @@
 # %% Function definition
 
 
-def apply(function, elements):
+def apply(function, elements, returns=False):
     """
     Apply a function to each element of an iterable.
 
@@ -16,10 +16,21 @@ def apply(function, elements):
 
     elements : iterable
         Iterable over which to loop.
+
+    returns : bool
+        Indicator for the output return.
     """
+
+    # Check if an output should be returned
+    if returns:
+
+        # Return a list of output values
+        return [function(element) for element in elements]
 
     # Loop over the elements of the iterable
     for element in elements:
 
-        # Call the function on the element
+        # Call the function
         function(element)
+
+    return None

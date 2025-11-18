@@ -10,9 +10,9 @@ from pyanno4rt.logging import Logger
 from pyanno4rt.datahub import Datahub
 
 # Treatment plan configuration
-from pyanno4rt.io import PatientLoader
-from pyanno4rt.plan import PlanGenerator
-from pyanno4rt.dose import DoseGenerator
+from pyanno4rt.patient import PatientHandler
+from pyanno4rt.plan import PlanHandler
+from pyanno4rt.dose import DoseHandler
 
 # Treatment plan optimization
 from pyanno4rt.optimization import FluenceOptimizer
@@ -74,17 +74,17 @@ class TreatmentPlan():
     datahub : object of class :class:`~pyanno4rt.datahub._datahub.Datahub`
         The object used to manage and distribute information units.
 
-    patient_loader : None or object of class \
-        :class:`~pyanno4rt.io._patient_loader.PatientLoader`
-        The object used to retrieve the CT and segmentation data.
+    patient_handler : None or object of class \
+        :class:`~pyanno4rt.patient._patient_handler.PatientHandler`
+        The object used to handle the patient imaging data.
 
-    plan_generator : None or object of class \
-        :class:`~pyanno4rt.plan._plan_generator.PlanGenerator`
-        The object used to set the plan properties.
+    plan_handler : None or object of class \
+        :class:`~pyanno4rt.plan._plan_handler.PlanHandler`
+        The object used to handle the plan parameters.
 
-    dose_generator : None or object of class \
-        :class:`~pyanno4rt.dose._dose_generator.DoseGenerator`
-        The object used to set the dose properties.
+    dose_handler : None or object of class \
+        :class:`~pyanno4rt.dose._dose_handler.DoseHandler`
+        The object used to handle the dose parameters.
 
     fluence_optimizer : None or object of class \
         :class:`~pyanno4rt.optimization._fluence_optimizer.FluenceOptimizer`
@@ -139,9 +139,9 @@ class TreatmentPlan():
         self.logger = Logger(
             self.configuration.label, self.configuration.min_log_level)
         self.datahub = Datahub(self.configuration.label, self.logger)
-        self.patient_loader = None
-        self.plan_generator = None
-        self.dose_generator = None
+        self.patient_handler = None
+        self.plan_handler = None
+        self.dose_handler = None
         self.fluence_optimizer = None
         self.dose_histogram = None
         self.dosimetrics = None
@@ -159,29 +159,28 @@ class TreatmentPlan():
         # Set the treatment plan label in the datahub
         Datahub.label = self.configuration.label
 
-        # Initialize the patient loader
-        self.patient_loader = PatientLoader(
-            imaging_path=self.configuration.imaging_path)
+        # Initialize the patient handler
+        self.patient_handler = PatientHandler()
 
         # Load the patient data
-        self.patient_loader.load()
+        self.patient_handler.load(path=self.configuration.imaging_path)
 
-        # Initialize the plan generator
-        self.plan_generator = PlanGenerator(
+        # Initialize the plan handler
+        self.plan_handler = PlanHandler(
             modality=self.configuration.modality,
             components=self.optimization.components)
 
-        # Generate the plan information
-        self.plan_generator.generate()
+        # Generate the plan data
+        self.plan_handler.generate()
 
-        # Initialize the dose generator
-        self.dose_generator = DoseGenerator(
-            dose_matrix_path=self.configuration.dose_matrix_path,
+        # Initialize the dose handler
+        self.dose_handler = DoseHandler(
             dose_resolution=self.configuration.dose_resolution,
             number_of_fractions=self.configuration.number_of_fractions)
 
-        # Generate the dose information
-        self.dose_generator.generate()
+        # Load the dose data
+        self.dose_handler.load(
+            dose_matrix_path=self.configuration.dose_matrix_path)
 
         # Set the state
         self.datahub.state = 1
@@ -194,7 +193,7 @@ class TreatmentPlan():
 
         # Check if the plan has not been configured yet
         if None in (
-                self.patient_loader, self.plan_generator, self.dose_generator):
+                self.patient_handler, self.plan_handler, self.dose_handler):
 
             # Log a message about the non-configured plan
             self.logger.display_error(
@@ -224,7 +223,7 @@ class TreatmentPlan():
 
         # Check if the plan has not been configured yet
         if None in (
-                self.patient_loader, self.plan_generator, self.dose_generator):
+                self.patient_handler, self.plan_handler, self.dose_handler):
 
             # Log a message about the non-configured plan
             self.logger.display_error(
@@ -408,13 +407,13 @@ class TreatmentPlan():
                     self.logger.change_log_levels(value)
 
                 # Check if the key is 'components'
-                if key == 'components' and self.plan_generator is not None:
+                if key == 'components' and self.plan_handler is not None:
 
-                    # Overwrite the components in the plan generator
-                    self.plan_generator.components = value
+                    # Overwrite the components in the plan handler
+                    self.plan_handler.components = value
 
-                    # Update the components in the datahub
-                    self.plan_generator.set_optimization_components(
+                    # Update the components
+                    self.plan_handler.set_optimization_components(
                         verbose=False)
 
     def state(self):

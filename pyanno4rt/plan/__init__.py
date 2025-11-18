@@ -1,14 +1,13 @@
 """
-Plan configuration module.
+Plan module.
 
 ==================================================================
 
-This module aims to provide methods and classes to generate the plan \
-configuration dictionary.
+This module aims to provide methods and classes for handling plan data.
 """
 
 # Author: Tim Ortkamp
 
-from ._plan_generator import PlanGenerator
+from ._plan_handler import PlanHandler
 
-__all__ = ['PlanGenerator']
+__all__ = ['PlanHandler']

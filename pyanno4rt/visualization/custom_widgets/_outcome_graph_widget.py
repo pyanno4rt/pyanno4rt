@@ -144,7 +144,7 @@ class OutcomeGraphWidget(QWidget):
             pen = item.curve.opts['pen']
 
             # Check if the current item triggers the event
-            if item == event:
+            if item.curve == event:
 
                 # Construct the QPen
                 pen = mkPen(pen)
@@ -153,10 +153,10 @@ class OutcomeGraphWidget(QWidget):
                 if pen.width() == 2:
 
                     # Increase the symbol size
-                    event.setSymbolSize(14)
+                    item.setSymbolSize(14)
 
                     # Increase the pen width
-                    event.curve.setPen(mkPen(
+                    item.curve.setPen(mkPen(
                         color=pen.color(), style=pen.style(), width=4))
 
                     # Get the optimization data
@@ -169,13 +169,13 @@ class OutcomeGraphWidget(QWidget):
 
                     # Get the selected instance attribute
                     component_type, embedding, weight, rank, bounds = (getattr(
-                        components[event.name()]['instance'], attribute)
+                        components[item.name()]['instance'], attribute)
                         for attribute in (
                             'component_type', 'embedding', 'weight', 'rank',
                             'bounds'))
 
                     # Display the component name
-                    self.parent.outc_component_ledit.setText(event.name())
+                    self.parent.outc_component_ledit.setText(item.name())
 
                     # Display the component type
                     self.parent.outc_type_ledit.setText(component_type)
@@ -195,10 +195,10 @@ class OutcomeGraphWidget(QWidget):
                 else:
 
                     # Decrease the symbol size
-                    event.setSymbolSize(7)
+                    item.setSymbolSize(7)
 
                     # Decrease the pen width
-                    event.curve.setPen(mkPen(
+                    item.curve.setPen(mkPen(
                         color=pen.color(), style=pen.style(), width=2))
 
                     # Clear the component line editors

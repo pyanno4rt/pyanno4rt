@@ -789,7 +789,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Check if the instance has already been configured
             if (all(getattr(instance, unit) is not None for unit in (
-                   'patient_loader', 'plan_generator', 'dose_generator'))
+                   'patient_handler', 'plan_handler', 'dose_handler'))
                     and instance.datahub.state >= 1):
 
                 # Add the CT cube to the slice widget
@@ -1590,15 +1590,15 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Raise the exception
             raise exception
 
-        # Check if the the plan generator has been initialized
-        if instance.plan_generator is not None:
+        # Check if the the plan handler has been initialized
+        if instance.plan_handler is not None:
 
-            # Overwrite the components in the plan generator
-            instance.plan_generator.components = (
+            # Overwrite the components in the plan handler
+            instance.plan_handler.components = (
                 instance.optimization.components)
 
-            # Update the components in the datahub
-            instance.plan_generator.set_optimization_components(
+            # Update the components
+            instance.plan_handler.set_optimization_components(
                 verbose=False)
 
         # Reset the slice widget images
@@ -1620,7 +1620,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Check if the instance has already been configured
         if (all(getattr(instance, unit) is not None for unit in (
-                'patient_loader', 'plan_generator', 'dose_generator'))
+                'patient_handler', 'plan_handler', 'dose_handler'))
                 and instance.datahub.state >= 1):
 
             # Reset the datahub state

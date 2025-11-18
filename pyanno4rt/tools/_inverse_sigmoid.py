@@ -36,8 +36,8 @@ def inverse_sigmoid(value, multiplier=1, summand=0):
 
         return tuple(
             (log(val/(1-val))-summand)/multiplier if val not in (0, 1)
-            else -1**(val == 0)*inf for val in value)
+            else (-1)**(val == 0)*inf for val in value)
 
     return (
         (log(value/(1-value))-summand)/multiplier if value not in (0, 1)
-        else -1**(value == 0)*inf)
+        else (-1)**(value == 0)*inf)

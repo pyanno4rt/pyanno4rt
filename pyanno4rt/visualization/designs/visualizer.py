@@ -1868,8 +1868,7 @@ class Ui_visualization_window(object):
         self.plane_cbox.setMinimumSize(QtCore.QSize(101, 31))
         self.plane_cbox.setMaximumSize(QtCore.QSize(16777215, 31))
         self.plane_cbox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.plane_cbox.setStyleSheet("color: rgb(0, 0, 0);\n"
-"background-color: rgb(238, 238, 236);\n"
+        self.plane_cbox.setStyleSheet("background-color: rgb(238, 238, 236);\n"
 "border: 1px solid;\n"
 "border-color: rgb(186, 189, 182);")
         self.plane_cbox.setObjectName("plane_cbox")

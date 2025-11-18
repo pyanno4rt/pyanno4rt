@@ -30,10 +30,10 @@ class Evaluation():
     number_of_points : int, default=1000
         Number of (evenly-spaced) DVH evaluation points.
 
-    reference_volume : list, default=[2, 5, 50, 95, 98]
+    reference_volume : tuple or list, default=(2, 5, 50, 95, 98)
         Reference volumes for the inverse DVH values.
 
-    reference_dose : list, default=[]
+    reference_dose : tuple or list, default=()
         Reference doses for the DVH values.
 
         .. note:: If the default value is used, reference dose levels will be \
@@ -47,10 +47,10 @@ class Evaluation():
     number_of_points : int
         See 'Parameters'.
 
-    reference_volume : list
+    reference_volume : tuple or list
         See 'Parameters'.
 
-    reference_dose : list
+    reference_dose : tuple or list
         See 'Parameters'.
     """
 
@@ -58,29 +58,17 @@ class Evaluation():
             self,
             dvh_type='cumulative',
             number_of_points=1000,
-            reference_volume=None,
-            reference_dose=None):
-
-        # Get the input arguments
-        inputs = filter_dict(vars(), remove_keys=('self',))
-
-        # Loop over the keys with mutable default values
-        for key, default in {
-                'reference_volume': [2, 5, 50, 95, 98],
-                'reference_dose': [],
-                }.items():
-
-            # Update the input argument value
-            inputs[key] = inputs.get(key) or default
+            reference_volume=(2, 5, 50, 95, 98),
+            reference_dose=()):
 
         # Validate the input arguments
-        self.validate(inputs)
+        self.validate(filter_dict(vars(), remove_keys=('self',)))
 
-        # Loop over the input arguments
-        for key, value in inputs.items():
-
-            # Set the attribute
-            setattr(self, key, value)
+        # Get the input attributes
+        self.dvh_type = dvh_type
+        self.number_of_points = number_of_points
+        self.reference_volume = reference_volume
+        self.reference_dose = reference_dose
 
     def to_dict(self):
         """Serialize the object into a dictionary."""
@@ -129,13 +117,13 @@ class Evaluation():
                 partial(validate_type, options=int),
                 partial(validate_value, reference=1, sign='>=')),
             'reference_volume': (
-                partial(validate_type, options=list),
+                partial(validate_type, options=(tuple, list)),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_value, reference=0, sign='>='),
                 partial(validate_value, reference=100, sign='<=')
                 ),
             'reference_dose': (
-                partial(validate_type, options=list),
+                partial(validate_type, options=(tuple, list)),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_value, reference=0, sign='>='))}
 

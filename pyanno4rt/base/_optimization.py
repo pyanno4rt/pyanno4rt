@@ -211,17 +211,20 @@ class Optimization():
             maximum_iterations=500,
             tolerance=1e-3):
 
-        # Get the input arguments
-        inputs = filter_dict(vars(), remove_keys=('self',))
-
         # Validate the input arguments
-        self.validate(inputs)
+        self.validate(filter_dict(vars(), remove_keys=('self',)))
 
-        # Loop over the input arguments
-        for key, value in inputs.items():
-
-            # Set the attribute
-            setattr(self, key, value)
+        # Get the input attributes
+        self.components = components
+        self.method = method
+        self.solver = solver
+        self.algorithm = algorithm
+        self.initial_strategy = initial_strategy
+        self.initial_fluence_vector = initial_fluence_vector
+        self.lower_variable_bounds = lower_variable_bounds
+        self.upper_variable_bounds = upper_variable_bounds
+        self.maximum_iterations = maximum_iterations
+        self.tolerance = tolerance
 
     def to_dict(self):
         """Serialize the object into a dictionary."""

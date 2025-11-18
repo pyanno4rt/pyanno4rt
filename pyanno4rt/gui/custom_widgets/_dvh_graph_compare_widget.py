@@ -189,24 +189,30 @@ class DVHGraphCompareWidget(QWidget):
                 self.baseline.datahub.computed_tomography,
                 self.baseline.datahub.segmentation)
 
-        #
-        self.parent.segment_ledit.setText(event.name())
+        # Loop over the items
+        for item in self.plot_widget.getPlotItem().listDataItems():
 
-        #
-        self.parent.mean_ledit.setText(str(
-            round(dosimetrics[event.name()]['mean'], 2)))
+            # Check if the current item triggers the event
+            if item.curve == event:
 
-        #
-        self.parent.std_ledit.setText(str(
-            round(dosimetrics[event.name()]['std'], 2)))
+                #
+                self.parent.segment_ledit.setText(item.name())
 
-        #
-        self.parent.maximum_ledit.setText(str(
-            round(dosimetrics[event.name()]['max'], 2)))
+                #
+                self.parent.mean_ledit.setText(str(
+                    round(dosimetrics[item.name()]['mean'], 2)))
 
-        #
-        self.parent.minimum_ledit.setText(str(
-            round(dosimetrics[event.name()]['min'], 2)))
+                #
+                self.parent.std_ledit.setText(str(
+                    round(dosimetrics[item.name()]['std'], 2)))
+
+                #
+                self.parent.maximum_ledit.setText(str(
+                    round(dosimetrics[item.name()]['max'], 2)))
+
+                #
+                self.parent.minimum_ledit.setText(str(
+                    round(dosimetrics[item.name()]['min'], 2)))
 
     def select_dvh_curves_from_parent(self, event):
         """."""

@@ -36,7 +36,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 
 | Name                           | Version                               |
 | -----------------------------: | :------------------------------------ |
-| `python`                       | <font size="3"> >=3.10, <3.12 </font> |
+| `python`                       | <font size="3"> >=3.10, <4.0 </font>  |
 | `numpy`                        | <font size="3"> >=2.2.6 </font>       |
 | `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
 | `absl-py`                      | <font size="3"> >=2.3.1 </font>       |
@@ -49,13 +49,11 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `numba`                        | <font size="3"> >=0.62.1 </font>      |
 | `scikit-learn`                 | <font size="3"> >=1.7.2 </font>       |
 | `tensorflow`                   | <font size="3"> >=2.20.0 </font>      |
-| `tensorflow-io-gcs-filesystem` | <font size="3"> ==0.31.0 </font>      |
 | `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
 | `pymoo`                        | <font size="3"> >=0.6.1.5 </font>     |
 | `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |
-| `pyqt5`                        | <font size="3"> >=5.15.10 </font>     |
+| `pyqt5`                        | <font size="3"> ==5.15.10 </font>     |
 | `pyqtgraph`                    | <font size="3"> >=0.14.0 </font>      |
-| `ipython`                      | <font size="3"> >=8.37.0 </font>      |
 | `matplotlib`                   | <font size="3"> >=3.10.7 </font>      |
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |

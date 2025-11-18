@@ -56,9 +56,7 @@ def test_copycat():
             dvh_type='cumulative',
             number_of_points=1000,
             reference_volume=[2, 5, 50, 95, 98],
-            reference_dose=[],
-            display_metrics=[],
-            display_segments=[])
+            reference_dose=[])
 
         )
 

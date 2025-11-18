@@ -160,7 +160,7 @@ class DVHGraphWidget(QWidget):
             pen = item.curve.opts['pen']
 
             # Check if the current item triggers the event
-            if item == event:
+            if item.curve == event:
 
                 # Construct the QPen
                 pen = mkPen(pen)
@@ -169,7 +169,7 @@ class DVHGraphWidget(QWidget):
                 if pen.width() == 2:
 
                     # Increase the pen width
-                    event.curve.setPen(mkPen(
+                    item.curve.setPen(mkPen(
                         color=pen.color(), style=pen.style(), width=4))
 
                     # Get the dosimetrics data
@@ -178,28 +178,28 @@ class DVHGraphWidget(QWidget):
                         .datahub.dosimetrics)
 
                     # Display the segment name
-                    self.parent.segment_ledit.setText(event.name())
+                    self.parent.segment_ledit.setText(item.name())
 
                     # Display the segment mean dose
                     self.parent.mean_ledit.setText(str(
-                        round(dosimetrics[event.name()]['mean'], 2)))
+                        round(dosimetrics[item.name()]['mean'], 2)))
 
                     # Display the segment dose deviation
                     self.parent.std_ledit.setText(str(
-                        round(dosimetrics[event.name()]['std'], 2)))
+                        round(dosimetrics[item.name()]['std'], 2)))
 
                     # Display the segment maximum dose
                     self.parent.maximum_ledit.setText(str(
-                        round(dosimetrics[event.name()]['max'], 2)))
+                        round(dosimetrics[item.name()]['max'], 2)))
 
                     # Display the segment minimum dose
                     self.parent.minimum_ledit.setText(str(
-                        round(dosimetrics[event.name()]['min'], 2)))
+                        round(dosimetrics[item.name()]['min'], 2)))
 
                 else:
 
                     # Decrease the pen width
-                    event.curve.setPen(mkPen(
+                    item.curve.setPen(mkPen(
                         color=pen.color(), style=pen.style(), width=2))
 
                     # Clear the dosimetrics line editors

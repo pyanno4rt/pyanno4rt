@@ -105,17 +105,17 @@ class Configuration():
         imaging_path = abspath(imaging_path)
         dose_matrix_path = abspath(dose_matrix_path)
 
-        # Get the input arguments
-        inputs = filter_dict(vars(), remove_keys=('self',))
-
         # Validate the input arguments
-        self.validate(inputs)
+        self.validate(filter_dict(vars(), remove_keys=('self',)))
 
-        # Loop over the input arguments
-        for key, value in inputs.items():
-
-            # Set the attribute
-            setattr(self, key, value)
+        # Get the input attributes
+        self.label = label
+        self.modality = modality
+        self.imaging_path = imaging_path
+        self.dose_matrix_path = dose_matrix_path
+        self.dose_resolution = dose_resolution
+        self.min_log_level = min_log_level
+        self.number_of_fractions = number_of_fractions
 
     def to_dict(self):
         """Serialize the object into a dictionary."""

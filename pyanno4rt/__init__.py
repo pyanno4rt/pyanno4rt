@@ -21,7 +21,7 @@ It also features an easy-to-use and clear graphical user interface.
 
 from pyanno4rt import (
     base, datahub, dose, evaluation, gui, io, learning, logging, optimization,
-    plan, tools, validation, visualization)
+    patient, plan, tools, validation, visualization)
 
 __all__ = [
     'base',
@@ -33,6 +33,7 @@ __all__ = [
     'learning',
     'logging',
     'optimization',
+    'patient',
     'plan',
     'tools',
     'validation',

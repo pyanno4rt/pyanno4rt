@@ -23,7 +23,7 @@ from pyanno4rt.visualization.assets import resources_rc
 from pyanno4rt.visualization.custom_widgets import (
     ComponentGraphWidget, DVHGraphWidget, FeatureGraphWidget,
     OutcomeGraphWidget, PermutationImportanceWidget, SliceWidget)
-from pyanno4rt.visualization.design.visualizer import Ui_visualization_window
+from pyanno4rt.visualization.designs.visualizer import Ui_visualization_window
 from pyanno4rt.visualization.static import (
     ComponentGraph, DosimetricsTable, DVHGraph, FeatureGraph, MetricsGraph,
     MetricsTable, OutcomeGraph, PermutationImportanceBoxplot)
@@ -488,7 +488,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Check if the plan has already been configured
         if (all(getattr(self.plan, unit) is not None for unit in (
-               'patient_loader', 'plan_generator', 'dose_generator'))
+               'patient_handler', 'plan_handler', 'dose_handler'))
                 and self.plan.datahub.state >= 1):
 
             # Add the CT cube to the slice widget

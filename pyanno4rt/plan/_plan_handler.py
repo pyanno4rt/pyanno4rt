@@ -1,4 +1,4 @@
-"""Plan generation."""
+"""Plan handling."""
 
 # Author: Tim Ortkamp
 
@@ -13,13 +13,11 @@ from pyanno4rt.datahub import Datahub
 # %% Class definition
 
 
-class PlanGenerator():
+class PlanHandler():
     """
-    Plan generation class.
+    Plan handling class.
 
-    This class provides methods to generate the plan configuration dictionary \
-    for the management and retrieval of plan properties and plan-related \
-    parameters, including the plan objectives and constraints.
+    This class provides methods to handle the plan configuration.
 
     Parameters
     ----------
@@ -46,9 +44,9 @@ class PlanGenerator():
             components):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing plan generator ...")
+        Datahub().logger.display_info("Initializing plan handler ...")
 
-        # Get the attributes from the arguments
+        # Get the input attributes
         self.modality = modality
         self.components = components
 

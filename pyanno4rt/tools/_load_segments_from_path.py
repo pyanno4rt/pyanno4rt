@@ -4,11 +4,11 @@
 
 # %% External package import
 
+from os import listdir
 from os.path import splitext
 
-# %% Internal package import
-
-from pyanno4rt.io import DicomHandler, MatHandler
+from pydicom import dcmread
+from scipy.io import loadmat
 
 # %% Function definition
 
@@ -34,8 +34,12 @@ def load_segments_from_path(path):
     # Check if the path leads to a DICOM folder
     if splitext(path)[1] == '':
 
-        # Read the DICOM segmentation data
-        _, segmentation_data = DicomHandler().read(path)
+        # Load the DICOM files
+        files = tuple(dcmread(f'{path}/{file}') for file in listdir(path))
+
+        # Get the segmentation data file
+        segmentation_data = next(
+            file for file in files if hasattr(file, 'ROIContourSequence'))
 
         # Initialize the segment dictionary
         segments = {}
@@ -67,8 +71,8 @@ def load_segments_from_path(path):
     # Else, check if the path leads to a MATLAB file
     elif splitext(path)[1] == '.mat':
 
-        # Read the MATLAB segmentation data
-        _, segmentation_data = MatHandler().read(path)
+        # Load the MATLAB segmentation data
+        segmentation_data = loadmat(path, simplify_cells=True)['cst']
 
         # Generate the segment dictionary
         segments = {

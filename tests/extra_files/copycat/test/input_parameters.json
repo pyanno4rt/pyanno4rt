@@ -77,8 +77,6 @@
             95,
             98
         ],
-        "reference_dose": [],
-        "display_segments": [],
-        "display_metrics": []
+        "reference_dose": []
     }
 }

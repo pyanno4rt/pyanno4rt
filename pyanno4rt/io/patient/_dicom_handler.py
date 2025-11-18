@@ -26,56 +26,24 @@ class DicomHandler():
     """
     DICOM file handler class.
 
-    This class provides methods to load planning data from DICOM files and \
-    generate the CT and segmentation dictionaries.
+    This class provides methods to handle patient imaging data from DICOM \
+    files and generate the CT and segmentation dictionaries.
     """
 
     def __init__(self):
 
         pass
 
-    def extract(
+    def load(
             self,
             path):
         """
-        Extract the data from the path.
+        Load the patient imaging data.
 
         Parameters
         ----------
         path : str
-            Path to the DICOM files.
-
-        Returns
-        -------
-        dict
-            Dictionary with information on the CT images.
-
-        dict
-            Dictionary with information on the segments.
-        """
-
-        # Read the data
-        computed_tomography, segmentation = self.read(path)
-
-        # Generate the CT dictionary
-        ct_dictionary = self.generate_ct(computed_tomography)
-
-        # Generate the segmentation dictionary
-        segmentation_dictionary = self.generate_segmentation(
-            segmentation, computed_tomography, ct_dictionary)
-
-        return ct_dictionary, segmentation_dictionary
-
-    def read(
-            self,
-            path):
-        """
-        Read the data from the path.
-
-        Parameters
-        ----------
-        path : str
-            Path to the DICOM files.
+            Path to the patient imaging data.
 
         Returns
         -------
@@ -98,7 +66,21 @@ class DicomHandler():
         segmentation_data = next(
             file for file in files if hasattr(file, 'ROIContourSequence'))
 
-        return computed_tomography_data, segmentation_data
+        # Generate the CT dictionary
+        ct_dictionary = self.generate_ct(computed_tomography_data)
+
+        # Generate the segmentation dictionary
+        segmentation_dictionary = self.generate_segmentation(
+            segmentation_data, computed_tomography_data, ct_dictionary)
+
+        return ct_dictionary, segmentation_dictionary
+
+    def save(
+            self,
+            computed_tomography,
+            segmentation,
+            path):
+        """Save the patient imaging data."""
 
     def generate_ct(
             self,
