@@ -8,7 +8,7 @@ from numpy import array
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -36,8 +36,7 @@ class WarmStartInitializer():
             initial_fluence_vector):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            "Initializing warm-start initializer ...")
+        get_logger().info("Initializing warm-start initializer ...")
 
         # Get the initial fluence from the argument
         self.initial_fluence_vector = initial_fluence_vector
@@ -53,7 +52,7 @@ class WarmStartInitializer():
         """
 
         # Log a message about the initialization
-        Datahub().logger.display_info(
+        get_logger().info(
             "Initializing fluence vector with respect to a reference point "
             "...")
 

@@ -19,6 +19,7 @@ from scipy.sparse import hstack as shstack
 
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning.features import FeatureCalculator
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -46,8 +47,7 @@ class DataMedoidInitializer():
             initial_fluence_vector=None):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            "Initializing data medoid initializer ...")
+        get_logger().info("Initializing data medoid initializer ...")
 
         # Get the initial fluence from the argument
         self.initial_fluence_vector = initial_fluence_vector
@@ -66,7 +66,7 @@ class DataMedoidInitializer():
         hub = Datahub()
 
         # Log a message about the initialization
-        hub.logger.display_info(
+        get_logger().info(
             "Initializing fluence vector with respect to data medoid points "
             "...")
 
@@ -78,7 +78,7 @@ class DataMedoidInitializer():
         if datasets is None:
 
             # Log a message about falling back to target coverage strategy
-            hub.logger.display_info(
+            get_logger().info(
                 "No datasets have been provided - falling back to target "
                 "coverage initialization strategy ...")
 

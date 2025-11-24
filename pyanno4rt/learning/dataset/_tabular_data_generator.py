@@ -16,6 +16,7 @@ from sklearn.model_selection import RepeatedStratifiedKFold
 
 from pyanno4rt.datahub import Datahub
 import pyanno4rt.learning._maps as maps
+from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import custom_round, deduplicate, identity, replace_nan
 
 # %% Set package options
@@ -93,9 +94,9 @@ class TabularDataGenerator():
             oof_repeats):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            f"Initializing data generator for '{model_label}' model from "
-            "tabular base dataset ...")
+        get_logger().info(
+            "Initializing data generator for '%s' model from tabular base "
+            "dataset ...", model_label)
 
         # Get the instance attributes from the arguments
         self.model_label = model_label
@@ -193,7 +194,7 @@ class TabularDataGenerator():
         """
 
         # Log a message about the dataset decomposition
-        Datahub().logger.display_info(
+        get_logger().info(
             "Decomposing tabular base dataset into features, label and time "
             "variable ...")
 
@@ -261,10 +262,10 @@ class TabularDataGenerator():
         """
 
         # Log a message about the dataset modulation
-        Datahub().logger.display_info(
-            "Modulating data information by feature "
-            f"'{data_information['time_variable_name']}' for label viewpoint "
-            f"'{data_information['label_viewpoint']}' ...")
+        get_logger().info(
+            "Modulating data information by feature '%s' for label viewpoint "
+            "'%s' ...", data_information['time_variable_name'],
+            data_information['label_viewpoint'])
 
         def squeeze_labels(bounds, index_sets):
             """Squeeze the labels per patient by the time bounds."""
@@ -363,8 +364,8 @@ class TabularDataGenerator():
             else (-1)**(index+1)*inf for index in range(2)]
 
         # Log a message about the dataset binarization
-        Datahub().logger.display_info(
-            f"Binarizing data information by label bounds {label_bounds} ...")
+        get_logger().info(
+            "Binarizing data information by label bounds %s ...", label_bounds)
 
         # Get the label values
         label_values = data_information['label_values']
@@ -414,7 +415,7 @@ class TabularDataGenerator():
         """
 
         # Log a message about the fold number addition
-        Datahub().logger.display_info(
+        get_logger().info(
             "Adding fold numbers for stratified cross validation ...")
 
         def get_folds(number_of_splits, number_of_repeats):

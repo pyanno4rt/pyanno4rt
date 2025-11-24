@@ -10,6 +10,7 @@ from numpy import (
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -66,8 +67,7 @@ class FeatureCalculator():
         if verbose:
 
             # Log a message about the initialization of the class
-            Datahub().logger.display_info(
-                "Initializing feature calculator ...")
+            get_logger().info("Initializing feature calculator ...")
 
         # Get the feature writing indicator from the argument
         self.write_features = write_features
@@ -103,7 +103,7 @@ class FeatureCalculator():
         """."""
 
         # Log a message about the static values map addition
-        Datahub().logger.display_info(
+        get_logger().info(
             "Adding static values map to the feature calculator ...")
 
         # Initialize the static values map from the argument
@@ -123,7 +123,7 @@ class FeatureCalculator():
         """
 
         # Log a message about the feature map addition
-        Datahub().logger.display_info(
+        get_logger().info(
             "Adding feature map to the feature calculator ...")
 
         # Initialize the feature map from the argument
@@ -393,7 +393,7 @@ class FeatureCalculator():
                     return self.statics[feature]
 
                 # Log a message about a missing static feature
-                hub.logger.display_error(
+                get_logger().error(
                     f"The feature '{feature}' is missing in the static "
                     "values map ...")
 

@@ -9,7 +9,7 @@ from sklearn.metrics import f1_score, precision_recall_curve
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Function definition
 
@@ -35,7 +35,7 @@ def f1(true_labels, predicted_labels):
     """
 
     # Log a message about the F1 computation
-    Datahub().logger.display_info("Computing F1 scores ...")
+    get_logger().info("Computing F1 scores ...")
 
     # Initialize the F1 scores dictionary
     scores = {'Training': {'values': None, 'best': None},

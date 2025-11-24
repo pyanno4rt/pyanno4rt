@@ -10,7 +10,7 @@ from scipy.optimize import minimize, NonlinearConstraint, SR1
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -62,8 +62,8 @@ class SciPySolver():
             tolerance):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            f"Initializing SciPy solver with {algorithm} algorithm ...")
+        get_logger().info(
+            "Initializing SciPy solver with %s algorithm ...", algorithm)
 
         # Get the input arguments
         self.algorithm = algorithm
@@ -99,7 +99,7 @@ class SciPySolver():
                 f"g={around(intermediate_result['constr'][0], 4)}")
 
         # Log a message about the intermediate function value(s)
-        Datahub().logger.display_info(output_string)
+        get_logger().info(output_string)
 
         # Increment the iteration counter
         self.counter += 1
@@ -235,7 +235,7 @@ class SciPySolver():
                     f"{output_string}, g={around(constraint_value, 4)}")
 
             # Log a message about the initial function values
-            Datahub().logger.display_info(output_string)
+            get_logger().info(output_string)
 
         # Solve the optimization problem
         result = self.fun(x0=initial_fluence, **self.arguments)

@@ -12,7 +12,7 @@ from tensorflow.keras.losses import binary_crossentropy
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Function definition
 
@@ -41,7 +41,7 @@ def kpi(true_labels, predicted_labels, thresholds=(0.5, 0.5)):
     """
 
     # Log a message about the KPI computation
-    Datahub().logger.display_info("Computing KPIs ...")
+    get_logger().info("Computing KPIs ...")
 
     # Binarize the predicted labels
     binaries = tuple(

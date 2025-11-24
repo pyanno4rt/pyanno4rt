@@ -6,7 +6,7 @@
 
 # Functional classes
 from pyanno4rt.base import Configuration, Evaluation, Optimization
-from pyanno4rt.logging import Logger
+from pyanno4rt.logging import Logging, set_logger_name
 from pyanno4rt.datahub import Datahub
 
 # Treatment plan configuration
@@ -18,8 +18,8 @@ from pyanno4rt.dose import DoseHandler
 from pyanno4rt.optimization import FluenceOptimizer
 
 # Treatment plan evaluation
-from pyanno4rt.evaluation import DVHEvaluator
-from pyanno4rt.evaluation import DosimetricsEvaluator
+from pyanno4rt.evaluation import DVH
+from pyanno4rt.evaluation import Dosimetrics
 
 # Treatment plan visualization
 from pyanno4rt.visualization import Visualizer
@@ -68,7 +68,7 @@ class TreatmentPlan():
         :class:`~pyanno4rt.base._evaluation.Evaluation`
         See 'Parameters'.
 
-    logger : object of class :class:`~pyanno4rt.logging._logger.Logger`
+    logging : object of class :class:`~pyanno4rt.logging._logging.Logging`
         The object used to print and store logging messages.
 
     datahub : object of class :class:`~pyanno4rt.datahub._datahub.Datahub`
@@ -90,12 +90,12 @@ class TreatmentPlan():
         :class:`~pyanno4rt.optimization._fluence_optimizer.FluenceOptimizer`
         The object used to solve the fluence optimization problem.
 
-    dose_histogram : None or object of class \
-        :class:`~pyanno4rt.evaluation._dvh_evaluator.DVHEvaluator`
+    dvh : None or object of class \
+        :class:`~pyanno4rt.evaluation._dvh.DVH`
         The object used to evaluate the dose-volume histogram (DVH).
 
     dosimetrics : None or object of class \
-        :class:`~pyanno4rt.evaluation._dosimetrics_evaluator.DosimetricsEvaluator`
+        :class:`~pyanno4rt.evaluation._dosimetrics.Dosimetrics`
         The object used to evaluate the dosimetrics.
 
     visualizer : None or object of class \
@@ -136,172 +136,189 @@ class TreatmentPlan():
             else Evaluation.from_dict(evaluation))
 
         # Initialize the plan subclasses
-        self.logger = Logger(
+        self.logging = Logging(
             self.configuration.label, self.configuration.min_log_level)
-        self.datahub = Datahub(self.configuration.label, self.logger)
+        self.datahub = Datahub(self.configuration.label)
         self.patient_handler = None
         self.plan_handler = None
         self.dose_handler = None
         self.fluence_optimizer = None
-        self.dose_histogram = None
+        self.dvh = None
         self.dosimetrics = None
         self.visualizer = None
 
         # Initialize the state
-        self.datahub.state = 0
+        self.state = 0
 
     def configure(self):
         """Configure the treatment plan."""
 
-        # Validate the configuration parameters
-        self.configuration.validate(vars(self.configuration))
+        with self.context():
 
-        # Set the treatment plan label in the datahub
-        Datahub.label = self.configuration.label
+            # Validate the configuration parameters
+            self.configuration.validate(vars(self.configuration))
 
-        # Initialize the patient handler
-        self.patient_handler = PatientHandler()
+            # Set the treatment plan label in the datahub
+            Datahub.label = self.configuration.label
 
-        # Load the patient data
-        self.patient_handler.load(path=self.configuration.imaging_path)
+            # Initialize the patient handler
+            self.patient_handler = PatientHandler()
 
-        # Initialize the plan handler
-        self.plan_handler = PlanHandler(
-            modality=self.configuration.modality,
-            components=self.optimization.components)
+            # Load the patient data
+            self.patient_handler.load(self.configuration.imaging_path)
 
-        # Generate the plan data
-        self.plan_handler.generate()
+            # Initialize the plan handler
+            self.plan_handler = PlanHandler(
+                modality=self.configuration.modality,
+                components=self.optimization.components)
 
-        # Initialize the dose handler
-        self.dose_handler = DoseHandler(
-            dose_resolution=self.configuration.dose_resolution,
-            number_of_fractions=self.configuration.number_of_fractions)
+            # Generate the plan data
+            self.plan_handler.generate(self.patient_handler.segmentation)
 
-        # Load the dose data
-        self.dose_handler.load(
-            dose_matrix_path=self.configuration.dose_matrix_path)
+            # Initialize the dose handler
+            self.dose_handler = DoseHandler(
+                dose_resolution=self.configuration.dose_resolution,
+                number_of_fractions=self.configuration.number_of_fractions)
 
-        # Set the state
-        self.datahub.state = 1
+            # Generate the dose data
+            self.dose_handler.generate(
+                self.patient_handler.computed_tomography,
+                self.plan_handler.plan_configuration,
+                self.configuration.dose_matrix_path)
+
+            # Set the state
+            self.state = 1
 
     def model(self):
         """Model the treatment plan outcome."""
 
-        # Set the treatment plan label in the datahub
-        Datahub.label = self.configuration.label
+        with self.context():
 
-        # Check if the plan has not been configured yet
-        if None in (
-                self.patient_handler, self.plan_handler, self.dose_handler):
+            # Set the treatment plan label in the datahub
+            Datahub.label = self.configuration.label
 
-            # Log a message about the non-configured plan
-            self.logger.display_error(
-                "Please configure the treatment plan before modeling!")
+            # Check if the plan has not been configured yet
+            if None in (
+                    self.patient_handler, self.plan_handler,
+                    self.dose_handler):
 
-        else:
+                # Log a message about the non-configured plan
+                self.logging.error(
+                    "Please configure the treatment plan before modeling!")
 
-            # Get the segmentation data
-            segmentation = Datahub().segmentation
+            else:
 
-            # Add the machine learning outcome models to the components
-            apply(lambda component: component.add_model(), (
-                get_machine_learning_constraints(segmentation)
-                + get_machine_learning_objectives(segmentation)))
+                # Get the segmentation data
+                segmentation = self.patient_handler.segmentation
 
-            # Set the state
-            self.datahub.state = 2
+                # Add the machine learning outcome models to the components
+                apply(lambda component: component.add_model(), (
+                    get_machine_learning_constraints(segmentation)
+                    + get_machine_learning_objectives(segmentation)))
+
+                # Set the state
+                self.state = 2
 
     def optimize(self):
         """Optimize the treatment plan."""
 
-        # Set the treatment plan label in the datahub
-        Datahub.label = self.configuration.label
+        with self.context():
 
-        # Get the segmentation data
-        segmentation = Datahub().segmentation
+            # Set the treatment plan label in the datahub
+            Datahub.label = self.configuration.label
 
-        # Check if the plan has not been configured yet
-        if None in (
-                self.patient_handler, self.plan_handler, self.dose_handler):
+            # Get the segmentation data
+            segmentation = self.patient_handler.segmentation
 
-            # Log a message about the non-configured plan
-            self.logger.display_error(
-                "Please configure the treatment plan before optimization!")
+            # Check if the plan has not been configured yet
+            if None in (
+                    self.patient_handler, self.plan_handler,
+                    self.dose_handler):
 
-        # Check if any machine learning component has not been modeled
-        elif None in (
-                component.model for component in
-                get_machine_learning_constraints(segmentation)
-                + get_machine_learning_objectives(segmentation)):
+                # Log a message about the non-configured plan
+                self.logging.error(
+                    "Please configure the treatment plan before optimization!")
 
-            # Log a message about the non-modeled component
-            self.logger.display_error(
-                "Please add the machine learning models before optimization!")
+            # Check if any machine learning component has not been modeled
+            elif None in (
+                    component.model for component in
+                    get_machine_learning_constraints(segmentation)
+                    + get_machine_learning_objectives(segmentation)):
 
-        else:
+                # Log a message about the non-modeled component
+                self.logging.error(
+                    "Please add the machine learning models before "
+                    "optimization!")
 
-            # Validate the optimization parameters
-            self.optimization.validate(vars(self.optimization))
+            else:
 
-            # Initialize the fluence optimizer
-            self.fluence_optimizer = FluenceOptimizer(
-                method=self.optimization.method,
-                solver=self.optimization.solver,
-                algorithm=self.optimization.algorithm,
-                initial_strategy=self.optimization.initial_strategy,
-                initial_fluence_vector=(
-                    self.optimization.initial_fluence_vector),
-                lower_variable_bounds=self.optimization.lower_variable_bounds,
-                upper_variable_bounds=self.optimization.upper_variable_bounds,
-                maximum_iterations=self.optimization.maximum_iterations,
-                tolerance=self.optimization.tolerance)
+                # Validate the optimization parameters
+                self.optimization.validate(vars(self.optimization))
 
-            # Solve the optimization problem
-            self.fluence_optimizer.solve()
+                # Initialize the fluence optimizer
+                self.fluence_optimizer = FluenceOptimizer(
+                    method=self.optimization.method,
+                    solver=self.optimization.solver,
+                    algorithm=self.optimization.algorithm,
+                    initial_strategy=self.optimization.initial_strategy,
+                    initial_fluence=self.optimization.initial_fluence,
+                    lower_variable_bounds=(
+                        self.optimization.lower_variable_bounds),
+                    upper_variable_bounds=(
+                        self.optimization.upper_variable_bounds),
+                    maximum_iterations=self.optimization.maximum_iterations,
+                    tolerance=self.optimization.tolerance)
 
-            # Set the state
-            self.datahub.state = 3
+                # Solve the optimization problem
+                self.fluence_optimizer.solve()
+
+                # Set the state
+                self.state = 3
 
     def evaluate(self):
         """Evaluate the treatment plan."""
 
-        # Set the treatment plan label in the datahub
-        Datahub.label = self.configuration.label
+        with self.context():
 
-        # Check if the plan has not been optimized yet
-        if (self.fluence_optimizer is None
-                or 'optimized_dose' not in Datahub().optimization):
+            # Set the treatment plan label in the datahub
+            Datahub.label = self.configuration.label
 
-            # Log a message about the non-optimized plan
-            self.logger.display_error(
-                "Please optimize the treatment plan before evaluation!")
+            # Check if the plan has not been optimized yet
+            if (self.fluence_optimizer is None
+                    or self.fluence_optimizer.optimized_dose is None):
 
-        else:
+                # Log a message about the non-optimized plan
+                self.logging.error(
+                    "Please optimize the treatment plan before evaluation!")
 
-            # Validate the evaluation parameters
-            self.evaluation.validate(vars(self.evaluation))
+            else:
 
-            # Initialize the DVH evaluator
-            self.dose_histogram = DVHEvaluator(
-                dvh_type=self.evaluation.dvh_type,
-                number_of_points=self.evaluation.number_of_points)
+                # Validate the evaluation parameters
+                self.evaluation.validate(vars(self.evaluation))
 
-            # Compute the dose-volume histogram
-            self.dose_histogram.evaluate(
-                self.datahub.optimization['optimized_dose'])
+                # Initialize the DVH
+                self.dvh = DVH(
+                    dvh_type=self.evaluation.dvh_type,
+                    number_of_points=self.evaluation.number_of_points)
 
-            # Initialize the dosimetrics evaluator
-            self.dosimetrics = DosimetricsEvaluator(
-                reference_volume=self.evaluation.reference_volume,
-                reference_dose=self.evaluation.reference_dose)
+                # Compute the dose-volume histogram
+                self.dvh.evaluate_segments(
+                    self.patient_handler.segmentation,
+                    self.fluence_optimizer.optimized_dose)
 
-            # Compute the dosimetrics
-            self.dosimetrics.evaluate(
-                self.datahub.optimization['optimized_dose'])
+                # Initialize the dosimetrics
+                self.dosimetrics = Dosimetrics(
+                    self.evaluation.reference_volumes,
+                    self.evaluation.reference_doses,
+                    self.configuration.number_of_fractions)
 
-            # Set the state
-            self.datahub.state = 4
+                # Compute the dosimetrics
+                self.dosimetrics.evaluate_segments(
+                    self.patient_handler.segmentation,
+                    self.fluence_optimizer.optimized_dose)
+
+                # Set the state
+                self.state = 4
 
     def visualize(
             self,
@@ -317,17 +334,19 @@ class TreatmentPlan():
             The object used as a parent window for the visualizer.
         """
 
-        # Set the treatment plan label in the datahub
-        Datahub.label = self.configuration.label
+        with self.context():
 
-        # Initialize the visualizer
-        self.visualizer = Visualizer(treatment_plan=self, parent=parent)
+            # Set the treatment plan label in the datahub
+            Datahub.label = self.configuration.label
 
-        # Set the position of the window
-        self.visualizer.position()
+            # Initialize the visualizer
+            self.visualizer = Visualizer(treatment_plan=self, parent=parent)
 
-        # Show the window
-        self.visualizer.launch()
+            # Set the position of the window
+            self.visualizer.position()
+
+            # Show the window
+            self.visualizer.launch()
 
     def compose(self):
         """Compose the treatment plan."""
@@ -354,10 +373,10 @@ class TreatmentPlan():
             Dictionary with the update parameter(s).
         """
 
-        # Initialize the base dictionaries
+        # Initialize the update dictionaries
         configuration, optimization, evaluation = {}, {}, {}
 
-        # Loop over the items of the update dictionary
+        # Loop over the items of the input dictionary
         for key, value in inputs.items():
 
             # Check if the key is in the configuration object
@@ -380,31 +399,31 @@ class TreatmentPlan():
 
             else:
 
-                # Log a message about the missing key
-                self.logger.display_warning(
+                # Log a message about a missing key
+                self.logging.warning(
                     f"The update parameter '{key}' is not part of the "
                     "treatment plan and will be ignored!")
 
-        # Loop over the base objects and dictionaries
-        for base_object, update in (
+        # Loop over the base objects and update dictionaries
+        for base, update in (
                 (self.configuration, configuration),
                 (self.optimization, optimization),
                 (self.evaluation, evaluation)):
 
             # Validate the update parameters
-            base_object.validate(update)
+            base.validate(update)
 
             # Loop over the update items
             for key, value in update.items():
 
                 # Update the attribute in the base object
-                setattr(base_object, key, value)
+                setattr(base, key, value)
 
                 # Check if the key is 'min_log_level'
                 if key == 'min_log_level':
 
                     # Change the logging levels of all handlers
-                    self.logger.change_log_levels(value)
+                    self.logging.change_log_levels(value)
 
                 # Check if the key is 'components'
                 if key == 'components' and self.plan_handler is not None:
@@ -414,20 +433,17 @@ class TreatmentPlan():
 
                     # Update the components
                     self.plan_handler.set_optimization_components(
-                        verbose=False)
+                        self.patient_handler.segmentation, verbose=False)
 
-    def state(self):
-        """Get the current state of the treatment plan."""
-
-        # Set the treatment plan label in the datahub
-        Datahub.label = self.configuration.label
+    def print_state(self):
+        """Print the current state of the treatment plan."""
 
         # Define the states
         states = {
             0: 'initialized', 1: 'configured', 2: 'modeled', 3: 'optimized',
             4: 'evaluated'}
 
-        return states[self.datahub.state]
+        return states[self.state]
 
     def save(
             self,
@@ -494,3 +510,8 @@ class TreatmentPlan():
         """
 
         return copycat(TreatmentPlan, path, ignore_optimum)
+
+    def context(self):
+        """Set the context manager variables."""
+
+        return set_logger_name(f'pyanno4rt - {self.configuration.label}')

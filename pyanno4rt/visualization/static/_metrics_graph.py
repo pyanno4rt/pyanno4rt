@@ -38,9 +38,6 @@ class MetricsGraph():
         # Initialize the datahub
         hub = Datahub()
 
-        # Log a message about the plot opening
-        hub.logger.display_info("Opening metrics graph ...")
-
         def create_subtitle(figure, grid, title):
             """Create a row subtitle."""
 

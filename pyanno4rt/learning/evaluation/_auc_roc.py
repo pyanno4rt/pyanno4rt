@@ -9,7 +9,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Function definition
 
@@ -34,7 +34,7 @@ def auc_roc(true_labels, predicted_labels):
     """
 
     # Log a message about the AUC-ROC computation
-    Datahub().logger.display_info("Computing AUC-ROC scores ...")
+    get_logger().info("Computing AUC-ROC scores ...")
 
     # Initialize the AUC-ROC scores dictionary
     scores = {'Training': {'curve': None, 'value': None},

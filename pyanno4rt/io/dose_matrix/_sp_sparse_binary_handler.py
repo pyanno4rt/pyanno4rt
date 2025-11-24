@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from scipy.sparse import load_npz
+from scipy.sparse import load_npz, save_npz
 
 # %% Class definition
 
@@ -23,8 +23,7 @@ class SpSparseBinHandler():
 
     def load(
             self,
-            path,
-            *args):
+            path):
         """
         Load the dose-influence matrix.
 
@@ -45,4 +44,17 @@ class SpSparseBinHandler():
             self,
             dose_matrix,
             path):
-        """Save the dose-influence matrix."""
+        """
+        Save the dose-influence matrix.
+
+        Parameters
+        ----------
+        dose_matrix : csr_matrix
+            Dose-influence matrix.
+
+        path : str
+            Path for storing the dose-influence matrix.
+        """
+
+        # Save the matrix to the path
+        save_npz(path, dose_matrix)

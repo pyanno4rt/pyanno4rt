@@ -4,7 +4,7 @@ IO module.
 ==================================================================
 
 This module aims to provide methods and classes for handling input and output \
-streams, e.g. CT/segmentation and dose data.
+streams, e.g. for CT/segmentation and dose data.
 """
 
 # Author: Tim Ortkamp

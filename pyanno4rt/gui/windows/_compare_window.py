@@ -241,19 +241,19 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         #
         baseline_dvh = self.evaluate_dvh(
             baseline.datahub.optimization['optimized_dose'],
-            baseline.datahub.computed_tomography,
-            baseline.datahub.segmentation,
+            baseline.patient_handler.computed_tomography,
+            baseline.patient_handler.segmentation,
             1000)
         reference_dvh = self.evaluate_dvh(
             reference.datahub.optimization['optimized_dose'],
-            baseline.datahub.computed_tomography,
-            baseline.datahub.segmentation,
+            baseline.patient_handler.computed_tomography,
+            baseline.patient_handler.segmentation,
             1000)
         dvh_diff = self.evaluate_dvh(
             baseline.datahub.optimization['optimized_dose']
             - reference.datahub.optimization['optimized_dose'],
-            baseline.datahub.computed_tomography,
-            baseline.datahub.segmentation,
+            baseline.patient_handler.computed_tomography,
+            baseline.patient_handler.segmentation,
             1000)
 
         #
@@ -287,8 +287,8 @@ class CompareWindow(QMainWindow, Ui_compare_window):
                 + get_radiobiological_constraints(segmentation)
                 + get_radiobiological_objectives(segmentation)) == 0
                 for segmentation in (
-                        self.baseline.datahub.segmentation,
-                        self.reference.datahub.segmentation)):
+                        self.baseline.patient_handler.segmentation,
+                        self.reference.patient_handler.segmentation)):
 
             # Disable the button
             self.joint_outcome_pbutton.setEnabled(False)
@@ -317,7 +317,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         mapping = {'axial': 2, 'coronal': 0, 'sagittal': 1}
 
         # Get the depth of the current plane
-        plane_depth = self.baseline.datahub.computed_tomography[
+        plane_depth = self.baseline.patient_handler.computed_tomography[
             'cube_dimensions'][mapping[self.plane_cbox.currentText()]]
 
         # Set the range of the slice selection scrollbar
@@ -400,13 +400,17 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         for triple in triples:
 
             #
-            if any(item.curve == event for item in triple):
+            if any(item.curve == event or item == event for item in triple):
 
                 #
-                clicked = next(item for item in triple if item.curve == event)
+                clicked = next(
+                    item for item in triple
+                    if item.curve == event or item == event)
 
                 #
-                linked = [item for item in triple if item.curve != event]
+                linked = [
+                    item for item in triple
+                    if item.curve != event and item != event]
 
                 #
                 cpen = clicked.curve.opts['pen']
@@ -491,12 +495,12 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         """Open the joint DVH graph."""
 
         # Get the segmentation dictionaries
-        baseline_segmentation = self.baseline.datahub.segmentation
-        reference_segmentation = self.reference.datahub.segmentation
+        baseline_segmentation = self.baseline.patient_handler.segmentation
+        reference_segmentation = self.reference.patient_handler.segmentation
 
         # Get the dose histogram dictionaries
-        baseline_dvh = self.baseline.datahub.dose_histogram
-        reference_dvh = self.reference.datahub.dose_histogram
+        baseline_dvh = self.baseline.dvh.histogram
+        reference_dvh = self.reference.dvh.histogram
 
         # Get the segments to be displayed
         segments = sorted(
@@ -587,8 +591,8 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         """Open the joint iterative outcome graph."""
 
         # Get the segmentation dictionaries
-        baseline_segmentation = self.baseline.datahub.segmentation
-        reference_segmentation = self.reference.datahub.segmentation
+        baseline_segmentation = self.baseline.patient_handler.segmentation
+        reference_segmentation = self.reference.patient_handler.segmentation
 
         # Get the dose histogram dictionaries
         baseline_opt = self.baseline.datahub.optimization

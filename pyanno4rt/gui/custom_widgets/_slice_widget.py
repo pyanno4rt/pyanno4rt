@@ -35,7 +35,7 @@ class SliceWidget(QWidget):
         # Call the superclass constructor
         super().__init__()
 
-        # 
+        #
         self.parent = parent
         self.cmap = cmap
 
@@ -49,18 +49,18 @@ class SliceWidget(QWidget):
         # Add the view box to the image window
         self.viewbox = self.image_window.addViewBox()
 
-        # 
+        #
         self.ct_image = ImageItem()
         self.viewbox.addItem(self.ct_image)
 
-        # 
+        #
         self.dose_image = ImageItem()
         self.dose_image.setOpacity(0.7)
         self.dose_image.setLookupTable(
             colormap.get(cmap, 'matplotlib').getLookupTable(0.0, 1.0))
         self.viewbox.addItem(self.dose_image)
 
-        # 
+        #
         self.bar = ColorBarItem(
             interactive=False, width=25, label='',
             rounding=0.1, colorMap=colormap.get(cmap, 'matplotlib'),
@@ -68,12 +68,12 @@ class SliceWidget(QWidget):
         self.bar.setImageItem(self.dose_image)
         self.bar.axis.setLabel('Dose')
 
-        # 
+        #
         self.zooms = None
         self.slice = None
         self.positions = None
 
-        # 
+        #
         self.ct_cube = None
         self.dose_cube = None
         self.dose_cube_with_nan = None
@@ -81,13 +81,13 @@ class SliceWidget(QWidget):
         self.segment_masks = None
         self.segment_contours = None
 
-        # 
+        #
         self.orientations = {
             'axial': ((0, 1, 2), 3, 'z'),
             'coronal': ((2, 1, 0), 1, 'y'),
             'sagittal': ((0, 2, 1), 0, 'x')}
 
-        # 
+        #
         self.parent.plane_cbox.currentTextChanged.connect(
             self.parent.adjust_slider_by_orientation)
 
@@ -100,7 +100,7 @@ class SliceWidget(QWidget):
             # Get the current cube dimensions
             old_dimensions = computed_tomography['cube_dimensions']
 
-            # 
+            #
             interpolated_ct = {
                 'x': None,
                 'y': None,
@@ -108,7 +108,7 @@ class SliceWidget(QWidget):
                 'cube_dimensions': None,
                 'cubeHU': None}
 
-            # 
+            #
             interpolated_cst = {
                 segment: {'raw_indices': None} for segment in segmentation}
 
@@ -147,7 +147,7 @@ class SliceWidget(QWidget):
                 # Get the resized segment indices
                 resized_indices = where(zoom(mask, self.zooms, order=0))
 
-                # Enter the new segment indices into the datahub
+                # Store the new segment indices
                 interpolated_cst[segment]['raw_indices'] = ravel_multi_index(
                     resized_indices, interpolated_ct['cube_dimensions'],
                     order='F')
@@ -167,28 +167,28 @@ class SliceWidget(QWidget):
 
             return segment_mask
 
-        # 
+        #
         plan = self.parent.plans[self.parent.plan_ledit.text()]
 
-        # 
-        computed_tomography = plan.datahub.computed_tomography
-        segmentation = plan.datahub.segmentation
+        #
+        computed_tomography = plan.patient_handler.computed_tomography
+        segmentation = plan.patient_handler.segmentation
 
-        # 
+        #
         interpolated_ct, interpolated_cst = interpolate_ct(
             computed_tomography, segmentation,
             plan.configuration.dose_resolution)
 
-        # 
+        #
         self.ct_cube = interpolated_ct['cubeHU']
 
-        # 
+        #
         self.positions = {
             'x': interpolated_ct['x'],
             'y': interpolated_ct['y'],
             'z': interpolated_ct['z']}
 
-        # 
+        #
         self.segment_masks = tuple(
             get_segment_mask(segment, interpolated_ct['cube_dimensions'])
             for segment in segmentation)
@@ -211,16 +211,16 @@ class SliceWidget(QWidget):
     def add_dose(self):
         """."""
 
-        # 
+        #
         plan = self.parent.plans[self.parent.plan_ledit.text()]
 
-        # 
+        #
         self.dose_cube = zoom(
             plan.datahub.optimization['optimized_dose'], self.zooms, order=1)
 
         self.minimum, self.maximum = self.dose_cube.min(), self.dose_cube.max()
 
-        # 
+        #
         self.dose_cube_with_nan = self.dose_cube.copy()
         self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
 
@@ -242,21 +242,21 @@ class SliceWidget(QWidget):
     def add_image_data(self):
         """."""
 
-        # 
+        #
         self.add_ct()
         self.add_dose()
 
     def update_ct(self):
         """."""
 
-        # 
+        #
         orientation, rotations, _ = self.orientations[
             self.parent.plane_cbox.currentText()]
 
-        # 
+        #
         if self.ct_cube is not None:
 
-            # 
+            #
             ct_cube = rot90(
                 transpose(self.ct_cube, orientation), rotations)
 
@@ -266,36 +266,36 @@ class SliceWidget(QWidget):
     def update_dose(self):
         """."""
 
-        # 
+        #
         orientation, rotations, _ = self.orientations[
             self.parent.plane_cbox.currentText()]
 
         if self.dose_cube_with_nan is not None:
 
-            # 
+            #
             dose_cube_with_nan = rot90(
                 transpose(self.dose_cube_with_nan, orientation), rotations)
 
             # Update the dose image
             self.dose_image.setImage(dose_cube_with_nan[:, :, self.slice])
 
-            # 
+            #
             self.image_window.addItem(self.bar)
 
-            # 
+            #
             self.bar.setLevels((min(0, round(self.minimum, 1)-0.1),
                                 round(self.maximum, 1)+0.1))
 
     def update_dose_contours(self):
         """."""
 
-        # 
+        #
         orientation, rotations, _ = self.orientations[
             self.parent.plane_cbox.currentText()]
 
         if self.dose_cube is not None and self.dose_contours is not None:
 
-            # 
+            #
             dose_cube = rot90(
                 transpose(self.dose_cube, orientation), rotations)
 
@@ -308,14 +308,14 @@ class SliceWidget(QWidget):
     def update_segment_contours(self):
         """."""
 
-        # 
+        #
         orientation, rotations, _ = self.orientations[
             self.parent.plane_cbox.currentText()]
 
         if (self.segment_masks is not None
                 and self.segment_contours is not None):
 
-            # 
+            #
             segment_masks = tuple(rot90(
                 transpose(mask, orientation), rotations)
                 for mask in self.segment_masks)
@@ -329,16 +329,16 @@ class SliceWidget(QWidget):
     def update_parent(self):
         """."""
 
-        # 
+        #
         axis = self.orientations[self.parent.plane_cbox.currentText()][2]
 
-        # 
+        #
         if self.positions is not None:
 
-            # 
+            #
             position = round(self.positions[axis][self.slice], 2)
 
-            # 
+            #
             self.parent.slice_selection_pos.setText(
                 f'{axis} = {position} mm')
 
@@ -372,27 +372,27 @@ class SliceWidget(QWidget):
             self.dose_image.clear()
             self.dose_cube_with_nan = None
 
-            # 
+            #
             try:
 
-                # 
+                #
                 self.image_window.removeItem(self.bar)
 
             except ValueError:
 
-                # 
+                #
                 pass
 
     def reset_dose_contours(self):
         """."""
 
-        # 
+        #
         orientation, rotations, axis = self.orientations[
             self.parent.plane_cbox.currentText()]
 
         if self.dose_cube is not None and self.dose_contours is not None:
 
-            # 
+            #
             dose_cube = rot90(
                 transpose(self.dose_cube, orientation), rotations)
 
@@ -408,14 +408,14 @@ class SliceWidget(QWidget):
     def reset_segment_contours(self):
         """."""
 
-        # 
+        #
         orientation, rotations, axis = self.orientations[
             self.parent.plane_cbox.currentText()]
 
         if (self.segment_masks is not None
                 and self.segment_contours is not None):
 
-            # 
+            #
             segment_masks = tuple(rot90(
                 transpose(mask, orientation), rotations)
                 for mask in self.segment_masks)
@@ -451,29 +451,29 @@ class SliceWidget(QWidget):
     def change_orientation(self):
         """."""
 
-        # 
+        #
         self.slice = self.parent.slice_selection_sbar.value()
 
-        # 
+        #
         self.viewbox.enableAutoRange()
 
-        # 
+        #
         self.update_images()
 
     def change_dose_opacity(self):
         """."""
 
-        # 
+        #
         self.dose_image.setOpacity(self.parent.opacity_sbox.value()/100)
 
-        # 
+        #
         self.update_dose()
 
     def change_image_slice(self):
         """."""
 
-        # 
+        #
         self.slice = self.parent.slice_selection_sbar.value()
 
-        # 
+        #
         self.update_images()

@@ -9,6 +9,7 @@ from math import inf
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -17,13 +18,12 @@ class PlanHandler():
     """
     Plan handling class.
 
-    This class provides methods to handle the plan configuration.
+    This class provides methods to handle plan data.
 
     Parameters
     ----------
     modality : {'photon', 'proton'}
-        Treatment modality, needs to be consistent with the dose calculation \
-        inputs.
+        Treatment modality.
 
     components : dict
         Optimization components for each segment of interest, i.e., \
@@ -36,6 +36,9 @@ class PlanHandler():
 
     components : dict
         See 'Parameters'.
+
+    plan_configuration : dict
+        Dictionary with information on the plan.
     """
 
     def __init__(
@@ -44,61 +47,76 @@ class PlanHandler():
             components):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing plan handler ...")
+        get_logger().info("Initializing plan handler ...")
 
         # Get the input attributes
         self.modality = modality
         self.components = components
 
-    def generate(self):
-        """Generate the plan configuration dictionary."""
+        # Initialize the plan configuration dictionary
+        self.plan_configuration = {}
 
-        # Initialize the datahub
-        hub = Datahub()
+    def generate(
+            self,
+            segmentation):
+        """
+        Generate the plan configuration.
+
+        Parameters
+        ----------
+        segmentation : dict
+            Dictionary with information on the segments.
+        """
 
         # Log a message about the plan generation
-        hub.logger.display_info(
-            f"Generating plan configuration for {self.modality} treatment ...")
+        get_logger().info(
+            "Generating plan configuration for %s treatment ...",
+            self.modality)
 
-        # Initialize the plan dictionary
-        plan_configuration = {
+        # Update the plan configuration
+        self.plan_configuration |= {
             'modality': self.modality,
-            'RBE': 1.0 + 0.1*(self.modality == 'proton')}
+            'RBE': 1.0 + 0.1*(self.modality == 'proton'),
+            'components': self.components}
 
-        # Enter the plan dictionary into the datahub
-        hub.plan_configuration = plan_configuration
+        # Store the plan configuration
+        Datahub().plan_configuration = self.plan_configuration
 
         # Set the optimization components
-        self.set_optimization_components()
+        self.set_optimization_components(segmentation)
 
     def set_optimization_components(
             self,
+            segmentation,
             verbose=True):
         """
         Set the components of the optimization problem.
 
         Parameters
         ----------
+        segmentation : dict
+            Dictionary with information on the segments.
+
         verbose : bool
             Indicator for logging output messages.
         """
 
-        def set_component(component, segment, category, base_dict):
+        def set_component(component, segment, category, base):
             """Set the component by its segment and type assignment."""
 
             # Check if verbose is True
             if verbose:
 
                 # Log a message about setting the component
-                logger.display_info(
-                    f"Setting {category} '{component.name}' for "
-                    f"{[segment]+component.link} ...")
+                get_logger().info(
+                    "Setting %s '%s' for %s ...",
+                    category, component.name, [segment]+component.link)
 
             # Check if the component is already included in the base dictionary
-            if component.track_id not in base_dict:
+            if component.track_id not in base:
 
                 # Add the instance to the base dictionary
-                base_dict[component.track_id] = {
+                base[component.track_id] = {
                     'segments': [segment]+component.link,
                     'instance': component}
 
@@ -117,9 +135,6 @@ class PlanHandler():
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the logger and the segmentation data
-        logger, segmentation = hub.logger, hub.segmentation
-
         # Loop over the segments
         for segment in segmentation:
 
@@ -131,7 +146,7 @@ class PlanHandler():
         if verbose:
 
             # Log a message about the components setting
-            logger.display_info("Setting objectives and constraints ...")
+            get_logger().info("Setting objectives and constraints ...")
 
         # Initialize the objective and constraint dictionaries
         objectives, constraints = {}, {}
@@ -146,10 +161,10 @@ class PlanHandler():
             segment, category = component.segment, component.component_type
 
             # Get the base dictionary
-            base_dict = bases[category]
+            base = bases[category]
 
             # Set the component
-            set_component(component, segment, category, base_dict)
+            set_component(component, segment, category, base)
 
         # Loop over the constraints
         for constraint in constraints.values():

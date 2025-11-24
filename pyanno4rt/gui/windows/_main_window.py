@@ -615,7 +615,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             handler.stream.connect(self.status_bar.showMessage)
 
             # Add the handler to the treatment plan logger
-            treatment_plan.logger.logger.addHandler(handler)
+            treatment_plan.logging.logger.addHandler(handler)
 
         else:
 
@@ -790,7 +790,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Check if the instance has already been configured
             if (all(getattr(instance, unit) is not None for unit in (
                    'patient_handler', 'plan_handler', 'dose_handler'))
-                    and instance.datahub.state >= 1):
+                    and instance.state >= 1):
 
                 # Add the CT cube to the slice widget
                 self.slice_widget.add_ct()
@@ -802,7 +802,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 self.slice_widget.update_images()
 
                 # Get the segmentation dictionary from the instance
-                segmentation = instance.datahub.segmentation
+                segmentation = instance.patient_handler.segmentation
 
                 # Get the machine learning components
                 ml_components = (
@@ -822,7 +822,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                     if (any(getattr(component, unit) is None
                             for unit in ('data_model_handler', 'model')
                             for component in ml_components)
-                            or instance.datahub.state == 1):
+                            or instance.state == 1):
 
                         return
 
@@ -835,7 +835,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Check if the instance has already been optimized
                 if (instance.fluence_optimizer is not None
                         and 'optimized_dose' in instance.datahub.optimization
-                        and instance.datahub.state >= 3):
+                        and instance.state >= 3):
 
                     # Add the dose cube to the slice widget
                     self.slice_widget.add_dose()
@@ -850,13 +850,13 @@ class MainWindow(QMainWindow, Ui_main_window):
                     self.status_bar.showMessage("Ready for evaluation ...")
 
                 # Check if the instance has already been evaluated
-                if (all(getattr(instance, unit) is not None for unit in (
-                        'dose_histogram', 'dosimetrics'))
-                        and instance.datahub.state == 4):
+                if (all(getattr(instance, attribute) is not None
+                        for attribute in ('dvh', 'dosimetrics'))
+                        and instance.state == 4):
 
                     # Add style and input data to the DVH widget
                     self.dvh_widget.add_style_and_data(
-                        instance.datahub.dose_histogram)
+                        instance.dvh.histogram)
 
                     # Update the DVH plot
                     self.dvh_widget.update_graph()
@@ -1142,8 +1142,8 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Disable some fields
         self.set_disabled(('optimize_pbutton', 'evaluate_pbutton'))
 
-        # Reset the datahub state
-        instance.datahub.state = 0
+        # Reset the state
+        instance.state = 0
 
         # Set the status bar to configuration-ready
         self.status_bar.showMessage("Ready for configuration ...")
@@ -1502,7 +1502,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         reference_plans = [
             label for label, instance in self.plans.items()
             if label != self.plan_select_cbox.currentText()
-            and instance.datahub.state >= 3]
+            and instance.state >= 3]
 
         # Add the reference plans to the combo box
         self.ref_plan_cbox.addItems([str(None)] + reference_plans)
@@ -1621,10 +1621,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Check if the instance has already been configured
         if (all(getattr(instance, unit) is not None for unit in (
                 'patient_handler', 'plan_handler', 'dose_handler'))
-                and instance.datahub.state >= 1):
+                and instance.state >= 1):
 
-            # Reset the datahub state
-            instance.datahub.state = 1
+            # Reset the state
+            instance.state = 1
 
             # Add the CT cube to the slice widget
             self.slice_widget.add_ct()
@@ -1636,7 +1636,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             self.slice_widget.update_images()
 
             # Get the segmentation dictionary from the instance
-            segmentation = instance.datahub.segmentation
+            segmentation = instance.patient_handler.segmentation
 
             # Get the machine learning components
             ml_components = (
@@ -1743,11 +1743,11 @@ class MainWindow(QMainWindow, Ui_main_window):
                 'init_fluence_ledit', 'init_fluence_tbutton', 'ref_plan_cbox'))
 
         # Check if an initial fluence vector has been specified
-        if optimization.initial_fluence_vector:
+        if optimization.initial_fluence:
 
             # Set the initial fluence vector
             self.init_fluence_ledit.setText(
-                str(optimization.initial_fluence_vector)[1:-1])
+                str(optimization.initial_fluence)[1:-1])
 
         else:
 
@@ -1912,10 +1912,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Check if the instance has already been optimized
         if (instance.fluence_optimizer is not None
                 and 'optimized_dose' in instance.datahub.optimization
-                and instance.datahub.state >= 3):
+                and instance.state >= 3):
 
-            # Reset the datahub state
-            instance.datahub.state = 3
+            # Reset the state
+            instance.state = 3
 
             # Set the status bar to evaluation-ready
             self.status_bar.showMessage("Ready for evaluation ...")
@@ -1934,13 +1934,13 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Set the reference volume
         self.ref_vol_ledit.setText(
-            '' if evaluation.reference_volume == [2, 5, 50, 95, 98]
-            else str(evaluation.reference_volume)[1:-1])
+            '' if evaluation.reference_volumes == [2, 5, 50, 95, 98]
+            else str(evaluation.reference_volumes)[1:-1])
 
         # Set the reference dose values
         self.ref_dose_ledit.setText(
-            '' if evaluation.reference_dose == []
-            else str(evaluation.reference_dose)[1:-1])
+            '' if evaluation.reference_doses == []
+            else str(evaluation.reference_doses)[1:-1])
 
         # Set the line edit cursor positions to zero
         self.set_zero_line_cursor(('ref_vol_ledit', 'ref_dose_ledit'))
@@ -1971,21 +1971,21 @@ class MainWindow(QMainWindow, Ui_main_window):
         """
 
         # Convert the reference volume from the field
-        reference_volume = add_square_brackets(self.ref_vol_ledit.text())
+        reference_volumes = add_square_brackets(self.ref_vol_ledit.text())
 
         # Convert the reference dose from the field
-        reference_dose = add_square_brackets(self.ref_dose_ledit.text())
+        reference_doses = add_square_brackets(self.ref_dose_ledit.text())
 
         # Create the evaluation dictionary from the input fields
         evaluation = {
             'dvh_type': self.dvh_type_cbox.currentText(),
             'number_of_points': self.n_points_sbox.value(),
-            'reference_volume': (
-                [2, 5, 50, 95, 98] if reference_volume == ''
-                else loads(reference_volume)),
-            'reference_dose': (
-                [] if reference_dose == ''
-                else loads(reference_dose))
+            'reference_volumes': (
+                [2, 5, 50, 95, 98] if reference_volumes == ''
+                else loads(reference_volumes)),
+            'reference_doses': (
+                [] if reference_doses == ''
+                else loads(reference_doses))
             }
 
         return evaluation
@@ -2169,7 +2169,8 @@ class MainWindow(QMainWindow, Ui_main_window):
             'model_pbutton', 'optimize_pbutton', 'evaluate_pbutton'))
 
         # Get the segmentation dictionary
-        segmentation = self.plans[self.plan_ledit.text()].datahub.segmentation
+        segmentation = self.plans[
+            self.plan_ledit.text()].patient_handler.segmentation
 
         # Check if any machine learning components are non-
         if len(get_machine_learning_constraints(segmentation)
@@ -2405,7 +2406,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Add style and input data to the DVH widget
         self.dvh_widget.add_style_and_data(
-            self.plans[self.plan_ledit.text()].datahub.dose_histogram)
+            self.plans[self.plan_ledit.text()].dvh.histogram)
 
         # Update the DVH plot
         self.dvh_widget.update_graph()
@@ -2582,10 +2583,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         reference = self.plans[self.reference_cbox.currentText()]
 
         # Check if the plans have different CT shapes or segments
-        if ((baseline.datahub.computed_tomography['cubeHU'].shape !=
-             reference.datahub.computed_tomography['cubeHU'].shape)
-            or (tuple(baseline.datahub.segmentation) !=
-                tuple(reference.datahub.segmentation))):
+        if ((baseline.patient_handler.computed_tomography['cubeHU'].shape !=
+             reference.patient_handler.computed_tomography['cubeHU'].shape)
+            or (tuple(baseline.patient_handler.segmentation) !=
+                tuple(reference.patient_handler.segmentation))):
 
             # Define the output string
             message = ("Baseline and reference plan have different CT cube "
@@ -2596,7 +2597,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             QMessageBox.information(self, 'pyanno4rt', message)
 
         # Check if any plan has not been (re-)optimized
-        elif any(instance.datahub.state < 3 for instance in (
+        elif any(instance.state < 3 for instance in (
                 baseline, reference)):
 
             # Define the output string
@@ -2640,7 +2641,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
             # Get the depth of the current plan's CT cube
             plane_depth = self.plans[
-                self.plan_ledit.text()].datahub.computed_tomography[
+                self.plan_ledit.text()].patient_handler.computed_tomography[
                     'cube_dimensions'][mapping[self.plane_cbox.currentText()]]
 
         # Set the range of the slice selection scroll bar

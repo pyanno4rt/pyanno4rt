@@ -241,13 +241,16 @@ class Visualizer(QMainWindow, Ui_visualization_window):
     def disable_buttons(self):
         """Disable irrelevant buttons."""
 
+        #
+        computed_tomography = self.plan.patient_handler.computed_tomography
+        segmentation = self.plan.patient_handler.segmentation
+        histogram = self.plan.dvh.histogram
+        quantities = self.plan.dosimetrics.quantities
+
         # Get the datahub
-        (computed_tomography, segmentation, optimization, model_evaluations,
-         model_inspections, dose_histogram, dosimetrics, state) = (
+        (optimization, model_evaluations, model_inspections) = (
              getattr(self.plan.datahub, attribute) for attribute in (
-                 'computed_tomography', 'segmentation', 'optimization',
-                 'model_evaluations', 'model_inspections', 'dose_histogram',
-                 'dosimetrics', 'state'))
+                 'optimization', 'model_evaluations', 'model_inspections'))
 
         # Check if segmentation data is available
         if segmentation is not None:
@@ -273,7 +276,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             cv_components, ml_components, rb_components = (), (), ()
 
         # Check if the iteration plot buttons should be disabled
-        if (state < 3 or
+        if (self.plan.state < 3 or
             (optimization is not None and
              ('problem' not in optimization or
               not hasattr(optimization['problem'], 'tracker')
@@ -293,7 +296,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             self.open_outc_graph_pbutton.setEnabled(False)
 
         # Check if the feature iterations button should be disabled
-        if (state < 3 or
+        if (self.plan.state < 3 or
             (optimization is not None and
              ('problem' not in optimization or
               (not hasattr(optimization['problem'], 'tracker')
@@ -304,26 +307,26 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             self.open_feat_graph_pbutton.setEnabled(False)
 
         # Check if the metrics tables and graphs buttons should be disabled
-        if (state < 2 or
+        if (self.plan.state < 2 or
             (model_evaluations is None
              or len(model_evaluations) == 0)):
             self.open_metrics_graphs_pbutton.setEnabled(False)
             self.open_metrics_tables_pbutton.setEnabled(False)
 
         # Check if the permutation importance button should be disabled
-        if (state < 2 or
+        if (self.plan.state < 2 or
             (model_inspections is None
              or len(model_inspections) == 0)):
             self.open_perm_graph_pbutton.setEnabled(False)
 
         # Check if the plan evaluation buttons should be disabled
-        if (state < 4 or
-                (dose_histogram is None and dosimetrics is None)):
+        if (self.plan.state < 4 or
+                (histogram is None and quantities is None)):
             self.open_dvh_graph_pbutton.setEnabled(False)
             self.open_ind_pbutton.setEnabled(False)
 
         # Check if the CT/dose slice button should be disabled
-        if (state < 1 or
+        if (self.plan.state < 1 or
                 computed_tomography is None or segmentation is None):
             self.open_image_pbutton.setEnabled(False)
 
@@ -334,9 +337,8 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         self.comp_widget.reset_graph()
 
         # Get the segmentation and optimization data
-        segmentation, optimization = (
-            getattr(self.plan.datahub, attribute) for attribute in (
-                'segmentation', 'optimization'))
+        segmentation = self.plan.patient_handler.segmentation
+        optimization = self.plan.datahub.optimization
 
         # Get all optimization components
         components = (
@@ -345,8 +347,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Check if the plan has already been optimized
         if (self.plan.fluence_optimizer is not None
-                and 'optimized_dose' in self.plan.datahub.optimization
-                and self.plan.datahub.state >= 3):
+                and 'optimized_dose' in optimization and self.plan.state >= 3):
 
             # Add style and data
             self.comp_widget.add_style_and_data(
@@ -363,8 +364,9 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         # Reset the outcome graph
         self.outc_widget.reset_graph()
 
-        # Get the segmentation data
-        segmentation = self.plan.datahub.segmentation
+        # Get the segmentation and optimization data
+        segmentation = self.plan.patient_handler.segmentation
+        optimization = self.plan.datahub.optimization
 
         # Get the outcome model-based components
         components = (
@@ -375,11 +377,11 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Check if the plan has already been optimized
         if (self.plan.fluence_optimizer is not None
-                and 'optimized_dose' in self.plan.datahub.optimization
-                and self.plan.datahub.state >= 3) and len(components) > 0:
+                and 'optimized_dose' in optimization and self.plan.state >= 3
+                and len(components) > 0):
 
             # Get the tracker
-            tracker = self.plan.datahub.optimization['problem'].tracker
+            tracker = optimization['problem'].tracker
 
             # Add style and data
             self.outc_widget.add_style_and_data(
@@ -396,8 +398,9 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         # Reset the feature graph
         self.feat_widget.reset_graph()
 
-        # Get the segmentation data
-        segmentation = self.plan.datahub.segmentation
+        # Get the segmentation and optimization data
+        segmentation = self.plan.patient_handler.segmentation
+        optimization = self.plan.datahub.optimization
 
         # Get the ML model-based components
         components = (
@@ -406,8 +409,8 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Check if the plan has already been optimized
         if (self.plan.fluence_optimizer is not None
-                and 'optimized_dose' in self.plan.datahub.optimization
-                and self.plan.datahub.state >= 3) and len(components) > 0:
+                and 'optimized_dose' in optimization and self.plan.state >= 3
+                and len(components) > 0):
 
             # Get the feature histories
             histories = {label: values for label, values in {
@@ -420,7 +423,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             if len(histories) > 0:
 
                 # Get the tracker
-                tracker = self.plan.datahub.optimization['problem'].tracker
+                tracker = optimization['problem'].tracker
 
                 # Get the outcome data
                 outcomes = {
@@ -453,7 +456,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         # Check if the plan has already been evaluated
         if (model_inspections is not None
                 and len(model_inspections) > 0
-                and self.plan.datahub.state >= 2):
+                and self.plan.state >= 2):
 
             # Get the permutation importance data
             importances = {
@@ -489,7 +492,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         # Check if the plan has already been configured
         if (all(getattr(self.plan, unit) is not None for unit in (
                'patient_handler', 'plan_handler', 'dose_handler'))
-                and self.plan.datahub.state >= 1):
+                and self.plan.state >= 1):
 
             # Add the CT cube to the slice widget
             self.slice_widget.add_ct()
@@ -503,7 +506,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             # Check if the plan has already been optimized
             if (self.plan.fluence_optimizer is not None
                     and 'optimized_dose' in self.plan.datahub.optimization
-                    and self.plan.datahub.state >= 3):
+                    and self.plan.state >= 3):
 
                 # Add the dose cube to the slice widget
                 self.slice_widget.add_dose()
@@ -518,12 +521,10 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         self.dvh_widget.reset_graph()
 
         # Check if the plan has already been evaluated
-        if (getattr(self.plan, 'dose_histogram') is not None
-                and self.plan.datahub.state == 4):
+        if getattr(self.plan, 'dvh') is not None and self.plan.state == 4:
 
             # Add style and data
-            self.dvh_widget.add_style_and_data(
-                self.plan.datahub.dose_histogram)
+            self.dvh_widget.add_style_and_data(self.plan.dvh.histogram)
 
             # Update the DVH graph
             self.dvh_widget.update_graph()
@@ -535,13 +536,12 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         self.ind_table_widget.clear()
 
         # Check if the plan has already been evaluated
-        if (all(getattr(self.plan, unit) is not None for unit in (
-                'dose_histogram', 'dosimetrics'))
-                and self.plan.datahub.state == 4):
+        if (all(getattr(self.plan, attribute) is not None for attribute in (
+                'dvh', 'dosimetrics')) and self.plan.state == 4):
 
-            # Convert the dosimetrics dictionary into a dataframe
+            # Convert the quantities dictionary into a dataframe
             dataframe = DataFrame(
-                self.plan.datahub.dosimetrics).transpose().astype(float)
+                self.plan.dosimetrics.quantities).transpose().astype(float)
 
             # Set the number of rows and columns
             self.ind_table_widget.setRowCount(0)
@@ -748,7 +748,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         plotter = DosimetricsTable()
 
         # Open the view
-        plotter.view()
+        plotter.view(self.plan)
 
     def adjust_slider_by_orientation(self):
         """Adjust the slider for slice selection by the orientation."""
@@ -766,8 +766,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         else:
 
             # Get the depth of the current plan's CT cube
-            plane_depth = self.plans[
-                self.plan_ledit.text()].datahub.computed_tomography[
+            plane_depth = self.plan.patient_handler.computed_tomography[
                     'cube_dimensions'][mapping[self.plane_cbox.currentText()]]
 
         # Set the range of the slice selection scroll bar
@@ -778,9 +777,6 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
     def launch(self):
         """Launch the visualizer."""
-
-        # Log a message about the visualizer launch
-        self.plan.logger.display_info("Launching visualizer ...")
 
         # Set the window position
         self.position()
@@ -852,7 +848,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             self.setGeometry(geometry)
 
             # Set the window size
-            self.resize(self.parent.screen().size())
+            self.resize(self.parent.size())
 
     def close(self):
         """Close the visualizer."""

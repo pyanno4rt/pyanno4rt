@@ -2,13 +2,11 @@
 
 # Author: Tim Ortkamp
 
-# %% External package import
-
-from pyanno4rt.datahub import Datahub
-
 # %% Internal package import
 
+from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning.evaluation import auc_pr, auc_roc, f1, kpi
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -36,7 +34,7 @@ class ModelEvaluator():
             model_label):
 
         # Log a message about the initialization of the model evaluator
-        Datahub().logger.display_info("Initializing model evaluator ...")
+        get_logger().info("Initializing model evaluator ...")
 
         # Get the model label from the arguments
         self.model_label = model_label

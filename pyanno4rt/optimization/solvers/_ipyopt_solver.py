@@ -10,7 +10,7 @@ from numpy import around, array, indices
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -60,8 +60,8 @@ class IpyoptSolver():
             tolerance):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            f"Initializing Ipyopt solver with {algorithm} algorithm ...")
+        get_logger().info(
+            "Initializing Ipyopt solver with %s algorithm ...", algorithm)
 
         # Get the input arguments
         self.algorithm = algorithm
@@ -99,7 +99,7 @@ class IpyoptSolver():
                 f"{output_string}, viol_g={around(args[3], 4)}")
 
         # Log a message about the intermediate function value(s)
-        Datahub().logger.display_info(output_string)
+        get_logger().info(output_string)
 
         return True
 

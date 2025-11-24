@@ -5,7 +5,7 @@
 
 # %% External package import
 
-from numpy import array, log, mean
+from numpy import array, mean
 from numpy.random import beta
 from pymoo.algorithms.moo.nsga3 import NSGA3
 from pymoo.core.callback import Callback
@@ -19,7 +19,7 @@ from pymoo.util.ref_dirs import get_reference_directions
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -75,12 +75,9 @@ class PymooSolver():
             maximum_iterations,
             tolerance):
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Log a message about the initialization of the class
-        hub.logger.display_info(
-            f"Initializing Pymoo solver with {algorithm} algorithm ...")
+        get_logger().info(
+            "Initializing Pymoo solver with %s algorithm ...", algorithm)
 
         # Get the input arguments
         self.algorithm = algorithm
@@ -235,8 +232,8 @@ class CustomCallback(Callback):
             output_string = f"{output_string}, {add_string}"
 
         # Log a message about the intermediate mean component values
-        Datahub().logger.display_info(
-            f"At generation {algorithm.n_gen}: {output_string}")
+        get_logger().info(
+            "At generation %s: %s", algorithm.n_gen, output_string)
 
 
 class PymooProblem(ElementwiseProblem):

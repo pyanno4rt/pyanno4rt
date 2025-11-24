@@ -9,6 +9,7 @@ from math import inf
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import (
     get_machine_learning_constraints, get_machine_learning_objectives)
 
@@ -81,8 +82,7 @@ class ParetoProblem():
             initial_fluence):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            "Building Pareto optimization problem ...")
+        get_logger().info("Building Pareto optimization problem ...")
 
         # Get the instance attributes from the arguments
         self.backprojection = backprojection

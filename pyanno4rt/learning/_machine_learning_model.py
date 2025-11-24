@@ -22,6 +22,7 @@ import pyanno4rt.learning._maps as maps
 from pyanno4rt.learning.evaluation import ModelEvaluator
 from pyanno4rt.learning.inspection import ModelInspector
 from pyanno4rt.learning.preprocessing import DataPreprocessor
+from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import compare_dictionaries
 
 # %% Class definition
@@ -357,13 +358,13 @@ class MachineLearningModel(metaclass=ABCMeta):
             self.updated_model = False
 
             # Log messages about the model file reading
-            hub.logger.display_info(
-                f'Reading "{self.model_label}" preprocessor from datahub ...')
-            hub.logger.display_info(
-                f'Reading "{self.model_label}" model from datahub ...')
-            hub.logger.display_info(
-                f'Reading "{self.model_label}" hyperparameters from datahub '
-                '...')
+            get_logger().info(
+                "Reading '%s' preprocessor from datahub ...", self.model_label)
+            get_logger().info(
+                "Reading '%s' model from datahub ...", self.model_label)
+            get_logger().info(
+                "Reading '%s' hyperparameters from datahub ...",
+                self.model_label)
 
             # Read the model files
             preprocessor, prediction_model, hyperparameters = (
@@ -432,26 +433,21 @@ class MachineLearningModel(metaclass=ABCMeta):
             Dictionary with the values of the tuned hyperparameters.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Log a message about the hyperparameter tuning
-        hub.logger.display_info(
-            'Performing Bayesian hyperparameter search for '
-            f'"{self.model_label}" with '
-            f'{len(set(self.configuration["tune_folds"][:, 0]))}-fold '
-            'cross-validation and '
-            f'{self.configuration["tune_folds"].shape[1]} repeat(s) ...')
+        get_logger().info(
+            "Performing Bayesian hyperparameter search for '%s' with %s-fold "
+            "cross-validation and %s repeat(s) ...", self.model_label,
+            len(set(self.configuration["tune_folds"][:, 0])),
+            self.configuration["tune_folds"].shape[1])
 
         # Define the output string function
         def log_trial(step, trials):
             """Log the result of a single trial."""
 
-            hub.logger.display_info(
-                f'Tuning hyperparameters for "{self.model_label}" '
-                f'({step}/{self.configuration["tune_evaluations"]}) '
-                '- best loss: '
-                f'{round(min(filter(None, trials.losses())), 4)} ...')
+            get_logger().info(
+                "Tuning hyperparameters for '%s' (%s/%s) - best loss: %s ...",
+                self.model_label, step, self.configuration["tune_evaluations"],
+                round(min(filter(None, trials.losses())), 4))
 
         def objective(proposal, trials, space):
             """Compute the objective function for a set of hyperparameters."""
@@ -558,11 +554,11 @@ class MachineLearningModel(metaclass=ABCMeta):
             show_progressbar=False)
 
         # Log a message about the tuning status
-        hub.logger.display_info(
-            f'Completed hyperparameter tuning for "{self.model_label}" '
-            f'({self.step}/{self.configuration["tune_evaluations"]}) '
-            '- best loss: '
-            f'{round(min(filter(None, bayes_trials.losses())), 4)} ...')
+        get_logger().info(
+            "Completed hyperparameter tuning for '%s' (%s/%s) - best loss: %s "
+            "... ", self.model_label, self.step,
+            self.configuration["tune_evaluations"],
+            round(min(filter(None, bayes_trials.losses())), 4))
 
         return tuned_hyperparameters
 
@@ -591,8 +587,8 @@ class MachineLearningModel(metaclass=ABCMeta):
         """
 
         # Log a message about the model fitting
-        Datahub().logger.display_info(
-            f'Fitting the model "{self.model_label}" to the data ...')
+        get_logger().info(
+            "Fitting the model '%s' to the data ...", self.model_label)
 
         # Get the hyperparameter set
         hyperparameters = self.get_hyperparameter_set(
@@ -634,11 +630,11 @@ class MachineLearningModel(metaclass=ABCMeta):
         """
 
         # Log a message about the out-of-folds prediction
-        Datahub().logger.display_info(
-            f'Performing {len(set(self.configuration["oof_folds"][:, 0]))}'
-            '-fold cross-validation with '
-            f'{self.configuration["oof_folds"].shape[1]} repeat(s) to yield '
-            f'out-of-folds predictions for "{self.model_label}" ...')
+        get_logger().info(
+            "Performing %s-fold cross-validation with %s repeat(s) to yield "
+            "out-of-folds predictions for %s",
+            len(set(self.configuration["oof_folds"][:, 0])),
+            self.configuration["oof_folds"].shape[1], self.model_label)
 
         def compute_fold_labels(indices):
             """Compute the out-of-folds labels for a single fold."""
@@ -769,8 +765,8 @@ class MachineLearningModel(metaclass=ABCMeta):
         """
 
         # Log a message about the preprocessor file reading
-        Datahub().logger.display_info(
-            f'Reading "{self.model_label}" preprocessor from file ...')
+        get_logger().info(
+            "Reading '%s' preprocessor from file ...", self.model_label)
 
         return load(open(self.preprocessor_path, 'rb'))
 
@@ -802,8 +798,8 @@ class MachineLearningModel(metaclass=ABCMeta):
         """
 
         # Log a message about the configuration file reading
-        Datahub().logger.display_info(
-            f'Reading "{self.model_label}" configuration from file ...')
+        get_logger().info(
+            "Reading '%s' configuration from file ...", self.model_label)
 
         # Open a file stream
         with open(self.configuration_path, 'r', encoding='utf-8') as file:
@@ -884,8 +880,8 @@ class MachineLearningModel(metaclass=ABCMeta):
         if verbose:
 
             # Log a message about the parameter file reading
-            Datahub().logger.display_info(
-                f'Reading "{self.model_label}" hyperparameters from file ...')
+            get_logger().info(
+                "Reading '%s' hyperparameters from file ...", self.model_label)
 
         return jload(open(self.hyperparameter_path, 'r', encoding='utf-8'))
 

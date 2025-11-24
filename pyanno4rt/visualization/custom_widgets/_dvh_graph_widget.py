@@ -63,7 +63,7 @@ class DVHGraphWidget(QWidget):
 
         # Initialize the segment names, the DVH data and the display styles
         self.segments = None
-        self.dose_histogram = None
+        self.histogram = None
         self.styles = None
 
         # Initialize the crosshair update
@@ -71,23 +71,22 @@ class DVHGraphWidget(QWidget):
 
     def add_style_and_data(
             self,
-            dose_histogram):
+            histogram):
         """
         Add the display styles and DVH data.
 
         Parameters
         ----------
-        dose_histogram : dict
-            Dictionary with information on the cumulative or differential \
-            dose-volume histogram for each segment.
+        histogram : dict
+            Dictionary with information on the segment-wise dose histogram.
         """
 
         # Set the DVH data
-        self.dose_histogram = dose_histogram
+        self.histogram = histogram
 
         # Get the segment names
         self.segments = tuple(
-            key for key in dose_histogram if key != 'evaluation_points')
+            key for key in histogram if key != 'evaluation_points')
 
         # Set the colormap
         colors = colormap.get('tab20b', 'matplotlib').getLookupTable(
@@ -114,7 +113,7 @@ class DVHGraphWidget(QWidget):
 
         # Set the plot limits
         self.plot_widget.plotItem.vb.setLimits(
-            xMin=0, xMax=1.1*dose_histogram['evaluation_points'][-1],
+            xMin=0, xMax=1.1*histogram['evaluation_points'][-1],
             yMin=-1, yMax=101)
 
         # Enable the auto-range
@@ -159,7 +158,7 @@ class DVHGraphWidget(QWidget):
             pen = item.curve.opts['pen']
 
             # Check if the current item triggers the event
-            if item.curve == event:
+            if item.curve == event or item == event:
 
                 # Construct the QPen
                 pen = mkPen(pen)
@@ -171,27 +170,27 @@ class DVHGraphWidget(QWidget):
                     event.setPen(mkPen(
                         color=pen.color(), style=pen.style(), width=4))
 
-                    # Get the dosimetrics data
-                    dosimetrics = self.parent.plan.datahub.dosimetrics
+                    # Get the dosimetric quantities
+                    quantities = self.parent.plan.dosimetrics.quantities
 
                     # Display the segment name
                     self.parent.segment_ledit.setText(item.name())
 
                     # Display the segment mean dose
                     self.parent.mean_ledit.setText(str(
-                        round(dosimetrics[item.name()]['mean'], 2)))
+                        round(quantities[item.name()]['D_mean'], 2)))
 
                     # Display the segment dose deviation
                     self.parent.std_ledit.setText(str(
-                        round(dosimetrics[item.name()]['std'], 2)))
+                        round(quantities[item.name()]['D_std'], 2)))
 
                     # Display the segment maximum dose
                     self.parent.maximum_ledit.setText(str(
-                        round(dosimetrics[item.name()]['max'], 2)))
+                        round(quantities[item.name()]['D_max'], 2)))
 
                     # Display the segment minimum dose
                     self.parent.minimum_ledit.setText(str(
-                        round(dosimetrics[item.name()]['min'], 2)))
+                        round(quantities[item.name()]['D_min'], 2)))
 
                 else:
 
@@ -306,8 +305,8 @@ class DVHGraphWidget(QWidget):
 
             # Plot the track
             plot = self.plot_widget.plot(
-                self.dose_histogram['evaluation_points'],
-                100*self.dose_histogram[segment]['dvh_values'],
+                self.histogram['evaluation_points'],
+                100*self.histogram[segment],
                 pen=pen,
                 name=segment,
                 clickable=True)

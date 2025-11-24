@@ -64,7 +64,7 @@ class DVHGraphCompareWidget(QWidget):
 
         # Initialize the segment names, the DVH data and the display styles
         self.segments = None
-        self.dose_histogram = None
+        self.histogram = None
         self.styles = None
 
         # Initialize the crosshair update
@@ -72,7 +72,7 @@ class DVHGraphCompareWidget(QWidget):
 
     def add_style_and_data(
             self,
-            dose_histogram,
+            histogram,
             x_range=None,
             baseline=None,
             reference=None):
@@ -81,22 +81,21 @@ class DVHGraphCompareWidget(QWidget):
 
         Parameters
         ----------
-        dose_histogram : dict
-            Dictionary with information on the cumulative or differential \
-            (diff.) dose-volume histogram for each segment.
+        histogram : dict
+            Dictionary with information on the dose histograms.
 
         x_range :
         """
 
         #
-        self.dose_histogram = dose_histogram
+        self.histogram = histogram
         self.x_range = x_range
         self.baseline = baseline
         self.reference = reference
 
         # Get the segment names
         self.segments = tuple(
-            key for key in dose_histogram if key != 'evaluation_points')
+            key for key in histogram if key != 'evaluation_points')
 
         # Set the colormap
         colors = colormap.get(
@@ -137,8 +136,8 @@ class DVHGraphCompareWidget(QWidget):
         if x_range is None:
 
             self.x_range = (
-                min(0, min(self.dose_histogram['evaluation_points'])),
-                max(self.dose_histogram['evaluation_points']))
+                min(0, min(self.histogram['evaluation_points'])),
+                max(self.histogram['evaluation_points']))
 
         # Set the plot limits
         self.plot_widget.plotItem.vb.setLimits(
@@ -171,23 +170,23 @@ class DVHGraphCompareWidget(QWidget):
         if self.baseline and not self.reference:
 
             #
-            dosimetrics = self.baseline.datahub.dosimetrics
+            quantities = self.baseline.dosimetrics.quantities
 
         #
         elif self.reference and not self.baseline:
 
             #
-            dosimetrics = self.reference.datahub.dosimetrics
+            quantities = self.reference.dosimetrics.quantities
 
         #
         if self.baseline and self.reference:
 
             #
-            dosimetrics = self.parent.evaluate_dosimetrics(
+            quantities = self.parent.evaluate_dosimetrics(
                 self.baseline.datahub.optimization['optimized_dose']
                 - self.reference.datahub.optimization['optimized_dose'],
-                self.baseline.datahub.computed_tomography,
-                self.baseline.datahub.segmentation)
+                self.baseline.patient_handler.computed_tomography,
+                self.baseline.patient_handler.segmentation)
 
         # Loop over the items
         for item in self.plot_widget.getPlotItem().listDataItems():
@@ -200,19 +199,19 @@ class DVHGraphCompareWidget(QWidget):
 
                 #
                 self.parent.mean_ledit.setText(str(
-                    round(dosimetrics[item.name()]['mean'], 2)))
+                    round(quantities[item.name()]['D_mean'], 2)))
 
                 #
                 self.parent.std_ledit.setText(str(
-                    round(dosimetrics[item.name()]['std'], 2)))
+                    round(quantities[item.name()]['D_std'], 2)))
 
                 #
                 self.parent.maximum_ledit.setText(str(
-                    round(dosimetrics[item.name()]['max'], 2)))
+                    round(quantities[item.name()]['D_max'], 2)))
 
                 #
                 self.parent.minimum_ledit.setText(str(
-                    round(dosimetrics[item.name()]['min'], 2)))
+                    round(quantities[item.name()]['D_min'], 2)))
 
     def select_dvh_curves_from_parent(self, event):
         """."""
@@ -275,8 +274,8 @@ class DVHGraphCompareWidget(QWidget):
                         width=2)
 
             plot = self.plot_widget.plot(
-                self.dose_histogram['evaluation_points'],
-                100*self.dose_histogram[segment]['dvh_values'],
+                self.histogram['evaluation_points'],
+                100*self.histogram[segment],
                 pen=pen,
                 name=segment,
                 clickable=True)

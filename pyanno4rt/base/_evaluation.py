@@ -30,10 +30,10 @@ class Evaluation():
     number_of_points : int, default=1000
         Number of (evenly-spaced) DVH evaluation points.
 
-    reference_volume : tuple or list, default=(2, 5, 50, 95, 98)
+    reference_volumes : tuple or list, default=(2, 5, 50, 95, 98)
         Reference volumes for the inverse DVH values.
 
-    reference_dose : tuple or list, default=()
+    reference_doses : tuple or list, default=()
         Reference doses for the DVH values.
 
         .. note:: If the default value is used, reference dose levels will be \
@@ -47,10 +47,10 @@ class Evaluation():
     number_of_points : int
         See 'Parameters'.
 
-    reference_volume : tuple or list
+    reference_volumes : tuple or list
         See 'Parameters'.
 
-    reference_dose : tuple or list
+    reference_doses : tuple or list
         See 'Parameters'.
     """
 
@@ -58,8 +58,8 @@ class Evaluation():
             self,
             dvh_type='cumulative',
             number_of_points=1000,
-            reference_volume=(2, 5, 50, 95, 98),
-            reference_dose=()):
+            reference_volumes=(2, 5, 50, 95, 98),
+            reference_doses=()):
 
         # Validate the input arguments
         self.validate(filter_dict(vars(), remove_keys=('self',)))
@@ -67,8 +67,8 @@ class Evaluation():
         # Get the input attributes
         self.dvh_type = dvh_type
         self.number_of_points = number_of_points
-        self.reference_volume = reference_volume
-        self.reference_dose = reference_dose
+        self.reference_volumes = reference_volumes
+        self.reference_doses = reference_doses
 
     def to_dict(self):
         """Serialize the object into a dictionary."""
@@ -116,13 +116,13 @@ class Evaluation():
             'number_of_points': (
                 partial(validate_type, options=int),
                 partial(validate_value, reference=1, sign='>=')),
-            'reference_volume': (
+            'reference_volumes': (
                 partial(validate_type, options=(tuple, list)),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_value, reference=0, sign='>='),
                 partial(validate_value, reference=100, sign='<=')
                 ),
-            'reference_dose': (
+            'reference_doses': (
                 partial(validate_type, options=(tuple, list)),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_value, reference=0, sign='>='))}

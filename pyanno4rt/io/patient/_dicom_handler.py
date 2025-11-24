@@ -17,7 +17,7 @@ from skimage.draw import polygon2mask
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -28,6 +28,11 @@ class DicomHandler():
 
     This class provides methods to handle patient imaging data from DICOM \
     files and generate the CT and segmentation dictionaries.
+
+    Notes
+    -----
+    DICOM file export is not implemented yet. This will be considered in a \
+    later release.
     """
 
     def __init__(self):
@@ -58,29 +63,46 @@ class DicomHandler():
         files = tuple(dcmread(f'{path}/{file}') for file in listdir(path))
 
         # Get the (axially ordered) CT data files
-        computed_tomography_data = tuple(sorted(
-            [file for file in files if hasattr(file, 'PixelData')],
+        ct_dicom = tuple(sorted(
+            (file for file in files if hasattr(file, 'PixelData')),
             key=lambda file: file.ImagePositionPatient[2]))
 
         # Get the segmentation data file
-        segmentation_data = next(
+        segmentation_dicom = next(
             file for file in files if hasattr(file, 'ROIContourSequence'))
 
         # Generate the CT dictionary
-        ct_dictionary = self.generate_ct(computed_tomography_data)
+        computed_tomography = self.generate_ct(ct_dicom)
 
         # Generate the segmentation dictionary
-        segmentation_dictionary = self.generate_segmentation(
-            segmentation_data, computed_tomography_data, ct_dictionary)
+        segmentation = self.generate_segmentation(
+            segmentation_dicom, ct_dicom, computed_tomography)
 
-        return ct_dictionary, segmentation_dictionary
+        return computed_tomography, segmentation
 
     def save(
             self,
             computed_tomography,
             segmentation,
             path):
-        """Save the patient imaging data."""
+        """
+        Save the patient imaging data.
+
+        Parameters
+        ----------
+        computed_tomography : dict
+            Dictionary with information on the CT images.
+
+        segmentation : dict
+            Dictionary with information on the segments.
+
+        path : str
+            Path for storing the patient imaging data.
+        """
+
+        raise NotImplementedError(
+            "DICOM file export is not implemented yet - you may select "
+            "another file format (.mat)!")
 
     def generate_ct(
             self,
@@ -125,8 +147,8 @@ class DicomHandler():
                     "the CT slices!")
 
             # Check if the image positions are inconsistent
-            if any(len(set(positions)) != 1 for positions in zip(
-                *((file.ImagePositionPatient[1], file.ImagePositionPatient[0])
+            if any(len(set(positions)) != 1 for positions in zip(*((
+                    file.ImagePositionPatient[1], file.ImagePositionPatient[0])
                   for file in data))):
 
                 # Raise an error to indicate an inconsistency
@@ -135,8 +157,8 @@ class DicomHandler():
                     "inconsistent across the CT slices!")
 
             # Check if the dimensionalities are inconsistent
-            if any(len(set(dimensions)) != 1 for dimensions in zip(
-                    *((file.Columns, file.Rows) for file in data))):
+            if any(len(set(dimensions)) != 1 for dimensions in zip(*((
+                    file.Columns, file.Rows) for file in data))):
 
                 # Raise an error to indicate an inconsistency
                 raise ValueError(
@@ -165,34 +187,34 @@ class DicomHandler():
         # Initialize the dictionary
         computed_tomography = {}
 
-        # Add the interpolated RED/RSP cube to the dictionary
+        # Add the interpolated RED/RSP cube
         computed_tomography['cubeHU'] = calculate_3d_cube(data)
 
-        # Add the grid resolution to the dictionary
+        # Add the grid resolution
         computed_tomography['resolution'] = {
             'x': data[0].PixelSpacing[0],
             'y': data[0].PixelSpacing[1],
             'z': data[0].SliceThickness}
 
-        # Add the grid points in x to the dictionary
+        # Add the grid points in x
         computed_tomography['x'] = array([
             data[0].ImagePositionPatient[0] + factor*data[0].PixelSpacing[0]
             for factor in range(data[0].Columns)])
 
-        # Add the grid points in y to the dictionary
+        # Add the grid points in y
         computed_tomography['y'] = array([
             data[0].ImagePositionPatient[1] + factor*data[0].PixelSpacing[1]
             for factor in range(data[0].Rows)])
 
-        # Add the grid points in z to the dictionary
+        # Add the grid points in z
         computed_tomography['z'] = array([
             file.ImagePositionPatient[2] for file in data])
 
-        # Add the cube dimensions to the dictionary
+        # Add the cube dimensions
         computed_tomography['cube_dimensions'] = array(
             computed_tomography['cubeHU'].shape)
 
-        # Add the number of voxels to the dictionary
+        # Add the number of voxels
         computed_tomography['number_of_voxels'] = prod(
             computed_tomography['cube_dimensions'])
 
@@ -201,7 +223,7 @@ class DicomHandler():
     def generate_segmentation(
             self,
             data,
-            ct_raw,
+            ct_dicom,
             ct_dictionary):
         """
         Generate the segmentation dictionary.
@@ -209,9 +231,9 @@ class DicomHandler():
         Parameters
         ----------
         data : object of class :class:`pydicom.dataset.FileDataset`
-            The object used to represent the information on the segments.
+            The object used to represent the segmentation data.
 
-        ct_raw : tuple
+        ct_dicom : tuple
             Tuple of :class:`pydicom.dataset.FileDataset` objects with \
             information on the CT slices.
 
@@ -266,9 +288,9 @@ class DicomHandler():
                     if len(set(points_z)) > 1:
 
                         # Log a message about the out-of-slice points
-                        logger.display_error(
-                            f"The contour sequence for the segment {segment} "
-                            "includes out-of-slice points!")
+                        logger.error(
+                            "The contour sequence for the segment %s includes "
+                            "out-of-slice points!", segment)
 
                         # Raise an error to indicate out-of-slice points
                         raise ValueError(
@@ -285,27 +307,24 @@ class DicomHandler():
                             computed_tomography[axis[0]],
                             range(computed_tomography[
                                 'cube_dimensions'][axis[1]]),
-                            'linear',
-                            fill_value='extrapolate')(axis[2])
+                            'linear', fill_value='extrapolate')(axis[2])
                             for axis in (
-                                    ('x', 1, points_x),
-                                    ('y', 0, points_y))
-                            )
+                                ('x', 1, points_x), ('y', 0, points_y)))
 
                         # Convert the polygon vertices into a binary mask
                         mask = polygon2mask(
                             computed_tomography['cube_dimensions'][:2],
                             column_stack((interpolated_y, interpolated_x)))
 
-                        # Get the computed tomography slice indices
+                        # Get the CT slice indices
                         ct_slice_indices = [
                             index for index, value in enumerate(
                                 computed_tomography['z'])
                             if (points_z[0]
-                                -int(ct_slices[0].SliceThickness)/2
+                                - int(ct_slices[0].SliceThickness)/2
                                 <= value <
                                 points_z[0]
-                                +int(ct_slices[0].SliceThickness)/2)]
+                                + int(ct_slices[0].SliceThickness)/2)]
 
                         # Loop over the slice indices
                         for index in ct_slice_indices:
@@ -317,16 +336,16 @@ class DicomHandler():
                     else:
 
                         # Log a message about the missing CT data
-                        logger.display_warning(
-                            f"Omitting contour data for '{segment}' at slice "
-                            "position {points_z[0]} mm - no CT data available "
-                            "...")
+                        logger.warning(
+                            "Omitting contour data for '%s' at slice position "
+                            "%s mm - no CT data available ...",
+                            segment, points_z[0])
 
             return sort(ravel_multi_index(
                 where(segment_cube), segment_cube.shape, order='F'))
 
         # Initialize the logger
-        logger = Datahub().logger
+        logger = get_logger()
 
         # Get the default color tuple
         default_colors = generate_colors(len(data.ROIContourSequence))
@@ -345,19 +364,18 @@ class DicomHandler():
             # Get the structure name
             segment = roi_structure.ROIName
 
-            # Add the first-layer backbone to the dictionary
+            # Add the first-layer backbone
             segmentation[segment] = {
                 key: None for key in (
-                    'index', 'type', 'raw_indices', 'prioritized_indices',
-                    'resized_indices', 'parameters', 'objective', 'constraint')
-                }
+                    'index', 'type', 'raw_indices', 'parameters', 'objective',
+                    'constraint')}
 
-            # Add the second-layer backbone to the dictionary
+            # Add the second-layer backbone
             segmentation[segment]['parameters'] = {
                 key: None for key in (
                     'priority', 'alphaX', 'betaX', 'visibleColor')}
 
-            # Add the segment index to the dictionary
+            # Add the segment index
             segmentation[segment]['index'] = (
                 int(roi_contour.ReferencedROINumber)-1)
 
@@ -365,34 +383,34 @@ class DicomHandler():
             if any(string in segment.lower() for string in (
                     'tv', 'target', 'gtv', 'ctv', 'ptv', 'boost', 'tumor')):
 
-                # Add the 'TARGET' type to the dictionary
+                # Add the 'TARGET' type
                 segmentation[segment]['type'] = 'TARGET'
 
-                # Add the default target priority to the dictionary
+                # Add the default target priority
                 segmentation[segment]['parameters']['priority'] = 1
 
             else:
 
-                # Add the 'OAR' type to the dictionary
+                # Add the 'OAR' type
                 segmentation[segment]['type'] = 'OAR'
 
-                # Add the default organ-at-risk priority to the dictionary
+                # Add the default organ-at-risk priority
                 segmentation[segment]['parameters']['priority'] = 2
 
-            # Add the default biological parameters to the dictionary
+            # Add the default biological parameters
             segmentation[segment]['parameters']['alphaX'] = 0.1
             segmentation[segment]['parameters']['betaX'] = 0.05
 
             # Check if the ROI contour includes a display color
             if hasattr(roi_contour, 'ROIDisplayColor'):
 
-                # Add the visible color to the dictionary
+                # Add the visible color
                 segmentation[segment]['parameters']['visibleColor'] = array(
                     [int(x)/255 for x in roi_contour.ROIDisplayColor])
 
             else:
 
-                # Add the default visible color to the dictionary
+                # Add the default visible color
                 segmentation[segment]['parameters']['visibleColor'] = (
                     default_colors[segmentation[segment]['index']])
 
@@ -400,14 +418,14 @@ class DicomHandler():
             if (hasattr(roi_contour, 'ContourSequence')
                     and roi_contour.ContourSequence):
 
-                # Add the segment indices to the dictionary
+                # Add the segment indices
                 segmentation[segment]['raw_indices'] = compute_segment_indices(
-                    ct_raw, ct_dictionary, roi_contour)
+                    ct_dicom, ct_dictionary, roi_contour)
 
             else:
 
                 # Log a message about the empty ROI contour
-                logger.display_warning(
-                    f"The ROI contour '{segment}' is empty ...")
+                logger.warning(
+                    "ROI contour for '%s' is empty ...", segment)
 
         return dict(sorted(segmentation.items()))

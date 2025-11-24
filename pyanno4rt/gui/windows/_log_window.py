@@ -69,19 +69,19 @@ class LogWindow(QMainWindow, Ui_log_window):
     def update_log_output(self):
         """."""
 
-        # 
+        #
         self.log_tedit.clear()
 
-        # 
+        #
         instance = self.parent.plans[self.parent.plan_ledit.text()]
 
-        # 
-        stream_value = instance.logger.logger.handlers[1].stream.getvalue()
+        #
+        stream_value = instance.logging.logger.handlers[1].stream.getvalue()
 
-        # 
+        #
         stream_value = stream_value.replace('\n', '\n\n')
 
-        # 
+        #
         self.log_tedit.setText(stream_value)
 
     def position(self):

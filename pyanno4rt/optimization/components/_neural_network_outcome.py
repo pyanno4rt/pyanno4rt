@@ -13,6 +13,7 @@ from tensorflow import cast, clip_by_value, float64, GradientTape
 from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.neural_network import NeuralNetworkModel
+from pyanno4rt.logging import get_logger
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import (
     filter_dict, inverse_salu, inverse_sigmoid, salu, sigmoid)
@@ -169,9 +170,9 @@ class NeuralNetworkOutcome(MachineLearningComponent):
         hub = Datahub()
 
         # Log a message about the model addition
-        hub.logger.display_info(
-            f"Adding {self.model_parameters.architecture} neural network "
-            f"model for '{self.name}' ...")
+        get_logger().info(
+            "Adding %s neural network model for '%s' ...",
+            self.model_parameters.architecture, self.name)
 
         # Initialize the data model handler
         self.data_model_handler = DataModelHandler(

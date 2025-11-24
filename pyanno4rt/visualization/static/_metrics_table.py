@@ -38,9 +38,6 @@ class MetricsTable():
         # Initialize the datahub
         hub = Datahub()
 
-        # Log a message about the plot opening
-        hub.logger.display_info("Opening metrics table ...")
-
         def dict_to_dataframe(indicators, display_metrics):
             """Convert the indicator dictionaries into dataframe elements."""
 

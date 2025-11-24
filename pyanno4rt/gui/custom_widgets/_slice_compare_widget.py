@@ -28,7 +28,7 @@ class SliceCompareWidget(QWidget):
         # Call the superclass constructor
         super().__init__()
 
-        # 
+        #
         self.parent = parent
         self.cmap = cmap
 
@@ -42,18 +42,18 @@ class SliceCompareWidget(QWidget):
         # Add the view box to the image window
         self.viewbox = self.image_window.addViewBox()
 
-        # 
+        #
         self.ct_image = ImageItem()
         self.viewbox.addItem(self.ct_image)
 
-        # 
+        #
         self.dose_image = ImageItem()
         self.dose_image.setOpacity(0.7)
         self.dose_image.setLookupTable(
             colormap.get(cmap, 'matplotlib').getLookupTable(0.0, 1.0))
         self.viewbox.addItem(self.dose_image)
 
-        # 
+        #
         self.bar = ColorBarItem(
             interactive=False, width=25, label='',
             rounding=0.1, colorMap=colormap.get(cmap, 'matplotlib'),
@@ -61,15 +61,15 @@ class SliceCompareWidget(QWidget):
         self.bar.setImageItem(self.dose_image)
         self.bar.axis.setLabel('Dose')
 
-        # 
+        #
         self.slice = None
         self.positions = None
 
-        # 
+        #
         self.minima = None
         self.maxima = None
 
-        # 
+        #
         self.ct_cube = None
         self.dose_cube = None
         self.dose_cube_with_nan = None
@@ -77,7 +77,7 @@ class SliceCompareWidget(QWidget):
         self.segment_masks = None
         self.segment_contours = None
 
-        # 
+        #
         self.orientations = {
             'axial': ((0, 1, 2), 3, 'z'),
             'coronal': ((2, 1, 0), 1, 'y'),
@@ -98,14 +98,14 @@ class SliceCompareWidget(QWidget):
 
             return segment_mask
 
-        # 
+        #
         if isinstance(plan, tuple):
 
-            # 
-            computed_tomography = plan[0].datahub.computed_tomography
-            segmentation = plan[0].datahub.segmentation
+            #
+            computed_tomography = plan[0].patient_handler.computed_tomography
+            segmentation = plan[0].patient_handler.segmentation
 
-            # 
+            #
             self.plan = plan[0]
             self.dose_cube = (
                 plan[0].datahub.optimization['optimized_dose']
@@ -121,11 +121,11 @@ class SliceCompareWidget(QWidget):
 
         else:
 
-            # 
-            computed_tomography = plan.datahub.computed_tomography
-            segmentation = plan.datahub.segmentation
+            #
+            computed_tomography = plan.patient_handler.computed_tomography
+            segmentation = plan.patient_handler.segmentation
 
-            # 
+            #
             self.plan = plan
             self.dose_cube = self.plan.datahub.optimization['optimized_dose']
             self.minimum, self.maximum = minimum, maximum
@@ -134,16 +134,16 @@ class SliceCompareWidget(QWidget):
             quantiles.extend([0.95, 0.975, 0.99, 0.999])
             levels = [self.maximum*level for level in quantiles]
 
-        # 
-        self.ct_cube = self.plan.datahub.computed_tomography['cubeHU']
+        #
+        self.ct_cube = self.plan.patient_handler.computed_tomography['cubeHU']
 
-        # 
+        #
         self.positions = (
-            self.plan.datahub.computed_tomography['x'],
-            self.plan.datahub.computed_tomography['y'],
-            self.plan.datahub.computed_tomography['z'])
+            self.plan.patient_handler.computed_tomography['x'],
+            self.plan.patient_handler.computed_tomography['y'],
+            self.plan.patient_handler.computed_tomography['z'])
 
-        # 
+        #
         self.segment_masks = tuple(
             generate_segment_mask(segment) for segment in segmentation)
 
@@ -162,7 +162,7 @@ class SliceCompareWidget(QWidget):
             contour.setZValue(5)
             self.segment_contours.append(contour)
 
-        # 
+        #
         self.dose_cube_with_nan = self.dose_cube.copy()
         self.dose_cube_with_nan[self.dose_cube_with_nan == 0] = nan
 
@@ -180,14 +180,14 @@ class SliceCompareWidget(QWidget):
     def update_ct(self):
         """."""
 
-        # 
+        #
         orientation, rotations, _ = self.orientations[
             self.parent.plane_cbox.currentText()]
 
-        # 
+        #
         if self.ct_cube is not None and not self.parent.disCT_cbox.isChecked():
 
-            # 
+            #
             ct_cube = rot90(
                 transpose(self.ct_cube, orientation), rotations)
 
@@ -197,31 +197,31 @@ class SliceCompareWidget(QWidget):
     def update_dose(self):
         """."""
 
-        # 
+        #
         orientation, rotations, _ = self.orientations[
             self.parent.plane_cbox.currentText()]
 
         if (self.dose_cube_with_nan is not None
                 and not self.parent.disDose_cbox.isChecked()):
 
-            # 
+            #
             dose_cube_with_nan = rot90(
                 transpose(self.dose_cube_with_nan, orientation), rotations)
 
             # Update the dose image
             self.dose_image.setImage(dose_cube_with_nan[:, :, self.slice])
 
-            # 
+            #
             self.image_window.addItem(self.bar)
 
-            # 
+            #
             self.bar.setLevels((min(0, round(self.minimum, 1)-0.1),
                                 round(self.maximum, 1)+0.1))
 
     def update_dose_contours(self):
         """."""
 
-        # 
+        #
         orientation, rotations, _ = self.orientations[
             self.parent.plane_cbox.currentText()]
 
@@ -229,7 +229,7 @@ class SliceCompareWidget(QWidget):
                 and self.dose_contours is not None
                 and not self.parent.disDoseCon_cbox.isChecked()):
 
-            # 
+            #
             dose_cube = rot90(
                 transpose(self.dose_cube, orientation), rotations)
 
@@ -242,7 +242,7 @@ class SliceCompareWidget(QWidget):
     def update_segment_contours(self):
         """."""
 
-        # 
+        #
         orientation, rotations, _ = self.orientations[
             self.parent.plane_cbox.currentText()]
 
@@ -250,7 +250,7 @@ class SliceCompareWidget(QWidget):
                 and self.segment_contours is not None
                 and not self.parent.disSegm_cbox.isChecked()):
 
-            # 
+            #
             segment_masks = tuple(rot90(
                 transpose(mask, orientation), rotations)
                 for mask in self.segment_masks)
@@ -264,17 +264,18 @@ class SliceCompareWidget(QWidget):
     def update_parent(self):
         """."""
 
-        # 
+        #
         axis = self.orientations[self.parent.plane_cbox.currentText()][2]
 
-        # 
+        #
         if self.positions is not None:
 
-            # 
+            #
             position = round(
-                self.plan.datahub.computed_tomography[axis][self.slice], 2)
+                self.plan.patient_handler.computed_tomography[axis][
+                    self.slice], 2)
 
-            # 
+            #
             self.parent.slice_selection_pos.setText(
                 f'{axis} = {position} mm')
 
@@ -303,19 +304,19 @@ class SliceCompareWidget(QWidget):
             # Update the dose image
             self.dose_image.clear()
 
-            # 
+            #
             self.image_window.removeItem(self.bar)
 
     def reset_dose_contours(self):
         """."""
 
-        # 
+        #
         orientation, rotations, axis = self.orientations[
             self.parent.plane_cbox.currentText()]
 
         if self.dose_cube is not None and self.dose_contours is not None:
 
-            # 
+            #
             dose_cube = rot90(
                 transpose(self.dose_cube, orientation), rotations)
 
@@ -328,14 +329,14 @@ class SliceCompareWidget(QWidget):
     def reset_segment_contours(self):
         """."""
 
-        # 
+        #
         orientation, rotations, axis = self.orientations[
             self.parent.plane_cbox.currentText()]
 
         if (self.segment_masks is not None
                 and self.segment_contours is not None):
 
-            # 
+            #
             segment_masks = tuple(rot90(
                 transpose(mask, orientation), rotations)
                 for mask in self.segment_masks)
@@ -363,85 +364,85 @@ class SliceCompareWidget(QWidget):
     def toggle_ct(self):
         """."""
 
-        # 
+        #
         if self.parent.disCT_cbox.isChecked():
 
-            # 
+            #
             self.reset_ct()
 
         else:
 
-            # 
+            #
             self.update_ct()
 
     def toggle_dose(self):
         """."""
 
-        # 
+        #
         if self.parent.disDose_cbox.isChecked():
 
-            # 
+            #
             self.reset_dose()
 
         else:
 
-            # 
+            #
             self.update_dose()
 
     def toggle_dose_contours(self):
         """."""
 
-        # 
+        #
         if self.parent.disDoseCon_cbox.isChecked():
 
-            # 
+            #
             self.reset_dose_contours()
 
         else:
 
-            # 
+            #
             self.update_dose_contours()
 
     def toggle_segment_contours(self):
         """."""
 
-        # 
+        #
         if self.parent.disSegm_cbox.isChecked():
 
-            # 
+            #
             self.reset_segment_contours()
 
         else:
 
-            # 
+            #
             self.update_segment_contours()
 
     def change_orientation(self):
         """."""
 
-        # 
+        #
         self.slice = self.parent.slice_selection_sbar.value()
 
-        # 
+        #
         self.viewbox.enableAutoRange()
 
-        # 
+        #
         self.update_images()
 
     def change_dose_opacity(self):
         """."""
 
-        # 
+        #
         self.dose_image.setOpacity(self.parent.opacity_sbox.value()/100)
 
-        # 
+        #
         self.update_dose()
 
     def change_image_slice(self):
         """."""
 
-        # 
+        #
         self.slice = self.parent.slice_selection_sbar.value()
 
-        # 
+        #
         self.update_images()

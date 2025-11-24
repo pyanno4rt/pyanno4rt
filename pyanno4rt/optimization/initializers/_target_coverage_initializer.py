@@ -9,6 +9,7 @@ from numpy import hstack, ones
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import (
     flatten, get_constraint_segments, get_objective_segments)
 
@@ -38,8 +39,7 @@ class TargetCoverageInitializer():
             initial_fluence_vector=None):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            "Initializing target coverage initializer ...")
+        get_logger().info("Initializing target coverage initializer ...")
 
         # Get the initial fluence from the argument
         self.initial_fluence_vector = initial_fluence_vector
@@ -58,7 +58,7 @@ class TargetCoverageInitializer():
         hub = Datahub()
 
         # Log a message about the initialization
-        hub.logger.display_info(
+        get_logger().info(
             "Initializing fluence vector with respect to target coverage ...")
 
         # Get the segmentation and dose information data from the datahub
@@ -102,7 +102,7 @@ class TargetCoverageInitializer():
         else:
 
             # Log a message about non-defined target components
-            hub.logger.display_info(
+            get_logger().info(
                 "No target objectives defined - falling back to virtual "
                 "target with total dose prescription of 60 Gy ...")
 

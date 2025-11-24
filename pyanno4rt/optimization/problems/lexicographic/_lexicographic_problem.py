@@ -8,7 +8,7 @@ from math import inf
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 from pyanno4rt.optimization.problems.weighted import WeightedSumProblem
 
 # %% Class definition
@@ -70,12 +70,8 @@ class LexicographicProblem():
             upper_variable_bounds,
             initial_fluence):
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Log a message about the initialization of the class
-        hub.logger.display_info(
-            "Building lexicographic optimization problem ...")
+        get_logger().info("Building lexicographic optimization problem ...")
 
         # Get the rank-ordered objectives
         objectives = {

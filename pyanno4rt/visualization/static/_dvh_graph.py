@@ -136,12 +136,11 @@ class DVHGraph():
         identifiers = [] if identifiers is None else identifiers
 
         # Get the DVH data
-        dose_histogram = treatment_plan.datahub.dose_histogram
+        histogram = treatment_plan.dvh.histogram
 
         # Get the segment names
         segments = tuple(
-            segment for segment in dose_histogram
-            if segment != 'evaluation_points')
+            segment for segment in histogram if segment != 'evaluation_points')
 
         # Set the colormap
         colors = get_cmap('tab20b')(linspace(0, 1.0, len(segments)))
@@ -176,8 +175,8 @@ class DVHGraph():
 
             # Plot the DVH curve
             axis.plot(
-                dose_histogram['evaluation_points'],
-                100*dose_histogram[segment]['dvh_values'],
+                histogram['evaluation_points'],
+                100*histogram[segment],
                 color=styles[segment][0],
                 linestyle=styles[segment][1],
                 linewidth=0.5*self.linewidth)
@@ -192,12 +191,12 @@ class DVHGraph():
         # Determine the step length on the x-axis
         x_step = min(
             sorted(base*10**i for base in (1, 2, 5) for i in range(-6, 6)),
-            key=lambda x: abs(ceil(max(dose_histogram['evaluation_points'])/x)
+            key=lambda x: abs(ceil(max(histogram['evaluation_points'])/x)
                               - number_of_ticks))
 
         # Set the x- and y-ticks
         axis.set_xticks(tuple(i*x_step for i in range(
-            int(ceil(max(dose_histogram['evaluation_points']))/x_step)+1)))
+            int(ceil(max(histogram['evaluation_points']))/x_step)+1)))
         axis.set_yticks(tuple(i*5 for i in range(number_of_ticks+1)))
 
         # Set the x- and y-limits

@@ -17,8 +17,7 @@ class Datahub():
     ----------
     *args : tuple
         Tuple with optional (non-keyworded) parameters. The element args[0]
-        refers to the treatment plan label, while args[1] is a \
-        :class:`~pyanno4rt.logging._logger.Logger` object. Only required for \
+        refers to the treatment plan label. Only required for \
         (re-)instantiating a datahub.
 
     Attributes
@@ -29,10 +28,6 @@ class Datahub():
 
     label : None or str
         Label of the current active treatment plan instance.
-
-    logger : None or object of class \
-        :class:`~pyanno4rt.logging._logger.Logger`
-        The object used to print and store logging messages.
 
     computed_tomography : None or dict
         Dictionary with information on the CT images.
@@ -88,6 +83,11 @@ class Datahub():
     state : int
         State encoding for the datahub (0=initialized, 1=configured, \
         2=modeled, 3=optimized, 4=evaluated).
+
+    Notes
+    -----
+    This class will be removed in a future release as the concept of a \
+    singleton datahub reduces the package's modularity.
     """
 
     # Initialize the datahub instances dictionary
@@ -95,7 +95,6 @@ class Datahub():
 
     # Initialize the information units
     label = None
-    logger = None
     computed_tomography = None
     segmentation = None
     plan_configuration = None
@@ -109,6 +108,8 @@ class Datahub():
     model_outcomes = None
     dose_histogram = None
     dosimetrics = None
+
+    # Initialize the state
     state = 0
 
     def __new__(
@@ -157,9 +158,3 @@ class Datahub():
 
             # Set the instance and class labels to the same value
             self.label = Datahub.label = args[0]
-
-            # Set the logging object
-            self.logger = args[1]
-
-            # Log a message about the initialization of the class
-            self.logger.display_info("Initializing datahub ...")

@@ -13,9 +13,9 @@ from tensorflow.keras.models import clone_model
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.learning.preprocessing import DataPreprocessor
+from pyanno4rt.logging import get_logger
 
 # %% Function definition
 
@@ -175,9 +175,9 @@ def permutation_importances(
     scorers = {'AUC': roc_auc_score, **maps.LOSSES}
 
     # Log a message about the training permutation importance computation
-    Datahub().logger.display_info(
-        f'Computing training importances for "{model_label}" with '
-        f'{number_of_repeats} permutations ...')
+    get_logger().info(
+        "Computing training importances for '%s' with %s permutations ...",
+        model_label, number_of_repeats)
 
     # Compute the training permutation importances
     training_importances = permutation_importance(
@@ -186,11 +186,10 @@ def permutation_importances(
             'importances'].T
 
     # Log a message about the out-of-folds permutation importance computation
-    Datahub().logger.display_info(
-        f'Computing out-of-folds importances for "{model_label}" with '
-        f'{number_of_repeats} permutations for '
-        f'{len(set(oof_folds[:, 0]))} splits and {oof_folds.shape[1]} '
-        'repeats ...')
+    get_logger().info(
+        "Computing out-of-folds importances for '%s' with %s permutations for "
+        "%s splits and %s repeats ...", model_label, number_of_repeats,
+        len(set(oof_folds[:, 0])), oof_folds.shape[1])
 
     # Compute the out-of-folds permutation importances
     oof_importances = tuple(map(compute_fold_importances, (

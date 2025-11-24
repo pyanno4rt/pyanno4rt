@@ -10,6 +10,7 @@ from numpy import array, concatenate, vstack, zeros
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import (
     apply, get_machine_learning_constraints, get_machine_learning_objectives)
 
@@ -88,12 +89,8 @@ Initializing
             upper_variable_bounds,
             initial_fluence):
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Log a message about the initialization of the class
-        hub.logger.display_info(
-            "Building weighted-sum optimization problem ...")
+        get_logger().info("Building weighted-sum optimization problem ...")
 
         # Get the instance attributes from the arguments
         self.backprojection = backprojection

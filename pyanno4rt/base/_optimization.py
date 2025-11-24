@@ -141,9 +141,9 @@ class Optimization():
             dataset or multiple datasets with high similarity. Otherwise, the \
             data medoid point may lack representativeness.
 
-    initial_fluence_vector : None or list, default=None
-        Initial fluence vector for the optimization problem, only used if \
-        initial_strategy='warm-start'.
+    initial_fluence : None or list, default=None
+        Initial fluence vector for the optimization problem (only used if \
+        initial_strategy='warm-start').
 
     lower_variable_bounds : None, int, float, or list, default=0
         Lower bound(s) on the decision variables.
@@ -182,7 +182,7 @@ class Optimization():
     initial_strategy : {'data-medoid', 'target-coverage', 'warm-start'}
         See 'Parameters'.
 
-    initial_fluence_vector : None or list
+    initial_fluence : None or list
         See 'Parameters'.
 
     lower_variable_bounds : None, int, float, or list
@@ -205,7 +205,7 @@ class Optimization():
             solver='scipy',
             algorithm='L-BFGS-B',
             initial_strategy='target-coverage',
-            initial_fluence_vector=None,
+            initial_fluence=None,
             lower_variable_bounds=0,
             upper_variable_bounds=None,
             maximum_iterations=500,
@@ -220,7 +220,7 @@ class Optimization():
         self.solver = solver
         self.algorithm = algorithm
         self.initial_strategy = initial_strategy
-        self.initial_fluence_vector = initial_fluence_vector
+        self.initial_fluence = initial_fluence
         self.lower_variable_bounds = lower_variable_bounds
         self.upper_variable_bounds = upper_variable_bounds
         self.maximum_iterations = maximum_iterations
@@ -324,7 +324,7 @@ class Optimization():
                 partial(validate_type, options=str),
                 partial(validate_value_in_set, options=(
                     'data-medoid', 'target-coverage', 'warm-start'))),
-            'initial_fluence_vector': (
+            'initial_fluence': (
                 partial(validate_type, options={
                     'data-medoid': type(None),
                     'target-coverage': type(None),

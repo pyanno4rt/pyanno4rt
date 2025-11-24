@@ -10,11 +10,11 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import MachineLearningModel
 from pyanno4rt.learning._maps import NN_LOSSES, NN_OPTS
 from pyanno4rt.learning.neural_network import (
     build_vanilla_iocnn, build_vanilla_nn)
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -321,8 +321,8 @@ class NeuralNetworkModel(MachineLearningModel):
         """
 
         # Log a message about the model file reading
-        Datahub().logger.display_info(
-            f"Reading '{self.model_label}' model from file ...")
+        get_logger().info(
+            "Reading '%s' model from file ...", self.model_label)
 
         # Open a stream to the model file path
         with File(self.model_path, 'r') as file:

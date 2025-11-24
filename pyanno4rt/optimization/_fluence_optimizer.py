@@ -14,6 +14,7 @@ from scipy.ndimage import zoom
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import (
    apply, flatten, get_constraint_segments, get_machine_learning_constraints,
@@ -30,7 +31,7 @@ class FluenceOptimizer():
     This class provides methods to optimize the fluence vector by solving the \
     inverse planning problem. It takes the configuration inputs, sets up the \
     optimization problem and the solver, and allows to compute both optimized \
-    fluence vector and optimized dose cube (CT resolution).
+    fluence vector and optimized dose cube.
 
     Parameters
     ----------
@@ -46,7 +47,7 @@ class FluenceOptimizer():
     initial_strategy : {'data-medoid', 'target-coverage', 'warm-start'}
         Initialization strategy for the fluence vector.
 
-    initial_fluence_vector : None or list
+    initial_fluence : None or list
         User-defined initial fluence vector for the optimization problem \
         (only used if initial_strategy='warm-start').
 
@@ -94,7 +95,7 @@ class FluenceOptimizer():
             solver,
             algorithm,
             initial_strategy,
-            initial_fluence_vector,
+            initial_fluence,
             lower_variable_bounds,
             upper_variable_bounds,
             maximum_iterations,
@@ -104,7 +105,7 @@ class FluenceOptimizer():
         hub = Datahub()
 
         # Log a message about the initialization of the class
-        hub.logger.display_info("Initializing fluence optimizer ...")
+        get_logger().info("Initializing fluence optimizer ...")
 
         # Start the constructor runtime recording
         start_time = time()
@@ -132,9 +133,10 @@ class FluenceOptimizer():
                 'mumps', 'NSGA3', 'trust-constr'):
 
             # Log a message about the ignored constraints
-            hub.logger.display_warning(
-                f"The '{algorithm}' algorithm only allows for unconstrained "
-                "optimization problems - constraints set will be ignored ...")
+            get_logger().warning(
+                "The '%s' algorithm only allows for unconstrained "
+                "optimization problems - constraints set will be ignored ...",
+                algorithm)
 
             # Reset the internal constraints
             hub.optimization['constraints'], constraints = {}, {}
@@ -147,7 +149,7 @@ class FluenceOptimizer():
 
         # Calculate the initial fluence
         initial_fluence = maps.INITIALIZERS[initial_strategy](
-            initial_fluence_vector).run()
+            initial_fluence).run()
 
         # Construct the optimization problem
         self.problem = maps.PROBLEMS[method](
@@ -161,6 +163,10 @@ class FluenceOptimizer():
 
         # Get the initialization runtime
         self.initial_time = time()-start_time
+
+        # Initialize the optimization results
+        self.optimized_fluence, self.solver_info, self.optimized_dose = (
+            None, None, None)
 
         # Initialize the solver and optimizer runtimes
         self.solver_time, self.optimizer_time = None, None
@@ -200,7 +206,7 @@ class FluenceOptimizer():
                 if (segmentation[segment]['parameters']['priority']
                     < segmentation[reference]['parameters']['priority']))
 
-            # Enter the overlap-free (prioritized) indices into the datahub
+            # Get the overlap-free (prioritized) indices
             segmentation[reference]['prioritized_indices'] = setdiff1d(
                 segmentation[reference]['raw_indices'],
                 reduce(union1d, superior_indices, -1))
@@ -227,23 +233,21 @@ class FluenceOptimizer():
                         if len(dictionary[key]['segments']) == 0:
 
                             # Log a message about the component removal
-                            hub.logger.display_info(
-                                f"Removing {label} "
-                                f"'{dictionary[key]['instance'].name}' from "
-                                f"fully enclosed segment '{reference}' ...")
+                            get_logger().info(
+                                "Removing %s '%s' from fully enclosed segment "
+                                "'%s' ...",
+                                label, dictionary[key]['instance'].name,
+                                reference)
 
                             # Delete the component from the dictionaries
                             del dictionary[key]
                             segmentation[reference][label] = None
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Log a message about the overlap removal
-        hub.logger.display_info("Removing segment overlaps ...")
+        get_logger().info("Removing segment overlaps ...")
 
         # Get the segmentation data
-        segmentation = hub.segmentation
+        segmentation = Datahub().segmentation
 
         # Get all segments from the components
         segments = set(flatten(
@@ -281,7 +285,7 @@ class FluenceOptimizer():
         hub = Datahub()
 
         # Log a message about the segment resizing
-        hub.logger.display_info("Resizing segments from CT to dose grid ...")
+        get_logger().info("Resizing segments from CT to dose grid ...")
 
         # Get the segmentation data
         segmentation = hub.segmentation
@@ -328,8 +332,7 @@ class FluenceOptimizer():
         hub = Datahub()
 
         # Log a message about the parameter adjustment
-        hub.logger.display_info(
-            "Adjusting dose parameters for fractionation ...")
+        get_logger().info("Adjusting dose parameters for fractionation ...")
 
         # Get the number of fractions
         number_of_fractions = hub.dose_information['number_of_fractions']
@@ -346,11 +349,8 @@ class FluenceOptimizer():
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the logger
-        logger = hub.logger
-
         # Log a message about the problem solving
-        logger.display_info("Solving optimization problem ...")
+        get_logger().info("Solving optimization problem ...")
 
         # Start the solver runtime recording
         start_time = time()
@@ -368,14 +368,19 @@ class FluenceOptimizer():
                 'weighted-sum': self.solve_weighted}
 
             # Run the solution algorithm
+            self.optimized_fluence, self.solver_info, self.optimized_dose = (
+                methods[self.problem.name]())
+
+            #
             (hub.optimization['optimized_fluence'],
              hub.optimization['solver_info'],
-             hub.optimization['optimized_dose']) = methods[self.problem.name]()
+             hub.optimization['optimized_dose']) = (
+                 self.optimized_fluence, self.solver_info, self.optimized_dose)
 
         else:
 
             # Log a message about the loaded fluence
-            logger.display_info(
+            get_logger().info(
                 "Retrieving solution from the loaded treatment plan ...")
 
             # Delete the copycat indicator
@@ -391,18 +396,15 @@ class FluenceOptimizer():
         self.optimizer_time = round(time()-start_time+self.initial_time, 2)
 
         # Log a message about the optimization runtimes
-        logger.display_info(
-            f"Fluence optimizer took {self.optimizer_time} seconds "
-            f"({self.solver_time} seconds for problem solving) ...")
+        get_logger().info(
+            "Fluence optimizer took %s seconds (%s seconds for problem "
+            "solving) ...", self.optimizer_time, self.solver_time)
 
     def reset(self):
         """Reset the optimization and evaluation outputs."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Get the segmentation from the datahub
-        segmentation = hub.segmentation
+        segmentation = Datahub().segmentation
 
         # Check if a weighted-sum or Pareto problem is solved
         if self.problem.name in ('pareto', 'weighted-sum'):
@@ -445,9 +447,6 @@ class FluenceOptimizer():
             Description for the cause of termination.
         """
 
-        # Get the logger
-        logger = Datahub().logger
-
         # Get all ranks
         ranks = tuple(self.problem.subproblems)
 
@@ -458,7 +457,7 @@ class FluenceOptimizer():
         for rank, subproblem in self.problem.subproblems.items():
 
             # Log a message about the lexicographic rank
-            logger.display_info(f"Considering lexicography at rank {rank} ...")
+            get_logger().info("Considering lexicography at rank %s ...", rank)
 
             # Configure the solver
             self.solver.configure(subproblem)
@@ -477,7 +476,7 @@ class FluenceOptimizer():
                 next_problem.initial_fluence = fluence
 
                 # Loop over the dynamic constraints
-                for label, objective in subproblem.objectives.items():
+                for label in subproblem.objectives:
 
                     # Get the dynamic constraint threshold
                     threshold = subproblem.tracker[label][-1]
@@ -502,7 +501,7 @@ class FluenceOptimizer():
         else:
 
             # Log a message about the unsolved problem
-            logger.display_info(
+            get_logger().info(
                 "Fluence optimizer did not find a feasible solution for the "
                 "lexicographic optimization problem ...")
 
@@ -527,9 +526,8 @@ class FluenceOptimizer():
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the logger, segmentation data and dose information
-        logger, segmentation, dose_information = (
-            hub.logger, hub.segmentation, hub.dose_information)
+        # Get the segmentation data and dose information
+        segmentation, dose_information = hub.segmentation, hub.dose_information
 
         # Get the dose-influence matrix
         dose_matrix = dose_information['dose_influence_matrix']
@@ -545,12 +543,12 @@ class FluenceOptimizer():
         if optimized_fluence is not None:
 
             # Log a message about the number of Pareto-optimal solutions
-            logger.display_info(
-                f"Pareto analysis resulted in {optimized_fluence.shape[0]} "
-                "non-dominated solutions ...")
+            get_logger().info(
+                "Pareto analysis resulted in %s non-dominated solutions ...",
+                optimized_fluence.shape[0])
 
             # Log a message about the selection procedure
-            logger.display_info(
+            get_logger().info(
                 "Selecting best solution with respect to the maximum mean "
                 "dose difference between targets and organs at risk ...")
 
@@ -586,7 +584,7 @@ class FluenceOptimizer():
         else:
 
             # Log a message about the unsolved problem
-            logger.display_info(
+            get_logger().info(
                 "Fluence optimizer did not find a feasible solution for the "
                 "Pareto optimization problem ...")
 
@@ -608,9 +606,6 @@ class FluenceOptimizer():
             Description for the cause of termination.
         """
 
-        # Get the logger
-        logger = Datahub().logger
-
         # Configure the solver
         self.solver.configure(self.problem)
 
@@ -627,7 +622,7 @@ class FluenceOptimizer():
         else:
 
             # Log a message about the unsolved problem
-            logger.display_info(
+            get_logger().info(
                 "Fluence optimizer did not find a feasible solution for the "
                 "weighted-sum optimization problem ...")
 
@@ -656,11 +651,11 @@ class FluenceOptimizer():
         # Initialize the datahub
         hub = Datahub()
 
-        # Get the logger, segmentation and dose information data
-        logger, dose_information = hub.logger, hub.dose_information
+        # Get the dose information
+        dose_information = hub.dose_information
 
         # Log a message about the 3D dose computation
-        logger.display_info(
+        get_logger().info(
             "Computing dose cube from optimized fluence vector ...")
 
         # Get the CT and dose grid dimensions
@@ -689,11 +684,8 @@ class FluenceOptimizer():
     def postprocess(self):
         """Postprocess the outcome model-based component results."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the logger and the segmentation data
-        logger, segmentation = hub.logger, hub.segmentation
+        # Get the segmentation data
+        segmentation = Datahub().segmentation
 
         # Check if the optimization problem has a tracker dictionary
         if hasattr(self.problem, 'tracker') and all(value != [] for value
@@ -710,9 +702,9 @@ class FluenceOptimizer():
                     * self.problem.tracker[component.track_id][-1])
 
                 # Log a message about the prediction value
-                logger.display_info(
-                    f"{component.name} for the optimized plan: "
-                    f"{round(100*value, 2)} % ...")
+                get_logger().info(
+                    "%s for the optimized plan: %s %% ...",
+                    component.name, round(100*value, 2))
 
             # Loop over the machine learning outcome model-based components
             for component in (
@@ -726,11 +718,11 @@ class FluenceOptimizer():
                 value = component.translate(
                     self.problem.tracker[component.track_id][-1])
 
-                # Add the prediction value to the datahub
-                hub.model_outcomes[
+                # Store the prediction value
+                Datahub().model_outcomes[
                     component.data_model_handler.model_label] = value
 
                 # Log a message about the prediction value
-                logger.display_info(
-                    f"{component.name} for the optimized plan: "
-                    f"{round(100*value, 2)} % ...")
+                get_logger().info(
+                    "%s for the optimized plan: %s %% ...",
+                    component.name, round(100*value, 2))

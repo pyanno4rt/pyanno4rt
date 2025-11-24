@@ -9,7 +9,7 @@ from sklearn.metrics import precision_recall_curve
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Function definition
 
@@ -34,7 +34,7 @@ def auc_pr(true_labels, predicted_labels):
     """
 
     # Log a message about the AUC-PR computation
-    Datahub().logger.display_info("Computing AUC-PR scores ...")
+    get_logger().info("Computing AUC-PR scores ...")
 
     # Initialize the AUC-PR scores dictionary
     scores = {'Training': None, 'Out-of-folds': None}

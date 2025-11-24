@@ -12,7 +12,7 @@ from pypop7.optimizers.es.lmmaes import LMMAES
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -62,8 +62,8 @@ class PyPop7Solver():
             tolerance):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            f"Initializing PyPop7 solver with {algorithm} algorithm ...")
+        get_logger().info(
+            "Initializing PyPop7 solver with %s algorithm ...", algorithm)
 
         # Get the input arguments
         self.algorithm = algorithm

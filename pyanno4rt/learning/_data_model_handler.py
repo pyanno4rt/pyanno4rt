@@ -13,6 +13,7 @@ from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning.dataset import (
     EmptyDataGenerator, ImageDataGenerator, TabularDataGenerator)
 from pyanno4rt.learning.features import FeatureCalculator
+from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import filter_dict
 
 # %% Class definition
@@ -189,6 +190,6 @@ class DataModelHandler():
         else:
 
             # Log a message about the missing feature history
-            hub.logger.display_info(
-                "Feature history has not been written for "
-                f"'{self.model_label}' ...")
+            get_logger().info(
+                "Feature history has not been written for '%s' ...",
+                self.model_label)

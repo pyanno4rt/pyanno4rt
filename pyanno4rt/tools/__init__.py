@@ -41,6 +41,7 @@ from ._salu import salu
 from ._sigmoid import sigmoid
 from ._snapshot import snapshot
 from ._string_to_numeric import string_to_numeric
+from ._wrap import wrap
 
 
 __all__ = [
@@ -75,4 +76,5 @@ __all__ = [
     'salu',
     'sigmoid',
     'snapshot',
-    'string_to_numeric']
+    'string_to_numeric',
+    'wrap']

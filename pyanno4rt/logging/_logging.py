@@ -6,88 +6,77 @@
 
 from importlib.metadata import version
 from io import StringIO
-from logging import (
-    CRITICAL, DEBUG, ERROR, Formatter, getLogger, INFO, StreamHandler, WARNING)
+from logging import Formatter, getLogger, StreamHandler
 from platform import python_version
 
 # %% Class definition
 
 
-class Logger():
+class Logging():
     """
     Logging class.
 
-    This class provides methods to configure an instance of the logger, \
-    including multiple stream handlers and formatters to print log messages.
+    This class provides methods to configure a logging instance, including \
+    multiple stream handlers and formatters to print log messages.
 
     Parameters
     ----------
-    *args : tuple
-        Tuple with optional (non-keyworded) logging parameters. The value \
-        args[0] should refer to the label of the treatment plan, while \
-        args[1] specifies the minimum logging level.
+    label : str
+        Label of the treatment plan instance.
+
+    min_log_level : {'debug', 'info', 'warning', 'error', 'critical'}
+        Minimum logging level for broadcasting messages to the console \
+        and the object streams.
 
     Attributes
     ----------
+    label : str
+        See 'Parameters'.
+
+    min_log_level : {'debug', 'info', 'warning', 'error', 'critical'}
+        See 'Parameters'.
+
     logger : object of class :class:`~logging.Logger`
         The object used to interface the logging methods.
     """
 
     def __init__(
             self,
-            *args):
-
-        # Check if arguments are passed
-        if args:
-
-            # Initialize the logger
-            self.logger = self.initialize_logger(args[0], args[1])
-
-            # Log a message about the software versions used
-            self.display_info(
-                f'Running pyanno4rt "Amadeus" v{version("pyanno4rt")} with '
-                f'Python {python_version()} ...')
-
-            # Log a message about the warranty clause
-            self.display_warning(
-                'pyanno4rt is an open-source package and NOT a medical '
-                'product. It is provided "as-is", without warranty of any '
-                'kind, and intended for research and education only ...')
-
-            # Log a message about the initialization of the class
-            self.display_info("Initializing logger ...")
-
-    def initialize_logger(
-            self,
             label,
             min_log_level):
+
+        # Get the input attributes
+        self.label = label
+        self.min_log_level = min_log_level
+
+        # Initialize the logger
+        self.logger = self.initialize()
+
+        # Log a message about the software versions used
+        self.info(
+            f'Running pyanno4rt "Amadeus" v{version("pyanno4rt")} with '
+            f'Python {python_version()} ...')
+
+        # Log a message about the warranty clause
+        self.warning(
+            'pyanno4rt is an open-source package and NOT a medical '
+            'product. It is provided "as-is", without warranty of any '
+            'kind, and intended for research and education only ...')
+
+        # Log a message about the initialization of the class
+        self.info("Initializing logger ...")
+
+    def initialize(self):
         """
         Initialize the logger by specifying the channel name, handlers, and \
         formatters.
-
-        Parameters
-        ----------
-        label : str
-            Label of the treatment plan instance.
-
-        min_log_level : {'debug', 'info', 'warning', 'error', 'critical'}
-            Minimum logging level for broadcasting messages to the console \
-            and the object streams.
         """
 
-        # Map the values of 'min_log_level' to the logging levels
-        levels = {
-            'debug': DEBUG,
-            'info': INFO,
-            'warning': WARNING,
-            'error': ERROR,
-            'critical': CRITICAL}
-
         # Get the logger by the label
-        logger = getLogger(name=f'pyanno4rt - {label}')
+        logger = getLogger(name=f'pyanno4rt - {self.label}')
 
         # Set the basic logging level
-        logger.setLevel(level=levels[min_log_level])
+        logger.setLevel(level=self.min_log_level.upper())
 
         # Clear the handlers
         logger.handlers.clear()
@@ -96,7 +85,7 @@ class Logger():
         console_stream_handler = StreamHandler()
 
         # Set the logging level for the console stream handler
-        console_stream_handler.setLevel(level=levels[min_log_level])
+        console_stream_handler.setLevel(level=self.min_log_level.upper())
 
         # Initialize the string IO object
         object_stream = StringIO()
@@ -105,7 +94,7 @@ class Logger():
         object_stream_handler = StreamHandler(stream=object_stream)
 
         # Set the logging level for the string IO stream handler
-        object_stream_handler.setLevel(level=levels[min_log_level])
+        object_stream_handler.setLevel(level=self.min_log_level.upper())
 
         # Initialize the output formatter
         formatter = Formatter(
@@ -138,21 +127,16 @@ class Logger():
             and the object streams.
         """
 
-        # Map the values of 'min_log_level' to the logging levels
-        levels = {
-            'debug': DEBUG,
-            'info': INFO,
-            'warning': WARNING,
-            'error': ERROR,
-            'critical': CRITICAL}
+        # Overwrite the attribute
+        self.min_log_level = min_log_level
 
         # Loop over the handlers
         for handler in self.logger.handlers:
 
             # Set the logging level
-            handler.setLevel(level=levels[min_log_level])
+            handler.setLevel(level=min_log_level.upper())
 
-    def display_to_console(
+    def to_console(
             self,
             level,
             formatted_string,
@@ -184,7 +168,7 @@ class Logger():
         # Run the selected logging method
         logging_methods[level](formatted_string, *args)
 
-    def display_debug(
+    def debug(
             self,
             formatted_string,
             *args):
@@ -200,9 +184,9 @@ class Logger():
             Optional display parameters.
         """
 
-        self.display_to_console('debug', formatted_string, *args)
+        self.to_console('debug', formatted_string, *args)
 
-    def display_info(
+    def info(
             self,
             formatted_string,
             *args):
@@ -218,9 +202,9 @@ class Logger():
             Optional display parameters.
         """
 
-        self.display_to_console('info', formatted_string, *args)
+        self.to_console('info', formatted_string, *args)
 
-    def display_warning(
+    def warning(
             self,
             formatted_string,
             *args):
@@ -236,9 +220,9 @@ class Logger():
             Optional display parameters.
         """
 
-        self.display_to_console('warning', formatted_string, *args)
+        self.to_console('warning', formatted_string, *args)
 
-    def display_error(
+    def error(
             self,
             formatted_string,
             *args):
@@ -254,9 +238,9 @@ class Logger():
             Optional display parameters.
         """
 
-        self.display_to_console('error', formatted_string, *args)
+        self.to_console('error', formatted_string, *args)
 
-    def display_critical(
+    def critical(
             self,
             formatted_string,
             *args):
@@ -272,4 +256,4 @@ class Logger():
             Optional display parameters.
         """
 
-        self.display_to_console('critical', formatted_string, *args)
+        self.to_console('critical', formatted_string, *args)

@@ -5,7 +5,8 @@
 # %% External package import
 
 from numpy import prod
-from scipy.io import loadmat
+from pandas import DataFrame
+from scipy.io import loadmat, savemat
 
 # %% Internal package import
 
@@ -20,6 +21,11 @@ class MatHandler():
 
     This class provides methods to handle patient imaging data from MATLAB \
     files and generate the CT and segmentation dictionaries.
+
+    Notes
+    -----
+    Only matRad- and pyanno4rt-style file formats are handled properly at the \
+    moment. This will undergo thorough revision in a later release.
     """
 
     def __init__(self):
@@ -58,7 +64,34 @@ class MatHandler():
             computed_tomography,
             segmentation,
             path):
-        """Save the patient imaging data."""
+        """
+        Save the patient imaging data.
+
+        Parameters
+        ----------
+        computed_tomography : dict
+            Dictionary with information on the CT images.
+
+        segmentation : dict
+            Dictionary with information on the segments.
+
+        path : str
+            Path for storing the patient imaging data.
+        """
+
+        # Copy the input dictionaries
+        ct = computed_tomography.copy()
+        cst = segmentation.copy()
+
+        # Rearrange the cst as a dataframe
+        cst = DataFrame.from_dict([{
+            'index': values['index'], 'segment': segment,
+            'type': values['type'], 'indices': values['raw_indices']+1,
+            'parameters': values['parameters'], 'components': [], 'others': []}
+            for segment, values in cst.items()]).sort_values('index')
+
+        # Save the data to a MATLAB file
+        savemat(path, {'cst': cst, 'ct': ct})
 
     def generate_ct(
             self,
@@ -69,7 +102,7 @@ class MatHandler():
         Parameters
         ----------
         data : dict
-            Dictionary with information on the CT images.
+            Raw data with information on the CT images.
 
         Returns
         -------
@@ -78,13 +111,13 @@ class MatHandler():
         """
 
         # Initialize the CT dictionary with a subset of the data items
-        computed_tomography = filter_dict(
-            data,
-            retain_keys=('cubeHU', 'resolution', 'x', 'y', 'z', 'cubeDim'))
+        computed_tomography = filter_dict(data, retain_keys=(
+            'cubeHU', 'resolution', 'x', 'y', 'z', 'cube_dimensions',
+            'cubeDim'))
 
-        # Rename the cube dimensions key
-        computed_tomography['cube_dimensions'] = (
-            computed_tomography.pop('cubeDim').astype(int))
+        # Handle the different keys for the cube dimensions
+        computed_tomography['cube_dimensions'] = computed_tomography.pop(
+            'cube_dimensions', computed_tomography.get('cubeDim')).astype(int)
 
         # Add the number of voxels to the CT dictionary
         computed_tomography['number_of_voxels'] = prod(
@@ -101,7 +134,7 @@ class MatHandler():
         Parameters
         ----------
         data : ndarray
-            Array with information on the segments.
+            Raw array with information on the segments.
 
         Returns
         -------
@@ -109,31 +142,28 @@ class MatHandler():
             Dictionary with information on the segments.
         """
 
-        # Build a multi-layer tuple with the values for the dictionary
-        raw_segment_values = (
-            (segment_values[1], (
-                segment_values[0],
-                segment_values[2],
-                segment_values[3].astype(int)-1,
-                segment_values[3].astype(int)-1,
-                segment_values[3].astype(int)-1,
-                {f'{parameter[0].lower()}{parameter[1:]}':
-                 segment_values[4].__dict__[parameter]
-                 for parameter in segment_values[4].__dict__
-                 if parameter in (
-                         'Priority', 'alphaX', 'betaX', 'visibleColor')},
-                None,
-                None))
-            for segment_values in data)
+        # Build a multi-layer tuple with the values per segment
+        segment_values = (
+            (row[1], ( # segment name
+                row[0], # index
+                row[2], # type
+                row[3].astype(int)-1, # indices
+                {f'{parameter[0].lower()}{parameter[1:]}': # parameters
+                 value for parameter, value in row[4].__dict__.items()
+                 if f'{parameter[0].lower()}{parameter[1:]}' in (
+                         'priority', 'alphaX', 'betaX', 'visibleColor')},
+                None, # objective
+                None)) # constraint
+            for row in data)
 
-        # Set the dictionary keys
+        # Set the keys
         segment_keys = (
-            'index', 'type', 'raw_indices', 'prioritized_indices',
-            'resized_indices', 'parameters', 'objective', 'constraint')
+            'index', 'type', 'raw_indices', 'parameters', 'objective',
+            'constraint')
 
-        # Merge the keys and the values into the segmentation dictionary
+        # Merge the keys and the values
         segmentation = {
             values[0]: dict(zip(segment_keys, values[1]))
-            for values in raw_segment_values}
+            for values in segment_values}
 
         return dict(sorted(segmentation.items()))

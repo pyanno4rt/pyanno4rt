@@ -3,11 +3,16 @@ Logging module.
 
 ==================================================================
 
-This module aims to provide methods and classes to implement a logging system.
+This module aims to provide methods and classes to track events during \
+pyanno4rt runs.
 """
 
 # Author: Tim Ortkamp
 
-from ._logger import Logger
+from ._logging import Logging
+from ._logging_utils import get_logger, set_logger_name
 
-__all__ = ['Logger']
+__all__ = [
+    'Logging',
+    'get_logger',
+    'set_logger_name']

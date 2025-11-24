@@ -11,8 +11,8 @@ from sklearn.neighbors import KNeighborsClassifier
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning import MachineLearningModel
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -163,8 +163,8 @@ class KNeighborsModel(MachineLearningModel):
         """
 
         # Log a message about the model file reading
-        Datahub().logger.display_info(
-            f'Reading "{self.model_label}" model from file ...')
+        get_logger().info(
+            "Reading '%s' model from file ...", self.model_label)
 
         return load(open(self.model_path, 'rb'))
 

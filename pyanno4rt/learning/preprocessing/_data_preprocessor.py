@@ -8,8 +8,8 @@ from numpy import prod, vstack
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 import pyanno4rt.learning._maps as maps
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -42,7 +42,7 @@ class DataPreprocessor():
         if verbose:
 
             # Log a message about the initialization of the class
-            Datahub().logger.display_info("Initializing data preprocessor ...")
+            get_logger().info("Initializing data preprocessor ...")
 
         # Merge the preprocessing algorithm maps
         preprocessing_map = {**maps.TRANSFORMERS}
@@ -57,9 +57,9 @@ class DataPreprocessor():
         if verbose:
 
             # Log a message about the pipeline build
-            Datahub().logger.display_info(
-                f"Building pipeline 'Input -> {' -> '.join(sequence)} -> "
-                "Output' ...")
+            get_logger().info(
+                "Building pipeline 'Input -> %s -> Output' ...",
+                ' -> '.join(sequence))
 
         # Generate the preprocessing steps dictionary
         self.steps = dict(zip(

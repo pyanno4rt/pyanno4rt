@@ -9,10 +9,6 @@ from matplotlib.pyplot import cm, get_current_fig_manager, subplots
 from numpy import full
 from pandas import DataFrame
 
-# %% Internal package import
-
-from pyanno4rt.datahub import Datahub
-
 # %% Set options
 
 try:
@@ -31,17 +27,12 @@ class DosimetricsTable():
     statistics, DVH parameters and quality indicators.
     """
 
-    def view(self):
+    def view(self, plan):
         """Open the dosimetrics table."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the plot opening
-        hub.logger.display_info("Opening dosimetrics table ...")
-
         # Convert the dosimetrics dictionary into a dataframe
-        dataframe = DataFrame(hub.dosimetrics).transpose().astype(float)
+        dataframe = DataFrame(
+            plan.dosimetrics.quantities).transpose().astype(float)
 
         # Create a figure and subplots
         figure, axis = subplots(figsize=(14, 8))

@@ -9,6 +9,7 @@ from os.path import splitext
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 from pyanno4rt.io.patient import DicomHandler, MatHandler
 
 # %% Class definition
@@ -37,7 +38,7 @@ class PatientHandler():
     def __init__(self):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info("Initializing patient handler ...")
+        get_logger().info("Initializing patient handler ...")
 
         # Initialize the CT and segmentation dictionaries
         self.computed_tomography, self.segmentation = None, None
@@ -61,8 +62,8 @@ class PatientHandler():
         source, handler = self.sources[splitext(path)[1]]
 
         # Log a message about the patient imaging data loading
-        hub.logger.display_info(
-            f"Loading CT and segmentation data from {source} ...")
+        get_logger().info(
+            "Loading CT and segmentation data from %s ...", source)
 
         # Load the patient imaging data
         self.computed_tomography, self.segmentation = handler().load(path)
@@ -83,15 +84,11 @@ class PatientHandler():
             Path for storing the patient imaging data.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Get the file string and handler
         source, handler = self.sources[splitext(path)[1]]
 
         # Log a message about the patient imaging data saving
-        hub.logger.display_info(
-            f"Saving CT and segmentation data to {source} ...")
+        get_logger().info("Saving CT and segmentation data to %s ...", source)
 
         # Save the patient imaging data
         handler().save(self.computed_tomography, self.segmentation, path)

@@ -2,13 +2,11 @@
 
 # Author: Tim Ortkamp
 
-# %% External package import
-
-from pyanno4rt.datahub import Datahub
-
 # %% Internal package import
 
+from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning.inspection import permutation_importances
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -36,7 +34,7 @@ class ModelInspector():
             model_label):
 
         # Log a message about the initialization of the model inspector
-        Datahub().logger.display_info("Initializing model inspector ...")
+        get_logger().info("Initializing model inspector ...")
 
         # Get the model label from the arguments
         self.model_label = model_label

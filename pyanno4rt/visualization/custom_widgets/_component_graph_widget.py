@@ -154,7 +154,7 @@ class ComponentGraphWidget(QWidget):
             pen = item.curve.opts['pen']
 
             # Check if the current item triggers the event
-            if item.curve == event:
+            if item.curve == event or item == event:
 
                 # Construct the QPen
                 pen = mkPen(pen)

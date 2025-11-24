@@ -13,6 +13,7 @@ from pyanno4rt.learning import DataModelHandler, ModelParameters
 from pyanno4rt.learning.svm import (
     linear_gradient, poly_gradient, rbf_gradient, sigmoid_gradient,
     SupportVectorMachineModel)
+from pyanno4rt.logging import get_logger
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import (
     filter_dict, inverse_salu, inverse_sigmoid, salu, sigmoid)
@@ -181,8 +182,8 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
         hub = Datahub()
 
         # Log a message about the model addition
-        hub.logger.display_info(
-            f"Adding support vector machine model for '{self.name}' ...")
+        get_logger().info(
+            "Adding support vector machine model for '%s' ...", self.name)
 
         # Initialize the data model handler
         self.data_model_handler = DataModelHandler(

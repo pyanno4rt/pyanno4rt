@@ -5,6 +5,7 @@
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 from pyanno4rt.optimization.projections import Backprojection
 
 # %% Class definition
@@ -23,8 +24,7 @@ class ConstantRBEProjection(Backprojection):
     def __init__(self):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            "Initializing constant RBE projection ...")
+        get_logger().info("Initializing constant RBE projection ...")
 
         # Call the superclass constructor
         super().__init__()

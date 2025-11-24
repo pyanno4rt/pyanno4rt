@@ -9,6 +9,7 @@ from json import load as jload
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
+from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
@@ -42,9 +43,9 @@ class ImageDataGenerator():
             model_folder_path):
 
         # Log a message about the initialization of the class
-        Datahub().logger.display_info(
-            f"Initializing data generator for '{model_label}' model from "
-            "empty base dataset ...")
+        get_logger().info(
+            "Initializing data generator for '&s' model from empty base "
+            "dataset ...", model_label)
 
         # Get the instance attributes from the arguments
         self.model_label = model_label
