@@ -94,9 +94,9 @@ def snapshot(
 
     # Check if any required attribute is missing
     if (any(getattr(instance, attribute) is None for attribute in (
-            'logger', 'datahub', 'patient_loader', 'plan_generator',
-            'dose_generator', 'fluence_optimizer'))
-            or instance.datahub.state < 3):
+            'logging', 'datahub', 'patient_handler', 'plan_handler',
+            'dose_handler', 'fluence_optimizer'))
+            or instance.state < 3):
 
         # Raise an error to indicate a missing attribute
         raise AttributeError(
@@ -126,22 +126,25 @@ def snapshot(
         dump(input_dictionaries, file, sort_keys=False, indent=4)
 
     # Open a file stream for the log output
-    with open(f'{snap_path}/{instance.datahub.label}.log', 'w',
+    with open(f'{snap_path}/{instance.configuration.label}.log', 'w',
               encoding='utf-8') as file:
 
         # Get the logging stream value
-        stream_value = instance.logger.logger.handlers[1].stream.getvalue()
+        stream_value = instance.logging.logger.handlers[1].stream.getvalue()
 
         # Print the stream value to the file
         print(stream_value, file=file)
+    
+    # Get the segmentation data
+    segmentation = instance.patient_handler.segmentation
 
     # Get the machine learning model data
     ml_model_data = tuple((
         component.model.model_label, component.model,
         component.model_parameters.data_path)
         for component in (
-            get_machine_learning_objectives(instance.datahub.segmentation)
-            + get_machine_learning_constraints(instance.datahub.segmentation)))
+            get_machine_learning_objectives(segmentation)
+            + get_machine_learning_constraints(segmentation)))
 
     # Export the machine learning model files
     apply(export_model_files, ml_model_data)

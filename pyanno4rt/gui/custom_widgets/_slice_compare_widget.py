@@ -149,7 +149,7 @@ class SliceCompareWidget(QWidget):
 
         segment_colors = tuple(
             255*segmentation[segment]['parameters']['visibleColor']
-            for segment in (*segmentation,))
+            for segment in segmentation)
 
         segment_images = [ImageItem() for _ in self.segment_masks]
         for image in segment_images:

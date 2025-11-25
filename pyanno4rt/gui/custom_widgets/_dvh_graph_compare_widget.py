@@ -10,6 +10,10 @@ from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from pyqtgraph import (
     colormap, InfiniteLine, mkPen, PlotWidget, setConfigOptions, SignalProxy)
 
+# %% Internal package import
+
+from pyanno4rt.evaluation import Dosimetrics
+
 # %% Plotting options
 
 setConfigOptions(antialias=True)
@@ -182,11 +186,15 @@ class DVHGraphCompareWidget(QWidget):
         if self.baseline and self.reference:
 
             #
-            quantities = self.parent.evaluate_dosimetrics(
+            dosimetrics = Dosimetrics(
+                reference_volumes=self.baseline.evaluation.reference_volumes,
+                reference_doses=self.baseline.evaluation.reference_doses,
+                number_of_fractions=self.baseline.configuration.number_of_fractions)
+            dosimetrics.evaluate_segments(
+                self.baseline.patient_handler.segmentation,
                 self.baseline.datahub.optimization['optimized_dose']
-                - self.reference.datahub.optimization['optimized_dose'],
-                self.baseline.patient_handler.computed_tomography,
-                self.baseline.patient_handler.segmentation)
+                - self.reference.datahub.optimization['optimized_dose'])
+            quantities = dosimetrics.quantities
 
         # Loop over the items
         for item in self.plot_widget.getPlotItem().listDataItems():

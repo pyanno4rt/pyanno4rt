@@ -149,7 +149,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `scikit-learn`                 | <font size="3"> >=1.7.2 </font>       |
 | `tensorflow`                   | <font size="3"> >=2.20.0 </font>      |
 | `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
-| `pymoo`                        | <font size="3"> >=0.6.1.5 </font>     |
+| `pymoo`                        | <font size="3"> >=0.6.1.6 </font>     |
 | `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |
 | `pyqt5`                        | <font size="3"> ==5.15.10 </font>     |
 | `pyqtgraph`                    | <font size="3"> >=0.14.0 </font>      |
@@ -157,7 +157,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
-Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.0** for development.
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.1** for development.
 
 # Development :rocket:
 

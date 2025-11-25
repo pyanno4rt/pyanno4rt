@@ -3710,6 +3710,35 @@ numpy = [
 dev = ["absl-py", "pyink", "pylint (>=2.6.0)", "pytest", "pytest-xdist"]
 
 [[package]]
+name = "moocore"
+version = "0.1.10"
+description = "Core Algorithms for Multi-Objective Optimization"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "moocore-0.1.10-cp310-abi3-macosx_10_9_universal2.whl", hash = "sha256:65f7babf9fd5f70b8c5d3e8512c375e70c785c6eb225bcc54e6602ecf1554a93"},
+    {file = "moocore-0.1.10-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:d4428aeec0b5979b5719af1215c549b1727992ad691b54efdf3ee06cc05b9286"},
+    {file = "moocore-0.1.10-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:fc46072e17efd78799000e0e5d38e02b5c66e8a285806e301f10751920be5a11"},
+    {file = "moocore-0.1.10-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:515241875ffa4e5083ec66554e580613971f2191777a76f9ffaab1b9f641ce95"},
+    {file = "moocore-0.1.10-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:21986e15b8e216121c6c84b1a90765d93ae96e0d7ab6be95943f5f4c61d46bb4"},
+    {file = "moocore-0.1.10-cp310-abi3-win_amd64.whl", hash = "sha256:e894e3cd2070cf48587ac1382316dff4da4629614b23f13454f0aeba23e94e57"},
+    {file = "moocore-0.1.10-cp310-abi3-win_arm64.whl", hash = "sha256:234bf15418cf347e9492971d75405f27fa0dd15389f4432b400d5a878d403613"},
+    {file = "moocore-0.1.10.tar.gz", hash = "sha256:e7236d01723ef30d68aa717c28d0b843b404cbd900d4d5ea58093b17e5bc9595"},
+]
+
+[package.dependencies]
+cffi = ">=1.17.1"
+numpy = ">=1.23"
+platformdirs = "*"
+
+[package.extras]
+benchmarks = ["botorch", "cpuinfo", "desdeo", "jmetal", "matplotlib", "nevergrad", "numba", "numpy", "pandas", "pandas (>=2)", "paretoset", "pymoo"]
+coverage = ["coverage[toml]", "gcovr"]
+dev = ["pre-commit (>=3.3.2)", "ruff (>=0.11.2)", "tox (>=4.6.2)"]
+docs = ["ipykernel", "ipywidgets", "jupyter", "jupyterlab", "kaleido", "pandas (>=2)", "plotly", "pydata-sphinx-theme (>=0.16)", "seaborn", "sphinx (>=6)", "sphinx-autodoc-typehints", "sphinx-copybutton", "sphinx-design", "sphinx-gallery (>=0.19)", "sphinxcontrib-bibtex", "sphinxcontrib-napoleon"]
+test = ["pandas (>=2)", "pytest (>7)"]
+
+[[package]]
 name = "more-itertools"
 version = "10.8.0"
 description = "More routines for operating on iterables, beyond itertools"
@@ -5208,48 +5237,64 @@ python-lsp-server = ">=1.0.1"
 
 [[package]]
 name = "pymoo"
-version = "0.6.1.5"
+version = "0.6.1.6"
 description = "Multi-Objective Optimization in Python"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 files = [
-    {file = "pymoo-0.6.1.5-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:00b5aec75e1ebdb13f537a45b17a33a8fd7ea7437b9bcfdc1a72e56ddf26dd7a"},
-    {file = "pymoo-0.6.1.5-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:dbdfe6b82582831a57bc441bb078b2dfa10654b04dc47208e714e2312c123cb4"},
-    {file = "pymoo-0.6.1.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:48c0f930f344c2fd2fd82d7b30dd7e7d2613437c9519c2aaee73cfca7707fc82"},
-    {file = "pymoo-0.6.1.5-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:fc9079a7d4d4e392028deb8821a13b77a4ff834727725dbf62cddf44fd0a6e98"},
-    {file = "pymoo-0.6.1.5-cp310-cp310-win_amd64.whl", hash = "sha256:874c7f7c6da71520c230aa0f7150c949854d68eef6f57de4d9b8bbd4bc9dfb69"},
-    {file = "pymoo-0.6.1.5-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:2340e9da2e09c423d47cfe553375134702598e43701dc1cbd14c71010b381666"},
-    {file = "pymoo-0.6.1.5-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:c0d0a1c349ae6973ea6e0cedf208c760d557be6aca0fb86aff6db155e263dfef"},
-    {file = "pymoo-0.6.1.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:07fd159285c5637d5c68d758c3498f13f066635455e2b0f2b3a43b9d44704c75"},
-    {file = "pymoo-0.6.1.5-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:04a40005d4c18e194a380e360162063577cc1c206d5ca40f0dd463168e0efaf1"},
-    {file = "pymoo-0.6.1.5-cp311-cp311-win_amd64.whl", hash = "sha256:2fde9e9b6ed21b743e466d7a2225cf4aa8fc81408fe104948e70fbb0f5fd53de"},
-    {file = "pymoo-0.6.1.5-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:31d9f9522337c6ddfa6fc7670daa9ce4c777c104283824c3e6a2c482d8cde5b8"},
-    {file = "pymoo-0.6.1.5-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:57dd99fd7fff871d42289646ee7899f5f85535a74d4fefcca900a9dde1067c07"},
-    {file = "pymoo-0.6.1.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:247099da5cf52092529089cd2b69d6cb959db9081d88789d6d1155778f392041"},
-    {file = "pymoo-0.6.1.5-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:db6e562fad10afcfb250de116f958d7606f9ccb95d9a6e84b1c26378384cd736"},
-    {file = "pymoo-0.6.1.5-cp312-cp312-win_amd64.whl", hash = "sha256:44a151f83b9e455cdf1a8d63383c378b871c44592b6314167a39be3694a2fb01"},
-    {file = "pymoo-0.6.1.5-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:9ddaeb66ce18d473cdfdfd70c7e63e1cd7cddf47879e79bca1f8eab379a74413"},
-    {file = "pymoo-0.6.1.5-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:875d06c0f0617ea73eaedb810cc25d55b40b7ddf77db23f59bca51a18eab5079"},
-    {file = "pymoo-0.6.1.5-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:da0d2afe9fa6a94fbec3fe970fa9426309b668eefb1eb796f44bfa186cf2c5ad"},
-    {file = "pymoo-0.6.1.5-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:0926f8ba84fc1e104b30ccdcf0dd5ed886be209f7de6d729fe115cdd3fdec084"},
-    {file = "pymoo-0.6.1.5-cp313-cp313-win_amd64.whl", hash = "sha256:36543ab8690c9afb4a07c795f58018223394b86c5ba0ce6044f7f28c193dfacc"},
-    {file = "pymoo-0.6.1.5-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:dd9e9a898536402e40ca014d01ba78ba78cf464f4a5efa4eca15c30856f815f5"},
-    {file = "pymoo-0.6.1.5-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:92379d2b0e0730822fdf95dcf331a097476bb9188b0fe7082b25e71c403ab2a0"},
-    {file = "pymoo-0.6.1.5-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1274cabeb247ff1238479a60080ebc84a7003da0b6c0b44ab8dc2191717d6a79"},
-    {file = "pymoo-0.6.1.5-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:2d8c9fdaf9eca6c5abb961dd6bb763a7e751e4a142aea3d234414f0cc954e70b"},
-    {file = "pymoo-0.6.1.5-cp39-cp39-win_amd64.whl", hash = "sha256:54e0e1a448bc967db73dfa46a6c7a4daf1f9c5570e1cf0e8ca4b713ca6f14ea8"},
-    {file = "pymoo-0.6.1.5.tar.gz", hash = "sha256:9ce71eaceb2f5cccf8c5af53102cf6d96fa911452addaf48fb971a60621f8364"},
+    {file = "pymoo-0.6.1.6-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:f2d48fa7f8f8ea314405ad49a6b7f3dcf8f12c2024e319e2d47ede0937f8b39b"},
+    {file = "pymoo-0.6.1.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c8cfd085b74b3f673378109d8d0734d0cab460e3e78c09f691120ac0c2698aad"},
+    {file = "pymoo-0.6.1.6-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:49a9cde6ff7cc8497458166e2c14734bf4879c76256412cce0de2af86d2b71a8"},
+    {file = "pymoo-0.6.1.6-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:007bdabe638d5cc1ff98d1df096e7cea42f266ecc7b84fc0aac695a20b6f02f6"},
+    {file = "pymoo-0.6.1.6-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:62599637724f74820e16d813e6ca86af1733add4251e22b5a6c677df75dec06b"},
+    {file = "pymoo-0.6.1.6-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:a4f590fc62021d2583afdc88a2eb5ec878699786585f9ca82edf1fc32557ac96"},
+    {file = "pymoo-0.6.1.6-cp310-cp310-win_amd64.whl", hash = "sha256:3b9dcb6959cf2b12c0f1d4ac971fa53074430eb976367b2e7eec0d0301423f31"},
+    {file = "pymoo-0.6.1.6-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:e0a42b6f3c26b2725b1edb1d4cfb98e5640bb0638813080ba1aa0daf23b2fd05"},
+    {file = "pymoo-0.6.1.6-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:b3e990dea0ad84fa2f89462215e34960579dbb9fef4d880aecb09f50cc18e713"},
+    {file = "pymoo-0.6.1.6-cp311-cp311-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:642308eae98c5b8aee96272e10c6409dd97289ef214ec7383b39425f01549b5f"},
+    {file = "pymoo-0.6.1.6-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:50472dfb93b90b4801c63070a4afc786c52f7f56b345f345024b39cd35ff06c4"},
+    {file = "pymoo-0.6.1.6-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:38fa5bf507cd7c07eae0286948db79f761b5b4c5d5956a31fd0e5a771c83fa47"},
+    {file = "pymoo-0.6.1.6-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:a68fb9d807c1cb6f36e13c24731c496b1e98b9c8810125072f19bd56baa6a4d5"},
+    {file = "pymoo-0.6.1.6-cp311-cp311-win_amd64.whl", hash = "sha256:df9520fd7fab0761d5698dd36eabcfb18b5eb970ddf01e10eb30b764e4bb72af"},
+    {file = "pymoo-0.6.1.6-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:fd4715b4015b10ad3cf02e5eb9abb57fe4bfa4d3378f9076b76d60c1ddfa46d6"},
+    {file = "pymoo-0.6.1.6-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:f62fb1e2ba15f22ff5569c6d364dbf9dfe8b3722a114e6bc1df3cc10f8dd5044"},
+    {file = "pymoo-0.6.1.6-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:cd2b0fb19ce3e71a177ed3b965ce2d4334ffb6aad8f621c124de6dafa09b7758"},
+    {file = "pymoo-0.6.1.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:533de86c284bf3b7b6da871e2ae07a914eaa5d3a51f5c4e6d7c055d3471c4467"},
+    {file = "pymoo-0.6.1.6-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:2a2e9524b07baef135a7143700cc65a504c2123c717a6924fa939947b4fdba73"},
+    {file = "pymoo-0.6.1.6-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:819a27ff19c146a64853a86ebab02bc6bbf28fb9fcf119e93cfc855ec6314f72"},
+    {file = "pymoo-0.6.1.6-cp312-cp312-win_amd64.whl", hash = "sha256:5607e0359c96691158192bd3e2b939beab6d4ed25032ef4cb79edf588c2bb475"},
+    {file = "pymoo-0.6.1.6-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:798e5af41527324303e56ac806f9ec34c65f31c2df9e904daeca68027bf91266"},
+    {file = "pymoo-0.6.1.6-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:01e848762e04d183e8dcc12e1cfb1e2cdd2c5efeda47961dbcf6c86c09751e30"},
+    {file = "pymoo-0.6.1.6-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:718b9e971e436c2ded520c4a6fe8c83b7f305da1fcc539d6386d025c6e9bfe66"},
+    {file = "pymoo-0.6.1.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:981bd5b8581e959814a0e51982be1a964945fb7f599cfe7857a63cbc1ad97d58"},
+    {file = "pymoo-0.6.1.6-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:7c042120df86240c1451e2a1afb0f76b64acb8d736fb7687bc5e4aec40f7ff9e"},
+    {file = "pymoo-0.6.1.6-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:5086f46020aa1a13a0e3142ef87b6487e91ea5d25b7b69467039f0d3f5a57cb2"},
+    {file = "pymoo-0.6.1.6-cp313-cp313-win_amd64.whl", hash = "sha256:c16e05b36e081d0ea6aee499346f65466811f63f5837f0d09de866624cb7355b"},
+    {file = "pymoo-0.6.1.6-cp314-cp314-macosx_10_15_universal2.whl", hash = "sha256:7d13e14434f0555fbeda20764d34be4dc94f53ae7040a337928d7bfe42d3422a"},
+    {file = "pymoo-0.6.1.6-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:466f88073c9f498bcf75334a2e47279968003d91b7fe01df1b056b5a6c3434d8"},
+    {file = "pymoo-0.6.1.6-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:791188677b42e104c41cd1c65370a94fbbec756d8894947863f42a1f76352c90"},
+    {file = "pymoo-0.6.1.6-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b9dd7da8b18bffac6b09c75b4a4a645232994d91fc0cdfe39baffdc08fa5d252"},
+    {file = "pymoo-0.6.1.6-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:f41b359d6de6c9d99ab7da94f115c5aea4d21e74a252bef7c8debec8f20f0b9f"},
+    {file = "pymoo-0.6.1.6-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:ecf1ce515e72d59b78c909aa142d2369cc3c6d771ac7c9162831c0b62a869c8f"},
+    {file = "pymoo-0.6.1.6-cp314-cp314-win_amd64.whl", hash = "sha256:56ecb6f9f5ac0559829e183a23ea3672eae8c1eb9d745305bef98da8d1614d28"},
+    {file = "pymoo-0.6.1.6.tar.gz", hash = "sha256:d48077c7b612b149e7db5351459bf96a0950e84ebcd5b7b953bf46b3dcf1ac28"},
 ]
 
 [package.dependencies]
-alive-progress = "*"
+alive_progress = "*"
 autograd = ">=1.4"
 cma = ">=3.2.2"
 Deprecated = "*"
-dill = "*"
 matplotlib = ">=3"
+moocore = ">=0.1.7"
 numpy = ">=1.19.3"
 scipy = ">=1.1"
+
+[package.extras]
+dev = ["ipykernel", "ipython", "jupyter", "nbformat", "numba", "optproblems", "pandas", "pyrecorder", "pytest"]
+full = ["numba", "pandas", "pymoo[others]", "pymoo[parallelization]", "scikit-learn"]
+others = ["optuna"]
+parallelization = ["dask[distributed]", "joblib", "ray[default]"]
 
 [[package]]
 name = "pynacl"
@@ -6933,13 +6978,13 @@ test = ["pytest"]
 
 [[package]]
 name = "spyder"
-version = "6.1.0"
+version = "6.1.1"
 description = "The Scientific Python Development Environment"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "spyder-6.1.0-py3-none-any.whl", hash = "sha256:2c09c2c47d82b19bc466fce899519e98e79468fe6ffcd07d80356eada9c43d4e"},
-    {file = "spyder-6.1.0.tar.gz", hash = "sha256:5200c6249bb037307455f00c80633f50884d6ab43a75ad7c5ca13d2462574636"},
+    {file = "spyder-6.1.1-py3-none-any.whl", hash = "sha256:3ad390fbb670c82e17256d281f3d7d0420ce9b9f1459b8d894b6ec18bd5b6e77"},
+    {file = "spyder-6.1.1.tar.gz", hash = "sha256:b30a488e692b1258da3dcd9e03b61b5f05d1baada63af81ae999bcbf869c614e"},
 ]
 
 [package.dependencies]
@@ -6976,7 +7021,7 @@ pyqt5 = ">=5.15,<5.16"
 pyqtwebengine = ">=5.15,<5.16"
 python-lsp-black = ">=2.0.0,<3.0.0"
 python-lsp-ruff = ">=2.3.0,<3.0.0"
-python-lsp-server = {version = ">=1.13.0,<1.14.0", extras = ["all"]}
+python-lsp-server = {version = ">=1.13.2,<1.14.0", extras = ["all"]}
 pyuca = ">=1.2"
 pyxdg = {version = ">=0.26", markers = "platform_system == \"Linux\""}
 pyzmq = ">=24.0.0"
@@ -6986,8 +7031,8 @@ qtawesome = ">=1.4.0,<1.5.0"
 qtconsole = ">=5.7.0,<5.8.0"
 qtpy = ">=2.4.0"
 rtree = ">=0.9.7"
-sphinx = ">=0.6.6"
-spyder-kernels = ">=3.1.0,<3.2.0"
+sphinx = ">=7.2.0"
+spyder-kernels = ">=3.1.2,<3.2.0"
 superqt = ">=0.6.2,<1.0.0"
 textdistance = ">=4.2.0"
 three-merge = ">=0.1.1"
@@ -8132,4 +8177,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <4.0"
-content-hash = "56459d70b42ccc6a5e72e5b0b812b1af71e304a1816ba682cf675c9b8f91061b"
+content-hash = "a033be46c64ecdd4b7decde53ec72a549178186a55a728f3816cf5e56ad0a9c3"

@@ -2621,6 +2621,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Set the position of the window
             self.compare_window.position()
 
+            # Adjust the viewbox range
+            self.compare_window.baseline_dose_slice_widget.viewbox.autoRange()
+
             # Show the window
             self.compare_window.show()
 

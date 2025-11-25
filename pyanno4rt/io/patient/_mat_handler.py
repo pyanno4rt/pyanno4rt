@@ -154,7 +154,7 @@ class MatHandler():
                          'priority', 'alphaX', 'betaX', 'visibleColor')},
                 None, # objective
                 None)) # constraint
-            for row in data)
+            for row in data if len(row[3]) > 0)
 
         # Set the keys
         segment_keys = (

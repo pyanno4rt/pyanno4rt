@@ -428,4 +428,9 @@ class DicomHandler():
                 logger.warning(
                     "ROI contour for '%s' is empty ...", segment)
 
+    	# Filter the segments
+        segmentation = {
+            key: value for key, value in segmentation.items()
+            if len(value['raw_indices']) > 0}
+
         return dict(sorted(segmentation.items()))

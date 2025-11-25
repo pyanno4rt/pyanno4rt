@@ -5,13 +5,13 @@
 # %% External package import
 
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import (
-    array, ceil, divide, linspace, nan, multiply, sort, unravel_index)
+from numpy import ceil, divide, linspace, multiply
 from PyQt5.QtWidgets import QMainWindow
 from pyqtgraph import mkPen
 
 # %% Internal package import
 
+from pyanno4rt.evaluation import DVH
 from pyanno4rt.gui._custom_styles import cbox, sbox, pbutton_composer
 from pyanno4rt.gui.compilations.compare_window import Ui_compare_window
 from pyanno4rt.gui.custom_widgets import (
@@ -239,22 +239,16 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         self.difference_dvh_widget.reset_dvh()
 
         #
-        baseline_dvh = self.evaluate_dvh(
-            baseline.datahub.optimization['optimized_dose'],
-            baseline.patient_handler.computed_tomography,
+        baseline_dvh = baseline.dvh.histogram
+        reference_dvh = reference.dvh.histogram
+
+        #
+        dvh = DVH(dvh_type='cumulative', number_of_points=1000)
+        dvh.evaluate_segments(
             baseline.patient_handler.segmentation,
-            1000)
-        reference_dvh = self.evaluate_dvh(
-            reference.datahub.optimization['optimized_dose'],
-            baseline.patient_handler.computed_tomography,
-            baseline.patient_handler.segmentation,
-            1000)
-        dvh_diff = self.evaluate_dvh(
             baseline.datahub.optimization['optimized_dose']
-            - reference.datahub.optimization['optimized_dose'],
-            baseline.patient_handler.computed_tomography,
-            baseline.patient_handler.segmentation,
-            1000)
+            - reference.datahub.optimization['optimized_dose'])
+        dvh_diff = dvh.histogram
 
         #
         joint_segments = sorted(tuple(
@@ -325,66 +319,6 @@ class CompareWindow(QMainWindow, Ui_compare_window):
 
         # Set the initial scrollbar value
         self.slice_selection_sbar.setValue(int((plane_depth-1)/2))
-
-    def evaluate_dvh(
-            self,
-            dose_cube,
-            computed_tomography,
-            segmentation,
-            number_of_points):
-        """
-        Evaluate the DVH for all segments.
-
-        Parameters
-        ----------
-        dose_cube : ndarray
-            Three-dimensional array with the dose values (CT resolution).
-        """
-
-        def evaluate_cumulative_dvh(dose, points):
-            """Evaluate the cumulative DVH points."""
-
-            return (
-                array([(dose >= point).sum() for point in points]) / len(dose))
-
-        def get_evaluation_points():
-            """Get the points at which to evaluate the DVH."""
-
-            # Get the maximum dose from the dose cube
-            maximum_dose = dose_cube.max()
-
-            return linspace(
-                0, 1.05*maximum_dose, number_of_points, endpoint=True)
-
-        def get_segment_dvh(indices, cube_dimensions, points):
-            """Get the DVH for a single segment."""
-
-            # Check if any voxel indices are present
-            if len(indices) > 0:
-
-                # Get the dose vector
-                dose = dose_cube[unravel_index(
-                    indices, cube_dimensions, order='F')]
-
-                # Return the DVH values for the segment
-                return evaluate_cumulative_dvh(dose, points)
-
-            # Else, return NaNs
-            return array([nan]*len(points))
-
-        # Initialize the dose histogram dictionary with the evaluation points
-        dose_histogram = {'evaluation_points': get_evaluation_points()}
-
-        # Add the segment names with the corresponding DVH values
-        dose_histogram |= {
-            segment: {
-                'dvh_values': get_segment_dvh(
-                    segmentation[segment]['raw_indices'],
-                    computed_tomography['cube_dimensions'],
-                    dose_histogram['evaluation_points'])}
-            for segment in segmentation}
-
-        return dose_histogram
 
     def select_dvh_curves(self, event):
         """."""
@@ -521,7 +455,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             # Plot the baseline DVH curves
             axis.plot(
                 baseline_dvh['evaluation_points'],
-                100*baseline_dvh[segment]['dvh_values'],
+                100*baseline_dvh[segment],
                 linewidth=1.5,
                 color=colors[index],
                 linestyle='-',
@@ -530,7 +464,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
             # Plot the reference DVH curves
             axis.plot(
                 reference_dvh['evaluation_points'],
-                100*reference_dvh[segment]['dvh_values'],
+                100*reference_dvh[segment],
                 linewidth=1.5,
                 color=colors[index],
                 linestyle='--',
@@ -581,8 +515,7 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         figure_manager = get_current_fig_manager()
 
         # Set the window title
-        figure_manager.set_window_title(
-            "pyanno4rt - joint DVH graph")
+        figure_manager.set_window_title("pyanno4rt - joint DVH graph")
 
         # Show the full-screen plot
         figure_manager.window.showMaximized()
@@ -709,49 +642,11 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         # Show the full-screen plot
         figure_manager.window.showMaximized()
 
-    def evaluate_dosimetrics(
-            self,
-            dose_cube,
-            computed_tomography,
-            segmentation):
-        """
-        Evaluate the dosimetrics for all segments.
-
-        Parameters
-        ----------
-        dose_cube : ndarray
-            Three-dimensional array with the dose values (CT resolution).
-        """
-
-        # Initialize the dosimetrics dictionary
-        dosimetrics = {segment: {} for segment in segmentation}
-
-        # Loop over the segments
-        for segment in dosimetrics:
-
-            # Get the sorted dose vector
-            dose = sort(dose_cube[unravel_index(
-                segmentation[segment]['raw_indices'],
-                computed_tomography['cube_dimensions'], order='F')])
-
-            # Get the length of the dose vector
-            dose_length = len(dose)
-
-            # Check if any dose values are present
-            if dose_length > 0:
-
-                # Compute the base statistics from the dose vector
-                dosimetrics[segment] |= {
-                    metric: getattr(dose, metric)()
-                    for metric in ('mean', 'std', 'min', 'max')}
-
-        return dosimetrics
-
     def position(self):
         """Set the window position."""
 
         # Reset the window size
-        self.resize(self.parent.screen().size())
+        self.resize(self.parent.size())
 
         # Get the window geometry
         geometry = self.geometry()
