@@ -386,6 +386,15 @@ class FluenceOptimizer():
             # Delete the copycat indicator
             del hub.optimization['from_copycat']
 
+            # Get the optimized fluence
+            self.optimized_fluence = hub.optimization['optimized_fluence']
+
+            # Compute the optimized dose
+            self.optimized_dose = self.compute_dose_3d(self.optimized_fluence)
+
+            # Store the optimized dose
+            hub.optimization['optimized_dose'] = self.optimized_dose
+
         # Get the runtime for problem solving
         self.solver_time = round(time()-start_time, 2)
 
