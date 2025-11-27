@@ -48,10 +48,10 @@ class PyPop7Solver():
     tolerance : float
         See 'Parameters'.
 
-    fun : object
+    instance : None or object
         The object used to represent the optimization algorithm.
 
-    arguments : dict
+    arguments : None or dict
         Dictionary with the solver arguments.
     """
 
@@ -70,8 +70,8 @@ class PyPop7Solver():
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
 
-        # Initialize the function and the arguments
-        self.fun, self.arguments = None, None
+        # Initialize the instance and the arguments
+        self.instance, self.arguments = None, None
 
     def configure(
             self,
@@ -98,7 +98,7 @@ class PyPop7Solver():
         if self.algorithm == 'LMCMA':
 
             # Set the optimization function
-            self.fun = LMCMA
+            self.instance = LMCMA
 
             # Initialize the arguments dictionary
             self.arguments = {
@@ -130,7 +130,7 @@ class PyPop7Solver():
         else:
 
             # Set the optimization function
-            self.fun = LMMAES
+            self.instance = LMMAES
 
             # Initialize the arguments dictionary
             self.arguments = {
@@ -143,7 +143,8 @@ class PyPop7Solver():
                     'max_function_evaluations': (
                         number_of_individuals*self.maximum_iterations),
                     'early_stopping_threshold': self.tolerance,
-                    'early_stopping_evaluations': number_of_individuals*50,
+                    'early_stopping_evaluations': (
+                        0.05*self.maximum_iterations*number_of_individuals),
                     'seed_rng': 42,
                     'sigma': 0.3,
                     'is_restart': False,
@@ -177,8 +178,11 @@ class PyPop7Solver():
         self.arguments['options']['mean'] = initial_fluence
         self.arguments['options']['x'] = initial_fluence
 
+        # Initialize the instance
+        self.instance = self.instance(**self.arguments)
+
         # Solve the optimization problem
-        result = self.fun(**self.arguments).optimize()
+        result = self.instance.optimize()
 
         # Clip the optimal fluence to account for negative values
         result['best_so_far_x'] = clip(

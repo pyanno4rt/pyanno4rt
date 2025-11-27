@@ -34,7 +34,7 @@
 <ul>
 	<li> Class-based plan generation </li>
 	<li> Automatic input checks to preserve the integrity </li>
-	<li> Dedicated logging channels & singleton datahubs </li>
+	<li> Dedicated logging channels </li>
 	<li> Snapshot/copycat functionality for storage/retrieval </li>
 </ul>
 
@@ -60,6 +60,7 @@
 	<li> Local & global solvers
 		<ul>
 			<li> Interior-point algorithms provided by <a href="https://pypi.org/project/ipyopt/">ipyopt</a> </li>
+			<li> Internal custom algorithms provided by <a href="https://github.com/pyanno4rt/pyanno4rt">pyanno4rt</a> </li>
 			<li> Multi-objective algorithms provided by <a href="https://pypi.org/project/pymoo/">pymoo</a> </li>
 			<li> Population-based algorithms provided by <a href="https://pypi.org/project/pypop7/">pypop7</a> </li>
 			<li> Local algorithms provided by <a href="https://pypi.org/project/scipy/">scipy</a> </li>

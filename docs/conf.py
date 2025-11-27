@@ -20,7 +20,7 @@ from myst_sphinx_gallery import GalleryConfig, __version__
 # -- Project information -----------------------------------------------------
 
 project = 'pyanno4rt'
-copyright = '2024, Karlsruhe Institute of Technology'
+copyright = '2026, Tim Ortkamp'
 author = 'Tim Ortkamp'
 release = f"v{__version__}"
 
@@ -103,28 +103,7 @@ autoapi_options = [
     'imported-members',
 ]
 
-autoapi_ignore = [
-    '*/resources_rc.py', '*/_maps.py', '*/_component_window_map.py',
-    '*/_custom_styles.py', '*/compare_window.py',
-    '*/data_columns_window.py', '*/info_window.py',
-    '*/log_window.py', '*/main_window.py', '*/plan_creation_window.py',
-    '*/settings_window.py', '*/splash_screen_window.py', '*/text_window.py',
-    '*/tree_window.py', '*/decision_tree_ntcp_window.py',
-    '*/decision_tree_tcp_window.py', '*/dose_uniformity_window.py',
-    '*/equivalent_uniform_dose_window.py',
-    '*/k_nearest_neighbors_ntcp_window.py',
-    '*/k_nearest_neighbors_tcp_window.py', '*/lkb_ntcp_window.py',
-    '*/logistic_regression_ntcp_window.py',
-    '*/logistic_regression_tcp_window.py', '*/lq_poisson_tcp_window.py',
-    '*/maximum_dvh_window.py', '*/mean_dose_window.py',
-    '*/minimum_dvh_window.py', '*/naive_bayes_ntcp_window.py',
-    '*/naive_bayes_tcp_window.py', '*/neural_network_ntcp_window.py',
-    '*/neural_network_tcp_window.py', '*/random_forest_ntcp_window.py',
-    '*/random_forest_tcp_window.py', '*/squared_deviation_window.py',
-    '*/squared_overdosing_window.py', '*/squared_underdosing_window.py',
-    '*/support_vector_machine_ntcp_window.py',
-    '*/support_vector_machine_tcp_window.py', '*/visualizer.py',
-    '*/_ct_dose_slicing_window.py', '*/_feature_select_window.py']
+autoapi_ignore = ['*/assets/*', '*/compilations/*', '*/designs/*']
 
 # -- Custom auto_summary() macro ----------------------------------------------
 

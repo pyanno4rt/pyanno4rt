@@ -81,15 +81,18 @@ class Optimization():
         - 'weighted-sum' : parallel optimization based on a weighted-sum \
             scalarization of the objective function
 
-    solver : {'ipyopt', 'pymoo', 'pypop7', 'scipy'}, default='scipy'
+    solver : {'ipyopt', 'pyanno4rt', 'pymoo', 'pypop7', 'scipy'}, \
+        default='scipy'
         Python package to be used for solving the optimization problem, see \
         the classes \
         :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
+        :class:`~pyanno4rt.optimization.solvers._pyanno4rt_solver.Pyanno4rtSolver`\
         :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
         :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
         :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`.
 
         - 'ipyopt': interior-point algorithms provided by Ipyopt
+        - 'pyanno4rt': internal custom algorithms provided by the package
         - 'pymoo' : multi-objective algorithms provided by Pymoo
         - 'pypop7': population-based algorithms provided by PyPop7
         - 'scipy' : local algorithms provided by SciPy
@@ -103,6 +106,10 @@ class Optimization():
         - solver='ipyopt': {'mumps'}
 
             - 'mumps': multifrontal massively parallel sparse direct solver
+
+        - solver='pyanno4rt': {'CMA'}
+
+            - 'CMA': covariance matrix adaptation evolution strategy
 
         - solver='pymoo' : {'NSGA3'}
 
@@ -173,7 +180,7 @@ class Optimization():
     method : {'lexicographic', 'pareto', 'weighted-sum'}
         See 'Parameters'.
 
-    solver : {'ipyopt', 'pymoo', 'pypop7', 'scipy'}
+    solver : {'ipyopt', 'pyanno4rt', 'pymoo', 'pypop7', 'scipy'}
         See 'Parameters'.
 
     algorithm : str
@@ -306,13 +313,15 @@ class Optimization():
                 partial(validate_value_in_set, options={
                     'lexicographic': ('ipyopt', 'scipy'),
                     'pareto': ('pymoo',),
-                    'weighted-sum': ('ipyopt', 'pypop7', 'scipy')},
+                    'weighted-sum': (
+                        'ipyopt', 'pyanno4rt', 'pypop7', 'scipy')},
                     value_condition=conditions['method'])),
             'algorithm': (
                 partial(validate_type, options=str),
                 partial(validate_value_in_set, options={
                     'lexicographic/ipyopt': ('mumps',),
                     'weighted-sum/ipyopt': ('mumps',),
+                    'weighted-sum/pyanno4rt': ('CMA',),
                     'pareto/pymoo': ('NSGA3',),
                     'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),
                     'lexicographic/scipy': ('trust-constr',),

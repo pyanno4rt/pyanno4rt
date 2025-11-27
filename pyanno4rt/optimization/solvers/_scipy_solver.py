@@ -45,10 +45,10 @@ class SciPySolver():
     tolerance : float
         See 'Parameters'.
 
-    fun : callable
+    fun : None or callable
         Minimization function from the SciPy library.
 
-    arguments : dict
+    arguments : None or dict
         Dictionary with the solver arguments.
 
     counter : None or int
