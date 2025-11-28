@@ -8,7 +8,7 @@ This module aims to provide methods and classes for custom solvers.
 
 # Author: Tim Ortkamp
 
-from ._cmaes import CMA
+from ._cmaes import CMAES
 
 __all__ = [
-    'CMA']
+    'CMAES']

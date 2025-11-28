@@ -1,7 +1,6 @@
 """Covariance matrix adaptation evolution strategy (CMA-ES)."""
 
 # Author: Tim Ortkamp
-# Adapted from Nomura & Shibata (2024): https://arxiv.org/pdf/2402.01373
 
 # %% External package import
 
@@ -9,14 +8,16 @@ from time import time
 
 from math import inf
 from numpy import (
-    argmin, argpartition, array, exp, eye, log, maximum, minimum, zeros)
+    arange, argmin, argpartition, array, einsum, exp, eye, log, maximum,
+    minimum, zeros)
+from numpy import sum as nsum
 from numpy.linalg import cholesky, inv, norm, svdvals
 from numpy.random import seed, standard_normal
 
 # %% Covariance matrix adaptation evolution algorithm
 
 
-class CMA:
+class CMAES:
     """
     Covariance matrix adaptation evolution strategy class.
 
@@ -44,59 +45,71 @@ class CMA:
             maximum_iterations=100,
             tolerance=1e-4,
             early_stopping_rounds=None,
+            number_of_individuals=None,
             callback=None
             ):
 
-        # Get the properties of the optimization problem
-        self._xdim = number_of_variables
-        self.fitness = objective
+        # Initialize the optimization problem variables
+        self._number_of_variables = number_of_variables
+        self.objective = objective
         self.gradient = gradient
         self.lower_bound = lower_variable_bounds
         self.upper_bound = upper_variable_bounds
 
-        # Get the stopping criteria
+        # Initialize the stopping criteria variables
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
         self.early_stopping_threshold = tolerance
         self.early_stopping_rounds = (
             inf if early_stopping_rounds is None else early_stopping_rounds)
-        self._early_stopping_iter = 0
 
-        # Get the callback function
+        # Initialize the callback variable
         self._callback = callback
 
-        # Calculate the algorithm parameters
-        self._lambda = 4 + int(3*log(self._xdim))
-        self._mu = int(self._lambda/2)
-        self._w = array([
-            (log(self._mu+0.5)-log(i))
-            / (sum(log(self._mu+0.5)-log(j) for j in range(1, self._mu+1)))
-            for i in range(1, self._mu+1)])
-        self._mu_eff = 1/sum(self._w)
-        self._cs = (self._mu_eff+2)/(self._xdim+self._mu_eff+3)
-        self._cc = 4/(self._xdim+4)
-        self._c1 = (
-            (2*min(1, self._lambda/6))/((self._xdim+1.3)**2+self._mu_eff))
-        self._cmu = (
-            (2*(self._mu_eff-2+1/self._mu_eff))
-            / ((self._xdim+2)**2+self._mu_eff))
+        # Initialize the fixed algorithm variables
+        self._zeros = zeros(self._number_of_variables)
+        self._pop_size = (
+            4 + int(3*log(self._number_of_variables))
+            if number_of_individuals is None else number_of_individuals)
+        self._elite_size = int(self._pop_size/2)
+        self._weights = (
+            (log((self._elite_size+0.5)/arange(1, self._elite_size+1)))
+            / nsum(log((self._elite_size+0.5)/arange(1, self._elite_size+1))))
+        self._mu_eff = 1/nsum(self._weights)
+        self._lr_sigma = (
+            (self._mu_eff+2) / (self._number_of_variables+self._mu_eff+3))
+        self._lr_cov = 4/(self._number_of_variables+4)
+        self._lr_rank_1 = (
+            (2*min(1, self._pop_size/6))
+            / ((self._number_of_variables+1.3)**2+self._mu_eff))
+        self._lr_rank_mu = (
+            2*(self._mu_eff+1/self._mu_eff-2)
+            / ((self._number_of_variables+2)**2+self._mu_eff))
+        self._lr_mean = 1
+        self._damp_sigma = (
+            1+2*max(0, ((self._mu_eff-1)/self._number_of_variables)**0.5 - 1)
+            + self._lr_sigma)
+        self._expected_path_length = (
+            self._number_of_variables**0.5
+            * (1-1/(4*self._number_of_variables)
+               + 1/(21*self._number_of_variables**2)))
 
-        # Initialize the solver variables
-        self._iter = 0
+        # Initialize the adaptive algorithm variables
+        self._opt_iter = 0
+        self._early_stopping_iter = 0
         self._sigma = 0.3
-        self._cm = 1
-        self._ds = 1+2*max(0, ((self._mu_eff-1)/self._xdim)**0.5-1)+self._cs
-        self._ps = zeros(self._xdim)
-        self._pc = zeros(self._xdim)
-        self._mean = zeros(self._xdim)
-        self._covmat = eye(self._xdim)
+        self._path_sigma = zeros(self._number_of_variables)
+        self._path_cov = zeros(self._number_of_variables)
+        self._mean = zeros(self._number_of_variables)
+        self._cov = eye(self._number_of_variables)
 
         # Initialize the singular values list
-        self._svalues = []
+        self._singular_values = []
 
         # Initialize the result dictionary
         self._result = {
-            'xopt': None, 'fopt': inf, 'solver_info': None, 'runtime': None}
+            'optimal_point': None, 'optimal_value': inf, 'solver_info': None,
+            'runtime': None}
 
     def check_termination(self):
         """
@@ -109,7 +122,7 @@ class CMA:
         """
 
         # Check if the maximum number of iterations has been reached
-        if self._iter >= self.maximum_iterations:
+        if self._opt_iter >= self.maximum_iterations:
 
             # Add the solver info
             self._result['solver_info'] = 'MAX_ITER_REACHED'
@@ -126,25 +139,163 @@ class CMA:
 
         return False
 
+    def evaluate_fitness(
+            self,
+            population,
+            fitness):
+        """
+        Evaluate the fitness result of the population.
+
+        Parameters
+        ----------
+        population : ndarray
+            Sample population.
+
+        fitness : ndarray
+            Fitness values for the population.
+
+        Returns
+        -------
+        bool
+            Indicator for termination.
+        """
+
+        # Get the best fitness
+        best_fitness = fitness.min()
+
+        # Get the fitness improvement
+        fitness_improvement = self._result['optimal_value'] - best_fitness
+
+        # Check if an improved solution has been found
+        if fitness_improvement > 0:
+
+            # Update the optimal value and point
+            self._result['optimal_value'] = best_fitness
+            self._result['optimal_point'] = population[argmin(fitness)]
+
+            # Check if the improvement exceeds the early stopping threshold
+            if fitness_improvement >= self.early_stopping_threshold:
+
+                # Reset the early stopping counter
+                self._early_stopping_iter = 0
+
+        # Check if the fitness improvement only is not sufficient
+        elif (self.early_stopping_rounds == inf
+                and fitness_improvement < self.tolerance):
+
+            # Add the solver info
+            self._result['solver_info'] = 'BELOW_THRESHOLD'
+
+            return False
+
+        else:
+
+            # Increment the early stopping counter
+            self._early_stopping_iter += 1
+
+        return True
+
     def ask(self):
-        """Ask for the next generation."""
+        """
+        Generate a new population.
+
+        Returns
+        -------
+        ndarray
+            Sample population (bound to the feasible region).
+
+        ndarray
+            Sample steps.
+        """
 
         # Sample from the standard multivariate Gaussian
-        z = standard_normal((self._lambda, self._xdim))
+        zsamples = standard_normal((self._pop_size, self._number_of_variables))
 
-        # Calculate the step vectors
-        y = z@cholesky(self._covmat)
+        # Sample steps from the multivariate Gaussian
+        steps = zsamples@cholesky(self._cov)
 
         # Sample the new population
-        x = self._mean + self._cm*self._sigma*y
+        population = self._mean + self._lr_mean*self._sigma*steps
 
-        return minimum(maximum(x, self.lower_bound), self.upper_bound), y
+        return (
+            minimum(maximum(population, self.lower_bound), self.upper_bound),
+            steps)
+
+    def tell(
+            self,
+            fitness,
+            steps):
+        """
+        Update the adaptive algorithm variables.
+
+        Parameters
+        ----------
+        fitness : ndarray
+            Fitness values of the new population.
+
+        steps : ndarray
+            Sample steps.
+        """
+
+        # Get the indices of the elite fitness values
+        elite_indices = argpartition(
+            fitness, self._elite_size)[:self._elite_size]
+
+        # Get the elite step vectors
+        elite_steps = steps[elite_indices, :]
+
+        # Compute the mean of the elite step vectors
+        elite_mean_step = self._weights@elite_steps
+
+        # Update the step-size evolution path
+        path_sigma = (
+            (1-self._lr_sigma)*self._path_sigma
+            + (self._lr_sigma*(2-self._lr_sigma)*self._mu_eff)**0.5
+            * inv(cholesky(self._cov)).T
+            * elite_mean_step)
+
+        # Compute the update switch for the covariance matrix
+        update_switch = (
+            norm(path_sigma)
+            < (1-(1-self._lr_sigma)**(2*(self._opt_iter+1)))**0.5
+            *(1.4+2/(self._number_of_variables+1))*self._expected_path_length)
+
+        # Update the rank-1 evolution path
+        path_cov = (
+            (1-self._lr_cov)*self._path_cov
+            + update_switch
+            * (self._lr_cov*(2-self._lr_cov)*self._mu_eff)**0.5
+            * elite_mean_step)
+
+        # Update the mean vector
+        self._mean = self._mean + self._sigma*elite_mean_step
+
+        # Update the step size
+        self._sigma = (
+            self._sigma*exp(
+                (self._lr_sigma/self._damp_sigma)
+                 * ((norm(path_sigma)/self._expected_path_length)-1)))
+
+        # Update the covariance matrix
+        self._cov = (
+            (1+(1-update_switch)*self._lr_rank_1*self._lr_cov*(2-self._lr_cov))
+            * self._cov
+            + self._lr_rank_1*(path_cov@path_cov.T-self._cov)
+            + self._lr_rank_mu*(
+                einsum('a,ai,aj->ij', self._weights, elite_steps, elite_steps,
+                       optimize=True)
+                - nsum(self._weights)*self._cov))
 
     def optimize(
             self,
-            x0):
+            initial_mean=None):
         """
-        Optimize the decision variables.
+        Run the optimization algorithm.
+
+        Parameters
+        ----------
+        initial_mean : ndarray, default=None
+            Initial mean vector. Default corresponds to the zero vector.
 
         Returns
         -------
@@ -155,99 +306,44 @@ class CMA:
         # Start the runtime recording
         start = time()
 
-        # Initialize the mean value
-        self._mean = x0
-
-        # Compute the expected path length
-        mu_p = self._xdim**0.5*(1-1/(4*self._xdim)+1/(21*self._xdim**2))
+        # Select the mean value
+        self._mean = self._mean if initial_mean is None else initial_mean
 
         # Continue until termination criteria are fulfilled
         while self.check_termination() is False:
 
+            # ---------------------------------------------- REMOVE LATER
             # Store the eigenvalues of the covariance matrix
-            self._svalues.append(svdvals(self._covmat))
+            # self._singular_values.append(svdvals(self._cov))
+            # ----------------------------------------------
 
-            # "Ask" for the new population
-            x, y = self.ask()
+            # "Ask" for a new population
+            population, steps = self.ask()
 
             # Compute the fitness values
-            f = array([self.fitness(xs) for xs in x])
+            fitness = array([
+                self.objective(individual) for individual in population])
 
-            # Get the minimum fitness and the fitness improvement
-            fmin, fdiff = f.min(), self._result['fopt'] - f.min()
+            # Evaluate the population's fitness
+            fitness_check = self.evaluate_fitness(population, fitness)
 
-            # Check if a better solution has been found
-            if fdiff > 0:
+            # Check if the fitness evaluation turned out negative
+            if fitness_check is False:
 
-                # Update the optimal value and point
-                self._result['fopt'] = fmin
-                self._result['xopt'] = x[argmin(f)]
-
-                # Check if the minimum improvement has been reached
-                if fdiff >= self.early_stopping_threshold:
-
-                    # Reset the early stopping counter
-                    self._early_stopping_iter = 0
-
-            # Check if improvement alone is insufficient
-            elif (self.early_stopping_rounds == inf
-                    and fdiff < self.tolerance):
-
-                # Add the solver info and stop
-                self._result['solver_info'] = 'NO_IMPROV'
+                # Break the loop
                 break
-
-            else:
-
-                # Increment the early stopping counter
-                self._early_stopping_iter += 1
 
             # Check if a callback has been provided
             if self._callback is not None:
 
-                # Print a message about the current optimal values
+                # Pass the current results to the callback
                 self._callback(self._result)
 
-            # Get the indices of the k best fitness values
-            inds = argpartition(f, self._mu)[:self._mu]
-
-            # Compute the weighted sum of the best step vectors
-            yw = self._w@y[inds,:]
-
-            # Update the step-size evolution path
-            self._ps = (
-                (1-self._cs)*self._ps
-                + (self._cs*(2-self._cs)*self._mu_eff)**0.5
-                * cholesky(inv(self._covmat)) * yw)
-
-            # Precompute the Heaviside function for self._pc
-            hs = (
-                norm(self._ps)
-                < (1-(1-self._cs)**(2*(self._iter+1)))**0.5
-                *(1.4+2/(self._xdim+1))*mu_p)
-
-            # Update the rank-1 evolution path
-            self._pc = (
-                (1-self._cc)*self._pc
-                + hs*(self._cc*(2-self._cc)*self._mu_eff)**0.5 * yw)
-
-            # Update the mean vector
-            self._mean = self._mean + self._sigma*yw
-
-            # Update the step size
-            self._sigma = (
-                self._sigma*exp((self._cs/self._ds)*((norm(self._ps)/mu_p)-1)))
-
-            # Update the covariance matrix
-            self._covmat = (
-                (1+(1-hs)*self._c1*self._cc*(2-self._cc))*self._covmat
-                + self._c1*(self._pc@self._pc.T-self._covmat)
-                + self._cmu*sum(
-                    self._w[i]*y[idx]@y[idx].T - self._w[i]*self._covmat
-                    for i, idx in enumerate(inds)))
+            # "Tell" the algorithm to update its parameters
+            self.tell(fitness, steps)
 
             # Increment the iteration counter
-            self._iter += 1
+            self._opt_iter += 1
 
         # Store the runtime
         self._result['runtime'] = time()-start
@@ -398,7 +494,7 @@ class CMA:
 # %% Test run
 
 # # Set the initial vector
-# initial_x = array([0]*50)
+# initial_x = array([0]*5)
 
 # # Initialize the toy problem
 # prob = ToyProblem(
@@ -406,7 +502,7 @@ class CMA:
 #     x0=initial_x)
 
 # # Initialize the CMA solver
-# solver = CMA(
+# solver = CMAES(
 #     number_of_variables=len(initial_x),
 #     objective=prob.f,
 #     lower_variable_bounds=array(prob.variable_bounds[0]),
@@ -417,7 +513,7 @@ class CMA:
 #     early_stopping_rounds=100)
 
 # # Optimize the variables
-# result = solver.optimize(x0=initial_x)
+# result = solver.optimize(initial_x)
 
 # # Get the iteration-wise eigenvalues
-# sv = solver._svalues
+# sv = solver._singular_values

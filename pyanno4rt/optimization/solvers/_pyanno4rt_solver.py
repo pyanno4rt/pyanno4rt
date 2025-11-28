@@ -9,7 +9,7 @@ from numpy import around, array
 # %% Internal package import
 
 from pyanno4rt.logging import get_logger
-from pyanno4rt.optimization.solvers.custom import CMA
+from pyanno4rt.optimization.solvers.custom import CMAES
 
 # %% Class definition
 
@@ -87,7 +87,7 @@ class Pyanno4rtSolver():
         # Log a message about the intermediate function value
         get_logger().info(
             "At iterate %s: f=%s",
-            self.counter, around(intermediate_result['fopt'], 4))
+            self.counter, around(intermediate_result['optimal_value'], 4))
 
         # Increment the iteration counter
         self.counter += 1
@@ -98,7 +98,7 @@ class Pyanno4rtSolver():
         """
         Configure the pyanno4rt solver.
 
-        Supported algorithms: CMA.
+        Supported algorithms: CMAES.
 
         Parameters
         ----------
@@ -107,11 +107,11 @@ class Pyanno4rtSolver():
             The object used to represent the optimization problem.
         """
 
-        # Check if the algorithm is 'CMA'
-        if self.algorithm == 'CMA':
+        # Check if the algorithm is 'CMAES'
+        if self.algorithm == 'CMAES':
 
             # Set the optimization function
-            self.instance = CMA
+            self.instance = CMAES
 
             # Initialize the arguments dictionary
             self.arguments = {
@@ -122,7 +122,9 @@ class Pyanno4rtSolver():
                 'gradient': problem.gradient,
                 'maximum_iterations': self.maximum_iterations,
                 'tolerance': self.tolerance,
-                'early_stopping_rounds': 0.05*self.maximum_iterations,
+                'early_stopping_rounds': max(
+                    10, 0.05*self.maximum_iterations),
+                'number_of_individuals': None,
                 'callback': self.callback}
 
     def run(
@@ -160,4 +162,4 @@ class Pyanno4rtSolver():
         # Solve the optimization problem
         result = self.instance.optimize(initial_fluence)
 
-        return result['xopt'], result['solver_info']
+        return result['optimal_point'], result['solver_info']

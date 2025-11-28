@@ -107,9 +107,9 @@ class Optimization():
 
             - 'mumps': multifrontal massively parallel sparse direct solver
 
-        - solver='pyanno4rt': {'CMA'}
+        - solver='pyanno4rt': {'CMAES'}
 
-            - 'CMA': covariance matrix adaptation evolution strategy
+            - 'CMAES': covariance matrix adaptation evolution strategy
 
         - solver='pymoo' : {'NSGA3'}
 
@@ -321,7 +321,7 @@ class Optimization():
                 partial(validate_value_in_set, options={
                     'lexicographic/ipyopt': ('mumps',),
                     'weighted-sum/ipyopt': ('mumps',),
-                    'weighted-sum/pyanno4rt': ('CMA',),
+                    'weighted-sum/pyanno4rt': ('CMAES',),
                     'pareto/pymoo': ('NSGA3',),
                     'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),
                     'lexicographic/scipy': ('trust-constr',),
