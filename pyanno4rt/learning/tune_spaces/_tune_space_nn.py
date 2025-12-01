@@ -11,8 +11,8 @@ from functools import partial
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_length, validate_subtype, validate_type, validate_value,
-    validate_value_in_set)
+    validate_item, validate_item_in_set, validate_length, validate_subtype,
+    validate_type)
 
 # %% Class definition
 
@@ -157,31 +157,31 @@ class TuneSpaceNN():
             'hidden_neuron_number': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'hidden_activation': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
                     'softplus', 'swish'))),
             'hidden_dropout_rate': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_value, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')),
             'batch_size': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'learning_rate': (
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'optimizer': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=tuple(maps.NN_OPTS))),
+                partial(validate_item_in_set, options=tuple(maps.NN_OPTS))),
             'loss': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=tuple(maps.NN_LOSSES)))}
+                partial(validate_item_in_set, options=tuple(maps.NN_LOSSES)))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

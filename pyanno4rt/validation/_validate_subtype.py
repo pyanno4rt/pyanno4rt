@@ -5,30 +5,30 @@
 # %% Function definition
 
 
-def validate_subtype(label, data, options):
+def validate_subtype(label, item, options):
     """
-    Validate if all subtypes are supported.
+    Validation function for the item subtypes.
 
     Parameters
     ----------
     label : str
-        Label for the item to be validated.
+        Label for the validation item.
 
-    data : list or tuple
-        Input value to be validated.
+    item : list or tuple
+        Validation item.
 
     options : type or tuple
-        Type or tuple with the type options.
+        Type or tuple with the valid options.
 
     Raises
     ------
     TypeError
-        If any subtype is unsupported.
+        If any item subtype is invalid.
     """
 
-    # Check if the value is a list or tuple with unsupported subtypes
-    if (isinstance(data, (list, tuple))
-            and not all(isinstance(element, options) for element in data)):
+    # Check if the item is an iterable with invalid subtypes
+    if (isinstance(item, (list, tuple))
+            and not all(isinstance(element, options) for element in item)):
 
         # Raise an error
         raise TypeError(

@@ -99,8 +99,10 @@ def copycat(base_class, path, ignore_optimum=False):
     if 'optimized_fluence.npy' in listdir(path) and not ignore_optimum:
 
         # Load the optimized fluence array
-        treatment_plan.datahub.optimization = {
-            'optimized_fluence': npload(f'{path}/optimized_fluence.npy'),
-            'from_copycat': True}
+        treatment_plan.fluence_optimizer.optimized_fluence = npload(
+            f'{path}/optimized_fluence.npy')
+
+        # Set the copycat flag
+        treatment_plan.fluence_optimizer.from_copycat = True
 
     return treatment_plan

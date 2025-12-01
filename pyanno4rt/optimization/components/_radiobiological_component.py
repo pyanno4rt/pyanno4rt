@@ -11,8 +11,8 @@ from functools import partial
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_length, validate_subtype, validate_type, validate_value,
-    validate_value_in_set)
+    validate_item, validate_item_in_set, validate_length, validate_subtype,
+    validate_type)
 
 # %% Class definition
 
@@ -58,9 +58,6 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
     link : None or list
         Other segments used for joint evaluation.
 
-    transform : bool, default=False
-        Indicator for the transformation of the outcome function.
-
     identifier : None or str
         Additional string for naming the component.
 
@@ -102,9 +99,6 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
     link : list
         See 'Parameters'.
 
-    transform : bool
-        See 'Parameters'.
-
     identifier : None or str
         See 'Parameters'.
 
@@ -131,7 +125,6 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             rank,
             bounds,
             link,
-            transform,
             identifier,
             display):
 
@@ -152,7 +145,6 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         self.rank = rank
         self.bounds = self.convert_bounds(bounds, embedding)
         self.link = [] if link is None else link
-        self.transform = transform
         self.identifier = identifier
         self.display = display
 
@@ -181,8 +173,14 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         """
 
         return all(self.__dict__[key] == other.__dict__[key] for key in (
-            'name', 'segment', 'component_type', 'link', 'transform',
-            'identifier'))
+            'name', 'segment', 'component_type', 'link', 'identifier'))
+
+    def __hash__(self):
+        """Get the hash value."""
+
+        return hash(
+            (self.name, self.segment, self.component_type, tuple(self.link),
+             self.identifier))
 
     def validate(
             self,
@@ -204,7 +202,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
                 partial(validate_type, options=str),),
             'component_type': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'objective', 'constraint'))),
             'parameter_name': (
                 partial(validate_type, options=tuple),
@@ -214,13 +212,13 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
                 partial(validate_subtype, options=str)),
             'embedding': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=('active', 'passive'))),
+                partial(validate_item_in_set, options=('active', 'passive'))),
             'weight': (
                 partial(validate_type, options=(int, float)),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'rank': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'bounds': (
                 partial(validate_type, options=(type(None), list)),
                 partial(validate_length, reference=2, sign='=='),
@@ -228,15 +226,13 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             'link': (
                 partial(validate_type, options=(type(None), list)),
                 partial(validate_subtype, options=str)),
-            'transform': (
-                partial(validate_type, options=bool),),
             'identifier': (
                 partial(validate_type, options=(type(None), str)),),
             'display': (
                 partial(validate_type, options=bool),),
             'tolerance_dose_50': (
                 partial(validate_type, options=(int, float)),
-                partial(validate_value, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')),
             'volume_parameter': (
                 partial(validate_type, options=(int, float)),),
             'slope_parameter': (
@@ -247,7 +243,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
                 partial(validate_type, options=(int, float)),),
             'number_of_fractions': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=0, sign='>'))}
+                partial(validate_item, reference=0, sign='>'))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

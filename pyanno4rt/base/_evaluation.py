@@ -10,7 +10,7 @@ from functools import partial
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_subtype, validate_type, validate_value, validate_value_in_set)
+    validate_item, validate_item_in_set, validate_subtype, validate_type)
 
 # %% Class definition
 
@@ -111,21 +111,21 @@ class Evaluation():
         validation_map = {
             'dvh_type': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'cumulative', 'differential'))),
             'number_of_points': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')),
             'reference_volumes': (
                 partial(validate_type, options=(tuple, list)),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_value, reference=0, sign='>='),
-                partial(validate_value, reference=100, sign='<=')
+                partial(validate_item, reference=0, sign='>='),
+                partial(validate_item, reference=100, sign='<=')
                 ),
             'reference_doses': (
                 partial(validate_type, options=(tuple, list)),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_value, reference=0, sign='>='))}
+                partial(validate_item, reference=0, sign='>='))}
 
         # Loop over the inputs
         for key, value in inputs.items():

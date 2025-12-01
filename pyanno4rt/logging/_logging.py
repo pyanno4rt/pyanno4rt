@@ -50,33 +50,51 @@ class Logging():
         self.min_log_level = min_log_level
 
         # Initialize the logger
-        self.logger = self.initialize()
+        self.logger = self.initialize(
+            label=f'pyanno4rt - {label}', min_log_level=min_log_level)
 
         # Log a message about the software versions used
-        self.info(
-            f'Running pyanno4rt "Amadeus" v{version("pyanno4rt")} with '
-            f'Python {python_version()} ...')
+        self.logger.info(
+            'Running pyanno4rt "Amadeus" v%s with Python %s ...',
+            version("pyanno4rt"), python_version())
 
         # Log a message about the warranty clause
-        self.warning(
-            'pyanno4rt is an open-source package and NOT a medical '
-            'product. It is provided "as-is", without warranty of any '
-            'kind, and intended for research and education only ...')
+        self.logger.warning(
+            'pyanno4rt is an open-source package and NOT a medical product. '
+            'It is provided "as-is", without warranty of any kind, and '
+            'intended for research and education only ...')
 
         # Log a message about the initialization of the class
-        self.info("Initializing logger ...")
+        self.logger.info("Initializing logger ...")
 
-    def initialize(self):
+    def initialize(
+            self,
+            label,
+            min_log_level):
         """
-        Initialize the logger by specifying the channel name, handlers, and \
-        formatters.
+        Initialize a pyanno4rt logger by specifying the channel name, \
+        handlers, and formatters.
+
+        Parameters
+        ----------
+        label : str
+            Name of the logger.
+
+        min_log_level : {'debug', 'info', 'warning', 'error', 'critical'}
+            Minimum logging level for broadcasting messages to the console \
+            and the object streams.
+
+        Returns
+        -------
+        object of class :class:`~logging.Logger`
+            The object used to interface the logging methods.
         """
 
-        # Get the logger by the label
-        logger = getLogger(name=f'pyanno4rt - {self.label}')
+        # Get the logger
+        logger = getLogger(name=label)
 
         # Set the basic logging level
-        logger.setLevel(level=self.min_log_level.upper())
+        logger.setLevel(level=min_log_level.upper())
 
         # Clear the handlers
         logger.handlers.clear()
@@ -85,16 +103,16 @@ class Logging():
         console_stream_handler = StreamHandler()
 
         # Set the logging level for the console stream handler
-        console_stream_handler.setLevel(level=self.min_log_level.upper())
+        console_stream_handler.setLevel(level=min_log_level.upper())
 
-        # Initialize the string IO object
-        object_stream = StringIO()
+        # Initialize the text IO object
+        text_stream = StringIO()
 
-        # Initialize the string IO stream handler
-        object_stream_handler = StreamHandler(stream=object_stream)
+        # Initialize the text IO stream handler
+        text_stream_handler = StreamHandler(stream=text_stream)
 
-        # Set the logging level for the string IO stream handler
-        object_stream_handler.setLevel(level=self.min_log_level.upper())
+        # Set the logging level for the text IO stream handler
+        text_stream_handler.setLevel(level=min_log_level.upper())
 
         # Initialize the output formatter
         formatter = Formatter(
@@ -103,11 +121,11 @@ class Logging():
 
         # Add the output formatter to the stream handlers
         console_stream_handler.setFormatter(fmt=formatter)
-        object_stream_handler.setFormatter(fmt=formatter)
+        text_stream_handler.setFormatter(fmt=formatter)
 
-        # Add the stream handlers to the logger instance
+        # Add the stream handlers to the logger
         logger.addHandler(hdlr=console_stream_handler)
-        logger.addHandler(hdlr=object_stream_handler)
+        logger.addHandler(hdlr=text_stream_handler)
 
         # Suppress message passing to the handlers of ancestor loggers
         logger.propagate = False

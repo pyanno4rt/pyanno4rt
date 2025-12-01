@@ -12,8 +12,8 @@ from functools import partial
 from pyanno4rt.learning import ModelParameters
 from pyanno4rt.tools import compare_dictionaries, filter_dict
 from pyanno4rt.validation import (
-    validate_length, validate_subtype, validate_type, validate_value,
-    validate_value_in_set)
+    validate_item, validate_item_in_set, validate_length, validate_subtype,
+    validate_type)
 
 # %% Class definition
 
@@ -206,12 +206,16 @@ class MachineLearningComponent(metaclass=ABCMeta):
             Indicator for the equality of the objects.
         """
 
-        return (
-            all(self.__dict__[key] == other.__dict__[key] for key in (
-                'name', 'segment', 'component_type', 'link', 'transform',
-                'identifier')) and compare_dictionaries(
-                    self.model_parameters.to_dict(),
-                    other.model_parameters.to_dict()))
+        return all(self.__dict__[key] == other.__dict__[key] for key in (
+            'name', 'segment', 'component_type', 'link', 'transform',
+            'identifier'))
+
+    def __hash__(self):
+        """Get the hash value."""
+
+        return hash(
+            (self.name, self.segment, self.component_type, tuple(self.link),
+             self.transform, self.identifier))
 
     def validate(
             self,
@@ -233,10 +237,10 @@ class MachineLearningComponent(metaclass=ABCMeta):
                 partial(validate_type, options=str),),
             'outcome_type': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=('NTCP', 'TCP'))),
+                partial(validate_item_in_set, options=('NTCP', 'TCP'))),
             'component_type': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'constraint', 'objective'))),
             'parameter_name': (
                 partial(validate_type, options=tuple),
@@ -248,13 +252,13 @@ class MachineLearningComponent(metaclass=ABCMeta):
                 partial(validate_type, options=ModelParameters),),
             'embedding': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=('active', 'passive'))),
+                partial(validate_item_in_set, options=('active', 'passive'))),
             'weight': (
                 partial(validate_type, options=(int, float)),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'rank': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'bounds': (
                 partial(validate_type, options=(type(None), list)),
                 partial(validate_length, reference=2, sign='=='),

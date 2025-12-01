@@ -6,10 +6,11 @@
 
 from time import time
 
+from collections import deque
 from math import inf
 from numpy import (
     arange, argmin, argpartition, array, einsum, exp, eye, log, maximum,
-    minimum, zeros)
+    median, minimum, zeros)
 from numpy import sum as nsum
 from numpy.linalg import cholesky, inv, norm, svdvals
 from numpy.random import seed, standard_normal
@@ -39,32 +40,48 @@ class CMAES:
             self,
             number_of_variables,
             objective,
-            lower_variable_bounds,
-            upper_variable_bounds,
+            lower_variable_bounds=None,
+            upper_variable_bounds=None,
             gradient=None,
-            maximum_iterations=100,
-            tolerance=1e-4,
-            early_stopping_rounds=None,
             number_of_individuals=None,
-            callback=None
-            ):
+            initial_sigma=None,
+            maximum_iterations=1000,
+            maximum_wall_time=7200,
+            fitness_threshold=None,
+            fitness_window_size=20,
+            sigma_threshold=1e-3,
+            tolerance=1e-3,
+            callback=None):
 
         # Initialize the optimization problem variables
         self._number_of_variables = number_of_variables
         self.objective = objective
         self.gradient = gradient
-        self.lower_bound = lower_variable_bounds
-        self.upper_bound = upper_variable_bounds
+        self.lower_bound = (
+            [-inf]*number_of_variables if lower_variable_bounds is None
+            else lower_variable_bounds)
+        self.upper_bound = (
+            [-inf]*number_of_variables if upper_variable_bounds is None
+            else upper_variable_bounds)
 
         # Initialize the stopping criteria variables
         self.maximum_iterations = maximum_iterations
+        self.maximum_wall_time = maximum_wall_time
+        self.fitness_threshold = (
+            -inf if fitness_threshold is None else fitness_threshold)
+        self.sigma_threshold = (
+            0 if sigma_threshold is None else sigma_threshold)
+        self.fitness_window_size = fitness_window_size
         self.tolerance = tolerance
-        self.early_stopping_threshold = tolerance
-        self.early_stopping_rounds = (
-            inf if early_stopping_rounds is None else early_stopping_rounds)
 
         # Initialize the callback variable
         self._callback = callback
+
+        # Initialize the fitness history
+        self._fitness_history = None
+
+        # Initialize the singular values list
+        self._singular_values = []
 
         # Initialize the fixed algorithm variables
         self._zeros = zeros(self._number_of_variables)
@@ -96,104 +113,16 @@ class CMAES:
 
         # Initialize the adaptive algorithm variables
         self._opt_iter = 0
-        self._early_stopping_iter = 0
-        self._sigma = 0.3
+        self._sigma = 0.1 if initial_sigma is None else initial_sigma
         self._path_sigma = zeros(self._number_of_variables)
         self._path_cov = zeros(self._number_of_variables)
         self._mean = zeros(self._number_of_variables)
         self._cov = eye(self._number_of_variables)
 
-        # Initialize the singular values list
-        self._singular_values = []
-
         # Initialize the result dictionary
         self._result = {
             'optimal_point': None, 'optimal_value': inf, 'solver_info': None,
-            'runtime': None}
-
-    def check_termination(self):
-        """
-        Check the termination criteria.
-
-        Returns
-        -------
-        bool
-            Indicator for termination.
-        """
-
-        # Check if the maximum number of iterations has been reached
-        if self._opt_iter >= self.maximum_iterations:
-
-            # Add the solver info
-            self._result['solver_info'] = 'MAX_ITER_REACHED'
-
-            return True
-
-        # Check if maximum number of early stopping rounds has been reached
-        if self._early_stopping_iter >= self.early_stopping_rounds:
-
-            # Add the solver info
-            self._result['solver_info'] = 'EARLY_STOPPING'
-
-            return True
-
-        return False
-
-    def evaluate_fitness(
-            self,
-            population,
-            fitness):
-        """
-        Evaluate the fitness result of the population.
-
-        Parameters
-        ----------
-        population : ndarray
-            Sample population.
-
-        fitness : ndarray
-            Fitness values for the population.
-
-        Returns
-        -------
-        bool
-            Indicator for termination.
-        """
-
-        # Get the best fitness
-        best_fitness = fitness.min()
-
-        # Get the fitness improvement
-        fitness_improvement = self._result['optimal_value'] - best_fitness
-
-        # Check if an improved solution has been found
-        if fitness_improvement > 0:
-
-            # Update the optimal value and point
-            self._result['optimal_value'] = best_fitness
-            self._result['optimal_point'] = population[argmin(fitness)]
-
-            # Check if the improvement exceeds the early stopping threshold
-            if fitness_improvement >= self.early_stopping_threshold:
-
-                # Reset the early stopping counter
-                self._early_stopping_iter = 0
-
-        # Check if the fitness improvement only is not sufficient
-        elif (self.early_stopping_rounds == inf
-                and fitness_improvement < self.tolerance):
-
-            # Add the solver info
-            self._result['solver_info'] = 'BELOW_THRESHOLD'
-
-            return False
-
-        else:
-
-            # Increment the early stopping counter
-            self._early_stopping_iter += 1
-
-        return True
+            'wall_time': None}
 
     def ask(self):
         """
@@ -221,6 +150,45 @@ class CMAES:
             minimum(maximum(population, self.lower_bound), self.upper_bound),
             steps)
 
+    def evaluate(
+            self,
+            population):
+        """
+        Evaluate the fitness of the population.
+
+        Parameters
+        ----------
+        population : ndarray
+            Sample population.
+
+        Returns
+        -------
+        ndarray
+            Fitness values for the population.
+        """
+
+        # Compute the fitness values
+        fitness = array([
+            self.objective(individual) for individual in population])
+
+        # Get the best fitness
+        best_fitness = fitness.min()
+
+        # Append the best fitness to the history
+        self._fitness_history.append(best_fitness)
+
+        # Get the fitness improvement
+        fitness_improvement = self._result['optimal_value'] - best_fitness
+
+        # Check if an improved solution has been found
+        if fitness_improvement > 0:
+
+            # Update the optimal value and point
+            self._result['optimal_value'] = best_fitness
+            self._result['optimal_point'] = population[argmin(fitness)]
+
+        return fitness
+
     def tell(
             self,
             fitness,
@@ -247,8 +215,11 @@ class CMAES:
         # Compute the mean of the elite step vectors
         elite_mean_step = self._weights@elite_steps
 
+        # Update the mean vector
+        self._mean = self._mean + self._sigma*elite_mean_step
+
         # Update the step-size evolution path
-        path_sigma = (
+        self._path_sigma = (
             (1-self._lr_sigma)*self._path_sigma
             + (self._lr_sigma*(2-self._lr_sigma)*self._mu_eff)**0.5
             * inv(cholesky(self._cov)).T
@@ -256,31 +227,28 @@ class CMAES:
 
         # Compute the update switch for the covariance matrix
         update_switch = (
-            norm(path_sigma)
+            norm(self._path_sigma)
             < (1-(1-self._lr_sigma)**(2*(self._opt_iter+1)))**0.5
-            *(1.4+2/(self._number_of_variables+1))*self._expected_path_length)
+            * (1.4+2/(self._number_of_variables+1))*self._expected_path_length)
 
         # Update the rank-1 evolution path
-        path_cov = (
+        self._path_cov = (
             (1-self._lr_cov)*self._path_cov
             + update_switch
             * (self._lr_cov*(2-self._lr_cov)*self._mu_eff)**0.5
             * elite_mean_step)
 
-        # Update the mean vector
-        self._mean = self._mean + self._sigma*elite_mean_step
-
         # Update the step size
         self._sigma = (
             self._sigma*exp(
                 (self._lr_sigma/self._damp_sigma)
-                 * ((norm(path_sigma)/self._expected_path_length)-1)))
+                 * ((norm(self._path_sigma)/self._expected_path_length)-1)))
 
         # Update the covariance matrix
         self._cov = (
             (1+(1-update_switch)*self._lr_rank_1*self._lr_cov*(2-self._lr_cov))
             * self._cov
-            + self._lr_rank_1*(path_cov@path_cov.T-self._cov)
+            + self._lr_rank_1*(self._path_cov@self._path_cov.T-self._cov)
             + self._lr_rank_mu*(
                 einsum('a,ai,aj->ij', self._weights, elite_steps, elite_steps,
                        optimize=True)
@@ -303,35 +271,31 @@ class CMAES:
             Dictionary with the optimization results.
         """
 
-        # Start the runtime recording
-        start = time()
+        # Start the runtime recordings
+        self._wall_start = time()
 
         # Select the mean value
         self._mean = self._mean if initial_mean is None else initial_mean
+
+        # Initialize the fitness history
+        self._fitness_history = deque(maxlen=self.fitness_window_size)
 
         # Continue until termination criteria are fulfilled
         while self.check_termination() is False:
 
             # ---------------------------------------------- REMOVE LATER
             # Store the eigenvalues of the covariance matrix
-            # self._singular_values.append(svdvals(self._cov))
+            self._singular_values.append(svdvals(self._cov))
             # ----------------------------------------------
 
             # "Ask" for a new population
             population, steps = self.ask()
 
-            # Compute the fitness values
-            fitness = array([
-                self.objective(individual) for individual in population])
-
             # Evaluate the population's fitness
-            fitness_check = self.evaluate_fitness(population, fitness)
+            fitness = self.evaluate(population)
 
-            # Check if the fitness evaluation turned out negative
-            if fitness_check is False:
-
-                # Break the loop
-                break
+            # "Tell" the algorithm to update its parameters
+            self.tell(fitness, steps)
 
             # Check if a callback has been provided
             if self._callback is not None:
@@ -339,16 +303,73 @@ class CMAES:
                 # Pass the current results to the callback
                 self._callback(self._result)
 
-            # "Tell" the algorithm to update its parameters
-            self.tell(fitness, steps)
-
             # Increment the iteration counter
             self._opt_iter += 1
 
-        # Store the runtime
-        self._result['runtime'] = time()-start
+        # Store the runtimes
+        self._result['wall_time'] = time()-self._wall_start
 
         return self._result
+
+    def check_termination(self):
+        """
+        Check the termination criteria.
+
+        Returns
+        -------
+        bool
+            Indicator for termination.
+        """
+
+        # Check if the maximum number of iterations has been reached
+        if self._opt_iter >= self.maximum_iterations:
+
+            # Add the solver info
+            self._result['solver_info'] = 'MAX_ITER_REACHED'
+
+            return True
+
+        # Check if the maximum runtime has been reached
+        if time()-self._wall_start >= self.maximum_wall_time:
+
+            # Add the solver info
+            self._result['solver_info'] = 'MAX_WALL_TIME_REACHED'
+
+            return True
+
+        # Check if the history is completely filled
+        if len(self._fitness_history) == self.fitness_window_size:
+
+            # Converthe history to a list
+            fitness_history = list(self._fitness_history)
+
+            # Check if the split median difference is below tolerance
+            if (median(fitness_history[:self.fitness_window_size//2])
+                - median(fitness_history[self.fitness_window_size//2:])
+                <= self.tolerance):
+
+                # Add the solver info
+                self._result['solver_info'] = 'FITNESS_PLATEAU_REACHED'
+
+                return True
+
+        # Check if the optimal value is below a threshold
+        if self._result['optimal_value'] <= self.fitness_threshold:
+
+            # Add the solver info
+            self._result['solver_info'] = 'FITNESS_BELOW_THRESH'
+
+            return True
+
+        # Check if the step size is below the threshold
+        if self._sigma <= self.sigma_threshold:
+
+            # Add the solver info
+            self._result['solver_info'] = 'SIGMA_BELOW_THRESH'
+
+            return True
+
+        return False
 
 
 # %% Toy problem class
@@ -494,7 +515,7 @@ class CMAES:
 # %% Test run
 
 # # Set the initial vector
-# initial_x = array([0]*5)
+# initial_x = array([5]*20)
 
 # # Initialize the toy problem
 # prob = ToyProblem(
@@ -508,12 +529,70 @@ class CMAES:
 #     lower_variable_bounds=array(prob.variable_bounds[0]),
 #     upper_variable_bounds=array(prob.variable_bounds[1]),
 #     gradient=prob.g,
-#     maximum_iterations=10000,
+#     number_of_individuals=2000,
+#     initial_sigma=5,
+#     maximum_iterations=100000,
+#     maximum_wall_time=7200,
+#     fitness_threshold=None,
+#     fitness_window_size=None,
+#     sigma_threshold=1e-18,
 #     tolerance=1e-3,
-#     early_stopping_rounds=100)
+#     callback=None)
 
 # # Optimize the variables
 # result = solver.optimize(initial_x)
 
 # # Get the iteration-wise eigenvalues
 # sv = solver._singular_values
+
+# %% Plotting
+
+# import matplotlib.pyplot as plt
+
+# def plot_iter_sv(sv, iteration, fname, k):
+
+#     # Plotting on a semi-log scale (y-axis is logarithmic)
+#     plt.figure(figsize=(10, 6))
+
+#     #
+#     values = sv[iteration][:k]
+
+#     # Plot the singular values
+#     plt.semilogy(values, marker='o', linestyle='-', color='b')
+
+#     plt.title(f'{fname} (iteration {iteration})', fontweight='bold')
+#     plt.ylabel('Singular Value ($\sigma_i$) (log scale)')
+#     plt.xlabel('Singular Value Index')
+#     plt.xticks([i for i in range(len(values))])
+#     plt.grid(True, which="both", ls="--", color='0.7')
+#     plt.show()
+#     plt.savefig(f'/home/tim/Downloads/{fname}_{iteration}.pdf')
+
+# plot_iter_sv(sv, 0, prob.name, 20),
+# plot_iter_sv(sv, len(sv)//2, prob.name, 20)
+# plot_iter_sv(sv, len(sv)-1, prob.name, 20)
+
+# def plot_sv_paths(sv, fname, space):
+
+#     # Plotting on a semi-log scale (y-axis is logarithmic)
+#     plt.figure(figsize=(10, 6))
+
+#     # Plot the singular values
+#     for values in zip(*sv):
+
+#         #
+#         subvalues = values[::space]
+
+#         #
+#         plt.semilogy(
+#             array(range(len(subvalues)))*space, subvalues, marker='.',
+#             linestyle='-', color='b')
+
+#     plt.title(f'{fname}', fontweight='bold')
+#     plt.ylabel('Singular Value ($\sigma_i$) (log scale)')
+#     plt.xlabel('Optimization iteration')
+#     plt.grid(True, which="both", ls="--", color='0.7')
+#     plt.show()
+#     plt.savefig(f'/home/tim/Downloads/{fname}.pdf')
+
+# plot_sv_paths(sv, prob.name, 1)

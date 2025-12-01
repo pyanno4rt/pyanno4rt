@@ -10,8 +10,8 @@ from functools import partial
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_length, validate_subtype, validate_type, validate_value,
-    validate_value_in_set)
+    validate_item, validate_item_in_set, validate_length, validate_subtype,
+    validate_type)
 
 # %% Class definition
 
@@ -177,48 +177,48 @@ class TuneSpaceRF():
             'n_estimators': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'criterion': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=('entropy', 'gini'))),
+                partial(validate_item_in_set, options=('entropy', 'gini'))),
             'max_depth': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'min_samples_split': (
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=float),
-                partial(validate_value, reference=0, sign='>='),
-                partial(validate_value, reference=1, sign='<=')),
+                partial(validate_item, reference=0, sign='>='),
+                partial(validate_item, reference=1, sign='<=')),
             'min_samples_leaf': (
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=float),
-                partial(validate_value, reference=0, sign='>='),
-                partial(validate_value, reference=1, sign='<=')),
+                partial(validate_item, reference=0, sign='>='),
+                partial(validate_item, reference=1, sign='<=')),
             'min_weight_fraction_leaf': (
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=float),
-                partial(validate_value, reference=0, sign='>='),
-                partial(validate_value, reference=1, sign='<=')),
+                partial(validate_item, reference=0, sign='>='),
+                partial(validate_item, reference=1, sign='<=')),
             'max_features': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_value, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')),
             'bootstrap': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=(False, True))),
+                partial(validate_item_in_set, options=(False, True))),
             'class_weight': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=(None, 'balanced'))),
+                partial(validate_item_in_set, options=(None, 'balanced'))),
             'ccp_alpha': (
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=float),
-                partial(validate_value, reference=0, sign='>='),
-                partial(validate_value, reference=1, sign='<='))}
+                partial(validate_item, reference=0, sign='>='),
+                partial(validate_item, reference=1, sign='<='))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

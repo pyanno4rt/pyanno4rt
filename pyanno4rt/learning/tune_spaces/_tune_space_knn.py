@@ -10,7 +10,7 @@ from functools import partial
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_subtype, validate_type, validate_value, validate_value_in_set)
+    validate_item, validate_item_in_set, validate_subtype, validate_type)
 
 # %% Class definition
 
@@ -127,19 +127,19 @@ class TuneSpaceKNN():
             'n_neighbors': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_value, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')),
             'weights': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'distance', 'uniform'))),
             'leaf_size': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'p': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_value, reference=0, sign='>'))}
+                partial(validate_item, reference=0, sign='>'))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

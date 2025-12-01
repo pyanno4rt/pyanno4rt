@@ -10,47 +10,47 @@ from os.path import isdir, splitext
 # %% Function definition
 
 
-def validate_directory(label, data, options, alt):
+def validate_directory(label, item, options, alt):
     """
-    Validate if a directory path is regular with supported file formats.
+    Validation function for the regularity of a directory path.
 
     Parameters
     ----------
     label : str
-        Label for the item to be validated.
+        Label for the validation item.
 
-    data : str
-        Input value to be validated.
+    item : str
+        Validation item.
 
     options : tuple
-        Tuple with the supported directory file formats.
+        Tuple with the valid directory file formats.
 
     alt : tuple
-        Tuple with the alternative supported single file formats.
+        Tuple with the alternative valid single file formats.
 
     Raises
     ------
     NotADirectoryError
-        If the path references an irregular directory.
+        If the item references an irregular directory.
 
     TypeError
-        If a file in the directory has an unsupported format.
+        If any file in the directory has an invalid format.
     """
 
-    # Check if the value is no directory and no supported single file
-    if not isdir(data) and splitext(data)[1] not in alt:
+    # Check if the item is no directory and no valid single file
+    if not isdir(item) and splitext(item)[1] not in alt:
 
         # Raise an error
         raise NotADirectoryError(
             f"The treatment plan parameter '{label}' does not reference a "
             "regular directory!")
 
-    # Check if any file in a directory has an unsupported format
-    if isdir(data) and not all(
+    # Check if any file in a directory has an invalid format
+    if isdir(item) and not all(
             any(file.endswith(option) for option in options)
-            for file in listdir(data)):
+            for file in listdir(item)):
 
-        # Check if the number of supported formats is one
+        # Check if the number of valid formats is one
         if len(options) == 1:
 
             # Get the output string from the single format

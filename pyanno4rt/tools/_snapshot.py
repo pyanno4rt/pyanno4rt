@@ -134,7 +134,7 @@ def snapshot(
 
         # Print the stream value to the file
         print(stream_value, file=file)
-    
+
     # Get the segmentation data
     segmentation = instance.patient_handler.segmentation
 
@@ -174,4 +174,4 @@ def snapshot(
 
         # Save the fluence array
         save(f'{snap_path}/optimized_fluence.npy',
-             instance.datahub.optimization['optimized_fluence'])
+             instance.fluence_optimizer.optimized_fluence)

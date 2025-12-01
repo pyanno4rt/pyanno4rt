@@ -158,9 +158,6 @@ class Dosimetrics():
         # Log a message about the dosimetrics evaluation
         get_logger().info("Evaluating dosimetrics for all segments ...")
 
-        # Initialize the quantities dictionary
-        self.quantities = {}
-
         # Loop over the segments
         for segment, value in segmentation.items():
 

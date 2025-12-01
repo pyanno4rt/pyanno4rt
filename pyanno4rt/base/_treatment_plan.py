@@ -71,9 +71,6 @@ class TreatmentPlan():
     logging : object of class :class:`~pyanno4rt.logging._logging.Logging`
         The object used to print and store logging messages.
 
-    datahub : object of class :class:`~pyanno4rt.datahub._datahub.Datahub`
-        The object used to manage and distribute information units.
-
     patient_handler : None or object of class \
         :class:`~pyanno4rt.patient._patient_handler.PatientHandler`
         The object used to handle the patient imaging data.
@@ -172,8 +169,8 @@ class TreatmentPlan():
                 modality=self.configuration.modality,
                 components=self.optimization.components)
 
-            # Generate the plan data
-            self.plan_handler.generate(self.patient_handler.segmentation)
+            # Set the plan components
+            self.plan_handler.set_components(self.patient_handler.segmentation)
 
             # Initialize the dose handler
             self.dose_handler = DoseHandler(
@@ -183,8 +180,16 @@ class TreatmentPlan():
             # Generate the dose data
             self.dose_handler.generate(
                 self.patient_handler.computed_tomography,
-                self.plan_handler.plan_configuration,
+                self.plan_handler.modality,
                 self.configuration.dose_matrix_path)
+
+            # Resize the segments to the dose grid
+            self.patient_handler.resize_segments(
+                self.dose_handler.cube_dimensions)
+
+            # Adjust the dose prescriptions to the fractionation
+            self.plan_handler.adjust_parameters_for_fractionation(
+                self.dose_handler.number_of_fractions)
 
             # Set the state
             self.state = 1
@@ -240,10 +245,11 @@ class TreatmentPlan():
                     "Please configure the treatment plan before optimization!")
 
             # Check if any machine learning component has not been modeled
-            elif None in (
+            elif (None in (
                     component.model for component in
                     get_machine_learning_constraints(segmentation)
-                    + get_machine_learning_objectives(segmentation)):
+                    + get_machine_learning_objectives(segmentation))
+                    or self.state < 2):
 
                 # Log a message about the non-modeled component
                 self.logging.error(
@@ -255,8 +261,15 @@ class TreatmentPlan():
                 # Validate the optimization parameters
                 self.optimization.validate(vars(self.optimization))
 
+                # Get the data handlers
+                handlers = {
+                    'patient_handler': self.patient_handler,
+                    'plan_handler': self.plan_handler,
+                    'dose_handler': self.dose_handler}
+
                 # Initialize the fluence optimizer
                 self.fluence_optimizer = FluenceOptimizer(
+                    handlers=handlers,
                     method=self.optimization.method,
                     solver=self.optimization.solver,
                     algorithm=self.optimization.algorithm,
@@ -432,7 +445,7 @@ class TreatmentPlan():
                     self.plan_handler.components = value
 
                     # Update the components
-                    self.plan_handler.set_optimization_components(
+                    self.plan_handler.set_components(
                         self.patient_handler.segmentation, verbose=False)
 
     def print_state(self):

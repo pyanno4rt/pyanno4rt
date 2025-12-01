@@ -9,26 +9,26 @@ from os.path import isdir, isfile
 # %% Function definition
 
 
-def validate_path(label, data):
+def validate_path(label, item):
     """
-    Validate a file or directory path.
+    Validation function for a file or directory path.
 
     Parameters
     ----------
     label : str
-        Label for the item to be validated.
+        Label for the validation item.
 
-    data : str
-        Input value to be validated.
+    item : str
+        Validation item.
 
     Raises
     ------
     IOError
-        If the path references an invalid file or directory.
+        If the item references an invalid file or directory.
     """
 
-    # Check if the path references an invalid file or directory
-    if data is not None and not (isdir(data) or isfile(data)):
+    # Check if the item references an invalid file or directory
+    if item is not None and not (isdir(item) or isfile(item)):
 
         # Raise an error
         raise IOError(

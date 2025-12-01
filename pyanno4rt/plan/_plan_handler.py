@@ -2,14 +2,10 @@
 
 # Author: Tim Ortkamp
 
-# %% External package import
-
-from math import inf
-
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.logging import get_logger
+from pyanno4rt.tools import apply, wrap
 
 # %% Class definition
 
@@ -34,11 +30,11 @@ class PlanHandler():
     modality : {'photon', 'proton'}
         See 'Parameters'.
 
+    RBE : float
+        Relative biological effectiveness, depending on the modality.
+
     components : dict
         See 'Parameters'.
-
-    plan_configuration : dict
-        Dictionary with information on the plan.
     """
 
     def __init__(
@@ -51,46 +47,56 @@ class PlanHandler():
 
         # Get the input attributes
         self.modality = modality
+        self.RBE = 1.0 + 0.1*(modality == 'proton')
         self.components = components
 
-        # Initialize the plan configuration dictionary
-        self.plan_configuration = {}
-
-    def generate(
+    def split_components(
             self,
-            segmentation):
+            verbose=True):
         """
-        Generate the plan configuration.
+        Split the components into objectives and constraints.
 
         Parameters
         ----------
-        segmentation : dict
-            Dictionary with information on the segments.
+        verbose : bool
+            Indicator for logging output messages.
+
+        Returns
+        -------
+        list
+            Plan objectives.
+
+        list
+            Plan constraints.
         """
 
-        # Log a message about the plan generation
-        get_logger().info(
-            "Generating plan configuration for %s treatment ...",
-            self.modality)
+        # Get the unique components
+        components = set(self.components)
 
-        # Update the plan configuration
-        self.plan_configuration |= {
-            'modality': self.modality,
-            'RBE': 1.0 + 0.1*(self.modality == 'proton'),
-            'components': self.components}
+        # Check if any components have been removed
+        if len(components) < len(self.components) and verbose:
 
-        # Store the plan configuration
-        Datahub().plan_configuration = self.plan_configuration
+            # Log a message about a duplicate component
+            get_logger().warning(
+                "Found duplicate objects in the plan components - consider "
+                "using the identifier attribute ...")
 
-        # Set the optimization components
-        self.set_optimization_components(segmentation)
+        # Get the plan objectives
+        objectives = [
+            component for component in components
+            if component.component_type == 'objective']
 
-    def set_optimization_components(
+        # Get the plan constraints
+        constraints = list(components - set(objectives))
+
+        return objectives, constraints
+
+    def set_components(
             self,
             segmentation,
             verbose=True):
         """
-        Set the components of the optimization problem.
+        Set the components for plan optimization.
 
         Parameters
         ----------
@@ -101,10 +107,29 @@ class PlanHandler():
             Indicator for logging output messages.
         """
 
-        def set_component(component, segment, category, base):
-            """Set the component by its segment and type assignment."""
+        # Loop over the segments
+        for segment in segmentation:
 
-            # Check if verbose is True
+            # Reset the objective and constraint
+            segmentation[segment]['objective'] = None
+            segmentation[segment]['constraint'] = None
+
+        # Check if output messages should be logged
+        if verbose:
+
+            # Log a message about setting the components
+            get_logger().info("Setting objectives and constraints ...")
+
+        # Get the unique objectives and constraints
+        objectives, constraints = self.split_components(verbose)
+
+        # Loop over the components
+        for component in objectives + constraints:
+
+            # Get the component segment and category
+            segment, category = component.segment, component.component_type
+
+            # Check if output messages should be logged
             if verbose:
 
                 # Log a message about setting the component
@@ -112,82 +137,57 @@ class PlanHandler():
                     "Setting %s '%s' for %s ...",
                     category, component.name, [segment]+component.link)
 
-            # Check if the component is already included in the base dictionary
-            if component.track_id not in base:
+            # Check if the segment has no component assigned yet
+            if segmentation[segment][category] is None:
 
-                # Add the instance to the base dictionary
-                base[component.track_id] = {
-                    'segments': [segment]+component.link,
-                    'instance': component}
+                # Assign the component
+                segmentation[segment][category] = component
 
-                # Check if no instance has been set yet
-                if not segmentation[segment][category]:
+            else:
 
-                    # Add the instance to the segment
-                    segmentation[segment][category] = component
+                # Ensure the segment holds a list
+                segmentation[segment][category] = wrap(
+                    segmentation[segment][category], dtype='list')
 
-                else:
+                # Append the component
+                segmentation[segment][category].append(component)
 
-                    # Make a list and add the instance
-                    segmentation[segment][category] = [
-                        segmentation[segment][category], component]
+    def adjust_parameters_for_fractionation(
+            self,
+            number_of_fractions):
+        """
+        Adjust the dose parameters according to the number of fractions.
 
-        # Initialize the datahub
-        hub = Datahub()
+        Parameters
+        ----------
+        number_of_fractions : int
+            Number of fractions according to the treatment scheme.
+        """
 
-        # Loop over the segments
-        for segment in segmentation:
+        def adjust_component(component):
+            """Adjust the dose parameters for a component."""
 
-            # Reset the segment objective and constraint key
-            segmentation[segment]['objective'] = None
-            segmentation[segment]['constraint'] = None
+            # Get the component parameters
+            parameters = component.get_parameter_value()
 
-        # Check if verbose is True
-        if verbose:
+            # Loop over the indices of the dose-related parameter values
+            for index in (index for index, category in enumerate(
+                    component.parameter_category) if category == 'dose'):
 
-            # Log a message about the components setting
-            get_logger().info("Setting objectives and constraints ...")
+                # Adjust the indexed parameters by the number of fractions
+                parameters[index] /= number_of_fractions
 
-        # Initialize the objective and constraint dictionaries
-        objectives, constraints = {}, {}
+            # Set the adjusted objective parameters
+            component.set_parameter_value(parameters)
 
-        # Set the base dictionaries for the component types
-        bases = {'objective': objectives, 'constraint': constraints}
+            # Activate the adjustment indicator of the component
+            component.adjusted_parameters = True
 
-        # Loop over the segments in the components dictionary
-        for component in self.components:
+        # Log a message about the parameter adjustment
+        get_logger().info("Adjusting dose parameters for fractionation ...")
 
-            # Get the segment and component type
-            segment, category = component.segment, component.component_type
-
-            # Get the base dictionary
-            base = bases[category]
-
-            # Set the component
-            set_component(component, segment, category, base)
-
-        # Loop over the constraints
-        for constraint in constraints.values():
-
-            # Get the constraint instance
-            instance = constraint['instance']
-
-            # Overwrite the constraint bounds by the embedding type
-            instance.bounds = (
-                instance.bounds if instance.embedding == 'active'
-                else [-inf, inf])
-
-        # Check if the optimization dictionary already exists
-        if hub.optimization:
-
-            # Add the objectives and constraints to the datahub
-            hub.optimization |= {
-                'objectives': objectives,
-                'constraints': constraints}
-
-        else:
-
-            # Enter the objectives and constraints into the datahub
-            hub.optimization = {
-                'objectives': objectives,
-                'constraints': constraints}
+        # Adjust all non-adjusted components with dose-related parameters
+        apply(adjust_component, (
+            component for component in self.components
+            if not component.adjusted_parameters
+            and 'dose' in component.parameter_category))

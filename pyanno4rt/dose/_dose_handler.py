@@ -10,7 +10,6 @@ from numpy import prod
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.io.dose_matrix import (
     MatHandler, NpBinHandler, SpSparseBinHandler)
 from pyanno4rt.logging import get_logger
@@ -36,11 +35,29 @@ class DoseHandler():
 
     Attributes
     ----------
-    sources : dict
+    sources : None or dict
         Dictionary with information on the external file sources and handlers.
 
-    dose_information : dict
-        Dictionary with information on the dose.
+    resolution : None or list
+        Size of the dose grid in `[mm]` per dimension.
+
+    number_of_fractions : None or int
+        Number of fractions according to the treatment scheme.
+
+    grid : None or dict
+        Dictionary with the grid points in all dimensions.
+
+    cube_dimensions : None or tuple
+        Dose cube dimensions.
+
+    number_of_voxels : None or int
+        Number of dose voxels.
+
+    dose_influence_matrix :  None or csr_matrix
+        Dose-influence matrix.
+
+    degrees_of_freedom : None or int
+        Degrees of freedom (number of beamlets).
     """
 
     # Map the path extensions to the handlers
@@ -57,13 +74,20 @@ class DoseHandler():
         # Log a message about the initialization of the class
         get_logger().info("Initializing dose handler ...")
 
-        # Initialize the dose information dictionary
-        self.dose_information = (
-            {'resolution': dict(zip(('x', 'y', 'z'), dose_resolution)),
-             'number_of_fractions': number_of_fractions})
+        # Get the instance attributes
+        self.resolution = dict(zip(('x', 'y', 'z'), dose_resolution))
+        self.number_of_fractions = number_of_fractions
+
+        # Initialize the other attributes
+        self.grid = None
+        self.cube_dimensions = None
+        self.number_of_voxels = None
+        self.dose_influence_matrix = None
+        self.degrees_of_freedom = None
 
     def compute_dij(self):
         """."""
+        # A placeholder method for potential future inclusion
 
     def load_dij(
             self,
@@ -88,8 +112,7 @@ class DoseHandler():
         # Log a message about the dose-influence matrix loading
         get_logger().info("Loading dose-influence matrix from %s ...", source)
 
-        # Load the dose-influence matrix into the dictionary
-        self.dose_information['dose_influence_matrix'] = handler().load(path)
+        return handler().load(path)
 
     def save_dij(
             self,
@@ -110,12 +133,12 @@ class DoseHandler():
         get_logger().info("Saving dose-influence matrix to %s ...", source)
 
         # Save the dose-influence matrix
-        handler().save(self.dose_information['dose_influence_matrix'], path)
+        handler().save(self.dose_influence_matrix, path)
 
     def generate(
             self,
             computed_tomography,
-            plan_configuration,
+            modality,
             dose_matrix_path):
         """
         Generate the dose information.
@@ -125,8 +148,8 @@ class DoseHandler():
         computed_tomography : dict
             Dictionary with information on the CT images.
 
-        plan_configuration : dict
-            Dictionary with information on the plan.
+        modality : {'photon', 'proton'}
+            Treatment modality.
 
         dose_matrix_path : str
             Path to the dose-influence matrix.
@@ -134,37 +157,28 @@ class DoseHandler():
 
         # Log a message about the dose information generation
         get_logger().info(
-            "Generating dose information for %s treatment ...",
-            plan_configuration['modality'])
+            "Generating dose information for %s treatment ...", modality)
 
-        # Add the grid points for all dimensions
-        self.dose_information |= {
+        # Get the grid points
+        self.grid = {
             dimension: arange_with_endpoint(
                 computed_tomography[dimension][0],
                 computed_tomography[dimension][-1],
-                self.dose_information['resolution'][dimension])
+                self.resolution[dimension])
             for dimension in ('x', 'y', 'z')}
 
-        # Add the dose cube dimensions
-        self.dose_information['cube_dimensions'] = tuple(
-            len(self.dose_information[dimension])
-            for dimension in ('y', 'x', 'z'))
+        # Get the cube dimensions
+        self.cube_dimensions = tuple(
+            len(self.grid[dimension]) for dimension in ('x', 'y', 'z'))
 
-        # Add the total number of dose voxels
-        self.dose_information['number_of_voxels'] = prod(
-            self.dose_information['cube_dimensions'])
+        # Get the total number of voxels
+        self.number_of_voxels = prod(self.cube_dimensions)
 
-        # Add the dose-influence matrix
-        self.load_dij(dose_matrix_path)
+        # Get the dose-influence matrix
+        self.dose_influence_matrix = self.load_dij(dose_matrix_path)
 
         # Validate the dose-influence matrix
-        validate_dose_matrix(
-            self.dose_information['cube_dimensions'],
-            self.dose_information['dose_influence_matrix'])
+        validate_dose_matrix(self.cube_dimensions, self.dose_influence_matrix)
 
-        # Add the degrees of freedom (number of decision variables)
-        self.dose_information['degrees_of_freedom'] = self.dose_information[
-            'dose_influence_matrix'].shape[1]
-
-        # Store the dose information
-        Datahub().dose_information = self.dose_information
+        # Get the degrees of freedom (number of beamlets)
+        self.degrees_of_freedom = self.dose_influence_matrix.shape[1]

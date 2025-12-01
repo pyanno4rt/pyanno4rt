@@ -9,7 +9,7 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.tools import filter_dict
-from pyanno4rt.validation import validate_type, validate_value_in_set
+from pyanno4rt.validation import validate_item_in_set, validate_type
 
 # %% Class definition
 
@@ -114,11 +114,11 @@ class DisplayOptions():
         validation_map = {
             'graphs': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'AUC-ROC', 'AUC-PR', 'F1'))),
             'kpis': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'Logloss', 'Brier score', 'Subset accuracy',
                     'Cohen Kappa', 'Hamming loss', 'Jaccard score',
                     'Precision', 'Recall', 'F1 score', 'MCC', 'AUC')))}

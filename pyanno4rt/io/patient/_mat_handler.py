@@ -85,9 +85,12 @@ class MatHandler():
 
         # Rearrange the cst as a dataframe
         cst = DataFrame.from_dict([{
-            'index': values['index'], 'segment': segment,
-            'type': values['type'], 'indices': values['raw_indices']+1,
-            'parameters': values['parameters'], 'components': [], 'others': []}
+            'index': values['index'],
+            'segment': segment,
+            'type': values['type'],
+            'indices': values['raw_indices']+1,
+            'parameters': values['parameters'],
+            'components': []}
             for segment, values in cst.items()]).sort_values('index')
 
         # Save the data to a MATLAB file

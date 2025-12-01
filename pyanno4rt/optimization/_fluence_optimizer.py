@@ -7,17 +7,15 @@
 from time import time
 
 from functools import reduce
-from numpy import (
-    empty, ravel_multi_index, setdiff1d, union1d, unravel_index, where, zeros)
+from numpy import empty, union1d
 from scipy.ndimage import zoom
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.logging import get_logger
 import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import (
-   apply, flatten, get_constraint_segments, get_machine_learning_constraints,
+   get_constraint_segments, get_machine_learning_constraints,
    get_machine_learning_objectives, get_radiobiological_constraints,
    get_radiobiological_objectives, get_objective_segments)
 
@@ -35,10 +33,13 @@ class FluenceOptimizer():
 
     Parameters
     ----------
+    handlers : dict
+        Dictionary with the data handlers (patient, plan, dose).
+
     method : {'lexicographic', 'pareto', 'weighted-sum'}
         Single- or multi-criteria optimization method.
 
-    solver : {'ipyopt', 'pymoo', 'pypop7', 'scipy'}
+    solver : {'ipyopt', 'pyanno4rt', 'pymoo', 'pypop7', 'scipy'}
         Python package to be used for solving the optimization problem.
 
     algorithm : str
@@ -65,15 +66,18 @@ class FluenceOptimizer():
 
     Attributes
     ----------
+    handlers : dict
+        See 'Parameters'.
+
     problem : object of class \
         :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
         :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
         :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
         The object used to represent the optimization problem.
-        ...
 
     solver : object of class \
         :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
+        :class:`~pyanno4rt.optimization.solvers._pyanno4rt_solver.Pyanno4rtSolver`\
         :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
         :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
         :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`
@@ -87,10 +91,23 @@ class FluenceOptimizer():
 
     optimizer_time : float
         Total runtime for the optimizer.
+
+    optimized_fluence : ndarray
+        Optimized fluence vector.
+
+    solver_info : str
+        Description for the cause of termination.
+
+    optimized_dose : ndarray
+        Optimized dose cube (CT resolution).
+
+    from_copycat : bool
+        Indicator for loading the optimized fluence from a copycat.
     """
 
     def __init__(
             self,
+            handlers,
             method,
             solver,
             algorithm,
@@ -101,32 +118,17 @@ class FluenceOptimizer():
             maximum_iterations,
             tolerance):
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Log a message about the initialization of the class
         get_logger().info("Initializing fluence optimizer ...")
 
         # Start the constructor runtime recording
         start_time = time()
 
+        # Get the data handlers
+        self.handlers = handlers
+
         # Get the objective and constraint functions
-        objectives, constraints = (
-            hub.optimization['objectives'], hub.optimization['constraints'])
-
-        # Remove overlaps between segments according to their priority
-        objectives, constraints = FluenceOptimizer.remove_overlap(
-            objectives, constraints)
-
-        # Resize the segments to the dose grid
-        FluenceOptimizer.resize_segments_to_dose()
-
-        # Adjust the dose-volume-related parameters for fractionation
-        FluenceOptimizer.adjust_parameters_for_fractionation(
-            objectives | constraints)
-
-        # Initialize the backprojection
-        backprojection = maps.PROJECTIONS[hub.plan_configuration['modality']]()
+        objectives, constraints = handlers['plan_handler'].split_components()
 
         # Check if the solver ignores any constraints
         if len(constraints) > 0 and algorithm not in (
@@ -139,17 +141,20 @@ class FluenceOptimizer():
                 algorithm)
 
             # Reset the internal constraints
-            hub.optimization['constraints'], constraints = {}, {}
+            constraints = []
 
             # Loop over the segments
-            for segment in hub.segmentation:
+            for data in handlers['patient_handler'].segmentation.values():
 
                 # Reset the segment constraints
-                hub.segmentation[segment]['constraint'] = None
+                data['constraint'] = None
+
+        # Initialize the backprojection
+        backprojection = maps.PROJECTIONS[handlers['plan_handler'].modality]()
 
         # Calculate the initial fluence
-        initial_fluence = maps.INITIALIZERS[initial_strategy](
-            initial_fluence).run()
+        initializer = maps.INITIALIZERS[initial_strategy](initial_fluence)
+        initial_fluence = initializer.run(handlers)
 
         # Construct the optimization problem
         self.problem = maps.PROBLEMS[method](
@@ -164,190 +169,18 @@ class FluenceOptimizer():
         # Get the initialization runtime
         self.initial_time = time()-start_time
 
+        # Initialize the solver and optimizer runtimes
+        self.solver_time, self.optimizer_time = None, None
+
         # Initialize the optimization results
         self.optimized_fluence, self.solver_info, self.optimized_dose = (
             None, None, None)
 
-        # Initialize the solver and optimizer runtimes
-        self.solver_time, self.optimizer_time = None, None
-
-        # Enter the optimization dictionary into the datahub
-        hub.optimization |= {
-            'problem': self.problem, 'solver_instance': self.solver}
-
-    @staticmethod
-    def remove_overlap(objectives, constraints):
-        """
-        Remove overlaps between segments.
-
-        Parameters
-        ----------
-        objectives : dict
-            Dictionary with the plan objectives.
-
-        constraints : dict
-            Dictionary with the plan constraints.
-
-        Returns
-        -------
-        dict
-            Cleaned dictionary with the plan objectives.
-
-        dict
-            Cleaned dictionary with the plan constraints.
-        """
-
-        def remove_segment_overlap(reference):
-            """Remove the overlap from a reference segment."""
-
-            # Get the indices from all higher prioritized VOIs
-            superior_indices = (
-                segmentation[segment]['raw_indices'] for segment in segments
-                if (segmentation[segment]['parameters']['priority']
-                    < segmentation[reference]['parameters']['priority']))
-
-            # Get the overlap-free (prioritized) indices
-            segmentation[reference]['prioritized_indices'] = setdiff1d(
-                segmentation[reference]['raw_indices'],
-                reduce(union1d, superior_indices, -1))
-
-            # Check if the prioritized index set is empty and relevant
-            if (len(segmentation[reference]['prioritized_indices']) == 0 and (
-                    segmentation[reference]['objective'] is not None or
-                    segmentation[reference]['constraint'] is not None)):
-
-                # Loop over the component types and dictionaries
-                for label, dictionary in {
-                        'objective': objectives,
-                        'constraint': constraints}.items():
-
-                    # Loop over the component keys
-                    for key in (
-                        key for key in dictionary
-                            if reference in dictionary[key]['segments']):
-
-                        # Remove the reference segment
-                        dictionary[key]['segments'].remove(reference)
-
-                        # Check if the segment list is empty
-                        if len(dictionary[key]['segments']) == 0:
-
-                            # Log a message about the component removal
-                            get_logger().info(
-                                "Removing %s '%s' from fully enclosed segment "
-                                "'%s' ...",
-                                label, dictionary[key]['instance'].name,
-                                reference)
-
-                            # Delete the component from the dictionaries
-                            del dictionary[key]
-                            segmentation[reference][label] = None
-
-        # Log a message about the overlap removal
-        get_logger().info("Removing segment overlaps ...")
-
-        # Get the segmentation data
-        segmentation = Datahub().segmentation
-
-        # Get all segments from the components
-        segments = set(flatten(
-            component['segments']
-            for component in (objectives | constraints).values()))
-
-        # Remove the overlaps from all segments
-        apply(remove_segment_overlap, (*segmentation,))
-
-        return objectives, constraints
-
-    @staticmethod
-    def resize_segments_to_dose():
-        """Resize the segments from CT to dose grid."""
-
-        def resize_segment(segment):
-            """Resize a segment to the dose grid."""
-
-            # Initialize the segment mask
-            mask = zeros(ct_dim)
-
-            # Fill the mask at the indices of the segment
-            mask[unravel_index(
-                segmentation[segment]['prioritized_indices'], ct_dim,
-                order='F')] = 1
-
-            # Get the zoom factors for all cube dimensions
-            zooms = (pair[0]/pair[1] for pair in zip(dose_dim, ct_dim))
-
-            # Enter the dose grid level (resized) indices into the datahub
-            segmentation[segment]['resized_indices'] = ravel_multi_index(
-                where(zoom(mask, zooms, order=0)), dose_dim, order='F')
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the segment resizing
-        get_logger().info("Resizing segments from CT to dose grid ...")
-
-        # Get the segmentation data
-        segmentation = hub.segmentation
-
-        # Get the CT and dose cube dimensions
-        ct_dim, dose_dim = (
-            hub.computed_tomography['cube_dimensions'],
-            hub.dose_information['cube_dimensions'])
-
-        # Resize all segments
-        apply(resize_segment, (*segmentation,))
-
-    @staticmethod
-    def adjust_parameters_for_fractionation(components):
-        """
-        Adjust the dose parameters according to the number of fractions.
-
-        Parameters
-        ----------
-        components : dict
-            Dictionary with the internally configured objectives/constraints.
-        """
-
-        def adjust_component(component):
-            """Adjust the dose parameters for a component."""
-
-            # Get the component parameters
-            parameters = component.get_parameter_value()
-
-            # Loop over the indices of the dose-related parameter values
-            for index in (index for index, category in enumerate(
-                    component.parameter_category) if category == 'dose'):
-
-                # Adjust the indexed parameters by the number of fractions
-                parameters[index] /= number_of_fractions
-
-            # Set the adjusted objective parameters
-            component.set_parameter_value(parameters)
-
-            # Activate the adjustment indicator of the component
-            component.adjusted_parameters = True
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the parameter adjustment
-        get_logger().info("Adjusting dose parameters for fractionation ...")
-
-        # Get the number of fractions
-        number_of_fractions = hub.dose_information['number_of_fractions']
-
-        # Adjust all non-adjusted components with dose-related parameters
-        apply(adjust_component, (
-            component['instance'] for component in components.values()
-            if not component['instance'].adjusted_parameters
-            and 'dose' in component['instance'].parameter_category))
+        # Initialize the copycat indicator
+        self.from_copycat = False
 
     def solve(self):
         """Solve the optimization problem."""
-
-        # Initialize the datahub
-        hub = Datahub()
 
         # Log a message about the problem solving
         get_logger().info("Solving optimization problem ...")
@@ -359,23 +192,17 @@ class FluenceOptimizer():
         self.reset()
 
         # Check if the fluence can not be loaded from a copycat
-        if 'from_copycat' not in hub.optimization:
+        if self.from_copycat:
 
             # Collect the solution methods
             methods = {
-                'lexicographic': self.solve_lexicography,
-                'pareto': self.solve_pareto,
-                'weighted-sum': self.solve_weighted}
+                'lexicographic': self._solve_lexicography,
+                'pareto': self._solve_pareto,
+                'weighted-sum': self._solve_weighted}
 
             # Run the solution algorithm
             self.optimized_fluence, self.solver_info, self.optimized_dose = (
                 methods[self.problem.name]())
-
-            #
-            (hub.optimization['optimized_fluence'],
-             hub.optimization['solver_info'],
-             hub.optimization['optimized_dose']) = (
-                 self.optimized_fluence, self.solver_info, self.optimized_dose)
 
         else:
 
@@ -383,17 +210,11 @@ class FluenceOptimizer():
             get_logger().info(
                 "Retrieving solution from the loaded treatment plan ...")
 
-            # Delete the copycat indicator
-            del hub.optimization['from_copycat']
-
-            # Get the optimized fluence
-            self.optimized_fluence = hub.optimization['optimized_fluence']
+            # Reset the copycat indicator
+            self.from_copycat = False
 
             # Compute the optimized dose
             self.optimized_dose = self.compute_dose_3d(self.optimized_fluence)
-
-            # Store the optimized dose
-            hub.optimization['optimized_dose'] = self.optimized_dose
 
         # Get the runtime for problem solving
         self.solver_time = round(time()-start_time, 2)
@@ -413,7 +234,7 @@ class FluenceOptimizer():
         """Reset the optimization and evaluation outputs."""
 
         # Get the segmentation from the datahub
-        segmentation = Datahub().segmentation
+        segmentation = self.handlers['patient_handler'].segmentation
 
         # Check if a weighted-sum or Pareto problem is solved
         if self.problem.name in ('pareto', 'weighted-sum'):
@@ -443,7 +264,7 @@ class FluenceOptimizer():
             feature_calculator.feature_history = empty(
                 shape=(1, len(feature_calculator.feature_map)))
 
-    def solve_lexicography(self):
+    def _solve_lexicography(self):
         """
         Solve the lexicographic optimization problem.
 
@@ -519,7 +340,7 @@ class FluenceOptimizer():
 
         return fluence, solver_info, optimized_dose
 
-    def solve_pareto(self):
+    def _solve_pareto(self):
         """
         Solve the Pareto optimization problem.
 
@@ -532,14 +353,11 @@ class FluenceOptimizer():
             Description for the cause of termination.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the segmentation data and dose information
-        segmentation, dose_information = hub.segmentation, hub.dose_information
+        # Get the segmentation data
+        segmentation = self.handlers['patient_handler'].segmentation
 
         # Get the dose-influence matrix
-        dose_matrix = dose_information['dose_influence_matrix']
+        dose_matrix = self.handlers['dose_handler'].dose_influence_matrix
 
         # Configure the solver
         self.solver.configure(self.problem)
@@ -602,7 +420,7 @@ class FluenceOptimizer():
 
         return optimized_fluence, solver_info, optimized_dose
 
-    def solve_weighted(self):
+    def _solve_weighted(self):
         """
         Solve the weighted-sum optimization problem.
 
@@ -657,11 +475,10 @@ class FluenceOptimizer():
             Optimized dose cube (CT resolution).
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the dose information
-        dose_information = hub.dose_information
+        # Get the data handlers
+        patient_handler = self.handlers['patient_handler']
+        plan_handler = self.handlers['plan_handler']
+        dose_handler = self.handlers['dose_handler']
 
         # Log a message about the 3D dose computation
         get_logger().info(
@@ -669,12 +486,11 @@ class FluenceOptimizer():
 
         # Get the CT and dose grid dimensions
         ct_dim, dose_dim = (
-            hub.computed_tomography['cube_dimensions'],
-            dose_information['cube_dimensions'])
+            patient_handler.computed_tomography['cube_dimensions'],
+            dose_handler.cube_dimensions)
 
         # Compute the optimized dose vector from the optimized fluence
-        optimized_dose = (
-            dose_information['dose_influence_matrix'] @ optimized_fluence)
+        optimized_dose = dose_handler.dose_influence_matrix @ optimized_fluence
 
         # Reshape the optimized dose vector to the dose cube
         optimized_dose = optimized_dose.reshape(dose_dim, order='F')
@@ -685,8 +501,8 @@ class FluenceOptimizer():
         # Interpolate the dose cube to the CT grid and multiply by the RBE
         optimized_dose = (
             zoom(optimized_dose, zooms, order=1)
-            * hub.plan_configuration['RBE']
-            * dose_information['number_of_fractions'])
+            * plan_handler.RBE
+            * dose_handler.number_of_fractions)
 
         return optimized_dose
 
@@ -694,7 +510,7 @@ class FluenceOptimizer():
         """Postprocess the outcome model-based component results."""
 
         # Get the segmentation data
-        segmentation = Datahub().segmentation
+        segmentation = self.handlers['patient_handler'].segmentation
 
         # Check if the optimization problem has a tracker dictionary
         if hasattr(self.problem, 'tracker') and all(value != [] for value
@@ -728,7 +544,7 @@ class FluenceOptimizer():
                     self.problem.tracker[component.track_id][-1])
 
                 # Store the prediction value
-                Datahub().model_outcomes[
+                component.data_model_handler.model_outcomes[
                     component.data_model_handler.model_label] = value
 
                 # Log a message about the prediction value

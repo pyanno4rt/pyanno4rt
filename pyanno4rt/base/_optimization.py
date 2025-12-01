@@ -12,8 +12,8 @@ from functools import partial
 import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_length, validate_subtype, validate_type, validate_value,
-    validate_value_in_set)
+    validate_item, validate_item_in_set, validate_length, validate_subtype,
+    validate_type)
 
 # %% Class definition
 
@@ -307,18 +307,18 @@ class Optimization():
                 ),
             'method': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=tuple(maps.PROBLEMS))),
+                partial(validate_item_in_set, options=tuple(maps.PROBLEMS))),
             'solver': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options={
+                partial(validate_item_in_set, options={
                     'lexicographic': ('ipyopt', 'scipy'),
                     'pareto': ('pymoo',),
                     'weighted-sum': (
                         'ipyopt', 'pyanno4rt', 'pypop7', 'scipy')},
-                    value_condition=conditions['method'])),
+                    condition=conditions['method'])),
             'algorithm': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options={
+                partial(validate_item_in_set, options={
                     'lexicographic/ipyopt': ('mumps',),
                     'weighted-sum/ipyopt': ('mumps',),
                     'weighted-sum/pyanno4rt': ('CMAES',),
@@ -326,32 +326,32 @@ class Optimization():
                     'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),
                     'lexicographic/scipy': ('trust-constr',),
                     'weighted-sum/scipy': ('L-BFGS-B', 'TNC', 'trust-constr')},
-                    value_condition=(
+                    condition=(
                         f"{conditions['method']}/"
                         f"{conditions['solver']}"))),
             'initial_strategy': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'data-medoid', 'target-coverage', 'warm-start'))),
             'initial_fluence': (
                 partial(validate_type, options={
                     'data-medoid': type(None),
                     'target-coverage': type(None),
                     'warm-start': list},
-                    type_condition=conditions['initial_strategy']),
-                partial(validate_value, reference=0, sign='>=')),
+                    condition=conditions['initial_strategy']),
+                partial(validate_item, reference=0, sign='>=')),
             'lower_variable_bounds': (
                 partial(validate_type, options=(type(None), int, float, list)),
-                partial(validate_value, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')),
             'upper_variable_bounds': (
                 partial(validate_type, options=(type(None), int, float, list)),
-                partial(validate_value, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')),
             'maximum_iterations': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')),
             'tolerance': (
                 partial(validate_type, options=(int, float)),
-                partial(validate_value, reference=0, sign='>'))}
+                partial(validate_item, reference=0, sign='>'))}
 
         # Loop over the inputs
         for key, value in inputs.items():

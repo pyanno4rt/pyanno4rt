@@ -4,7 +4,7 @@ Logging module.
 ==================================================================
 
 This module aims to provide methods and classes to track events during \
-pyanno4rt runs.
+pyanno4rt execution cycles.
 """
 
 # Author: Tim Ortkamp

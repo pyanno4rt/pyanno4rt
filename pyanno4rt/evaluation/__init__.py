@@ -11,7 +11,6 @@ This module aims to provide methods and classes to evaluate treatment plans.
 from ._dosimetrics import Dosimetrics
 from ._dvh import DVH
 
-
 __all__ = [
     'Dosimetrics',
     'DVH']

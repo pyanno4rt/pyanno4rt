@@ -216,5 +216,5 @@ def differentiate(dose, points):
 
     # Return the DVH values
     return array([
-        sum(logical_and(point - radius < dose, point + radius > dose))
+        (logical_and(point - radius < dose, point + radius > dose)).sum()
         for point in points]) / len(dose)

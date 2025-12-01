@@ -10,7 +10,7 @@ from functools import partial
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_length, validate_subtype, validate_type, validate_value)
+    validate_item, validate_length, validate_subtype, validate_type)
 
 # %% Class definition
 
@@ -116,7 +116,7 @@ class TuneSpaceNB():
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_value, reference=0, sign='>'))}
+                partial(validate_item, reference=0, sign='>'))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

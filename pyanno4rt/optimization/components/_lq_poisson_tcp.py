@@ -60,9 +60,6 @@ class LQPoissonTCP(RadiobiologicalComponent):
     link : None or list, default=None
         Other segments used for joint evaluation.
 
-    transform : bool, default=False
-        Indicator for the transformation of the outcome function.
-
     identifier : None or str, default=None
         Additional string for naming the component.
 
@@ -88,7 +85,6 @@ class LQPoissonTCP(RadiobiologicalComponent):
             rank=1,
             bounds=None,
             link=None,
-            transform=False,
             identifier=None,
             display=True):
 
@@ -108,7 +104,6 @@ class LQPoissonTCP(RadiobiologicalComponent):
             rank=rank,
             bounds=bounds,
             link=link,
-            transform=transform,
             identifier=identifier,
             display=display)
 

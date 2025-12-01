@@ -25,18 +25,18 @@ def get_logger():
     return getLogger(current_logger_name.get())
 
 @contextmanager
-def set_logger_name(name):
+def set_logger_name(label):
     """
     Set the logger name.
 
     Parameters
     ----------
-    name : str
+    label : str
         Name of the logger.
     """
 
     # Set the current active logger name
-    token = current_logger_name.set(name)
+    token = current_logger_name.set(label)
 
     try:
 

@@ -11,8 +11,8 @@ from functools import partial
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_directory, validate_file, validate_length, validate_subtype,
-    validate_type, validate_value, validate_value_in_set)
+    validate_directory, validate_file, validate_item, validate_item_in_set,
+    validate_length, validate_subtype, validate_type)
 
 # %% Class definition
 
@@ -161,7 +161,7 @@ class Configuration():
                 partial(validate_length, reference=1, sign='>=')),
             'modality': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=('photon', 'proton'))),
+                partial(validate_item_in_set, options=('photon', 'proton'))),
             'imaging_path': (
                 partial(validate_type, options=str),
                 partial(validate_file, options=('.mat',)),
@@ -173,14 +173,14 @@ class Configuration():
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_length, reference=3, sign='=='),
-                partial(validate_value, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')),
             'min_log_level': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'debug', 'info', 'warning', 'error', 'critical'))),
             'number_of_fractions': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=1, sign='>='))}
+                partial(validate_item, reference=1, sign='>='))}
 
         # Loop over the inputs
         for key, value in inputs.items():

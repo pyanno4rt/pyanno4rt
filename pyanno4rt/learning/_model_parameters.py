@@ -14,8 +14,8 @@ from pyanno4rt.learning.evaluation import DisplayOptions
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_directory, validate_file, validate_length, validate_path,
-    validate_subtype, validate_type, validate_value, validate_value_in_set)
+    validate_directory, validate_file, validate_item, validate_item_in_set,
+    validate_length, validate_path, validate_subtype, validate_type)
 
 # %% Class definitions
 
@@ -311,7 +311,7 @@ class ModelParameters():
                 partial(validate_type, options=str),),
             'model_type': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'forest', 'logistic', 'naive_bayes', 'neighbors',
                     'neural_network', 'svm', 'tree'))),
             'model_folder_path': (
@@ -320,7 +320,7 @@ class ModelParameters():
             'data_path': (
                 partial(validate_type, options={
                     True: (type(None), str), False: str},
-                    type_condition=isinstance(
+                    condition=isinstance(
                         inputs.get('model_folder_path'), str)),
                 partial(validate_file, options=('.csv',)),
                 partial(validate_directory, options=(
@@ -328,46 +328,46 @@ class ModelParameters():
             'data_columns': (
                 partial(validate_type, options={
                     True: (type(None), list), False: list},
-                    type_condition=isinstance(
+                    condition=isinstance(
                         inputs.get('model_folder_path'), str)),
                 partial(validate_length, reference=2, sign='>=')),
             'preprocessing': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=str),
                 partial(
-                    validate_value_in_set, options=tuple(maps.TRANSFORMERS))),
+                    validate_item_in_set, options=tuple(maps.TRANSFORMERS))),
             'architecture': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'vanilla', 'vanilla input-convex'))),
             'max_hidden_layers': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')),
             'tune_space': (
                 partial(validate_type, options=tuple(maps.SPACES.values())),),
             'tune_evaluations': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'tune_score': (
                 partial(validate_type, options=str),
-                partial(validate_value_in_set, options=tuple(
+                partial(validate_item_in_set, options=tuple(
                     ('AUC', *maps.LOSSES)))),
             'tune_splits': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')),
             'tune_repeats': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')),
             'inspect': (
                 partial(validate_type, options=bool),),
             'evaluate': (
                 partial(validate_type, options=bool),),
             'oof_splits': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')),
             'oof_repeats': (
                 partial(validate_type, options=int),
-                partial(validate_value, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')),
             'write_features': (
                 partial(validate_type, options=bool),),
             'display_options': (

@@ -5,47 +5,47 @@
 # %% Function definition
 
 
-def validate_type(label, data, options, type_condition=None):
+def validate_type(label, item, options, condition=None):
     """
-    Validate if a value type is supported.
+    Validation function for the item type.
 
     Parameters
     ----------
     label : str
-        Label for the item to be validated.
+        Label for the validation item.
 
-    data
-        Input value to be validated.
+    item
+        Validation item.
 
     options : tuple or dict
-        Tuple or dictionary with the type options.
+        Tuple or dictionary with the valid options.
 
-    type_condition : None or str, default=None
-        Value of the conditional (only used if types is a dictionary).
+    condition : None or str, default=None
+        Filter condition (key) on the options (dictionary).
 
     Raises
     ------
     TypeError
-        If the value type is unsupported.
+        If the item type is invalid.
     """
 
-    # Check if no type condition applies
-    if type_condition is None:
+    # Check if no condition applies
+    if condition is None:
 
-        # Check if an unsupported type has been passed
-        if not isinstance(data, options):
+        # Check if an invalid type has been passed
+        if not isinstance(item, options):
 
             # Raise an error
             raise TypeError(
                 f"The treatment plan parameter '{label}' has data type "
-                f"{type(data)}, but should be from {options}!")
+                f"{type(item)}, but should be from {options}!")
 
     else:
 
-        # Check if an unsupported type has been passed
-        if not isinstance(data, options[type_condition]):
+        # Check if an invalid type has been passed
+        if not isinstance(item, options[condition]):
 
             # Raise an error
             raise TypeError(
                 f"The treatment plan parameter '{label}' has data type "
-                f"{type(data)}, but should be from {options[type_condition]}!")
+                f"{type(item)}, but should be from {options[condition]}!")

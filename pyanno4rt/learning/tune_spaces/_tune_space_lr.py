@@ -10,8 +10,8 @@ from functools import partial
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_length, validate_subtype, validate_type, validate_value,
-    validate_value_in_set)
+    validate_item, validate_item_in_set, validate_length, validate_subtype,
+    validate_type)
 
 # %% Class definition
 
@@ -130,18 +130,18 @@ class TuneSpaceLR():
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'penalty': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=(
+                partial(validate_item_in_set, options=(
                     'l1', 'l2', 'elasticnet'))),
             'tol': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_value, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')),
             'class_weight': (
                 partial(validate_type, options=list),
-                partial(validate_value_in_set, options=(None, 'balanced')))}
+                partial(validate_item_in_set, options=(None, 'balanced')))}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

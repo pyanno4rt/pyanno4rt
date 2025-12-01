@@ -8,7 +8,6 @@ from numpy import hstack, ones
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import (
     flatten, get_constraint_segments, get_objective_segments)
@@ -44,7 +43,13 @@ class TargetCoverageInitializer():
         # Get the initial fluence from the argument
         self.initial_fluence_vector = initial_fluence_vector
 
-    def run(self):
+    def run(
+            self,
+            segmentation,
+            rbe,
+            number_of_fractions,
+            dose_influence_matrix,
+            degrees_of_freedom):
         """
         Initialize the fluence vector with respect to target coverage.
 
@@ -54,16 +59,9 @@ class TargetCoverageInitializer():
             Initial fluence vector.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
         # Log a message about the initialization
         get_logger().info(
             "Initializing fluence vector with respect to target coverage ...")
-
-        # Get the segmentation and dose information data from the datahub
-        segmentation = hub.segmentation
-        dose_information = hub.dose_information
 
         def get_dose_parameters(target):
             """Get the dose-related component parameters from a target."""
@@ -113,12 +111,10 @@ class TargetCoverageInitializer():
                 if segmentation[segment]['type'] == 'TARGET'])
 
             # Set the maximum target dose parameter for a total dose of 60 Gy
-            max_dose = 60/dose_information['number_of_fractions']
+            max_dose = 60/number_of_fractions
 
         # Initialize a vector of ones
-        ones_vector = ones((dose_information['degrees_of_freedom'],))
+        ones_vector = ones((degrees_of_freedom,))
 
         return ones_vector * max_dose/(
-            hub.plan_configuration['RBE']
-            * dose_information['dose_influence_matrix'][indices, :]
-            @ ones_vector).mean()
+            rbe * dose_influence_matrix[indices, :] @ ones_vector).mean()

@@ -9,42 +9,42 @@ from os.path import isfile, splitext
 # %% Function definition
 
 
-def validate_file(label, data, options):
+def validate_file(label, item, options):
     """
-    Validate if a file path is regular with supported file format.
+    Validation function for the regularity of a file path.
 
     Parameters
     ----------
     label : str
-        Label for the item to be validated.
+        Label for the validation item.
 
-    data : str
-        Input value to be validated.
+    item : str
+        Validation item.
 
     options : tuple
-        Tuple with the supported file formats.
+        Tuple with the valid file formats.
 
     Raises
     ------
     FileNotFoundError
-        If the path references an irregular file.
+        If the item references an irregular file.
 
     TypeError
-        If the path has an unsupported format.
+        If the referenced file has an invalid format.
     """
 
-    # Check if the path references an irregular file
-    if not isfile(data) and splitext(data)[1] != '':
+    # Check if the item references an irregular file
+    if not isfile(item) and splitext(item)[1] != '':
 
         # Raise an error
         raise FileNotFoundError(
             f"The treatment plan parameter '{label}' does not reference a "
             "regular file!")
 
-    # Check if the file has an unsupported format
-    if (isfile(data) and not any(data.endswith(option) for option in options)):
+    # Check if the referenced file has an invalid format
+    if (isfile(item) and not any(item.endswith(option) for option in options)):
 
-        # Check if the number of supported formats is one
+        # Check if the number of valid formats is one
         if len(options) == 1:
 
             # Get the output string from the single format
