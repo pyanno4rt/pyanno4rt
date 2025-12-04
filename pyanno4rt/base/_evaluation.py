@@ -112,10 +112,12 @@ class Evaluation():
             'dvh_type': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'cumulative', 'differential'))),
+                    'cumulative', 'differential'))
+                ),
             'number_of_points': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')
+                ),
             'reference_volumes': (
                 partial(validate_type, options=(tuple, list)),
                 partial(validate_subtype, options=(int, float)),

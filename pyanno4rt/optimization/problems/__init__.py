@@ -1,9 +1,9 @@
 """
-Optimization methods module.
+Problems module.
 
 ==================================================================
 
-This module aims to provide different types of optimization methods.
+This module aims to provide different types of optimization problems.
 """
 
 # Author: Tim Ortkamp

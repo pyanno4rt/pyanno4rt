@@ -7,12 +7,14 @@
 # Functional classes
 from pyanno4rt.base import Configuration, Evaluation, Optimization
 from pyanno4rt.logging import Logging, set_logger_name
-from pyanno4rt.datahub import Datahub
 
 # Treatment plan configuration
 from pyanno4rt.patient import PatientHandler
 from pyanno4rt.plan import PlanHandler
 from pyanno4rt.dose import DoseHandler
+
+# Treatment plan outcome modeling
+from pyanno4rt.learning import DataModelHandler
 
 # Treatment plan optimization
 from pyanno4rt.optimization import FluenceOptimizer
@@ -26,8 +28,7 @@ from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
 from pyanno4rt.tools import (
-    apply, copycat, get_machine_learning_constraints,
-    get_machine_learning_objectives, snapshot)
+    apply, copycat, get_machine_learning_components, snapshot)
 from pyanno4rt.validation import validate_type
 
 # %% Class definition
@@ -83,6 +84,10 @@ class TreatmentPlan():
         :class:`~pyanno4rt.dose._dose_handler.DoseHandler`
         The object used to handle the dose parameters.
 
+    data_model_handler : None or object of class \
+        :class:`~pyanno4rt.learning._data_model_handler.DataModelHandler`
+        The object used to handle the data-driven outcome models.
+
     fluence_optimizer : None or object of class \
         :class:`~pyanno4rt.optimization._fluence_optimizer.FluenceOptimizer`
         The object used to solve the fluence optimization problem.
@@ -135,10 +140,10 @@ class TreatmentPlan():
         # Initialize the plan subclasses
         self.logging = Logging(
             self.configuration.label, self.configuration.min_log_level)
-        self.datahub = Datahub(self.configuration.label)
         self.patient_handler = None
         self.plan_handler = None
         self.dose_handler = None
+        self.data_model_handler = None
         self.fluence_optimizer = None
         self.dvh = None
         self.dosimetrics = None
@@ -155,27 +160,21 @@ class TreatmentPlan():
             # Validate the configuration parameters
             self.configuration.validate(vars(self.configuration))
 
-            # Set the treatment plan label in the datahub
-            Datahub.label = self.configuration.label
-
             # Initialize the patient handler
             self.patient_handler = PatientHandler()
-
-            # Load the patient data
-            self.patient_handler.load(self.configuration.imaging_path)
 
             # Initialize the plan handler
             self.plan_handler = PlanHandler(
                 modality=self.configuration.modality,
                 components=self.optimization.components)
 
-            # Set the plan components
-            self.plan_handler.set_components(self.patient_handler.segmentation)
-
             # Initialize the dose handler
             self.dose_handler = DoseHandler(
                 dose_resolution=self.configuration.dose_resolution,
                 number_of_fractions=self.configuration.number_of_fractions)
+
+            # Load the patient data
+            self.patient_handler.load(self.configuration.imaging_path)
 
             # Generate the dose data
             self.dose_handler.generate(
@@ -183,12 +182,19 @@ class TreatmentPlan():
                 self.plan_handler.modality,
                 self.configuration.dose_matrix_path)
 
+            # Remove the segment overlaps
+            self.patient_handler.remove_overlap()
+
             # Resize the segments to the dose grid
             self.patient_handler.resize_segments(
                 self.dose_handler.cube_dimensions)
 
+            # Add structure information to the components
+            self.plan_handler.index_components(
+                self.patient_handler.segmentation)
+
             # Adjust the dose prescriptions to the fractionation
-            self.plan_handler.adjust_parameters_for_fractionation(
+            self.plan_handler.fractionate_components(
                 self.dose_handler.number_of_fractions)
 
             # Set the state
@@ -198,9 +204,6 @@ class TreatmentPlan():
         """Model the treatment plan outcome."""
 
         with self.context():
-
-            # Set the treatment plan label in the datahub
-            Datahub.label = self.configuration.label
 
             # Check if the plan has not been configured yet
             if None in (
@@ -213,13 +216,13 @@ class TreatmentPlan():
 
             else:
 
-                # Get the segmentation data
-                segmentation = self.patient_handler.segmentation
+                #
+                # self.data_model_handler = DataModelHandler()
 
                 # Add the machine learning outcome models to the components
                 apply(lambda component: component.add_model(), (
-                    get_machine_learning_constraints(segmentation)
-                    + get_machine_learning_objectives(segmentation)))
+                    get_machine_learning_components(
+                        self.plan_handler.components)))
 
                 # Set the state
                 self.state = 2
@@ -228,12 +231,6 @@ class TreatmentPlan():
         """Optimize the treatment plan."""
 
         with self.context():
-
-            # Set the treatment plan label in the datahub
-            Datahub.label = self.configuration.label
-
-            # Get the segmentation data
-            segmentation = self.patient_handler.segmentation
 
             # Check if the plan has not been configured yet
             if None in (
@@ -247,14 +244,13 @@ class TreatmentPlan():
             # Check if any machine learning component has not been modeled
             elif (None in (
                     component.model for component in
-                    get_machine_learning_constraints(segmentation)
-                    + get_machine_learning_objectives(segmentation))
-                    or self.state < 2):
+                    get_machine_learning_components(
+                        self.plan_handler.components))):
 
                 # Log a message about the non-modeled component
                 self.logging.error(
-                    "Please add the machine learning models before "
-                    "optimization!")
+                    "Please integrate the machine learning outcome models "
+                    "before optimization!")
 
             else:
 
@@ -265,7 +261,8 @@ class TreatmentPlan():
                 handlers = {
                     'patient_handler': self.patient_handler,
                     'plan_handler': self.plan_handler,
-                    'dose_handler': self.dose_handler}
+                    'dose_handler': self.dose_handler,
+                    'data_model_handler': self.data_model_handler}
 
                 # Initialize the fluence optimizer
                 self.fluence_optimizer = FluenceOptimizer(
@@ -292,9 +289,6 @@ class TreatmentPlan():
         """Evaluate the treatment plan."""
 
         with self.context():
-
-            # Set the treatment plan label in the datahub
-            Datahub.label = self.configuration.label
 
             # Check if the plan has not been optimized yet
             if (self.fluence_optimizer is None
@@ -328,6 +322,7 @@ class TreatmentPlan():
                 # Compute the dosimetrics
                 self.dosimetrics.evaluate_segments(
                     self.patient_handler.segmentation,
+                    self.plan_handler.components,
                     self.fluence_optimizer.optimized_dose)
 
                 # Set the state
@@ -349,9 +344,6 @@ class TreatmentPlan():
 
         with self.context():
 
-            # Set the treatment plan label in the datahub
-            Datahub.label = self.configuration.label
-
             # Initialize the visualizer
             self.visualizer = Visualizer(treatment_plan=self, parent=parent)
 
@@ -363,9 +355,6 @@ class TreatmentPlan():
 
     def compose(self):
         """Compose the treatment plan."""
-
-        # Set the treatment plan label in the datahub
-        Datahub.label = self.configuration.label
 
         # Cycle the workflow
         self.configure()

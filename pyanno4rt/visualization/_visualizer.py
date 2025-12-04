@@ -15,10 +15,8 @@ from PyQt5.QtWidgets import (
 # %% Internal package import
 
 from pyanno4rt.tools import (
-    get_all_constraints, get_all_objectives, get_conventional_constraints,
-    get_conventional_objectives, get_machine_learning_constraints,
-    get_machine_learning_objectives, get_radiobiological_constraints,
-    get_radiobiological_objectives)
+    get_conventional_components, get_machine_learning_components,
+    get_radiobiological_components)
 from pyanno4rt.visualization.assets import resources_rc
 from pyanno4rt.visualization.custom_widgets import (
     ComponentGraphWidget, DVHGraphWidget, FeatureGraphWidget,
@@ -244,79 +242,57 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         #
         computed_tomography = self.plan.patient_handler.computed_tomography
         segmentation = self.plan.patient_handler.segmentation
+        problem = self.plan.fluence_optimizer.problem
         histogram = self.plan.dvh.histogram
         quantities = self.plan.dosimetrics.quantities
 
         # Get the datahub
-        (optimization, model_evaluations, model_inspections) = (
-             getattr(self.plan.datahub, attribute) for attribute in (
-                 'optimization', 'model_evaluations', 'model_inspections'))
+        fluence_optimizer = self.plan.fluence_optimizer
+        data_model_handler = self.plan.data_model_handler
 
-        # Check if segmentation data is available
-        if segmentation is not None:
+        # Get the problem components
+        components = problem.constraints + problem.objectives
 
-            # Get all conventional components
-            cv_components = (
-                get_conventional_constraints(segmentation)
-                + get_conventional_objectives(segmentation))
+        # Get the machine learning model-based components
+        ml_components = get_machine_learning_components(components)
 
-            # Get the machine learning model-based components
-            ml_components = (
-                get_machine_learning_constraints(segmentation)
-                + get_machine_learning_objectives(segmentation))
-
-            # Get the radiobiological components
-            rb_components = (
-                get_radiobiological_constraints(segmentation)
-                + get_radiobiological_objectives(segmentation))
-
-        else:
-
-            # Set the component tuples to the default value
-            cv_components, ml_components, rb_components = (), (), ()
+        # Get the radiobiological components
+        rb_components = get_radiobiological_components(components)
 
         # Check if the iteration plot buttons should be disabled
         if (self.plan.state < 3 or
-            (optimization is not None and
-             ('problem' not in optimization or
-              not hasattr(optimization['problem'], 'tracker')
+            (fluence_optimizer is not None and
+             (not hasattr(fluence_optimizer, 'problem') or
+              not hasattr(fluence_optimizer.problem, 'tracker')
               or all(value == [] for value
-                     in optimization['problem'].tracker.values())))):
+                     in fluence_optimizer.problem.tracker.values())))):
             self.open_comp_graph_pbutton.setEnabled(False)
             self.open_outc_graph_pbutton.setEnabled(False)
 
-        # Check if the iteration values button should be disabled
-        if (not any(objective.display for objective in (
-                *cv_components, *rb_components, *ml_components))):
-            self.open_comp_graph_pbutton.setEnabled(False)
-
         # Check if the (N)TCP values button should be disabled
-        if (not any(objective.display for objective in (
-                rb_components + ml_components))):
+        if len(rb_components + ml_components) == 0:
             self.open_outc_graph_pbutton.setEnabled(False)
 
         # Check if the feature iterations button should be disabled
         if (self.plan.state < 3 or
-            (optimization is not None and
-             ('problem' not in optimization or
-              (not hasattr(optimization['problem'], 'tracker')
-               or all(value == [] for value
-                      in optimization['problem'].tracker.values()))))
+            (fluence_optimizer is not None and
+             (not hasattr(fluence_optimizer, 'problem') or
+              not hasattr(fluence_optimizer.problem, 'tracker')
+              or all(value == [] for value
+                     in fluence_optimizer.problem.tracker.values())))
             or all(objective.model_parameters.write_features is False
                    for objective in ml_components)):
             self.open_feat_graph_pbutton.setEnabled(False)
 
         # Check if the metrics tables and graphs buttons should be disabled
         if (self.plan.state < 2 or
-            (model_evaluations is None
-             or len(model_evaluations) == 0)):
+            data_model_handler is None):
             self.open_metrics_graphs_pbutton.setEnabled(False)
             self.open_metrics_tables_pbutton.setEnabled(False)
 
         # Check if the permutation importance button should be disabled
         if (self.plan.state < 2 or
-            (model_inspections is None
-             or len(model_inspections) == 0)):
+            data_model_handler is None):
             self.open_perm_graph_pbutton.setEnabled(False)
 
         # Check if the plan evaluation buttons should be disabled
@@ -337,23 +313,22 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         self.comp_widget.reset_graph()
 
         # Get the segmentation and optimization data
-        segmentation = self.plan.patient_handler.segmentation
-        optimization = self.plan.datahub.optimization
+        problem = self.plan.fluence_optimizer.problem
+        optimized_dose = self.plan.fluence_optimizer.optimized_dose
 
-        # Get all optimization components
-        components = (
-            get_all_objectives(segmentation)
-            + get_all_constraints(segmentation))
+        # Get the problem components
+        components = problem.constraints + problem.objectives
 
         # Check if the plan has already been optimized
         if (self.plan.fluence_optimizer is not None
-                and 'optimized_dose' in optimization and self.plan.state >= 3):
+                and optimized_dose is not None
+                and self.plan.state >= 3):
 
             # Add style and data
             self.comp_widget.add_style_and_data(
                 {component.track_id: (
-                    optimization['problem'].tracker[component.track_id])
-                    for component in components if component.display})
+                    problem.tracker[component.track_id])
+                    for component in components})
 
             # Update the component graph
             self.comp_widget.update_graph()
@@ -365,28 +340,27 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         self.outc_widget.reset_graph()
 
         # Get the segmentation and optimization data
-        segmentation = self.plan.patient_handler.segmentation
-        optimization = self.plan.datahub.optimization
+        problem = self.plan.fluence_optimizer.problem
+        optimized_dose = self.plan.fluence_optimizer.optimized_dose
+
+        # Get the problem components
+        components = problem.constraints + problem.objectives
 
         # Get the outcome model-based components
         components = (
-            get_machine_learning_constraints(segmentation)
-            + get_machine_learning_objectives(segmentation)
-            + get_radiobiological_constraints(segmentation)
-            + get_radiobiological_objectives(segmentation))
+            get_machine_learning_components(components)
+            + get_radiobiological_components(components))
 
         # Check if the plan has already been optimized
         if (self.plan.fluence_optimizer is not None
-                and 'optimized_dose' in optimization and self.plan.state >= 3
+                and optimized_dose is not None
+                and self.plan.state >= 3
                 and len(components) > 0):
-
-            # Get the tracker
-            tracker = optimization['problem'].tracker
 
             # Add style and data
             self.outc_widget.add_style_and_data(
                 {component.track_id: component.translate(
-                    tracker[component.track_id])
+                    problem.tracker[component.track_id])
                  for component in components})
 
             # Update the outcome graph
@@ -399,17 +373,17 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         self.feat_widget.reset_graph()
 
         # Get the segmentation and optimization data
-        segmentation = self.plan.patient_handler.segmentation
-        optimization = self.plan.datahub.optimization
+        problem = self.plan.fluence_optimizer.problem
+        optimized_dose = self.plan.fluence_optimizer.optimized_dose
 
         # Get the ML model-based components
-        components = (
-            get_machine_learning_constraints(segmentation)
-            + get_machine_learning_objectives(segmentation))
+        components = get_machine_learning_components(
+            problem.constraints + problem.objectives)
 
         # Check if the plan has already been optimized
         if (self.plan.fluence_optimizer is not None
-                and 'optimized_dose' in optimization and self.plan.state >= 3
+                and optimized_dose is not None
+                and self.plan.state >= 3
                 and len(components) > 0):
 
             # Get the feature histories
@@ -422,13 +396,10 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             # Check if any history has been recorded
             if len(histories) > 0:
 
-                # Get the tracker
-                tracker = optimization['problem'].tracker
-
                 # Get the outcome data
                 outcomes = {
                     component.model.model_label: component.translate(
-                        tracker[component.track_id])
+                        problem.tracker[component.track_id])
                     for component in components}
 
                 # Add the model names
@@ -505,7 +476,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
             # Check if the plan has already been optimized
             if (self.plan.fluence_optimizer is not None
-                    and 'optimized_dose' in self.plan.datahub.optimization
+                    and self.plan.fluence_optimizer.optimized_dose is not None
                     and self.plan.state >= 3):
 
                 # Add the dose cube to the slice widget
@@ -791,10 +762,10 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         self.add_outcome_tracks()
 
         # Add the feature tracks
-        self.add_feature_tracks()
+        # self.add_feature_tracks()
 
         # Add the permutation importance boxplots
-        self.add_importance_boxplots()
+        # self.add_importance_boxplots()
 
         # Add the CT/dose images
         self.add_images()

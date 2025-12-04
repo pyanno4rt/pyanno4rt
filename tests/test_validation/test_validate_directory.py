@@ -15,7 +15,7 @@ from pyanno4rt.validation import validate_directory
 
 def test_validate_directory_positive():
     """
-    Test the 'validate_directory' function with supported input.
+    Test the 'validate_directory' function with valid input.
     """
 
     # Assert the run-through of the function
@@ -24,21 +24,28 @@ def test_validate_directory_positive():
         ('.json', '.p', '.py', '.txt'), ('.mat', '.p')) is None
 
 
-# Define the unsupported argument sets
+# Define the invalid argument sets
 @mark.parametrize(
-    'label, data, options, expected',
-    [('label', './tests/extra_files/load_list_from_file', ('.txt',),
+    'label, item, options, expected',
+    [
+     ('label', './tests/extra_files/load_list_from_file', ('.txt',),
       TypeError),
      ('label', './tests/extra_files/load_list_from_file', ('.p', '.txt'),
       TypeError),
      ('label', './tests/extra_files/load_list_from_file/list.json', ('.txt',),
-      NotADirectoryError)],
-    ids=['single-set', 'multi-set', 'not a directory'])
-def test_validate_directory_negative(label, data, options, expected):
+      NotADirectoryError)
+     ],
+    ids=[
+        'single-set',
+        'multi-set',
+        'not a directory'
+        ]
+    )
+def test_validate_directory_negative(label, item, options, expected):
     """
-    Test the 'validate_directory' function with unsupported input.
+    Test the 'validate_directory' function with invalid input.
     """
 
     # Assert the raise of an exception
     with raises(expected):
-        validate_directory(label, data, options, ('.mat', '.p'))
+        validate_directory(label, item, options, ('.mat', '.p'))

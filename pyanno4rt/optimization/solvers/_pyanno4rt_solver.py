@@ -64,7 +64,7 @@ class Pyanno4rtSolver():
         get_logger().info(
             "Initializing pyanno4rt solver with %s algorithm ...", algorithm)
 
-        # Get the input arguments
+        # Get the input attributes
         self.algorithm = algorithm
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
@@ -103,7 +103,7 @@ class Pyanno4rtSolver():
         Parameters
         ----------
         problem : object of class \
-            :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+            :class:`~pyanno4rt.optimization.problems.weighted._weighted_sum_problem.WeightedSumProblem`
             The object used to represent the optimization problem.
         """
 
@@ -134,7 +134,7 @@ class Pyanno4rtSolver():
             self,
             initial_fluence):
         """
-        Run the pyanno4rt solver.
+        Run the Pyanno4rt solver.
 
         Parameters
         ----------

@@ -50,113 +50,34 @@ class PlanHandler():
         self.RBE = 1.0 + 0.1*(modality == 'proton')
         self.components = components
 
-    def split_components(
+    def index_components(
             self,
-            verbose=True):
+            segmentation):
         """
-        Split the components into objectives and constraints.
-
-        Parameters
-        ----------
-        verbose : bool
-            Indicator for logging output messages.
-
-        Returns
-        -------
-        list
-            Plan objectives.
-
-        list
-            Plan constraints.
-        """
-
-        # Get the unique components
-        components = set(self.components)
-
-        # Check if any components have been removed
-        if len(components) < len(self.components) and verbose:
-
-            # Log a message about a duplicate component
-            get_logger().warning(
-                "Found duplicate objects in the plan components - consider "
-                "using the identifier attribute ...")
-
-        # Get the plan objectives
-        objectives = [
-            component for component in components
-            if component.component_type == 'objective']
-
-        # Get the plan constraints
-        constraints = list(components - set(objectives))
-
-        return objectives, constraints
-
-    def set_components(
-            self,
-            segmentation,
-            verbose=True):
-        """
-        Set the components for plan optimization.
+        Add the segment indices to the components.
 
         Parameters
         ----------
         segmentation : dict
             Dictionary with information on the segments.
-
-        verbose : bool
-            Indicator for logging output messages.
         """
 
-        # Loop over the segments
-        for segment in segmentation:
-
-            # Reset the objective and constraint
-            segmentation[segment]['objective'] = None
-            segmentation[segment]['constraint'] = None
-
-        # Check if output messages should be logged
-        if verbose:
-
-            # Log a message about setting the components
-            get_logger().info("Setting objectives and constraints ...")
-
-        # Get the unique objectives and constraints
-        objectives, constraints = self.split_components(verbose)
+        # Log a message about adding the segment indices
+        get_logger().info("Adding segment indices to the components ...")
 
         # Loop over the components
-        for component in objectives + constraints:
+        for component in self.components:
 
-            # Get the component segment and category
-            segment, category = component.segment, component.component_type
+            # Store the resized indices
+            component.indices = [
+                segmentation[segment]['resized_indices']
+                for segment in wrap(component.segment)]
 
-            # Check if output messages should be logged
-            if verbose:
-
-                # Log a message about setting the component
-                get_logger().info(
-                    "Setting %s '%s' for %s ...",
-                    category, component.name, [segment]+component.link)
-
-            # Check if the segment has no component assigned yet
-            if segmentation[segment][category] is None:
-
-                # Assign the component
-                segmentation[segment][category] = component
-
-            else:
-
-                # Ensure the segment holds a list
-                segmentation[segment][category] = wrap(
-                    segmentation[segment][category], dtype='list')
-
-                # Append the component
-                segmentation[segment][category].append(component)
-
-    def adjust_parameters_for_fractionation(
+    def fractionate_components(
             self,
             number_of_fractions):
         """
-        Adjust the dose parameters according to the number of fractions.
+        Adjust the components for fractionation.
 
         Parameters
         ----------
@@ -165,10 +86,10 @@ class PlanHandler():
         """
 
         def adjust_component(component):
-            """Adjust the dose parameters for a component."""
+            """Adjust the parameters for a component."""
 
             # Get the component parameters
-            parameters = component.get_parameter_value()
+            parameters = component.parameter_value
 
             # Loop over the indices of the dose-related parameter values
             for index in (index for index, category in enumerate(
@@ -177,16 +98,13 @@ class PlanHandler():
                 # Adjust the indexed parameters by the number of fractions
                 parameters[index] /= number_of_fractions
 
-            # Set the adjusted objective parameters
-            component.set_parameter_value(parameters)
-
-            # Activate the adjustment indicator of the component
+            # Set the adjustment indicator
             component.adjusted_parameters = True
 
-        # Log a message about the parameter adjustment
-        get_logger().info("Adjusting dose parameters for fractionation ...")
+        # Log a message about the fractionation
+        get_logger().info("Adjusting components for fractionation ...")
 
-        # Adjust all non-adjusted components with dose-related parameters
+        # Adjust the non-fractionated components
         apply(adjust_component, (
             component for component in self.components
             if not component.adjusted_parameters

@@ -25,8 +25,8 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
 
     Parameters
     ----------
-    segment : str
-        Name of the segment associated with the component.
+    segment : str or list
+        Segment(s) associated with the component.
 
     tolerance_dose_50 : int or float
         Tolerance value for the dose at 50% tumor control.
@@ -54,14 +54,8 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
     bounds : None or list, default=None
         Constraint bounds for the component.
 
-    link : None or list, default=None
-        Other segments used for joint evaluation.
-
     identifier : None or str, default=None
         Additional string for naming the component.
-
-    display : bool, default=True
-        Indicator for the display of the component.
 
     Attributes
     ----------
@@ -80,9 +74,7 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
             weight=1.0,
             rank=1,
             bounds=None,
-            link=None,
-            identifier=None,
-            display=True):
+            identifier=None):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(
@@ -98,11 +90,9 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
             weight=weight,
             rank=rank,
             bounds=bounds,
-            link=link,
-            identifier=identifier,
-            display=display)
+            identifier=identifier)
 
-        # Set the input arguments
+        # Get the input arguments
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
 
@@ -177,8 +167,7 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
 
     def compute_value(
             self,
-            dose,
-            *args):
+            dose):
         """
         Return the function value from the jitted 'compute' function.
 
@@ -186,9 +175,6 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
         ----------
         dose : tuple
             Tuple with the dose arrays.
-
-        *args : tuple
-            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -200,8 +186,7 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
 
     def compute_gradient(
             self,
-            dose,
-            *args):
+            dose):
         """
         Return the gradient vector from the jitted 'differentiate' function.
 
@@ -209,9 +194,6 @@ class LymanKutcherBurmanNTCP(RadiobiologicalComponent):
         ----------
         dose : tuple
             Tuple with the dose arrays.
-
-        *args : tuple
-            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------

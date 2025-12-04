@@ -19,21 +19,23 @@ class LexicographicProblem():
     Lexicographic optimization problem class.
 
     This class provides methods to build a lexicographic optimization \
-    problem, including the definition of the rank-ordered subproblems, and \
-    methods to calculate important quantities.
+    problem, including the definition of objectives, constraints, bounds, \
+    initial fluence, subproblems, and methods to calculate important \
+    quantities. It also features a tracking dictionary with the \
+    component-wise evaluations.
 
     Parameters
     ----------
     backprojection : object of class \
         :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
-        The object used to represent the dose-fluence backprojection.
+        The object representing the type of backprojection.
 
-    objectives : dict
-        Dictionary with the internally configured objectives.
+    objectives : list
+        Internally configured plan objectives.
 
-    constraints : dict
-        Dictionary with the internally configured constraints.
+    constraints : list
+        Internally configured plan constraints.
 
     lower_variable_bounds : None, int, float, or list
         Lower bound(s) on the decision variables.
@@ -51,8 +53,23 @@ class LexicographicProblem():
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
         See 'Parameters'.
 
+    objectives : list
+        See 'Parameters'.
+
+    constraints : list
+        See 'Parameters'.
+
     subproblems : dict
         Dictionary with the rank-ordered subproblems.
+
+    initial_fluence : ndarray
+        See 'Parameters'.
+
+    variable_bounds : tuple
+        Lower and upper bounds on the decision variables.
+
+    constraint_bounds : tuple
+        Lower and upper bounds on the constraints.
 
     tracker : dict
         Dictionary with the iteration-wise plan component values.
@@ -73,41 +90,60 @@ class LexicographicProblem():
         # Log a message about the initialization of the class
         get_logger().info("Building lexicographic optimization problem ...")
 
-        # Get the rank-ordered objectives
-        objectives = {
-            rank: {
-                label: objective for label, objective in objectives.items()
-                if objective['instance'].rank == rank}
-            for rank in sorted(set(
-                objective['instance'].rank
-                for objective in objectives.values()))}
+        # Get the backprojection
+        self.backprojection = backprojection
 
-        # Initialize the rank-ordered constraints by the "static" constraints
-        constraints = {
-            rank: {
-                label: constraint for label, constraint in constraints.items()
-                if constraint['instance'].rank == rank}
-            for rank in objectives}
+        # Get the components
+        self.objectives = objectives
+        self.constraints = constraints
+
+        # Get the rank-wise objectives
+        rank_objectives = {
+            rank: [
+                objective for objective in objectives
+                if objective.rank == rank]
+            for rank in sorted(set(
+                    objective.rank for objective in objectives))}
+
+        # Initialize the rank-wise constraints by the "static" constraints
+        rank_constraints = {
+            rank: [
+                constraint for constraint in constraints
+                if constraint.rank == rank]
+            for rank in rank_objectives}
 
         # Loop over the lexicographic layers
-        for rank in constraints:
+        for rank in rank_constraints:
 
             # Update the constraints with the "dynamic" constraints
-            constraints[rank] |= {
-                label: constraint for dictionary in (
-                    objectives[label] for label in tuple(
-                        constraints)[:list(constraints).index(rank)])
-                for label, constraint in dictionary.items()}
+            rank_constraints[rank] += [
+                constraint for constraint_list in (
+                    rank_objectives[rank] for rank in tuple(
+                        rank_constraints)[:list(rank_constraints).index(rank)])
+                for constraint in constraint_list]
 
         # Initialize the rank-wise optimization problems
         self.subproblems = {
             rank: WeightedSumProblem(
-                backprojection, objectives[rank], constraints[rank],
+                backprojection, rank_objectives[rank], rank_constraints[rank],
                 lower_variable_bounds, upper_variable_bounds, initial_fluence)
-            for rank in objectives}
+            for rank in rank_objectives}
 
-        # Initialize the tracker
-        self.tracker = {}
+        # Get the initial fluence
+        self.initial_fluence = initial_fluence
+
+        # Get the variable bounds
+        self.variable_bounds = self.get_variable_bounds(
+            lower_variable_bounds, upper_variable_bounds)
+
+        # Get the constraint bounds
+        self.constraint_bounds = self.get_constraint_bounds()
+
+        # Initialize the tracker dictionary
+        self.tracker = {
+            label: [] for label in
+            tuple(objective.track_id for objective in objectives)
+            + tuple(constraint.track_id for constraint in constraints)}
 
     def get_variable_bounds(
             self,
@@ -163,25 +199,16 @@ class LexicographicProblem():
             Lower and upper bounds on the constraints.
         """
 
-        # Check if no constraints have been passed
-        if len(self.constraints) == 0:
-
-            # Return the default empty bounds
-            return [], []
-
-        # Return the rank-ordered, transformed bounds
-        return tuple({
-            rank: [
-                constraint['instance'].bounds[index]
-                for constraint in rank_constraints.values()]
-            for rank, rank_constraints in self.constraints.items()}
-            for index in range(2))
+        # Return the rank-wise bounds
+        return {
+            rank: self.subproblems[rank].constraint_bounds
+            for rank in self.subproblems}
 
     def objective(
             self,
             fluence,
-            track=True,
-            rank=1):
+            rank=1,
+            track=True):
         """
         Compute the objective function value at a rank of the lexicography.
 
@@ -230,8 +257,8 @@ class LexicographicProblem():
     def constraint(
             self,
             fluence,
-            track=True,
-            rank=1):
+            rank=1,
+            track=True):
         """
         Compute the constraint function values at a rank of the lexicography.
 

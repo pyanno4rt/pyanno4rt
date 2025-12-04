@@ -1,10 +1,9 @@
 """
-A posteriori optimization methods module.
+Pareto optimization module.
 
 ==================================================================
 
-This module aims to provide different types of a posteriori optimization \
-methods.
+This module aims to provide Pareto optimization problems.
 """
 
 # Author: Tim Ortkamp

@@ -1,4 +1,4 @@
-"""Custom number rounding."""
+"""Custom rounding."""
 
 # Author: Tim Ortkamp
 
@@ -20,14 +20,14 @@ def custom_round(number):
         The rounded number.
     """
 
-    # Convert the number into string and trim after the first decimal place
+    # Convert the number into a string and trim after the first decimal place
     number = str(float(number))[:str(float(number)).index('.') + 2]
 
     # Check if the last digit is equal or greater than '5'
     if number[-1] >= '5':
 
-        # Return the rounded up number
+        # Return the rounded-up number
         return float(number[:-3] + str(int(number[-3]) + 1))
 
-    # Otherwise, just cut off the last digit
+    # Otherwise, cut off the last digit
     return float(number[:-1])

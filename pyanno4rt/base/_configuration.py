@@ -158,26 +158,32 @@ class Configuration():
         validation_map = {
             'label': (
                 partial(validate_type, options=str),
-                partial(validate_length, reference=1, sign='>=')),
+                partial(validate_length, reference=1, sign='>=')
+                ),
             'modality': (
                 partial(validate_type, options=str),
-                partial(validate_item_in_set, options=('photon', 'proton'))),
+                partial(validate_item_in_set, options=('photon', 'proton'))
+                ),
             'imaging_path': (
                 partial(validate_type, options=str),
                 partial(validate_file, options=('.mat',)),
-                partial(validate_directory, options=('.dcm',), alt=('.mat',))),
+                partial(validate_directory, options=('.dcm',), alt=('.mat',))
+                ),
             'dose_matrix_path': (
                 partial(validate_type, options=str),
-                partial(validate_file, options=('.mat', '.npy', 'npz'))),
+                partial(validate_file, options=('.mat', '.npy', 'npz'))
+                ),
             'dose_resolution': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_length, reference=3, sign='=='),
-                partial(validate_item, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')
+                ),
             'min_log_level': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'debug', 'info', 'warning', 'error', 'critical'))),
+                    'debug', 'info', 'warning', 'error', 'critical'))
+                ),
             'number_of_fractions': (
                 partial(validate_type, options=int),
                 partial(validate_item, reference=1, sign='>='))}

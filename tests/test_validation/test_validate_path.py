@@ -13,28 +13,40 @@ from pyanno4rt.validation import validate_path
 # %% Test definition
 
 
-# Define the supported argument sets
+# Define the valid argument sets
 @mark.parametrize(
-    'label, data',
-    [('label', './tests/extra_files/load_list_from_file/list.json'),
-     ('label', './tests/extra_files/load_list_from_file')],
-    ids=['file path', 'directory path'])
-def test_validate_path_positive(label, data):
-    """Test the 'validate_path' function with supported input."""
+    'label, item',
+    [
+     ('label', './tests/extra_files/load_list_from_file/list.json'),
+     ('label', './tests/extra_files/load_list_from_file')
+     ],
+    ids=[
+        'file path',
+        'directory path'
+        ]
+    )
+def test_validate_path_positive(label, item):
+    """Test the 'validate_path' function with valid input."""
 
     # Assert the run-through of the function
-    assert validate_path(label, data) is None
+    assert validate_path(label, item) is None
 
 
-# Define the unsupported argument sets
+# Define the invalid argument sets
 @mark.parametrize(
-    'label, data',
-    [('label', 'not/a/real/file/path.py'),
-     ('label', 'not/a/real/directory/folder')],
-    ids=['file path', 'directory path'])
-def test_validate_path_negative(label, data):
-    """Test the 'validate_path' function with unsupported input."""
+    'label, item',
+    [
+     ('label', 'not/a/real/file/path.py'),
+     ('label', 'not/a/real/directory/folder')
+     ],
+    ids=[
+        'file path',
+        'directory path'
+        ]
+    )
+def test_validate_path_negative(label, item):
+    """Test the 'validate_path' function with invalid input."""
 
     # Assert the raise of an exception
     with raises(IOError):
-        validate_path(label, data)
+        validate_path(label, item)

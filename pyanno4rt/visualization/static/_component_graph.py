@@ -10,8 +10,7 @@ from numpy import ceil, floor, linspace
 
 # %% Internal package import
 
-from pyanno4rt.tools import (
-    filter_dict, flatten, get_all_constraints, get_all_objectives)
+from pyanno4rt.tools import filter_dict, flatten
 
 # %% Class definition
 
@@ -137,20 +136,15 @@ class ComponentGraph():
         # Set the value for the track identifiers
         identifiers = [] if identifiers is None else identifiers
 
-        # Get the segmentation and optimization data
-        segmentation, optimization = (
-            getattr(treatment_plan.datahub, attribute) for attribute in (
-                'segmentation', 'optimization'))
+        # Get the segmentation and tracking data
+        problem = treatment_plan.fluence_optimizer.problem
 
         # Get all optimization components
-        components = (
-            get_all_objectives(segmentation)
-            + get_all_constraints(segmentation))
+        components = problem.constraints + problem.objectives
 
         # Get the tracks to be displayed
         tracker = {
-            component.track_id: (
-                optimization['problem'].tracker[component.track_id])
+            component.track_id: problem.tracker[component.track_id]
             for component in components if component.display}
 
         # Get the track statistics

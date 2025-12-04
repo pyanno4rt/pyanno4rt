@@ -65,7 +65,7 @@ class SciPySolver():
         get_logger().info(
             "Initializing SciPy solver with %s algorithm ...", algorithm)
 
-        # Get the input arguments
+        # Get the input attributes
         self.algorithm = algorithm
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
@@ -115,8 +115,8 @@ class SciPySolver():
         Parameters
         ----------
         problem : object of class \
-            :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
-            :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+            :class:`~pyanno4rt.optimization.problems.lexicographic._lexicographic_problem.LexicographicProblem`\
+            :class:`~pyanno4rt.optimization.problems.weighted._weighted_sum_problem.WeightedSumProblem`
             The object used to represent the optimization problem.
         """
 

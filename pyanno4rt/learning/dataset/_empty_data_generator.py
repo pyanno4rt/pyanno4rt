@@ -12,7 +12,6 @@ from json import load as jload
 from pyanno4rt.datahub import Datahub
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.logging import get_logger
-from pyanno4rt.tools import identity
 
 # %% Class definition
 
@@ -184,7 +183,7 @@ class EmptyDataGenerator():
                     'differentiation': None}}
 
         # Create a boolean mapping to the internal functions
-        methods = {True: identity, False: partial}
+        methods = {True: (lambda x: x), False: partial}
 
         return {
             label: data

@@ -24,8 +24,8 @@ class EquivalentUniformDose(ConventionalComponent):
 
     Parameters
     ----------
-    segment : str
-        Name of the segment associated with the component.
+    segment : str or list
+        Segment(s) associated with the component.
 
     target_eud : int or float
         Target value for the EUD.
@@ -50,14 +50,8 @@ class EquivalentUniformDose(ConventionalComponent):
     bounds : None or list, default=None
         Constraint bounds for the component.
 
-    link : None or list, default=None
-        Other segments used for joint evaluation.
-
     identifier : None or str, default=None
         Additional string for naming the component.
-
-    display : bool, default=True
-        Indicator for the display of the component.
 
     Attributes
     ----------
@@ -75,9 +69,7 @@ class EquivalentUniformDose(ConventionalComponent):
             weight=1.0,
             rank=1,
             bounds=None,
-            link=None,
-            identifier=None,
-            display=True):
+            identifier=None):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(
@@ -91,11 +83,9 @@ class EquivalentUniformDose(ConventionalComponent):
             weight=weight,
             rank=rank,
             bounds=bounds,
-            link=link,
-            identifier=identifier,
-            display=display)
+            identifier=identifier)
 
-        # Set the input arguments
+        # Get the input arguments
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
 
@@ -127,8 +117,7 @@ class EquivalentUniformDose(ConventionalComponent):
 
     def compute_value(
             self,
-            dose,
-            *args):
+            dose):
         """
         Return the function value from the jitted 'compute' function.
 
@@ -136,9 +125,6 @@ class EquivalentUniformDose(ConventionalComponent):
         ----------
         dose : tuple
             Tuple with the dose arrays.
-
-        *args : tuple
-            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -150,8 +136,7 @@ class EquivalentUniformDose(ConventionalComponent):
 
     def compute_gradient(
             self,
-            dose,
-            *args):
+            dose):
         """
         Return the gradient vector from the jitted 'differentiate' function.
 
@@ -159,9 +144,6 @@ class EquivalentUniformDose(ConventionalComponent):
         ----------
         dose : tuple
             Tuple with the dose arrays.
-
-        *args : tuple
-            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------

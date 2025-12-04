@@ -17,7 +17,6 @@ from scipy.sparse import hstack as shstack
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.learning.features import FeatureCalculator
 from pyanno4rt.logging import get_logger
 
@@ -34,7 +33,7 @@ class DataMedoidInitializer():
     Parameters
     ----------
     initial_fluence_vector: None or list
-        User-defined initial fluence vector.
+        User-defined initial fluence vector for the optimization problem.
 
     Attributes
     ----------
@@ -47,14 +46,21 @@ class DataMedoidInitializer():
             initial_fluence_vector=None):
 
         # Log a message about the initialization of the class
-        get_logger().info("Initializing data medoid initializer ...")
+        get_logger().info("Initializing data medoid strategy ...")
 
-        # Get the initial fluence from the argument
+        # Get the initial fluence
         self.initial_fluence_vector = initial_fluence_vector
 
-    def run(self):
+    def run(
+            self,
+            handlers):
         """
-        Initialize the fluence vector with respect to data medoid points.
+        Initialize the fluence vector with respect to target coverage.
+
+        Parameters
+        ----------
+        handlers : dict
+            Dictionary with the handlers (patient, plan, dose, data models).
 
         Returns
         -------
@@ -62,8 +68,14 @@ class DataMedoidInitializer():
             Initial fluence vector.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
+        # Check if an initial fluence vector has been provided
+        if self.initial_fluence_vector is not None:
+
+            # Log a message about returning the user-defined vector
+            get_logger().info(
+                "Falling back to user-defined initial fluence vector ...")
+
+            return array(self.initial_fluence_vector)
 
         # Log a message about the initialization
         get_logger().info(
@@ -71,8 +83,8 @@ class DataMedoidInitializer():
             "...")
 
         # Get the datasets and feature maps from the datahub
-        datasets = hub.datasets
-        feature_maps = hub.feature_maps
+        datasets = handlers['data_model_handler'].datasets
+        feature_maps = handlers['data_model_handler'].feature_maps
 
         # Check if no datasets have been provided
         if datasets is None:
@@ -82,10 +94,10 @@ class DataMedoidInitializer():
                 "No datasets have been provided - falling back to target "
                 "coverage initialization strategy ...")
 
-            # Import the initializer classes
+            # Import the initializers dynamically
             from pyanno4rt.optimization._maps import INITIALIZERS
 
-            return INITIALIZERS['target-coverage']().run()
+            return INITIALIZERS['target-coverage']().run(handlers)
 
         def get_standardized_features(key):
             """Get the standardized dose features."""
@@ -181,14 +193,14 @@ class DataMedoidInitializer():
             """Optimize the fluence vector with respect to the data medoids."""
 
             # Get the degrees of freedom from the datahub
-            degrees_of_freedom = hub.dose_information['degrees_of_freedom']
+            degrees_of_freedom = handlers['dose_handler'].degrees_of_freedom
 
             def precompute(fluence, factor):
                 """Precompute the features and the segment doses/names."""
 
                 # Get the dose vector from the fluence
                 dose = (
-                    hub.dose_information['dose_influence_matrix']
+                    handlers['dose_handler'].dose_influence_matrix
                     @ (fluence*factor))
 
                 # Get the segments across the feature maps
@@ -198,8 +210,9 @@ class DataMedoidInitializer():
 
                 # Get the dose vectors for the segments
                 doses = tuple(
-                    (dose[hub.segmentation[subsegment]['resized_indices']]
-                     for subsegment in segment) for segment in segments)
+                    (dose[handlers['patient_handler'].segmentation[subsegment][
+                        'resized_indices']] for subsegment in segment)
+                    for segment in segments)
 
                 # Calculate the dosiomic feature values
                 features = concatenate(
@@ -231,7 +244,7 @@ class DataMedoidInitializer():
                 return ((
                     2*(divide(features-means, deviations)-reference)
                     * (1/deviations)*feature_gradient.T)
-                    @ hub.dose_information['dose_influence_matrix'])
+                    @ handlers['dose_handler'].dose_influence_matrix)
 
             # Concatenate the data medoids, mean values and standard deviations
             reference = concatenate(list(medoids))

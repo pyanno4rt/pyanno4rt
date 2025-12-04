@@ -63,7 +63,7 @@ class IpyoptSolver():
         get_logger().info(
             "Initializing Ipyopt solver with %s algorithm ...", algorithm)
 
-        # Get the input arguments
+        # Get the input attributes
         self.algorithm = algorithm
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
@@ -114,8 +114,8 @@ class IpyoptSolver():
         Parameters
         ----------
         problem : object of class \
-            :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
-            :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+            :class:`~pyanno4rt.optimization.problems.lexicographic._lexicographic_problem.LexicographicProblem`\
+            :class:`~pyanno4rt.optimization.problems.weighted._weighted_sum_problem.WeightedSumProblem`
             The object used to represent the optimization problem.
         """
 
@@ -126,7 +126,7 @@ class IpyoptSolver():
             return out
 
         def gradient(fluence, out):
-            """Get the gradient of the objective."""
+            """Get the objective gradient."""
 
             out[()] = problem.gradient(fluence)
             return out
@@ -138,7 +138,7 @@ class IpyoptSolver():
             return out
 
         def jacobian(fluence, out):
-            """Get the jacobian of the constraints."""
+            """Get the constraint Jacobian."""
 
             out[()] = problem.jacobian(fluence).flatten()
             return out

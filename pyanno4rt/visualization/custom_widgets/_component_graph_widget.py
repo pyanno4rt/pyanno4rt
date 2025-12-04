@@ -170,33 +170,18 @@ class ComponentGraphWidget(QWidget):
                         color=pen.color(), style=pen.style(), width=4))
 
                     # Get the optimization data
-                    optimization = self.parent.plan.datahub.optimization
+                    fluence_optimizer = self.parent.plan.fluence_optimizer
 
-                    # Check if the 'lexicographic' method is used
-                    if self.parent.plan.optimization.method == 'lexicographic':
-
-                        # Get the objectives and constraints as lists
-                        objectives = list(optimization[
-                            'problem'].objectives.values())
-                        constraints = list(optimization[
-                            'problem'].constraints.values())
-
-                        # Get the optimization components as a dictionary
-                        components = (
-                            {key: value
-                             for dictionary in objectives + constraints
-                             for key, value in dictionary.items()})
-
-                    else:
-
-                        # Get the optimization components
-                        components = (
-                            optimization['problem'].objectives
-                            | optimization['problem'].constraints)
+                    # Get the optimization components
+                    components = {
+                        component.track_id: component
+                        for component in
+                        fluence_optimizer.problem.objectives
+                        + fluence_optimizer.problem.constraints}
 
                     # Get the selected instance attribute
                     component_type, embedding, weight, rank, bounds = (getattr(
-                        components[item.name()]['instance'], attribute)
+                        components[item.name()], attribute)
                         for attribute in (
                             'component_type', 'embedding', 'weight', 'rank',
                             'bounds'))

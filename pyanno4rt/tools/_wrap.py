@@ -29,7 +29,7 @@ def wrap(value, dtype='tuple'):
     try:
 
         # Return the wrapped object
-        return types[dtype](value)
+        return types[dtype]([value] if isinstance(value, str) else value)
 
     except TypeError:
 

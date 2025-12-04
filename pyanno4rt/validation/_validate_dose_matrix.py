@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from numpy import prod
+from numpy import isnan, prod
 
 # %% Function definition
 
@@ -48,3 +48,10 @@ def validate_dose_matrix(dose_shape, dose_matrix):
         raise ValueError(
             "The dose-influence matrix should only have non-negative entries, "
             "but its minimum is below zero!")
+
+    # Check if the dose-influence matrix contains NaNs
+    if isnan(dose_matrix.data).any():
+
+        # Raise an error
+        raise ValueError(
+            "The dose-influence matrix should not contain NaNs!")

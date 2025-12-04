@@ -8,7 +8,6 @@ from math import inf
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import (
     get_machine_learning_constraints, get_machine_learning_objectives)
@@ -22,7 +21,8 @@ class ParetoProblem():
 
     This class provides methods to build a Pareto optimization problem, \
     including the definition of objectives, constraints, bounds, initial \
-    fluence, and methods to calculate important quantities.
+    fluence, and methods to calculate important quantities. It also features \
+    a tracking dictionary with the component-wise evaluations.
 
     Parameters
     ----------
@@ -31,11 +31,11 @@ class ParetoProblem():
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
         The object representing the type of backprojection.
 
-    objectives : dict
-        Dictionary with the internally configured objectives.
+    objectives : list
+        Internally configured plan objectives.
 
-    constraints : dict
-        Dictionary with the internally configured constraints.
+    constraints : list
+        Internally configured plan constraints.
 
     lower_variable_bounds : None, int, float, or list
         Lower bound(s) on the decision variables.
@@ -53,10 +53,10 @@ class ParetoProblem():
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
         See 'Parameters'.
 
-    objectives : dict
+    objectives : list
         See 'Parameters'.
 
-    constraints : dict
+    constraints : list
         See 'Parameters'.
 
     initial_fluence : ndarray
@@ -67,6 +67,9 @@ class ParetoProblem():
 
     constraint_bounds : tuple
         Lower and upper bounds on the constraints.
+
+    tracker : dict
+        Dictionary with the iteration-wise plan component values.
     """
 
     # Set the problem name
@@ -84,8 +87,10 @@ class ParetoProblem():
         # Log a message about the initialization of the class
         get_logger().info("Building Pareto optimization problem ...")
 
-        # Get the instance attributes from the arguments
+        # Get the backprojection
         self.backprojection = backprojection
+
+        # Get the components
         self.objectives = objectives
         self.constraints = constraints
 
@@ -101,7 +106,25 @@ class ParetoProblem():
 
         # Initialize the tracker dictionary
         self.tracker = {
-            label: [] for label in tuple(objectives) + tuple(constraints)}
+            label: [] for label in
+            tuple(objective.track_id for objective in objectives)
+            + tuple(constraint.track_id for constraint in constraints)}
+
+        # Loop over the objectives
+        for objective in objectives:
+
+            # Log a message about the objective
+            get_logger().info(
+                "Using objective '%s' for %s ...",
+                objective.name, objective.segment)
+
+        # Loop over the constraints
+        for constraint in constraints:
+
+            # Log a message about the constraint
+            get_logger().info(
+                "Using constraint '%s' for %s ...",
+                constraint.name, constraint.segment)
 
     def get_variable_bounds(
             self,
@@ -165,8 +188,7 @@ class ParetoProblem():
 
         # Else, return the unranked, transformed bounds
         return tuple(zip(*(
-            constraint['instance'].bounds
-            for constraint in self.constraints.values())))
+            constraint.bounds for constraint in self.constraints)))
 
     def objective(
             self,
@@ -189,47 +211,34 @@ class ParetoProblem():
             Objective function values.
         """
 
-        # Get the segmentation data from the datahub
-        segmentation = Datahub().segmentation
-
         # Loop over the machine learning objectives
-        for objective in get_machine_learning_objectives(segmentation):
+        for objective in get_machine_learning_objectives(self.objectives):
 
             # Increment the feature calculator iteration
-            (objective.data_model_handler.
-             feature_calculator.__iteration__[1]) += 1
+            objective.feature_calculator.__iteration__[1] += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_objective(label, objective):
+        def compute_single_objective(objective):
             """Compute the value of a single objective function."""
 
-            # Get the associated segments and the instance
-            segments = objective['segments']
-            instance = objective['instance']
-
-            # Get the segment indices
-            indices = (
-                segmentation[segment]['resized_indices']
-                for segment in segments)
-
             # Compute the weighted objective function value
-            value = instance.weight * instance.compute_value(
-                tuple(dose[index] for index in indices), segments)
+            value = objective.weight * objective.compute_value(
+                tuple(dose[indices] for indices in objective.indices))
 
             # Check if the objective value should be tracked
             if track:
 
                 # Enter the value into the tracking dictionary
-                self.tracker[label] += (value/instance.weight,)
+                self.tracker[objective.track_id] += (value/objective.weight,)
 
             # Return the objective function value depending on the embedding
-            return value * (instance.embedding == 'active')
+            return value * (objective.embedding == 'active')
 
         return [
-            compute_single_objective(label, objective)
-            for label, objective in self.objectives.items()]
+            compute_single_objective(objective)
+            for objective in self.objectives]
 
     def constraint(
             self,
@@ -252,44 +261,31 @@ class ParetoProblem():
             Constraint function values.
         """
 
-        # Get the segmentation data from the datahub
-        segmentation = Datahub().segmentation
-
         # Loop over the machine learning constraints
-        for constraint in get_machine_learning_constraints(segmentation):
+        for constraint in get_machine_learning_constraints(self.constraints):
 
             # Increment the feature calculator iteration
-            (constraint.data_model_handler.
-             feature_calculator.__iteration__[1]) += 1
+            constraint.feature_calculator.__iteration__[1] += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_constraint(label, constraint):
+        def compute_single_constraint(constraint):
             """Compute the value of a single constraint function."""
 
-            # Get the associated segments and the instance
-            segments = constraint['segments']
-            instance = constraint['instance']
-
-            # Get the segment indices
-            indices = (
-                segmentation[segment]['resized_indices']
-                for segment in segments)
-
             # Compute the constraint function value
-            value = instance.compute_value(
-                tuple(dose[index] for index in indices), segments)
+            value = constraint.compute_value(
+                tuple(dose[indices] for indices in constraint.indices))
 
             # Check if the constraint value should be tracked
             if track:
 
                 # Enter the value into the tracking dictionary
-                self.tracker[label] += (value,)
+                self.tracker[constraint.track_id] += (value,)
 
             # Return the value of the constraint function
             return value
 
         return [
-            compute_single_constraint(label, constraint)
-            for label, constraint in self.constraints.items()]
+            compute_single_constraint(constraint)
+            for constraint in self.constraints]

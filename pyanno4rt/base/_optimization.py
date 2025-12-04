@@ -65,15 +65,12 @@ class Optimization():
         - \
             :class:`~pyanno4rt.optimization.components._support_vector_machine_outcome.SupportVectorMachineOutcome`
 
-        .. note:: To prevent overwriting processes, multiple components for \
-            one segment and type should be set using the identifier argument!
-
     method : {'lexicographic', 'pareto', 'weighted-sum'}, \
         default='weighted-sum'
         Single- or multi-criteria optimization method, see the classes \
-        :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
-        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
-        :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`.
+        :class:`~pyanno4rt.optimization.problems.lexicographic._lexicographic_problem.LexicographicProblem`\
+        :class:`~pyanno4rt.optimization.problems.pareto._pareto_problem.ParetoProblem`\
+        :class:`~pyanno4rt.optimization.problems.weighted._weighted_sum_problem.WeightedSumProblem`.
 
         - 'lexicographic' : sequential optimization based on a preference order
         - 'pareto' : parallel optimization based on the criterion of pareto \
@@ -307,7 +304,8 @@ class Optimization():
                 ),
             'method': (
                 partial(validate_type, options=str),
-                partial(validate_item_in_set, options=tuple(maps.PROBLEMS))),
+                partial(validate_item_in_set, options=tuple(maps.PROBLEMS))
+                ),
             'solver': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options={
@@ -315,7 +313,8 @@ class Optimization():
                     'pareto': ('pymoo',),
                     'weighted-sum': (
                         'ipyopt', 'pyanno4rt', 'pypop7', 'scipy')},
-                    condition=conditions['method'])),
+                    condition=conditions['method'])
+                ),
             'algorithm': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options={
@@ -328,27 +327,33 @@ class Optimization():
                     'weighted-sum/scipy': ('L-BFGS-B', 'TNC', 'trust-constr')},
                     condition=(
                         f"{conditions['method']}/"
-                        f"{conditions['solver']}"))),
+                        f"{conditions['solver']}"))
+                ),
             'initial_strategy': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'data-medoid', 'target-coverage', 'warm-start'))),
+                    'data-medoid', 'target-coverage', 'warm-start'))
+                ),
             'initial_fluence': (
                 partial(validate_type, options={
-                    'data-medoid': type(None),
-                    'target-coverage': type(None),
+                    'data-medoid': (type(None), list),
+                    'target-coverage': (type(None), list),
                     'warm-start': list},
                     condition=conditions['initial_strategy']),
-                partial(validate_item, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')
+                ),
             'lower_variable_bounds': (
                 partial(validate_type, options=(type(None), int, float, list)),
-                partial(validate_item, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')
+                ),
             'upper_variable_bounds': (
                 partial(validate_type, options=(type(None), int, float, list)),
-                partial(validate_item, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')
+                ),
             'maximum_iterations': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')
+                ),
             'tolerance': (
                 partial(validate_type, options=(int, float)),
                 partial(validate_item, reference=0, sign='>'))}

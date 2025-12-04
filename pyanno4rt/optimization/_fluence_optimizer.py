@@ -15,9 +15,8 @@ from scipy.ndimage import zoom
 from pyanno4rt.logging import get_logger
 import pyanno4rt.optimization._maps as maps
 from pyanno4rt.tools import (
-   get_constraint_segments, get_machine_learning_constraints,
-   get_machine_learning_objectives, get_radiobiological_constraints,
-   get_radiobiological_objectives, get_objective_segments)
+   get_constraints, get_machine_learning_components, get_objectives,
+   get_radiobiological_components, get_all_segments)
 
 # %% Class definition
 
@@ -34,7 +33,7 @@ class FluenceOptimizer():
     Parameters
     ----------
     handlers : dict
-        Dictionary with the data handlers (patient, plan, dose).
+        Dictionary with the handlers (patient, plan, dose, data models).
 
     method : {'lexicographic', 'pareto', 'weighted-sum'}
         Single- or multi-criteria optimization method.
@@ -49,8 +48,7 @@ class FluenceOptimizer():
         Initialization strategy for the fluence vector.
 
     initial_fluence : None or list
-        User-defined initial fluence vector for the optimization problem \
-        (only used if initial_strategy='warm-start').
+        User-defined initial fluence vector for the optimization problem.
 
     lower_variable_bounds : None, int, float, or list
         Lower bound(s) on the decision variables.
@@ -70,9 +68,9 @@ class FluenceOptimizer():
         See 'Parameters'.
 
     problem : object of class \
-        :class:`~pyanno4rt.optimization.problems._lexicographic_problem.LexicographicProblem`\
-        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
-        :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+        :class:`~pyanno4rt.optimization.problems.lexicographic._lexicographic_problem.LexicographicProblem`\
+        :class:`~pyanno4rt.optimization.problems.pareto._pareto_problem.ParetoProblem`\
+        :class:`~pyanno4rt.optimization.problems.weighted._weighted_sum_problem.WeightedSumProblem`
         The object used to represent the optimization problem.
 
     solver : object of class \
@@ -128,29 +126,26 @@ class FluenceOptimizer():
         self.handlers = handlers
 
         # Get the objective and constraint functions
-        objectives, constraints = handlers['plan_handler'].split_components()
+        objectives = get_objectives(handlers['plan_handler'].components)
+        constraints = get_constraints(handlers['plan_handler'].components)
 
         # Check if the solver ignores any constraints
         if len(constraints) > 0 and algorithm not in (
                 'mumps', 'NSGA3', 'trust-constr'):
 
-            # Log a message about the ignored constraints
+            # Log a message about ignoring the constraints
             get_logger().warning(
                 "The '%s' algorithm only allows for unconstrained "
                 "optimization problems - constraints set will be ignored ...",
                 algorithm)
 
-            # Reset the internal constraints
-            constraints = []
-
-            # Loop over the segments
-            for data in handlers['patient_handler'].segmentation.values():
-
-                # Reset the segment constraints
-                data['constraint'] = None
+            # Reset the constraints
+            constraints = ()
 
         # Initialize the backprojection
-        backprojection = maps.PROJECTIONS[handlers['plan_handler'].modality]()
+        backprojection = maps.PROJECTIONS[handlers['plan_handler'].modality](
+            handlers['dose_handler'].dose_influence_matrix,
+            handlers['plan_handler'].RBE)
 
         # Calculate the initial fluence
         initializer = maps.INITIALIZERS[initial_strategy](initial_fluence)
@@ -185,16 +180,16 @@ class FluenceOptimizer():
         # Log a message about the problem solving
         get_logger().info("Solving optimization problem ...")
 
-        # Start the solver runtime recording
-        start_time = time()
-
         # Reset the optimization outputs
         self.reset()
 
-        # Check if the fluence can not be loaded from a copycat
-        if self.from_copycat:
+        # Start the solver runtime recording
+        start_time = time()
 
-            # Collect the solution methods
+        # Check if the fluence can not be loaded from a copycat
+        if not self.from_copycat:
+
+            # Map the problem to the solution methods
             methods = {
                 'lexicographic': self._solve_lexicography,
                 'pareto': self._solve_pareto,
@@ -206,21 +201,21 @@ class FluenceOptimizer():
 
         else:
 
-            # Log a message about the loaded fluence
+            # Log a message about the imported fluence
             get_logger().info(
                 "Retrieving solution from the loaded treatment plan ...")
-
-            # Reset the copycat indicator
-            self.from_copycat = False
 
             # Compute the optimized dose
             self.optimized_dose = self.compute_dose_3d(self.optimized_fluence)
 
+            # Reset the copycat indicator
+            self.from_copycat = False
+
         # Get the runtime for problem solving
         self.solver_time = round(time()-start_time, 2)
 
-        # Postprocess the outcome model-based component results
-        self.postprocess()
+        # Log the outcome result
+        self.log_outcome()
 
         # Get the runtime for the fluence optimizer
         self.optimizer_time = round(time()-start_time+self.initial_time, 2)
@@ -229,40 +224,6 @@ class FluenceOptimizer():
         get_logger().info(
             "Fluence optimizer took %s seconds (%s seconds for problem "
             "solving) ...", self.optimizer_time, self.solver_time)
-
-    def reset(self):
-        """Reset the optimization and evaluation outputs."""
-
-        # Get the segmentation from the datahub
-        segmentation = self.handlers['patient_handler'].segmentation
-
-        # Check if a weighted-sum or Pareto problem is solved
-        if self.problem.name in ('pareto', 'weighted-sum'):
-
-            # Reset the problem tracker
-            self.problem.tracker = {key: [] for key in self.problem.tracker}
-
-        # Else, check if lexicographic optimization has been selected
-        elif self.problem.name == 'lexicographic':
-
-            # Loop over the subproblems
-            for subproblem in self.problem.subproblems.values():
-
-                # Reset the subproblem tracker
-                subproblem.tracker = {key: [] for key in subproblem.tracker}
-
-        # Loop over the machine learning model-based components
-        for component in (
-                get_machine_learning_constraints(segmentation)
-                + get_machine_learning_objectives(segmentation)):
-
-            # Get the feature calculator of the component
-            feature_calculator = (
-                component.data_model_handler.feature_calculator)
-
-            # Reset the feature history
-            feature_calculator.feature_history = empty(
-                shape=(1, len(feature_calculator.feature_map)))
 
     def _solve_lexicography(self):
         """
@@ -284,13 +245,13 @@ class FluenceOptimizer():
         fluence = self.problem.subproblems[ranks[0]].initial_fluence
 
         # Loop over the lexicographic ranks
-        for rank, subproblem in self.problem.subproblems.items():
+        for rank, problem in self.problem.subproblems.items():
 
             # Log a message about the lexicographic rank
             get_logger().info("Considering lexicography at rank %s ...", rank)
 
             # Configure the solver
-            self.solver.configure(subproblem)
+            self.solver.configure(problem)
 
             # Solve the optimization problem at the current rank
             fluence, solver_info = self.solver.run(fluence)
@@ -305,15 +266,12 @@ class FluenceOptimizer():
                 # Overwrite the initial fluence
                 next_problem.initial_fluence = fluence
 
-                # Loop over the dynamic constraints
-                for label in subproblem.objectives:
+                # Loop over the dynamic components
+                for objective in problem.objectives:
 
-                    # Get the dynamic constraint threshold
-                    threshold = subproblem.tracker[label][-1]
-
-                    # Update the upper constraint bound
-                    next_problem.constraints[label]['instance'].bounds[1] = (
-                        threshold)
+                    # Adapt the upper bound
+                    objective.bounds[1] = (
+                        problem.tracker[objective.track_id][-1])
 
                 # Update the constraint bounds
                 next_problem.constraint_bounds = (
@@ -383,8 +341,8 @@ class FluenceOptimizer():
             target_indices, oar_indices = (reduce(
                 union1d,
                 (segmentation[segment]['resized_indices']
-                 for segment in (get_constraint_segments(segmentation)
-                                 + get_objective_segments(segmentation))
+                 for segment in get_all_segments(
+                     self.problem.constraints + self.problem.objectives)
                  if segmentation[segment]['type'] == string), -1)
                 for string in ('TARGET', 'OAR'))
 
@@ -506,20 +464,43 @@ class FluenceOptimizer():
 
         return optimized_dose
 
-    def postprocess(self):
-        """Postprocess the outcome model-based component results."""
+    def reset(self):
+        """Reset the optimization and evaluation outputs."""
 
-        # Get the segmentation data
-        segmentation = self.handlers['patient_handler'].segmentation
+        # Reset the problem tracker
+        self.problem.tracker = {key: [] for key in self.problem.tracker}
+
+        # Check if lexicographic optimization has been selected
+        if self.problem.name == 'lexicographic':
+
+            # Loop over the subproblems
+            for subproblem in self.problem.subproblems.values():
+
+                # Reset the subproblem tracker
+                subproblem.tracker = {key: [] for key in subproblem.tracker}
+
+        # Loop over the machine learning model-based components
+        for component in get_machine_learning_components(
+                self.problem.constraints + self.problem.objectives):
+
+            # Get the feature calculator of the component
+            feature_calculator = (
+                component.data_model_handler.feature_calculator)
+
+            # Reset the feature history
+            feature_calculator.feature_history = empty(
+                shape=(1, len(feature_calculator.feature_map)))
+
+    def log_outcome(self):
+        """Log the outcome model-based component results."""
 
         # Check if the optimization problem has a tracker dictionary
         if hasattr(self.problem, 'tracker') and all(value != [] for value
            in self.problem.tracker.values()):
 
             # Loop over the radiobiological outcome model-based components
-            for component in (
-                    get_radiobiological_constraints(segmentation)
-                    + get_radiobiological_objectives(segmentation)):
+            for component in get_radiobiological_components(
+                    self.problem.constraints + self.problem.objectives):
 
                 # Get the final (N)TCP prediction value
                 value = (
@@ -532,9 +513,8 @@ class FluenceOptimizer():
                     component.name, round(100*value, 2))
 
             # Loop over the machine learning outcome model-based components
-            for component in (
-                    get_machine_learning_constraints(segmentation)
-                    + get_machine_learning_objectives(segmentation)):
+            for component in get_machine_learning_components(
+                    self.problem.constraints + self.problem.objectives):
 
                 # Process the feature history
                 component.data_model_handler.process_feature_history()

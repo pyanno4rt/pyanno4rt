@@ -89,8 +89,7 @@ class MatHandler():
             'segment': segment,
             'type': values['type'],
             'indices': values['raw_indices']+1,
-            'parameters': values['parameters'],
-            'components': []}
+            'parameters': values['parameters']}
             for segment, values in cst.items()]).sort_values('index')
 
         # Save the data to a MATLAB file
@@ -154,15 +153,11 @@ class MatHandler():
                 {f'{parameter[0].lower()}{parameter[1:]}': # parameters
                  value for parameter, value in row[4].__dict__.items()
                  if f'{parameter[0].lower()}{parameter[1:]}' in (
-                         'priority', 'alphaX', 'betaX', 'visibleColor')},
-                None, # objective
-                None)) # constraint
+                         'priority', 'alphaX', 'betaX', 'visibleColor')}))
             for row in data if len(row[3]) > 0)
 
         # Set the keys
-        segment_keys = (
-            'index', 'type', 'raw_indices', 'parameters', 'objective',
-            'constraint')
+        segment_keys = ('index', 'type', 'raw_indices', 'parameters')
 
         # Merge the keys and the values
         segmentation = {

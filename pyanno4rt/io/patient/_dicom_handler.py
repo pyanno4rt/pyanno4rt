@@ -367,8 +367,7 @@ class DicomHandler():
             # Add the first-layer backbone
             segmentation[segment] = {
                 key: None for key in (
-                    'index', 'type', 'raw_indices', 'parameters', 'objective',
-                    'constraint')}
+                    'index', 'type', 'raw_indices', 'parameters')}
 
             # Add the second-layer backbone
             segmentation[segment]['parameters'] = {

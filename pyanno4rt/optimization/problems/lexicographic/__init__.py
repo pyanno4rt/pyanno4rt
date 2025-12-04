@@ -1,9 +1,9 @@
 """
-Meta-optimization methods module.
+Lexicographic optimization module.
 
 ==================================================================
 
-This module aims to provide different types of meta-optimization methods.
+This module aims to provide lexicographic optimization problems.
 """
 
 # Author: Tim Ortkamp

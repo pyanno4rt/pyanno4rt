@@ -24,8 +24,8 @@ class SquaredUnderdosing(ConventionalComponent):
 
     Parameters
     ----------
-    segment : str
-        Name of the segment associated with the component.
+    segment : str or list
+        Segment(s) associated with the component.
 
     minimum_dose : int or float
         Minimum value for the dose.
@@ -47,14 +47,8 @@ class SquaredUnderdosing(ConventionalComponent):
     bounds : None or list, default=None
         Constraint bounds for the component.
 
-    link : None or list, default=None
-        Other segments used for joint evaluation.
-
     identifier : None or str, default=None
         Additional string for naming the component.
-
-    display : bool, default=True
-        Indicator for the display of the component.
 
     Attributes
     ----------
@@ -71,9 +65,7 @@ class SquaredUnderdosing(ConventionalComponent):
             weight=1.0,
             rank=1,
             bounds=None,
-            link=None,
-            identifier=None,
-            display=True):
+            identifier=None):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(
@@ -87,11 +79,9 @@ class SquaredUnderdosing(ConventionalComponent):
             weight=weight,
             rank=rank,
             bounds=bounds,
-            link=link,
-            identifier=identifier,
-            display=display)
+            identifier=identifier)
 
-        # Set the input arguments
+        # Get the input arguments
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
 
@@ -123,8 +113,7 @@ class SquaredUnderdosing(ConventionalComponent):
 
     def compute_value(
             self,
-            dose,
-            *args):
+            dose):
         """
         Return the function value from the jitted 'compute' function.
 
@@ -132,9 +121,6 @@ class SquaredUnderdosing(ConventionalComponent):
         ----------
         dose : tuple
             Tuple with the dose arrays.
-
-        *args : tuple
-            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -146,8 +132,7 @@ class SquaredUnderdosing(ConventionalComponent):
 
     def compute_gradient(
             self,
-            dose,
-            *args):
+            dose):
         """
         Return the gradient vector from the jitted 'differentiate' function.
 
@@ -155,9 +140,6 @@ class SquaredUnderdosing(ConventionalComponent):
         ----------
         dose : tuple
             Tuple with the dose arrays.
-
-        *args : tuple
-            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------

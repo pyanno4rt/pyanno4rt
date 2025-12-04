@@ -14,14 +14,14 @@ from pyanno4rt.validation import validate_subtype
 
 
 def test_validate_subtype_positive():
-    """Test the 'validate_subtype' function with supported input."""
+    """Test the 'validate_subtype' function with valid input."""
 
     # Assert the run-through of the function
     assert validate_subtype('label', ('A', 'B'), str) is None
 
 
 def test_validate_subtype_negative():
-    """Test the 'validate_subtype' function with unsupported input."""
+    """Test the 'validate_subtype' function with invalid input."""
 
     # Assert the raise of an exception
     with raises(TypeError):

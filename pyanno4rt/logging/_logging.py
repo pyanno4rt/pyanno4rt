@@ -54,18 +54,18 @@ class Logging():
             label=f'pyanno4rt - {label}', min_log_level=min_log_level)
 
         # Log a message about the software versions used
-        self.logger.info(
+        self.info(
             'Running pyanno4rt "Amadeus" v%s with Python %s ...',
             version("pyanno4rt"), python_version())
 
         # Log a message about the warranty clause
-        self.logger.warning(
+        self.warning(
             'pyanno4rt is an open-source package and NOT a medical product. '
             'It is provided "as-is", without warranty of any kind, and '
             'intended for research and education only ...')
 
         # Log a message about the initialization of the class
-        self.logger.info("Initializing logger ...")
+        self.info("Initializing logger ...")
 
     def initialize(
             self,

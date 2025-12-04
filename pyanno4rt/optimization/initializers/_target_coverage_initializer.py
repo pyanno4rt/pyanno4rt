@@ -4,13 +4,12 @@
 
 # %% External package import
 
-from numpy import hstack, ones
+from numpy import array, hstack, ones
 
 # %% Internal package import
 
 from pyanno4rt.logging import get_logger
-from pyanno4rt.tools import (
-    flatten, get_constraint_segments, get_objective_segments)
+from pyanno4rt.tools import flatten, get_all_segments
 
 # %% Class definition
 
@@ -25,7 +24,7 @@ class TargetCoverageInitializer():
     Parameters
     ----------
     initial_fluence_vector: None or list
-        User-defined initial fluence vector.
+        User-defined initial fluence vector for the optimization problem.
 
     Attributes
     ----------
@@ -38,20 +37,21 @@ class TargetCoverageInitializer():
             initial_fluence_vector=None):
 
         # Log a message about the initialization of the class
-        get_logger().info("Initializing target coverage initializer ...")
+        get_logger().info("Initializing target coverage strategy ...")
 
-        # Get the initial fluence from the argument
+        # Get the initial fluence
         self.initial_fluence_vector = initial_fluence_vector
 
     def run(
             self,
-            segmentation,
-            rbe,
-            number_of_fractions,
-            dose_influence_matrix,
-            degrees_of_freedom):
+            handlers):
         """
         Initialize the fluence vector with respect to target coverage.
+
+        Parameters
+        ----------
+        handlers : dict
+            Dictionary with the handlers (patient, plan, dose, data models).
 
         Returns
         -------
@@ -59,62 +59,74 @@ class TargetCoverageInitializer():
             Initial fluence vector.
         """
 
-        # Log a message about the initialization
+        def get_dose_parameters(component):
+            """Get the dose parameters from a component."""
+
+            return tuple(
+                component.parameter_value[index]
+                for index, category in enumerate(component.parameter_category)
+                if category == 'dose')
+
+        # Check if an initial fluence vector has been provided
+        if self.initial_fluence_vector is not None:
+
+            # Log a message about returning the user-defined vector
+            get_logger().warning(
+                "User has provided an initial fluence vector - falling back "
+                "to warm-start strategy ...")
+
+            return array(self.initial_fluence_vector)
+
+        # Log a message about the run
         get_logger().info(
             "Initializing fluence vector with respect to target coverage ...")
 
-        def get_dose_parameters(target):
-            """Get the dose-related component parameters from a target."""
+        # Get the segmentation data
+        segmentation = handlers['patient_handler'].segmentation
 
-            # Get the components from the target
-            target_component = filter(None, flatten(
-                segmentation[target][key]
-                for key in ('constraint', 'objective')))
+        # Get the target segments
+        target_segments = [
+            segment for segment in get_all_segments(
+                handlers['plan_handler'].components)
+            if segmentation[segment]['type'] == 'TARGET']
 
-            # Return the dose parameters from all components
-            return (tuple(
-                component.parameter_value[index]
-                for index, category in enumerate(component.parameter_category)
-                if category == 'dose') for component in target_component)
+        # Get the target components
+        target_components = [
+            component for component in handlers['plan_handler'].components
+            if not set(component.segment).isdisjoint(target_segments)]
 
-        # Get the component-assigned target segments
-        targets = set(
-            segment for segment in (
-                get_constraint_segments(segmentation)
-                + get_objective_segments(segmentation))
-            if segmentation[segment]['type'] == 'TARGET')
+        # Check if any target components are present
+        if len(target_components) > 0:
 
-        # Check if any component-assigned target segments are present
-        if len(targets) > 0:
-
-            # Get the resized indices of the target segments
+            # Get the joint target indices
             indices = hstack([
-                segmentation[target]['resized_indices'] for target in targets])
+                segmentation[segment]['resized_indices']
+                for segment in target_segments])
 
-            # Get the target dose parameters
-            target_doses = tuple(flatten(map(get_dose_parameters, targets)))
-
-            # Get the maximum target dose parameter
-            max_dose = max(target_doses)
+            # Get the maximum prescription dose
+            max_dose = max(flatten(map(
+                get_dose_parameters, target_components)))
 
         else:
 
             # Log a message about non-defined target components
-            get_logger().info(
+            get_logger().warning(
                 "No target objectives defined - falling back to virtual "
                 "target with total dose prescription of 60 Gy ...")
 
-            # Get the resized indices of all target segments
+            # Get the indices of all target segments
             indices = hstack([
                 segmentation[segment]['resized_indices']
                 for segment in segmentation
                 if segmentation[segment]['type'] == 'TARGET'])
 
-            # Set the maximum target dose parameter for a total dose of 60 Gy
-            max_dose = 60/number_of_fractions
+            # Set the maximum prescription dose to 60 Gy
+            max_dose = 60/handlers['dose_handler'].number_of_fractions
 
-        # Initialize a vector of ones
-        ones_vector = ones((degrees_of_freedom,))
+        # Initialize the unit fluence vector
+        unit_fluence = ones((handlers['dose_handler'].degrees_of_freedom,))
 
-        return ones_vector * max_dose/(
-            rbe * dose_influence_matrix[indices, :] @ ones_vector).mean()
+        return unit_fluence * max_dose/(
+            handlers['plan_handler'].RBE
+            * handlers['dose_handler'].dose_influence_matrix[indices, :]
+            @ unit_fluence).mean()

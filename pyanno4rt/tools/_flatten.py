@@ -9,25 +9,25 @@ from collections.abc import Iterable
 # %% Function definition
 
 
-def flatten(elements):
+def flatten(iterable):
     """
-    Convert a nested iterable to a flat one.
+    Flatten a nested iterable.
 
     Parameters
     ----------
-    elements : iterable
+    iterable : iterable
         (Nested) iterable to be flattened.
 
     Returns
     -------
     generator
-        Generator object with the flattened iterable values.
+        Flattened iterable with all atomic elements.
     """
 
     # Loop over the elements of the iterable
-    for element in elements:
+    for element in iterable:
 
-        # Check if the element is an iterable again
+        # Check if the element is an iterable
         if (isinstance(element, Iterable)
                 and not isinstance(element, (str, bytes))):
 

@@ -13,8 +13,7 @@ from numpy import save
 
 # %% Internal package import
 
-from pyanno4rt.tools import (
-    apply, get_machine_learning_constraints, get_machine_learning_objectives)
+from pyanno4rt.tools import apply
 
 # %% Function definition
 
@@ -135,16 +134,13 @@ def snapshot(
         # Print the stream value to the file
         print(stream_value, file=file)
 
-    # Get the segmentation data
-    segmentation = instance.patient_handler.segmentation
-
     # Get the machine learning model data
     ml_model_data = tuple((
         component.model.model_label, component.model,
         component.model_parameters.data_path)
         for component in (
-            get_machine_learning_objectives(segmentation)
-            + get_machine_learning_constraints(segmentation)))
+            instance.plan_handler.get_components('objective', 'ml', False)
+            + instance.plan_handler.get_components('constraint', 'ml', False)))
 
     # Export the machine learning model files
     apply(export_model_files, ml_model_data)

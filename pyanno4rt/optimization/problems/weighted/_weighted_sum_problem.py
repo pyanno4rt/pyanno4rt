@@ -9,7 +9,6 @@ from numpy import array, concatenate, vstack, zeros
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import (
     apply, get_machine_learning_constraints, get_machine_learning_objectives)
@@ -33,18 +32,18 @@ class WeightedSumProblem():
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
         The object representing the type of backprojection.
 
-    objectives : dict
-        Dictionary with the internally configured objectives.
+    objectives : list
+        Internally configured plan objectives.
 
-    constraints : dict
-        Dictionary with the internally configured constraints.
+    constraints : list
+        Internally configured plan constraints.
 
     lower_variable_bounds : None, int, float, or list
         Lower bound(s) on the decision variables.
 
     upper_variable_bounds : None, int, float, or list
         Upper bound(s) on the decision variables.
-Initializing
+
     initial_fluence : ndarray
         Initial fluence vector.
 
@@ -55,10 +54,10 @@ Initializing
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
         See 'Parameters'.
 
-    objectives : dict
+    objectives : list
         See 'Parameters'.
 
-    constraints : dict
+    constraints : list
         See 'Parameters'.
 
     initial_fluence : ndarray
@@ -69,9 +68,6 @@ Initializing
 
     constraint_bounds : tuple
         Lower and upper bounds on the constraints.
-
-    number_of_voxels : int
-        Number of dose voxels.
 
     tracker : dict
         Dictionary with the iteration-wise plan component values.
@@ -92,8 +88,10 @@ Initializing
         # Log a message about the initialization of the class
         get_logger().info("Building weighted-sum optimization problem ...")
 
-        # Get the instance attributes from the arguments
+        # Get the backprojection
         self.backprojection = backprojection
+
+        # Get the components
         self.objectives = objectives
         self.constraints = constraints
 
@@ -107,12 +105,27 @@ Initializing
         # Get the constraint bounds
         self.constraint_bounds = self.get_constraint_bounds()
 
-        # Get the number of dose voxels
-        self.number_of_voxels = Datahub().dose_information['number_of_voxels']
-
         # Initialize the tracker dictionary
         self.tracker = {
-            label: [] for label in tuple(objectives) + tuple(constraints)}
+            label: [] for label in
+            tuple(objective.track_id for objective in objectives)
+            + tuple(constraint.track_id for constraint in constraints)}
+
+        # Loop over the objectives
+        for objective in objectives:
+
+            # Log a message about the objective
+            get_logger().info(
+                "Using objective '%s' for %s ...",
+                objective.name, objective.segment)
+
+        # Loop over the constraints
+        for constraint in constraints:
+
+            # Log a message about the constraint
+            get_logger().info(
+                "Using constraint '%s' for %s ...",
+                constraint.name, constraint.segment)
 
     def get_variable_bounds(
             self,
@@ -176,15 +189,14 @@ Initializing
 
         # Else, return the unranked, transformed bounds
         return tuple(zip(*(
-            constraint['instance'].bounds
-            for constraint in self.constraints.values())))
+            constraint.bounds for constraint in self.constraints)))
 
     def objective(
             self,
             fluence,
             track=True):
         """
-        Compute the weighted-sum objective function value.
+        Compute the objective function value.
 
         Parameters
         ----------
@@ -197,50 +209,37 @@ Initializing
         Returns
         -------
         float
-            Weighted-sum objective function value.
+            Objective function value.
         """
 
-        # Get the segmentation data from the datahub
-        segmentation = Datahub().segmentation
-
         # Loop over the machine learning objectives
-        for objective in get_machine_learning_objectives(segmentation):
+        for objective in get_machine_learning_objectives(self.objectives):
 
             # Increment the feature calculator iteration
-            (objective.data_model_handler.
-             feature_calculator.__iteration__[1]) += 1
+            objective.feature_calculator.__iteration__[1] += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_objective(label, objective):
+        def compute_single_objective(objective):
             """Compute the value of a single objective function."""
 
-            # Get the associated segments and the instance
-            segments = objective['segments']
-            instance = objective['instance']
-
-            # Get the segment indices
-            indices = (
-                segmentation[segment]['resized_indices']
-                for segment in segments)
-
             # Compute the weighted objective function value
-            value = instance.weight * instance.compute_value(
-                tuple(dose[index] for index in indices), segments)
+            value = objective.weight * objective.compute_value(
+                tuple(dose[indices] for indices in objective.indices))
 
             # Check if the objective value should be tracked
             if track:
 
                 # Enter the value into the tracking dictionary
-                self.tracker[label] += (value/instance.weight,)
+                self.tracker[objective.track_id] += (value/objective.weight,)
 
             # Return the objective function value depending on the embedding
-            return value * (instance.embedding == 'active')
+            return value * (objective.embedding == 'active')
 
         return sum(
-            compute_single_objective(label, objective)
-            for label, objective in self.objectives.items())
+            compute_single_objective(objective)
+            for objective in self.objectives)
 
     def gradient(
             self,
@@ -259,37 +258,25 @@ Initializing
             Fluence gradient vector.
         """
 
-        # Get the segmentation data from the datahub
-        segmentation = Datahub().segmentation
-
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
         # Initialize the dose gradient vector
-        dose_gradient = zeros((self.number_of_voxels,))
+        dose_gradient = zeros((len(dose),))
 
         def compute_single_gradient(objective):
             """Compute the value of a single gradient function."""
 
-            # Get the associated segments and the instance
-            segments = objective['segments']
-            instance = objective['instance']
-
             # Check if the instance is set to active
-            if instance.embedding == 'active':
-
-                # Get the segment indices
-                indices = tuple(
-                    segmentation[segment]['resized_indices']
-                    for segment in segments)
+            if objective.embedding == 'active':
 
                 # Add the single gradient to the dose gradient vector
-                dose_gradient[concatenate(indices)] += (
-                    instance.weight * instance.compute_gradient(
-                        tuple(dose[index] for index in indices), segments))
+                dose_gradient[concatenate(objective.indices)] += (
+                    objective.weight * objective.compute_gradient(
+                        tuple(dose[indices] for indices in objective.indices)))
 
         # Compute the gradient function for each objective
-        apply(compute_single_gradient, self.objectives.values())
+        apply(compute_single_gradient, self.objectives)
 
         return self.backprojection.compute_fluence_gradient(dose_gradient)
 
@@ -314,47 +301,34 @@ Initializing
             Constraint function values.
         """
 
-        # Get the segmentation data from the datahub
-        segmentation = Datahub().segmentation
-
         # Loop over the machine learning constraints
-        for constraint in get_machine_learning_constraints(segmentation):
+        for constraint in get_machine_learning_constraints(self.constraints):
 
             # Increment the feature calculator iteration
-            (constraint.data_model_handler.
-             feature_calculator.__iteration__[1]) += 1
+            constraint.feature_calculator.__iteration__[1] += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
-        def compute_single_constraint(label, constraint):
+        def compute_single_constraint(constraint):
             """Compute the value of a single constraint function."""
 
-            # Get the associated segments and the instance
-            segments = constraint['segments']
-            instance = constraint['instance']
-
-            # Get the segment indices
-            indices = (
-                segmentation[segment]['resized_indices']
-                for segment in segments)
-
             # Compute the constraint function value
-            value = instance.compute_value(
-                tuple(dose[index] for index in indices), segments)
+            value = constraint.compute_value(
+                tuple(dose[indices] for indices in constraint.indices))
 
             # Check if the constraint value should be tracked
             if track:
 
                 # Enter the value into the tracking dictionary
-                self.tracker[label] += (value,)
+                self.tracker[constraint.track_id] += (value,)
 
             # Return the value of the constraint function
             return value
 
         return array([
-            compute_single_constraint(label, constraint)
-            for label, constraint in self.constraints.items()])
+            compute_single_constraint(constraint)
+            for constraint in self.constraints])
 
     def jacobian(
             self,
@@ -373,14 +347,11 @@ Initializing
             Fluence Jacobian matrix.
         """
 
-        # Get the segmentation data from the datahub
-        segmentation = Datahub().segmentation
-
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
 
         # Initialize the dose Jacobian matrix
-        dose_jacobian = zeros((len(self.constraints), self.number_of_voxels))
+        dose_jacobian = zeros((len(self.constraints), len(dose)))
 
         def compute_single_jacobian(enumerator):
             """Compute the value of a single constraint Jacobian function."""
@@ -388,22 +359,13 @@ Initializing
             # Get the row and constraint
             row, constraint = enumerator
 
-            # Get the associated segments and the instance
-            segments = constraint['segments']
-            instance = constraint['instance']
-
-            # Get the segment indices
-            indices = tuple(
-                segmentation[segment]['resized_indices']
-                for segment in segments)
-
             # Insert the single Jacobian into the dose Jacobian matrix
-            dose_jacobian[row][concatenate(indices)] = (
-                instance.compute_gradient(
-                    tuple(dose[index] for index in indices), segments))
+            dose_jacobian[row][concatenate(constraint.indices)] = (
+                constraint.compute_gradient(
+                    tuple(dose[indices] for indices in constraint.indices)))
 
         # Compute the Jacobian for each constraint
-        apply(compute_single_jacobian, enumerate(self.constraints.values()))
+        apply(compute_single_jacobian, enumerate(self.constraints))
 
         return vstack([
             self.backprojection.compute_fluence_gradient(row)

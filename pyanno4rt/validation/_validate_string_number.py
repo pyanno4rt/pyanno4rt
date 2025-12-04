@@ -14,7 +14,7 @@ def validate_string_number(label, item):
     label : str
         Label for the validation item.
 
-    data : str
+    item : str
         Validation item.
 
     Raises

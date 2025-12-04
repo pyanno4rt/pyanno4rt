@@ -24,8 +24,8 @@ class MaximumDVH(ConventionalComponent):
 
     Parameters
     ----------
-    segment : str
-        Name of the segment associated with the component.
+    segment : str or list
+        Segment(s) associated with the component.
 
     target_dose : int or float
         Target value for the dose.
@@ -50,14 +50,8 @@ class MaximumDVH(ConventionalComponent):
     bounds : None or list, default=None
         Constraint bounds for the component.
 
-    link : None or list, default=None
-        Other segments used for joint evaluation.
-
     identifier : None or str, default=None
         Additional string for naming the component.
-
-    display : bool, default=True
-        Indicator for the display of the component.
 
     Attributes
     ----------
@@ -75,9 +69,7 @@ class MaximumDVH(ConventionalComponent):
             weight=1.0,
             rank=1,
             bounds=None,
-            link=None,
-            identifier=None,
-            display=True):
+            identifier=None):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(
@@ -91,14 +83,12 @@ class MaximumDVH(ConventionalComponent):
             weight=weight,
             rank=rank,
             bounds=bounds,
-            link=link,
-            identifier=identifier,
-            display=display)
+            identifier=identifier)
 
         # Convert the quantile volume to a relative number
         self.parameter_value[1] /= 100
 
-        # Set the input arguments
+        # Get the input arguments
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
 
@@ -130,8 +120,7 @@ class MaximumDVH(ConventionalComponent):
 
     def compute_value(
             self,
-            dose,
-            *args):
+            dose):
         """
         Return the function value from the jitted 'compute' function.
 
@@ -139,9 +128,6 @@ class MaximumDVH(ConventionalComponent):
         ----------
         dose : tuple
             Tuple with the dose arrays.
-
-        *args : tuple
-            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -153,8 +139,7 @@ class MaximumDVH(ConventionalComponent):
 
     def compute_gradient(
             self,
-            dose,
-            *args):
+            dose):
         """
         Return the gradient vector from the jitted 'differentiate' function.
 
@@ -162,9 +147,6 @@ class MaximumDVH(ConventionalComponent):
         ----------
         dose : tuple
             Tuple with the dose arrays.
-
-        *args : tuple
-            Tuple with optional (non-keyworded) parameters.
 
         Returns
         -------

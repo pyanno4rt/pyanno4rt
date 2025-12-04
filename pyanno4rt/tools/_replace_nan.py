@@ -9,13 +9,13 @@ from math import isnan
 # %% Function definition
 
 
-def replace_nan(elements, value):
+def replace_nan(iterable, value):
     """
     Replace NaN in an iterable by a specific value.
 
     Parameters
     ----------
-    elements : iterable
+    iterable : iterable
         Iterable over which to loop.
 
     value : arbitrary
@@ -27,4 +27,4 @@ def replace_nan(elements, value):
         Generator with the replaced elements.
     """
 
-    return (value if isnan(element) else element for element in elements)
+    return (value if isnan(element) else element for element in iterable)

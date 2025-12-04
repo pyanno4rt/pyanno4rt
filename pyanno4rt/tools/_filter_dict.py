@@ -7,12 +7,12 @@
 
 def filter_dict(dictionary, retain_keys=None, remove_keys=None):
     """
-    Filter a dictionary by the keys.
+    Filter a dictionary by keys.
 
     Parameters
     ----------
     dictionary : dict
-        Dictionary with the keys to be filtered.
+        Input dictionary.
 
     retain_keys : list or tuple, default=None
         Names of the keys to be retained from the dictionary.
@@ -23,7 +23,7 @@ def filter_dict(dictionary, retain_keys=None, remove_keys=None):
     Returns
     -------
     dict
-        Dictionary with the filtered keys.
+        Dictionary filtered by keys.
     """
 
     # Check if specific keys should be retained

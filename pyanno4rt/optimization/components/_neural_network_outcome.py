@@ -31,8 +31,8 @@ class NeuralNetworkOutcome(MachineLearningComponent):
 
     Parameters
     ----------
-    segment : str
-        Name of the segment associated with the component.
+    segment : str or list
+        Segment(s) associated with the component.
 
     outcome_type : {'NTCP', 'TCP'}
         Type of the outcome variable.
@@ -58,17 +58,11 @@ class NeuralNetworkOutcome(MachineLearningComponent):
     bounds : None or list, default=None
         Constraint bounds for the component.
 
-    link : None or list, default=None
-        Other segments used for joint evaluation.
-
     transform : bool, default=False
         Indicator for the transformation of the outcome function.
 
     identifier : None or str, default=None
         Additional string for naming the component.
-
-    display : bool, default=True
-        Indicator for the display of the component.
 
     Attributes
     ----------
@@ -99,10 +93,8 @@ class NeuralNetworkOutcome(MachineLearningComponent):
             weight=1.0,
             rank=1,
             bounds=None,
-            link=None,
             transform=False,
-            identifier=None,
-            display=True):
+            identifier=None):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(
@@ -117,10 +109,8 @@ class NeuralNetworkOutcome(MachineLearningComponent):
             weight=weight,
             rank=rank,
             bounds=bounds,
-            link=link,
             transform=transform,
-            identifier=identifier,
-            display=display)
+            identifier=identifier)
 
         # Set the input arguments
         self.arguments = filter_dict(
@@ -288,8 +278,7 @@ class NeuralNetworkOutcome(MachineLearningComponent):
 
     def compute_value(
             self,
-            dose,
-            segment):
+            dose):
         """
         Compute the function value.
 
@@ -297,9 +286,6 @@ class NeuralNetworkOutcome(MachineLearningComponent):
         ----------
         dose : tuple
             Tuple with the dose values.
-
-        segment : tuple
-            Tuple with the segment names.
 
         Returns
         -------
@@ -309,7 +295,7 @@ class NeuralNetworkOutcome(MachineLearningComponent):
 
         # Compute the feature vector
         raw_features = self.data_model_handler.feature_calculator.featurize(
-            dose, segment)
+            dose, self.segment)
 
         # Preprocess and cast the feature vector
         preprocessed_features = cast(
@@ -326,8 +312,7 @@ class NeuralNetworkOutcome(MachineLearningComponent):
 
     def compute_gradient(
             self,
-            dose,
-            segment):
+            dose):
         """
         Compute the gradient vector.
 
@@ -335,9 +320,6 @@ class NeuralNetworkOutcome(MachineLearningComponent):
         ----------
         dose : tuple
             Tuple with the dose values.
-
-        segment : tuple
-            Tuple with the segment names.
 
         Returns
         -------
@@ -349,7 +331,7 @@ class NeuralNetworkOutcome(MachineLearningComponent):
         feature_calculator = self.data_model_handler.feature_calculator
 
         # Compute the feature vector
-        raw_features = feature_calculator.featurize(dose, segment)
+        raw_features = feature_calculator.featurize(dose, self.segment)
 
         # Preprocess and cast the feature vector
         preprocessed_features = cast(
@@ -390,6 +372,6 @@ class NeuralNetworkOutcome(MachineLearningComponent):
             self.model.preprocessor.gradientize(raw_features))
 
         # Compute the feature gradient
-        feature_gradient = feature_calculator.gradientize(dose, segment)
+        feature_gradient = feature_calculator.gradientize(dose, self.segment)
 
         return (model_gradient * preprocessing_gradient) @ feature_gradient

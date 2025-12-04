@@ -13,28 +13,40 @@ from pyanno4rt.validation import validate_type
 # %% Test definition
 
 
-# Define the supported argument sets
+# Define the valid argument sets
 @mark.parametrize(
-    'label, data, options, type_condition',
-    [('label', 'A', str, None),
-     ('label',  'A', {'supported': str, 'unsupported':  int}, 'supported')],
-    ids=['no type condition', 'type condition'])
-def test_validate_type_positive(label, data, options, type_condition):
-    """Test the 'validate_type' function with supported input."""
+    'label, item, options, condition',
+    [
+     ('label', 'A', str, None),
+     ('label',  'A', {'valid': str, 'invalid':  int}, 'valid')
+     ],
+    ids=[
+        'no condition',
+        'condition'
+        ]
+    )
+def test_validate_type_positive(label, item, options, condition):
+    """Test the 'validate_type' function with valid input."""
 
     # Assert the run-through of the function
-    assert validate_type(label, data, options, type_condition) is None
+    assert validate_type(label, item, options, condition) is None
 
 
-# Define the unsupported argument sets
+# Define the invalid argument sets
 @mark.parametrize(
-    'label, data, options, type_condition',
-    [('label', 'A', int, None),
-     ('label', 'A', {'supported': str, 'unsupported':  int}, 'unsupported')],
-    ids=['no type condition', 'type condition'])
-def test_validate_type_negative(label, data, options, type_condition):
-    """Test the 'validate_type' function with unsupported input."""
+    'label, item, options, condition',
+    [
+     ('label', 'A', int, None),
+     ('label', 'A', {'valid': str, 'invalid':  int}, 'invalid')
+     ],
+    ids=[
+        'no condition',
+        'condition'
+        ]
+    )
+def test_validate_type_negative(label, item, options, condition):
+    """Test the 'validate_type' function with invalid input."""
 
     # Assert the raise of an exception
     with raises(TypeError):
-        validate_type(label, data, options, type_condition)
+        validate_type(label, item, options, condition)

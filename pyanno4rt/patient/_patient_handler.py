@@ -70,9 +70,6 @@ class PatientHandler():
         # Load the patient imaging data
         self.computed_tomography, self.segmentation = handler().load(path)
 
-        # Remove the segment overlaps
-        self.remove_overlap()
-
     def save(
             self,
             path):

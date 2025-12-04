@@ -12,7 +12,7 @@ from scipy.interpolate import interp1d
 # %% Internal package import
 
 from pyanno4rt.logging import get_logger
-from pyanno4rt.tools import wrap
+from pyanno4rt.tools import get_objectives
 
 # %% Class definition
 
@@ -142,6 +142,7 @@ class Dosimetrics():
     def evaluate_segments(
             self,
             segmentation,
+            components,
             dose_cube):
         """
         Evaluate the dosimetrics for all segments.
@@ -151,6 +152,9 @@ class Dosimetrics():
         segmentation : dict
             Dictionary with information on the segments.
 
+        components : list
+            Plan components.
+
         dose_cube : ndarray
             Array with the "full body" dose values.
         """
@@ -159,14 +163,18 @@ class Dosimetrics():
         get_logger().info("Evaluating dosimetrics for all segments ...")
 
         # Loop over the segments
-        for segment, value in segmentation.items():
+        for segment, data in segmentation.items():
 
             # Get the sorted dose vector
             dose = sort(dose_cube[unravel_index(
-                value['raw_indices'], dose_cube.shape, order='F')])
+                data['raw_indices'], dose_cube.shape, order='F')])
 
             # Get the wrapped objective
-            objective = filter(None, wrap(value['objective']))
+            objective = [
+                component for component in get_objectives(components)
+                if component.name in (
+                        'Squared Deviation', 'Squared Underdosing')
+                and segment in component.segment]
 
             # Filter the objective by component name
             objective = tuple(filter(lambda item: item.name in (
@@ -176,11 +184,11 @@ class Dosimetrics():
             prescription = None
 
             # Check if the segment is a target of interest
-            if value['type'] == 'TARGET' and objective:
+            if data['type'] == 'TARGET' and objective is not None:
 
                 # Get the mean dose prescription
                 prescription = self.number_of_fractions*mean(
-                    item.get_parameter_value()[0] for item in objective)
+                    item.parameter_value[0] for item in objective)
 
             # Get the segment dosimetrics
             self.quantities[segment] = self.evaluate_array(

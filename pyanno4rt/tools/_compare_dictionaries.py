@@ -46,7 +46,6 @@ def compare_dictionaries(reference_dict, compare_dict, ignore_keys=None):
     # Check if the dictionary keys are not equal
     if reference_dict.keys() != compare_dict.keys():
 
-        # Return false
         return False
 
     # Loop over the pairwise dictionary values
@@ -56,7 +55,6 @@ def compare_dictionaries(reference_dict, compare_dict, ignore_keys=None):
         # Check if the types are not equal
         if not isinstance(reference, type(compare)):
 
-            # Return false
             return False
 
         # Check if the value is an array
@@ -65,13 +63,11 @@ def compare_dictionaries(reference_dict, compare_dict, ignore_keys=None):
             # Check if the arrays are not equal
             if not array_equal(reference, compare):
 
-                # Return false
                 return False
 
         # Else, check if the non-array values are not equal
         elif reference != compare:
 
-            # Return false
             return False
 
     # Else, return true

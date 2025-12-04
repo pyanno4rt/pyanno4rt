@@ -79,7 +79,7 @@ class PymooSolver():
         get_logger().info(
             "Initializing Pymoo solver with %s algorithm ...", algorithm)
 
-        # Get the input arguments
+        # Get the input attributes
         self.algorithm = algorithm
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
@@ -99,7 +99,7 @@ class PymooSolver():
         Parameters
         ----------
         problem : object of class \
-            :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`
+            :class:`~pyanno4rt.optimization.problems.pareto._pareto_problem.ParetoProblem`
             The object used to represent the optimization problem.
         """
 
@@ -116,7 +116,7 @@ class PymooSolver():
         reference_directions = get_reference_directions(
             "energy", len(problem.objectives), number_of_points, seed=1)
 
-        # Initialize and evaluate the initial population
+        # Initialize the population
         initial_population = Population.new(
             "X", 2*max(problem.initial_fluence)*beta(a=0.5, b=0.5, size=(
                 number_of_points, len(problem.initial_fluence))))
@@ -170,13 +170,13 @@ class CustomCallback(Callback):
     Parameters
     ----------
     problem : object of class \
-        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
+        :class:`~pyanno4rt.optimization.problems.pareto._pareto_problem.ParetoProblem`\
         The object used to represent the optimization problem.
 
     Attributes
     ----------
     problem : object of class \
-        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`\
+        :class:`~pyanno4rt.optimization.problems.pareto._pareto_problem.ParetoProblem`\
         See 'Parameters'.
     """
 
@@ -204,7 +204,8 @@ class CustomCallback(Callback):
 
         # Get the mean objective values
         objectives = dict(zip(
-            self.problem.objectives, mean(algorithm.pop.get("F"), axis=0)))
+            (objective.track_id for objective in self.problem.objectives),
+             mean(algorithm.pop.get("F"), axis=0)))
 
         # Set the base output string
         output_string = ', '.join((
@@ -219,7 +220,8 @@ class CustomCallback(Callback):
 
             # Generate the constraint dictionary
             constraints = dict(zip(
-                self.problem.constraints,
+                (constraint.track_id
+                 for constraint in self.problem.constraints),
                 (self.problem.constraint_bounds[0][i] - values[2*i]
                  for i, _ in enumerate(self.problem.constraints))))
 
@@ -246,19 +248,19 @@ class PymooProblem(ElementwiseProblem):
     Parameters
     ----------
     problem : object of class \
-        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`
+        :class:`~pyanno4rt.optimization.problems.pareto._pareto_problem.ParetoProblem`
         The object used to represent the optimization problem.
 
     Attributes
     ----------
     problem : object of class \
-        :class:`~pyanno4rt.optimization.problems._pareto_problem.ParetoProblem`
+        :class:`~pyanno4rt.optimization.problems.pareto._pareto_problem.ParetoProblem`
         See 'Parameters'.
 
     Notes
     -----
     Fitness evaluation is based on a modification suggested in the paper by \
-    Pang et al. (2020): DOI 10.1109/ACCESS.2020.3032240.
+    Pang et al. (2020): 10.1109/ACCESS.2020.3032240.
     """
 
     def __init__(

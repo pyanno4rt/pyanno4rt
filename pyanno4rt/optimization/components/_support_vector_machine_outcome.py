@@ -31,8 +31,8 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
 
     Parameters
     ----------
-    segment : str
-        Name of the segment associated with the component.
+    segment : str or list
+        Segment(s) associated with the component.
 
     outcome_type : {'NTCP', 'TCP'}
         Type of the outcome variable.
@@ -57,9 +57,6 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
 
     bounds : None or list, default=None
         Constraint bounds for the component.
-
-    link : None or list, default=None
-        Other segments used for joint evaluation.
 
     transform : bool, default=False
         Indicator for the transformation of the outcome function.
@@ -108,7 +105,6 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
             weight=1.0,
             rank=1,
             bounds=None,
-            link=None,
             transform=False,
             identifier=None,
             display=True):
@@ -126,7 +122,6 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
             weight=weight,
             rank=rank,
             bounds=bounds,
-            link=link,
             transform=transform,
             identifier=identifier,
             display=display)

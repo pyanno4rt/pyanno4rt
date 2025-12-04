@@ -18,17 +18,18 @@ from ._copycat import copycat
 from ._custom_round import custom_round
 from ._deduplicate import deduplicate
 from ._flatten import flatten
-from ._get_all_constraints import get_all_constraints
-from ._get_all_objectives import get_all_objectives
-from ._get_constraint_segments import get_constraint_segments
-from ._get_conventional_objectives import get_conventional_objectives
-from ._get_conventional_constraints import get_conventional_constraints
-from ._get_machine_learning_constraints import get_machine_learning_constraints
-from ._get_machine_learning_objectives import get_machine_learning_objectives
-from ._get_objective_segments import get_objective_segments
-from ._get_radiobiological_constraints import get_radiobiological_constraints
-from ._get_radiobiological_objectives import get_radiobiological_objectives
-from ._identity import identity
+from ._get_components import get_constraints, get_objectives
+from ._get_conventional_components import (
+    get_conventional_components, get_conventional_constraints,
+    get_conventional_objectives)
+from ._get_machine_learning_components import(
+    get_machine_learning_components, get_machine_learning_constraints,
+    get_machine_learning_objectives)
+from ._get_radiobiological_components import (
+    get_radiobiological_components, get_radiobiological_constraints,
+    get_radiobiological_objectives)
+from ._get_segments import (
+    get_all_segments, get_constraint_segments, get_objective_segments)
 from ._inverse_salu import inverse_salu
 from ._inverse_sigmoid import inverse_sigmoid
 from ._load_list_from_file import load_list_from_file
@@ -45,7 +46,6 @@ from ._wrap import wrap
 
 
 __all__ = [
-    'filter_dict',
     'add_square_brackets',
     'apply',
     'arange_with_endpoint',
@@ -53,18 +53,22 @@ __all__ = [
     'copycat',
     'custom_round',
     'deduplicate',
+    'filter_dict',
     'flatten',
-    'get_all_constraints',
-    'get_all_objectives',
-    'get_constraint_segments',
+    'get_constraints',
+    'get_objectives',
+    'get_conventional_components',
     'get_conventional_constraints',
     'get_conventional_objectives',
+    'get_machine_learning_components',
     'get_machine_learning_constraints',
     'get_machine_learning_objectives',
-    'get_objective_segments',
+    'get_radiobiological_components',
     'get_radiobiological_constraints',
     'get_radiobiological_objectives',
-    'identity',
+    'get_all_segments',
+    'get_constraint_segments',
+    'get_objective_segments',
     'inverse_salu',
     'inverse_sigmoid',
     'load_list_from_file',

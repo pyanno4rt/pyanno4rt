@@ -4,7 +4,6 @@
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.logging import get_logger
 from pyanno4rt.optimization.projections import Backprojection
 
@@ -19,15 +18,30 @@ class DoseProjection(Backprojection):
     backward projection methods in \
     :class:`~pyanno4rt.optimization.projections._backprojection.Backprojection`\
     by a linear transformation assuming a neutral RBE value of 1.0.
+
+    Parameters
+    ----------
+    dose_influence_matrix : csr_matrix
+        Dose-influence matrix.
+
+    RBE : int or float, default=1.0
+        Relative biological effectiveness.
     """
 
-    def __init__(self):
+    def __init__(
+            self,
+            dose_influence_matrix,
+            RBE=1.0):
 
         # Log a message about the initialization of the class
         get_logger().info("Initializing dose projection ...")
 
         # Call the superclass constructor
         super().__init__()
+
+        # Get the input attributes
+        self.dose_influence_matrix = dose_influence_matrix
+        self.RBE = RBE
 
     def compute_dose_result(
             self,
@@ -46,7 +60,7 @@ class DoseProjection(Backprojection):
             Dose vector.
         """
 
-        return Datahub().dose_information['dose_influence_matrix'] @ fluence
+        return self.dose_influence_matrix @ fluence
 
     def compute_fluence_gradient_result(
             self,
@@ -65,6 +79,4 @@ class DoseProjection(Backprojection):
             Fluence gradient.
         """
 
-        return (
-            Datahub().dose_information['dose_influence_matrix'].T
-            @ dose_gradient)
+        return self.dose_influence_matrix.T @ dose_gradient

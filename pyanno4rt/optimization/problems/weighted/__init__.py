@@ -1,9 +1,9 @@
 """
-A priori optimization methods module.
+Weighted sum optimization module.
 
 ==================================================================
 
-This module aims to provide different types of a priori optimization methods.
+This module aims to provide weighted-sum optimization problems.
 """
 
 # Author: Tim Ortkamp

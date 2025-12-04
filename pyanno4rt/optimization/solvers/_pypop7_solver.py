@@ -65,7 +65,7 @@ class PyPop7Solver():
         get_logger().info(
             "Initializing PyPop7 solver with %s algorithm ...", algorithm)
 
-        # Get the input arguments
+        # Get the input attributes
         self.algorithm = algorithm
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
@@ -84,7 +84,7 @@ class PyPop7Solver():
         Parameters
         ----------
         problem : object of class \
-            :class:`~pyanno4rt.optimization.problems._weighted_sum_problem.WeightedSumProblem`
+            :class:`~pyanno4rt.optimization.problems.weighted._weighted_sum_problem.WeightedSumProblem`
             The object used to represent the optimization problem.
         """
 
