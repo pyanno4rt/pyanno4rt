@@ -97,8 +97,8 @@ class TuneSpaceNN():
             'hidden_dropout_rate': [0.0, 0.1, 0.25, 0.5, 0.75],
             'batch_size': [4, 8, 16, 32],
             'learning_rate': [1e-5, 1e-2],
-            'optimizer': list(maps.NN_OPTS),
-            'loss': list(maps.NN_LOSSES)}
+            'optimizer': list(maps.NETWORK_OPTIMIZERS),
+            'loss': list(maps.NETWORK_LOSSES)}
 
         # Update the input arguments with the defaults, if applicable
         inputs = {
@@ -157,31 +157,41 @@ class TuneSpaceNN():
             'hidden_neuron_number': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_item, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')
+                ),
             'hidden_activation': (
                 partial(validate_type, options=list),
                 partial(validate_item_in_set, options=(
                     'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
-                    'softplus', 'swish'))),
+                    'softplus', 'swish'))
+                ),
             'hidden_dropout_rate': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_item, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')
+                ),
             'batch_size': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_item, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')
+                ),
             'learning_rate': (
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_item, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')
+                ),
             'optimizer': (
                 partial(validate_type, options=list),
-                partial(validate_item_in_set, options=tuple(maps.NN_OPTS))),
+                partial(validate_item_in_set, options=tuple(
+                    maps.NETWORK_OPTIMIZERS))
+                ),
             'loss': (
                 partial(validate_type, options=list),
-                partial(validate_item_in_set, options=tuple(maps.NN_LOSSES)))}
+                partial(validate_item_in_set, options=tuple(
+                    maps.NETWORK_LOSSES))
+                )
+            }
 
         # Loop over the dictionary items
         for key, value in inputs.items():

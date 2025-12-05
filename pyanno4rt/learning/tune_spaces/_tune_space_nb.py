@@ -111,12 +111,15 @@ class TuneSpaceNB():
         validation_map = {
             'priors': (
                 partial(validate_type, options=list),
-                partial(validate_subtype, options=(list, type(None)))),
+                partial(validate_subtype, options=(list, type(None)))
+                ),
             'var_smoothing': (
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_item, reference=0, sign='>'))}
+                partial(validate_item, reference=0, sign='>')
+                )
+            }
 
         # Loop over the dictionary items
         for key, value in inputs.items():

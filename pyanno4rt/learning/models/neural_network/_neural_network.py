@@ -10,9 +10,9 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 # %% Internal package import
 
-from pyanno4rt.learning import MachineLearningModel
-from pyanno4rt.learning._maps import NN_LOSSES, NN_OPTS
-from pyanno4rt.learning.neural_network import (
+from pyanno4rt.learning.models import MachineLearningModel
+from pyanno4rt.learning._maps import NETWORK_LOSSES, NETWORK_OPTIMIZERS
+from pyanno4rt.learning.models.neural_network import (
     build_vanilla_iocnn, build_vanilla_nn)
 from pyanno4rt.logging import get_logger
 
@@ -235,9 +235,9 @@ class NeuralNetworkModel(MachineLearningModel):
 
         # Compile the model
         prediction_model.compile(
-            optimizer=NN_OPTS[hyperparameters['optimizer']](
+            optimizer=NETWORK_OPTIMIZERS[hyperparameters['optimizer']](
                 learning_rate=hyperparameters['learning_rate']),
-            loss=NN_LOSSES[hyperparameters['loss']]())
+            loss=NETWORK_LOSSES[hyperparameters['loss']]())
 
         # Set the callbacks
         callbacks = [
@@ -361,9 +361,9 @@ class NeuralNetworkModel(MachineLearningModel):
 
         # Compile the model
         prediction_model.compile(
-            optimizer=NN_OPTS[hyperparameters['optimizer']](
+            optimizer=NETWORK_OPTIMIZERS[hyperparameters['optimizer']](
                 learning_rate=hyperparameters['learning_rate']),
-            loss=NN_LOSSES[hyperparameters['loss']]())
+            loss=NETWORK_LOSSES[hyperparameters['loss']]())
 
         # Set the network weights
         prediction_model.set_weights(weights)

@@ -9,7 +9,7 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.learning import ModelParameters
+from pyanno4rt.learning.models import ModelParameters
 from pyanno4rt.tools import filter_dict, wrap
 from pyanno4rt.validation import (
     validate_item, validate_item_in_set, validate_length, validate_subtype,
@@ -260,41 +260,55 @@ class MachineLearningComponent(metaclass=ABCMeta):
         # Get the validation map
         validation_map = {
             'name': (
-                partial(validate_type, options=str),),
+                partial(validate_type, options=str),
+                ),
             'segment': (
-                partial(validate_type, options=(str, list)),),
+                partial(validate_type, options=(str, list)),
+                ),
             'outcome_type': (
                 partial(validate_type, options=str),
-                partial(validate_item_in_set, options=('NTCP', 'TCP'))),
+                partial(validate_item_in_set, options=('NTCP', 'TCP'))
+                ),
             'component_type': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'constraint', 'objective'))),
+                    'constraint', 'objective'))
+                ),
             'parameter_name': (
                 partial(validate_type, options=tuple),
-                partial(validate_subtype, options=str)),
+                partial(validate_subtype, options=str)
+                ),
             'parameter_category': (
                 partial(validate_type, options=tuple),
-                partial(validate_subtype, options=str)),
+                partial(validate_subtype, options=str)
+                ),
             'model_parameters': (
-                partial(validate_type, options=ModelParameters),),
+                partial(validate_type, options=ModelParameters),
+                ),
             'embedding': (
                 partial(validate_type, options=str),
-                partial(validate_item_in_set, options=('active', 'passive'))),
+                partial(validate_item_in_set, options=('active', 'passive'))
+                ),
             'weight': (
                 partial(validate_type, options=(int, float)),
-                partial(validate_item, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')
+                ),
             'rank': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')
+                ),
             'bounds': (
                 partial(validate_type, options=(type(None), list)),
                 partial(validate_length, reference=2, sign='=='),
-                partial(validate_subtype, options=(type(None), int, float))),
+                partial(validate_subtype, options=(type(None), int, float))
+                ),
             'transform': (
-                partial(validate_type, options=bool),),
+                partial(validate_type, options=bool),
+                ),
             'identifier': (
-                partial(validate_type, options=(type(None), str)),)}
+                partial(validate_type, options=(type(None), str)),
+                )
+            }
 
         # Loop over the dictionary keys
         for key, value in inputs.items():

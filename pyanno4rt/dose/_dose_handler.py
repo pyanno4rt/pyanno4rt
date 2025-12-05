@@ -169,7 +169,7 @@ class DoseHandler():
 
         # Get the cube dimensions
         self.cube_dimensions = tuple(
-            len(self.grid[dimension]) for dimension in ('x', 'y', 'z'))
+            len(self.grid[dimension]) for dimension in ('y', 'x', 'z'))
 
         # Get the total number of voxels
         self.number_of_voxels = prod(self.cube_dimensions)

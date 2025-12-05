@@ -322,6 +322,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         # Check if the plan has already been optimized
         if (self.plan.fluence_optimizer is not None
                 and optimized_dose is not None
+                and all(value != [] for value in problem.tracker.values())
                 and self.plan.state >= 3):
 
             # Add style and data

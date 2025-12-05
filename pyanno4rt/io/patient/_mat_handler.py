@@ -93,7 +93,7 @@ class MatHandler():
             for segment, values in cst.items()]).sort_values('index')
 
         # Save the data to a MATLAB file
-        savemat(path, {'cst': cst, 'ct': ct})
+        savemat(path, {'cst': cst, 'ct': ct}, do_compression=True)
 
     def generate_ct(
             self,

@@ -159,17 +159,18 @@ class OutcomeGraphWidget(QWidget):
                     item.curve.setPen(mkPen(
                         color=pen.color(), style=pen.style(), width=4))
 
-                    # Get the optimization data
-                    optimization = self.parent.plan.datahub.optimization
+                    # Get the optimization problem
+                    problem = self.parent.plan.fluence_optimizer.problem
 
                     # Get the optimization components
-                    components = (
-                        optimization['problem'].objectives
-                        | optimization['problem'].constraints)
+                    components = {
+                        component.track_id: component
+                        for component in
+                        problem.objectives + problem.constraints}
 
                     # Get the selected instance attribute
                     component_type, embedding, weight, rank, bounds = (getattr(
-                        components[item.name()]['instance'], attribute)
+                        components[item.name()], attribute)
                         for attribute in (
                             'component_type', 'embedding', 'weight', 'rank',
                             'bounds'))

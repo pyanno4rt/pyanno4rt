@@ -11,7 +11,7 @@ from sklearn.naive_bayes import GaussianNB
 
 # %% Internal package import
 
-from pyanno4rt.learning import MachineLearningModel
+from pyanno4rt.learning.models import MachineLearningModel
 from pyanno4rt.logging import get_logger
 
 # %% Class definition

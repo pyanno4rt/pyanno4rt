@@ -289,7 +289,8 @@ class Optimization():
                 ('solver', 'scipy'),
                 ('initial_strategy', 'target-coverage'),
                 ('lower_variable_bounds', 0),
-                ('upper_variable_bounds', None)):
+                ('upper_variable_bounds', None)
+                ):
 
             # Add the pair to the dictionary
             conditions[key] = inputs.get(key, getattr(self, key, default))
@@ -352,11 +353,13 @@ class Optimization():
                 ),
             'maximum_iterations': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')
+                partial(validate_item, reference=0, sign='>=')
                 ),
             'tolerance': (
                 partial(validate_type, options=(int, float)),
-                partial(validate_item, reference=0, sign='>'))}
+                partial(validate_item, reference=0, sign='>')
+                )
+            }
 
         # Loop over the inputs
         for key, value in inputs.items():

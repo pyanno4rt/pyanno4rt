@@ -1,4 +1,4 @@
-"""Logistic regression model."""
+"""Support vector machine model."""
 
 # Author: Tim Ortkamp
 
@@ -7,23 +7,23 @@
 from pickle import dump, load
 
 from hyperopt import hp
-from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 
 # %% Internal package import
 
-from pyanno4rt.learning import MachineLearningModel
+from pyanno4rt.learning.models import MachineLearningModel
 from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
 
-class LogisticRegressionModel(MachineLearningModel):
+class SupportVectorMachineModel(MachineLearningModel):
     """
-    Logistic regression model class.
+    Support vector machine model class.
 
     This class enables building an individual preprocessing pipeline, \
     fitting, making predictions, inspecting, and evaluating the predictive \
-    performance of a logistic regression model.
+    performance of a support vector machine model.
 
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
@@ -48,34 +48,13 @@ class LogisticRegressionModel(MachineLearningModel):
 
         # Configure the hyperopt search space
         hp_space = {
-            'regularization': hp.choice(
-                'regularization', [
-                    {'penalty': None,
-                     'solver': hp.choice(
-                         'solver_None',
-                         ['lbfgs', 'newton-cg', 'newton-cholesky', 'sag'])},
-                    *[{'penalty': norm,
-                       'solver': hp.choice(
-                           f'solver_{norm}',
-                           ['liblinear', 'saga'] if norm == 'l1'
-                           else [
-                               'lbfgs', 'liblinear', 'newton-cg',
-                               'newton-cholesky', 'sag', 'saga']),
-                       'C': hp.uniform(
-                           f'C_{norm}', tune_space_dict['C'][0],
-                           tune_space_dict['C'][1])
-                       }
-                      if norm != 'elasticnet' else
-                      {'penalty': 'elasticnet',
-                       'l1_ratio': 0.5,
-                       'solver': hp.choice(
-                           f'solver_{norm}', ['saga']),
-                       'C': hp.uniform(
-                           f'C_{norm}', tune_space_dict['C'][0],
-                           tune_space_dict['C'][1])
-                       }
-                      for norm in tune_space_dict['penalty']]
-                    ]),
+            'C': hp.uniform(
+                'C', tune_space_dict['C'][0], tune_space_dict['C'][1]),
+            'kernel': hp.choice('kernel', tune_space_dict['kernel']),
+            'degree': hp.choice('degree', tune_space_dict['degree']),
+            'gamma': hp.uniform(
+                'gamma', tune_space_dict['gamma'][0],
+                tune_space_dict['gamma'][1]),
             'tol': hp.choice('tol', tune_space_dict['tol']),
             'class_weight': hp.choice(
                 'class_weight', tune_space_dict['class_weight'])}
@@ -103,31 +82,23 @@ class LogisticRegressionModel(MachineLearningModel):
             Dictionary with the values of the hyperparameters.
         """
 
-        # Check if the proposal has a regularization subdictionary
-        if 'regularization' in proposal:
-
-            # Get the unpacked regularization parameters
-            regularization = {**proposal['regularization']}
-
-        else:
-
-            # Get the regularization parameters directly
-            regularization = {key: proposal.get(key) for key in (
-                'penalty', 'solver', 'l1_ratio', 'C')}
-
         # Build the hyperparameter dictionary
         hyperparameters = {
-            **regularization,
-            'dual': False,
+            'C': proposal['C'],
+            'kernel': proposal['kernel'],
+            'degree': proposal['degree'],
+            'gamma': proposal['gamma'],
+            'coef0': 0.0,
+            'shrinking': True,
+            'probability': True,
             'tol': proposal['tol'],
-            'fit_intercept': True,
-            'intercept_scaling': 1,
+            'cache_size': 200,
             'class_weight': proposal['class_weight'],
-            'random_state': 42,
-            'max_iter': 10**6,
-            'verbose': 0,
-            'warm_start': False,
-            'n_jobs': -1 if regularization['solver'] != 'liblinear' else 1}
+            'verbose': False,
+            'max_iter': -1,
+            'decision_function_shape': 'ovr',
+            'break_ties': False,
+            'random_state': 42}
 
         return hyperparameters
 
@@ -137,7 +108,7 @@ class LogisticRegressionModel(MachineLearningModel):
             labels,
             hyperparameters):
         """
-        Get the logistic regression model fit.
+        Get the support vector machine model fit.
 
         Parameters
         ----------
@@ -152,13 +123,12 @@ class LogisticRegressionModel(MachineLearningModel):
 
         Returns
         -------
-        prediction_model : object of class \
-            :class:`~sklearn.linear_model.LogisticRegression`
+        prediction_model : object of class :class:`~sklearn.svm.SVC`
             The object used to represent the pre-fitted prediction model.
         """
 
-        # Initialize the logistic regression model
-        prediction_model = LogisticRegression(**hyperparameters)
+        # Initialize the support vector machine model
+        prediction_model = SVC(**hyperparameters)
 
         # Fit the model with the training data
         prediction_model.fit(features, labels)
@@ -177,8 +147,7 @@ class LogisticRegressionModel(MachineLearningModel):
         features : ndarray
             Values of the input features.
 
-        predictor : object of class \
-            :class:`~sklearn.linear_model.LogisticRegression`
+        predictor : object of class :class:`~sklearn.svm.SVC`
             The object used to represent the prediction model.
 
         Returns
@@ -198,21 +167,22 @@ class LogisticRegressionModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the logistic regression model.
+        Import the support vector machine model.
 
         Returns
         -------
-        object of class :class:`~sklearn.linear_model.LogisticRegression`
+        object of class :class:`~sklearn.svm.SVC`
             The object used to represent the prediction model.
         """
 
         # Log a message about the model file reading
-        get_logger().info("Reading '%s' model from file ...", self.model_label)
+        get_logger().info(
+            "Reading '%s' model from file ...", self.model_label)
 
         return load(open(self.model_path, 'rb'))
 
     def export_model(self):
-        """Export the logistic regression model."""
+        """Export the support vector machine model."""
 
         # Open a file stream
         with open(self.model_path, 'wb') as file:

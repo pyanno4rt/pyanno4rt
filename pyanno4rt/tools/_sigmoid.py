@@ -30,9 +30,11 @@ def sigmoid(value, multiplier=1, summand=0):
         Value(s) of the sigmoid function.
     """
 
-    # Check if the passed value is tuple or a list
+    # Check if the value is a tuple or a list
     if isinstance(value, (tuple, list)):
 
+        # Return the sigmoid function values
         return tuple(1/(1 + exp(-(multiplier*val + summand))) for val in value)
 
+    # Return the sigmoid function value
     return 1/(1 + exp(-(multiplier*value + summand)))

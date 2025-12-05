@@ -127,19 +127,24 @@ class TuneSpaceKNN():
             'n_neighbors': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_item, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')
+                ),
             'weights': (
                 partial(validate_type, options=list),
                 partial(validate_item_in_set, options=(
-                    'distance', 'uniform'))),
+                    'distance', 'uniform'))
+                ),
             'leaf_size': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_item, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')
+                ),
             'p': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_item, reference=0, sign='>'))}
+                partial(validate_item, reference=0, sign='>')
+                )
+            }
 
         # Loop over the dictionary items
         for key, value in inputs.items():

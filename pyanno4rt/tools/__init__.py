@@ -44,7 +44,6 @@ from ._snapshot import snapshot
 from ._string_to_numeric import string_to_numeric
 from ._wrap import wrap
 
-
 __all__ = [
     'add_square_brackets',
     'apply',

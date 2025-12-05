@@ -1,4 +1,4 @@
-"""Decision tree model."""
+"""Logistic regression model."""
 
 # Author: Tim Ortkamp
 
@@ -7,24 +7,23 @@
 from pickle import dump, load
 
 from hyperopt import hp
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
 
 # %% Internal package import
 
-from pyanno4rt.learning import MachineLearningModel
-from pyanno4rt.learning.tree import OptimizableDecisionTree
+from pyanno4rt.learning.models import MachineLearningModel
 from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
 
-class DecisionTreeModel(MachineLearningModel):
+class LogisticRegressionModel(MachineLearningModel):
     """
-    Decision tree model class.
+    Logistic regression model class.
 
     This class enables building an individual preprocessing pipeline, \
     fitting, making predictions, inspecting, and evaluating the predictive \
-    performance of a decision tree model.
+    performance of a logistic regression model.
 
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
@@ -47,43 +46,45 @@ class DecisionTreeModel(MachineLearningModel):
         # Get the internal hyperparameter search space
         tune_space_dict = tune_space.to_dict()
 
-        # Check if the maximum number of features is set to the default
-        if tune_space_dict['max_features'] == [0]:
-
-            # Adjust the maximum number of features by the dataset
-            tune_space_dict['max_features'] = [len(dataset['feature_names'])]
-
         # Configure the hyperopt search space
         hp_space = {
-            'criterion': hp.choice('criterion', tune_space_dict['criterion']),
-            'splitter': hp.choice('splitter', tune_space_dict['splitter']),
-            'max_depth': hp.choice('max_depth', tune_space_dict['max_depth']),
-            'min_samples_split': hp.uniform(
-                'min_samples_split', tune_space_dict['min_samples_split'][0],
-                tune_space_dict['min_samples_split'][1]),
-            'min_samples_leaf': hp.uniform(
-                'min_samples_leaf', tune_space_dict['min_samples_leaf'][0],
-                tune_space_dict['min_samples_leaf'][1]),
-            'min_weight_fraction_leaf': hp.uniform(
-                'min_weight_fraction_leaf',
-                tune_space_dict['min_weight_fraction_leaf'][0],
-                tune_space_dict['min_weight_fraction_leaf'][1]),
-            'max_features': hp.choice(
-                'max_features', tune_space_dict['max_features']),
+            'regularization': hp.choice(
+                'regularization', [
+                    {'penalty': None,
+                     'solver': hp.choice(
+                         'solver_None',
+                         ['lbfgs', 'newton-cg', 'newton-cholesky', 'sag'])},
+                    *[{'penalty': norm,
+                       'solver': hp.choice(
+                           f'solver_{norm}',
+                           ['liblinear', 'saga'] if norm == 'l1'
+                           else [
+                               'lbfgs', 'liblinear', 'newton-cg',
+                               'newton-cholesky', 'sag', 'saga']),
+                       'C': hp.uniform(
+                           f'C_{norm}', tune_space_dict['C'][0],
+                           tune_space_dict['C'][1])
+                       }
+                      if norm != 'elasticnet' else
+                      {'penalty': 'elasticnet',
+                       'l1_ratio': 0.5,
+                       'solver': hp.choice(
+                           f'solver_{norm}', ['saga']),
+                       'C': hp.uniform(
+                           f'C_{norm}', tune_space_dict['C'][0],
+                           tune_space_dict['C'][1])
+                       }
+                      for norm in tune_space_dict['penalty']]
+                    ]),
+            'tol': hp.choice('tol', tune_space_dict['tol']),
             'class_weight': hp.choice(
-                'class_weight', tune_space_dict['class_weight']),
-            'ccp_alpha': hp.uniform(
-                'ccp_alpha', tune_space_dict['ccp_alpha'][0],
-                tune_space_dict['ccp_alpha'][1])}
+                'class_weight', tune_space_dict['class_weight'])}
 
         # Initialize the superclass
         super().__init__(
             model_label, model_folder_path, dataset, preprocessing_steps,
             tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
-
-        # Get the optimization surrogate of the decision tree model
-        self.optimization_model = self.get_optimization_model()
 
     def get_hyperparameter_set(
             self,
@@ -102,13 +103,31 @@ class DecisionTreeModel(MachineLearningModel):
             Dictionary with the values of the hyperparameters.
         """
 
+        # Check if the proposal has a regularization subdictionary
+        if 'regularization' in proposal:
+
+            # Get the unpacked regularization parameters
+            regularization = {**proposal['regularization']}
+
+        else:
+
+            # Get the regularization parameters directly
+            regularization = {key: proposal.get(key) for key in (
+                'penalty', 'solver', 'l1_ratio', 'C')}
+
         # Build the hyperparameter dictionary
         hyperparameters = {
-            **proposal,
+            **regularization,
+            'dual': False,
+            'tol': proposal['tol'],
+            'fit_intercept': True,
+            'intercept_scaling': 1,
+            'class_weight': proposal['class_weight'],
             'random_state': 42,
-            'max_leaf_nodes': None,
-            'min_impurity_decrease': 0.0,
-            'monotonic_cst': None}
+            'max_iter': 10**6,
+            'verbose': 0,
+            'warm_start': False,
+            'n_jobs': -1 if regularization['solver'] != 'liblinear' else 1}
 
         return hyperparameters
 
@@ -118,7 +137,7 @@ class DecisionTreeModel(MachineLearningModel):
             labels,
             hyperparameters):
         """
-        Get the decision tree model fit.
+        Get the logistic regression model fit.
 
         Parameters
         ----------
@@ -134,36 +153,17 @@ class DecisionTreeModel(MachineLearningModel):
         Returns
         -------
         prediction_model : object of class \
-            :class:`~sklearn.tree.DecisionTreeClassifier`
+            :class:`~sklearn.linear_model.LogisticRegression`
             The object used to represent the pre-fitted prediction model.
         """
 
-        # Initialize the decision tree model
-        prediction_model = DecisionTreeClassifier(**hyperparameters)
+        # Initialize the logistic regression model
+        prediction_model = LogisticRegression(**hyperparameters)
 
         # Fit the model with the training data
         prediction_model.fit(features, labels)
 
         return prediction_model
-
-    def get_optimization_model(self):
-        """
-        Get the decision tree optimization model.
-
-        Returns
-        -------
-        object of class \
-            :class:`~pyanno4rt.learning.tree._optimizable_decision_tree.OptimizableDecisionTree`
-            The object used to represent the optimization model.
-        """
-
-        # Initialize the optimizable decision tree
-        optimization_model = OptimizableDecisionTree()
-
-        # Read the path information from the pre-fitted decision tree
-        optimization_model.traverse(self.prediction_model)
-
-        return optimization_model
 
     def predict(
             self,
@@ -175,10 +175,10 @@ class DecisionTreeModel(MachineLearningModel):
         Parameters
         ----------
         features : ndarray
-            Array of input feature values.
+            Values of the input features.
 
         predictor : object of class \
-            :class:`~sklearn.tree.DecisionTreeClassifier`
+            :class:`~sklearn.linear_model.LogisticRegression`
             The object used to represent the prediction model.
 
         Returns
@@ -198,23 +198,21 @@ class DecisionTreeModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the decision tree model.
+        Import the logistic regression model.
 
         Returns
         -------
-        object of class :class:`~sklearn.tree.DecisionTreeClassifier`
+        object of class :class:`~sklearn.linear_model.LogisticRegression`
             The object used to represent the prediction model.
         """
 
         # Log a message about the model file reading
-        get_logger().info(
-            "Reading '%s' model from file ...", self.model_label)
+        get_logger().info("Reading '%s' model from file ...", self.model_label)
 
         return load(open(self.model_path, 'rb'))
 
     def export_model(self):
-        """
-        Export the decision tree model."""
+        """Export the logistic regression model."""
 
         # Open a file stream
         with open(self.model_path, 'wb') as file:

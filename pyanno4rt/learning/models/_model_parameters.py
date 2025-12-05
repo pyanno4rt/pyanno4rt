@@ -308,15 +308,18 @@ class ModelParameters():
 
         validation_map = {
             'model_label': (
-                partial(validate_type, options=str),),
+                partial(validate_type, options=str),
+                ),
             'model_type': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
                     'forest', 'logistic', 'naive_bayes', 'neighbors',
-                    'neural_network', 'svm', 'tree'))),
+                    'neural_network', 'svm', 'tree'))
+                ),
             'model_folder_path': (
                 partial(validate_type, options=(type(None), str)),
-                partial(validate_path)),
+                partial(validate_path)
+                ),
             'data_path': (
                 partial(validate_type, options={
                     True: (type(None), str), False: str},
@@ -324,54 +327,72 @@ class ModelParameters():
                         inputs.get('model_folder_path'), str)),
                 partial(validate_file, options=('.csv',)),
                 partial(validate_directory, options=(
-                    '.jpg', '.npy', '.npz', '.png'), alt=('.csv',))),
+                    '.jpg', '.npy', '.npz', '.png'), alt=('.csv',))
+                ),
             'data_columns': (
                 partial(validate_type, options={
                     True: (type(None), list), False: list},
                     condition=isinstance(
                         inputs.get('model_folder_path'), str)),
-                partial(validate_length, reference=2, sign='>=')),
+                partial(validate_length, reference=2, sign='>=')
+                ),
             'preprocessing': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=str),
                 partial(
-                    validate_item_in_set, options=tuple(maps.TRANSFORMERS))),
+                    validate_item_in_set, options=tuple(maps.TRANSFORMERS))
+                ),
             'architecture': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'vanilla', 'vanilla input-convex'))),
+                    'vanilla', 'vanilla input-convex'))
+                ),
             'max_hidden_layers': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')
+                ),
             'tune_space': (
-                partial(validate_type, options=tuple(maps.SPACES.values())),),
+                partial(validate_type, options=tuple(
+                    maps.TUNE_SPACES.values())),
+                ),
             'tune_evaluations': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')
+                ),
             'tune_score': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=tuple(
-                    ('AUC', *maps.LOSSES)))),
+                    ('AUC', *maps.LOSSES)))
+                ),
             'tune_splits': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')
+                ),
             'tune_repeats': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')
+                ),
             'inspect': (
-                partial(validate_type, options=bool),),
+                partial(validate_type, options=bool),
+                ),
             'evaluate': (
-                partial(validate_type, options=bool),),
+                partial(validate_type, options=bool),
+                ),
             'oof_splits': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')
+                ),
             'oof_repeats': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')),
+                partial(validate_item, reference=1, sign='>=')
+                ),
             'write_features': (
-                partial(validate_type, options=bool),),
+                partial(validate_type, options=bool),
+                ),
             'display_options': (
-                partial(validate_type, options=DisplayOptions),)}
+                partial(validate_type, options=DisplayOptions),
+                )
+            }
 
         # Check if the data path is None
         if inputs['data_path'] is None:

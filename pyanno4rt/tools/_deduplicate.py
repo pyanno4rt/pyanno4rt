@@ -1,13 +1,14 @@
-"""Deduplicating indexing via dictionary."""
+"""Deduplicate indexing via dictionary."""
 
 # Author: Tim Ortkamp
 
 # %% Function definition
 
 
-def deduplicate(elements):
+def deduplicate(iterable):
     """
-    Convert an iterable to a dictionary with index tuple for each element.
+    Convert an iterable to a dictionary with the elements (keys) and their \
+    indices (values).
 
     Parameters
     ----------
@@ -17,30 +18,24 @@ def deduplicate(elements):
     Returns
     -------
     dict
-        Dictionary with the element-indices pairs.
+        Dictionary with the element-index pairs.
     """
 
     # Initialize the mapping dictionary
-    mapping = {}
-
-    # Set the starting index to zero
-    index = 0
+    dictionary = {}
 
     # Loop over all elements in the iterable
-    for element in elements:
+    for index, element in enumerate(iterable):
 
-        # Check if the element is already a dictionary key
-        if element in mapping:
+        # Check if the element is already a key
+        if element in dictionary:
 
-            # Add the index to the values
-            mapping[element] += (index,)
+            # Add the index
+            dictionary[element] += (index,)
 
         else:
 
-            # Create a new key and initialize the index list
-            mapping[element] = [index]
+            # Create a new key and add the index
+            dictionary[element] = [index]
 
-        # Increment the index
-        index += 1
-
-    return {key: list(value) for key, value in mapping.items()}
+    return dictionary

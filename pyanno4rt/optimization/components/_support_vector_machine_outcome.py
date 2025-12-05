@@ -9,8 +9,9 @@ from copy import deepcopy
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning import DataModelHandler, ModelParameters
-from pyanno4rt.learning.svm import (
+from pyanno4rt.learning import DataModelHandler
+from pyanno4rt.learning.models import ModelParameters
+from pyanno4rt.learning.models.svm import (
     linear_gradient, poly_gradient, rbf_gradient, sigmoid_gradient,
     SupportVectorMachineModel)
 from pyanno4rt.logging import get_logger
@@ -106,8 +107,7 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
             rank=1,
             bounds=None,
             transform=False,
-            identifier=None,
-            display=True):
+            identifier=None):
 
         # Call the superclass constructor to initialize and check attributes
         super().__init__(
@@ -123,8 +123,7 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
             rank=rank,
             bounds=bounds,
             transform=transform,
-            identifier=identifier,
-            display=display)
+            identifier=identifier)
 
         # Set the input arguments
         self.arguments = filter_dict(

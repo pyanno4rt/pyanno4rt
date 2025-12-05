@@ -9,8 +9,9 @@ from copy import deepcopy
 # %% Internal package import
 
 from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning import DataModelHandler, ModelParameters
-from pyanno4rt.learning.tree import DecisionTreeModel
+from pyanno4rt.learning import DataModelHandler
+from pyanno4rt.learning.models import ModelParameters
+from pyanno4rt.learning.models.tree import DecisionTreeModel
 from pyanno4rt.logging import get_logger
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict

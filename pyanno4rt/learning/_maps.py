@@ -18,7 +18,7 @@ from pyanno4rt.learning.features import (
     SegmentEigenvalues, SegmentSphericity, SegmentVolume)
 from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
 from pyanno4rt.learning.losses import brier_loss, log_loss
-from pyanno4rt.learning.preprocessing import (
+from pyanno4rt.learning.preprocessing.scalers import (
     Identity, StandardScaler, Whitening)
 from pyanno4rt.learning.tune_spaces import (
     TuneSpaceDT, TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB, TuneSpaceNN,
@@ -62,17 +62,17 @@ LOSSES = {
     'Brier score': brier_loss,
     'Logloss': log_loss}
 
-NN_LOSSES = {
+NETWORK_LOSSES = {
     'BCE': BinaryCrossentropy,
     'FocalBCE': BinaryFocalCrossentropy,
     'KLD': KLDivergence}
 
-NN_OPTS = {
+NETWORK_OPTIMIZERS = {
     'Adam': Adam,
     'Ftrl': Ftrl,
     'SGD': SGD}
 
-SPACES = {
+TUNE_SPACES = {
     'forest': TuneSpaceRF,
     'logistic': TuneSpaceLR,
     'naive_bayes': TuneSpaceNB,

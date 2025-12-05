@@ -34,14 +34,16 @@ def salu(value, multiplier=1, summand=0, sign=1):
         Value(s) of the SALU function.
     """
 
-    # Check if the passed value is tuple or a list
+    # Check if the value is a tuple or a list
     if isinstance(value, (tuple, list)):
 
+        # Return the SALU function values
         return tuple(
             0.25*(multiplier*val+summand)+0.5
             if sign*(multiplier*val + summand) > 0
             else 1/(1 + exp(-(multiplier*val + summand))) for val in value)
 
+    # Return the SALU function value
     return (
         0.25*(multiplier*value + summand)+0.5
         if sign*(multiplier*value + summand) > 0

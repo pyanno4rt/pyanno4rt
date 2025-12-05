@@ -8,7 +8,7 @@ from numpy import array, mean
 
 # %% Internal package import
 
-from pyanno4rt.learning.tree import OptimizableDecisionTree
+from pyanno4rt.learning.models.tree import OptimizableDecisionTree
 
 # %% Class definition
 

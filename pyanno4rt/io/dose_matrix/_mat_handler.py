@@ -92,4 +92,4 @@ class MatHandler():
         """
 
         # Save the matrix to the path
-        savemat(path, {'Dij': dose_matrix})
+        savemat(path, {'Dij': dose_matrix}, do_compression=True)

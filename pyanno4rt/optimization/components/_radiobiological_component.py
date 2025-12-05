@@ -234,48 +234,65 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         # Get the validation map
         validation_map = {
             'name': (
-                partial(validate_type, options=str),),
+                partial(validate_type, options=str),
+                ),
             'segment': (
-                partial(validate_type, options=(str, list)),),
+                partial(validate_type, options=(str, list)),
+                ),
             'component_type': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'objective', 'constraint'))),
+                    'objective', 'constraint'))
+                ),
             'parameter_name': (
                 partial(validate_type, options=tuple),
-                partial(validate_subtype, options=str)),
+                partial(validate_subtype, options=str)
+                ),
             'parameter_category': (
                 partial(validate_type, options=tuple),
-                partial(validate_subtype, options=str)),
+                partial(validate_subtype, options=str)
+                ),
             'embedding': (
                 partial(validate_type, options=str),
-                partial(validate_item_in_set, options=('active', 'passive'))),
+                partial(validate_item_in_set, options=('active', 'passive'))
+                ),
             'weight': (
                 partial(validate_type, options=(int, float)),
-                partial(validate_item, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')
+                ),
             'rank': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=0, sign='>')),
+                partial(validate_item, reference=0, sign='>')
+                ),
             'bounds': (
                 partial(validate_type, options=(type(None), list)),
                 partial(validate_length, reference=2, sign='=='),
-                partial(validate_subtype, options=(type(None), int, float))),
+                partial(validate_subtype, options=(type(None), int, float))
+                ),
             'identifier': (
-                partial(validate_type, options=(type(None), str)),),
+                partial(validate_type, options=(type(None), str)),
+                ),
             'tolerance_dose_50': (
                 partial(validate_type, options=(int, float)),
-                partial(validate_item, reference=0, sign='>=')),
+                partial(validate_item, reference=0, sign='>=')
+                ),
             'volume_parameter': (
-                partial(validate_type, options=(int, float)),),
+                partial(validate_type, options=(int, float)),
+                ),
             'slope_parameter': (
-                partial(validate_type, options=(int, float)),),
+                partial(validate_type, options=(int, float)),
+                ),
             'alpha': (
-                partial(validate_type, options=(int, float)),),
+                partial(validate_type, options=(int, float)),
+                ),
             'beta': (
-                partial(validate_type, options=(int, float)),),
+                partial(validate_type, options=(int, float)),
+                ),
             'number_of_fractions': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=0, sign='>'))}
+                partial(validate_item, reference=0, sign='>')
+                )
+            }
 
         # Loop over the dictionary items
         for key, value in inputs.items():

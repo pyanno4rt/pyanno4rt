@@ -184,7 +184,7 @@ class Dosimetrics():
             prescription = None
 
             # Check if the segment is a target of interest
-            if data['type'] == 'TARGET' and objective is not None:
+            if data['type'] == 'TARGET' and len(objective) > 0:
 
                 # Get the mean dose prescription
                 prescription = self.number_of_fractions*mean(

@@ -169,15 +169,14 @@ class ComponentGraphWidget(QWidget):
                     event.setPen(mkPen(
                         color=pen.color(), style=pen.style(), width=4))
 
-                    # Get the optimization data
-                    fluence_optimizer = self.parent.plan.fluence_optimizer
+                    # Get the optimization problem
+                    problem = self.parent.plan.fluence_optimizer.problem
 
                     # Get the optimization components
                     components = {
                         component.track_id: component
                         for component in
-                        fluence_optimizer.problem.objectives
-                        + fluence_optimizer.problem.constraints}
+                        problem.objectives + problem.constraints}
 
                     # Get the selected instance attribute
                     component_type, embedding, weight, rank, bounds = (getattr(

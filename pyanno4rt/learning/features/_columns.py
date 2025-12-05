@@ -121,45 +121,60 @@ class DynamicFeature():
         validate_argument = {
             'Dose Gradient': (
                 partial(validate_type, options=str),
-                partial(validate_item_in_set, options=('x', 'y', 'z'))),
+                partial(validate_item_in_set, options=('x', 'y', 'z'))
+                ),
             'Dose Moment': (
                 partial(validate_type, options=str),
                 partial(validate_length, reference=3, sign='=='),
-                validate_string_number),
+                validate_string_number
+                ),
             'Dose Subvolume': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
                     'x1of2', 'x2of2', 'x1of3', 'x2of3', 'x3of3', 'y1of2',
                     'y2of2', 'y1of3', 'y2of3', 'y3of3', 'z1of2', 'z2of2',
-                    'z1of3', 'z2of3', 'z3of3'))),
+                    'z1of3', 'z2of3', 'z3of3'))
+                ),
             'Dx': (
                 partial(validate_type, options=(int, float)),
                 partial(validate_item, reference=0, sign='>'),
-                partial(validate_item, reference=100, sign='<')),
+                partial(validate_item, reference=100, sign='<')
+                ),
             'Vx': (
                 partial(validate_type, options=(int, float)),
                 partial(validate_item, reference=0, sign='>'),
-                partial(validate_item, reference=100, sign='<')),
+                partial(validate_item, reference=100, sign='<')
+                ),
             'other': (
-                partial(validate_type, options=type(None)),)}
+                partial(validate_type, options=type(None)),
+                )
+            }
 
         # Get the validation map
         validation_map = {
             'column': (
-                partial(validate_type, options=str),),
+                partial(validate_type, options=str),
+                ),
             'segment': (
-                partial(validate_type, options=str),),
+                partial(validate_type, options=str),
+                ),
             'function': (
                 partial(validate_type, options=str),
-                partial(validate_item_in_set, options=tuple(maps.FEATURES))),
+                partial(validate_item_in_set, options=tuple(maps.FEATURES))
+                ),
             'argument': validate_argument[
-                inputs['function'] if inputs['function'] in (
+                inputs['function']
+                if inputs['function'] in (
                     'Dx', 'Vx', 'Dose Gradient', 'Dose Moment',
-                    'Dose Subvolume') else 'other'],
+                    'Dose Subvolume')
+                else 'other'
+                ],
             'scale': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'metric', 'nominal', 'ordinal')))}
+                    'metric', 'nominal', 'ordinal'))
+                )
+            }
 
         # Loop over the dictionary items
         for key, value in inputs.items():
@@ -260,13 +275,17 @@ class StaticFeature():
         # Get the validation map
         validation_map = {
             'column': (
-                partial(validate_type, options=str),),
+                partial(validate_type, options=str),
+                ),
             'value': (
-                partial(validate_type, options=(int, float, str)),),
+                partial(validate_type, options=(int, float, str)),
+                ),
             'scale': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'metric', 'nominal', 'ordinal')))}
+                    'metric', 'nominal', 'ordinal'))
+                )
+            }
 
         # Loop over the dictionary items
         for key, value in inputs.items():
@@ -375,17 +394,22 @@ class Label():
         # Get the validation map
         validation_map = {
             'column': (
-                partial(validate_type, options=str),),
+                partial(validate_type, options=str),
+                ),
             'viewpoint': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'early', 'late', 'long-term', 'longitudinal', 'profile'))),
+                    'early', 'late', 'long-term', 'longitudinal', 'profile'))
+                ),
             'time_variable': (
-                partial(validate_type, options=(type(None), str)),),
+                partial(validate_type, options=(type(None), str)),
+                ),
             'bounds': (
                 partial(validate_type, options=list),
                 partial(validate_length, reference=2, sign='=='),
-                partial(validate_subtype, options=(type(None), int, float)))}
+                partial(validate_subtype, options=(type(None), int, float))
+                )
+            }
 
         # Loop over the dictionary items
         for key, value in inputs.items():

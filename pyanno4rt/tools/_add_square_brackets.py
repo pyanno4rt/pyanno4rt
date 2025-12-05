@@ -12,7 +12,7 @@ def add_square_brackets(text):
     Parameters
     ----------
     text : str
-        Input text to be placed in brackets.
+        Input text.
 
     Returns
     -------
@@ -35,7 +35,7 @@ def add_square_brackets(text):
             # Remove the last character
             text = text[:-1]
 
-        # Return the text input only
+        # Return the bracketed text input
         return f'[{text}]'
 
     return text

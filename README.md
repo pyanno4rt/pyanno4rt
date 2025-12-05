@@ -174,7 +174,7 @@ Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.1** for develop
 
 *pyanno4rt* is open for contributors of all experience levels. Please refer to our [contribution guidelines](CONTRIBUTING.md) or get in contact with us (see [Help and Support](#help-and-support)) to discuss the format of your contribution.
 
-> Note: the [docs](https://github.com/pyanno4rt/pyanno4rt/tree/develop/docs) folder includes example files with CT/segmentation data and the photon dose-influence matrix for the TG-119 case, a standard test phantom which can be used for development. You will find more realistic patient data e.g. in the CORT<sup>1</sup> or the TROTS<sup>2</sup> dataset.<br><br>
+> Note: the [docs](https://github.com/pyanno4rt/pyanno4rt/tree/develop/docs) folder includes example files with CT/segmentation data, photon dose-influence matrix and a synthetic outcome dataset for the C-shape benchmark case from the AAPM TG-119, which can be used for development. You will find more realistic patient data e.g. in the CORT<sup>1</sup> or the TROTS<sup>2</sup> dataset.<br><br>
 ><sub><sup>1</sup>D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". <i>GigaScience</i> 3.1 (2014).<br><sup>2</sup>S. Breedveld, B. Heijmen. "Data for TROTS - The Radiotherapy Optimisation Test Set". <i>Data in Brief</i> (2017).</sub>
 
 # Help and Support :busts_in_silhouette:

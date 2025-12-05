@@ -1,4 +1,4 @@
-"""Support vector machine model."""
+"""Decision tree model."""
 
 # Author: Tim Ortkamp
 
@@ -7,23 +7,24 @@
 from pickle import dump, load
 
 from hyperopt import hp
-from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 
 # %% Internal package import
 
-from pyanno4rt.learning import MachineLearningModel
+from pyanno4rt.learning.models import MachineLearningModel
+from pyanno4rt.learning.models.tree import OptimizableDecisionTree
 from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
 
-class SupportVectorMachineModel(MachineLearningModel):
+class DecisionTreeModel(MachineLearningModel):
     """
-    Support vector machine model class.
+    Decision tree model class.
 
     This class enables building an individual preprocessing pipeline, \
     fitting, making predictions, inspecting, and evaluating the predictive \
-    performance of a support vector machine model.
+    performance of a decision tree model.
 
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
@@ -46,24 +47,43 @@ class SupportVectorMachineModel(MachineLearningModel):
         # Get the internal hyperparameter search space
         tune_space_dict = tune_space.to_dict()
 
+        # Check if the maximum number of features is set to the default
+        if tune_space_dict['max_features'] == [0]:
+
+            # Adjust the maximum number of features by the dataset
+            tune_space_dict['max_features'] = [len(dataset['feature_names'])]
+
         # Configure the hyperopt search space
         hp_space = {
-            'C': hp.uniform(
-                'C', tune_space_dict['C'][0], tune_space_dict['C'][1]),
-            'kernel': hp.choice('kernel', tune_space_dict['kernel']),
-            'degree': hp.choice('degree', tune_space_dict['degree']),
-            'gamma': hp.uniform(
-                'gamma', tune_space_dict['gamma'][0],
-                tune_space_dict['gamma'][1]),
-            'tol': hp.choice('tol', tune_space_dict['tol']),
+            'criterion': hp.choice('criterion', tune_space_dict['criterion']),
+            'splitter': hp.choice('splitter', tune_space_dict['splitter']),
+            'max_depth': hp.choice('max_depth', tune_space_dict['max_depth']),
+            'min_samples_split': hp.uniform(
+                'min_samples_split', tune_space_dict['min_samples_split'][0],
+                tune_space_dict['min_samples_split'][1]),
+            'min_samples_leaf': hp.uniform(
+                'min_samples_leaf', tune_space_dict['min_samples_leaf'][0],
+                tune_space_dict['min_samples_leaf'][1]),
+            'min_weight_fraction_leaf': hp.uniform(
+                'min_weight_fraction_leaf',
+                tune_space_dict['min_weight_fraction_leaf'][0],
+                tune_space_dict['min_weight_fraction_leaf'][1]),
+            'max_features': hp.choice(
+                'max_features', tune_space_dict['max_features']),
             'class_weight': hp.choice(
-                'class_weight', tune_space_dict['class_weight'])}
+                'class_weight', tune_space_dict['class_weight']),
+            'ccp_alpha': hp.uniform(
+                'ccp_alpha', tune_space_dict['ccp_alpha'][0],
+                tune_space_dict['ccp_alpha'][1])}
 
         # Initialize the superclass
         super().__init__(
             model_label, model_folder_path, dataset, preprocessing_steps,
             tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
+
+        # Get the optimization surrogate of the decision tree model
+        self.optimization_model = self.get_optimization_model()
 
     def get_hyperparameter_set(
             self,
@@ -84,21 +104,11 @@ class SupportVectorMachineModel(MachineLearningModel):
 
         # Build the hyperparameter dictionary
         hyperparameters = {
-            'C': proposal['C'],
-            'kernel': proposal['kernel'],
-            'degree': proposal['degree'],
-            'gamma': proposal['gamma'],
-            'coef0': 0.0,
-            'shrinking': True,
-            'probability': True,
-            'tol': proposal['tol'],
-            'cache_size': 200,
-            'class_weight': proposal['class_weight'],
-            'verbose': False,
-            'max_iter': -1,
-            'decision_function_shape': 'ovr',
-            'break_ties': False,
-            'random_state': 42}
+            **proposal,
+            'random_state': 42,
+            'max_leaf_nodes': None,
+            'min_impurity_decrease': 0.0,
+            'monotonic_cst': None}
 
         return hyperparameters
 
@@ -108,7 +118,7 @@ class SupportVectorMachineModel(MachineLearningModel):
             labels,
             hyperparameters):
         """
-        Get the support vector machine model fit.
+        Get the decision tree model fit.
 
         Parameters
         ----------
@@ -123,17 +133,37 @@ class SupportVectorMachineModel(MachineLearningModel):
 
         Returns
         -------
-        prediction_model : object of class :class:`~sklearn.svm.SVC`
+        prediction_model : object of class \
+            :class:`~sklearn.tree.DecisionTreeClassifier`
             The object used to represent the pre-fitted prediction model.
         """
 
-        # Initialize the support vector machine model
-        prediction_model = SVC(**hyperparameters)
+        # Initialize the decision tree model
+        prediction_model = DecisionTreeClassifier(**hyperparameters)
 
         # Fit the model with the training data
         prediction_model.fit(features, labels)
 
         return prediction_model
+
+    def get_optimization_model(self):
+        """
+        Get the decision tree optimization model.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.tree._optimizable_decision_tree.OptimizableDecisionTree`
+            The object used to represent the optimization model.
+        """
+
+        # Initialize the optimizable decision tree
+        optimization_model = OptimizableDecisionTree()
+
+        # Read the path information from the pre-fitted decision tree
+        optimization_model.traverse(self.prediction_model)
+
+        return optimization_model
 
     def predict(
             self,
@@ -145,9 +175,10 @@ class SupportVectorMachineModel(MachineLearningModel):
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Array of input feature values.
 
-        predictor : object of class :class:`~sklearn.svm.SVC`
+        predictor : object of class \
+            :class:`~sklearn.tree.DecisionTreeClassifier`
             The object used to represent the prediction model.
 
         Returns
@@ -167,11 +198,11 @@ class SupportVectorMachineModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the support vector machine model.
+        Import the decision tree model.
 
         Returns
         -------
-        object of class :class:`~sklearn.svm.SVC`
+        object of class :class:`~sklearn.tree.DecisionTreeClassifier`
             The object used to represent the prediction model.
         """
 
@@ -182,7 +213,8 @@ class SupportVectorMachineModel(MachineLearningModel):
         return load(open(self.model_path, 'rb'))
 
     def export_model(self):
-        """Export the support vector machine model."""
+        """
+        Export the decision tree model."""
 
         # Open a file stream
         with open(self.model_path, 'wb') as file:

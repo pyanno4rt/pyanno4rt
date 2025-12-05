@@ -9,12 +9,10 @@ outcome model-based component functions for the optimization problem.
 
 # Author: Tim Ortkamp
 
-# Import the base classes
 from ._conventional_component import ConventionalComponent
 from ._machine_learning_component import MachineLearningComponent
 from ._radiobiological_component import RadiobiologicalComponent
 
-# Import the component classes
 from ._decision_tree_outcome import DecisionTreeOutcome
 from ._dose_uniformity import DoseUniformity
 from ._equivalent_uniform_dose import EquivalentUniformDose

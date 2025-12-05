@@ -1,4 +1,4 @@
-"""K-nearest neighbors model."""
+"""Random forest model."""
 
 # Author: Tim Ortkamp
 
@@ -7,23 +7,24 @@
 from pickle import dump, load
 
 from hyperopt import hp
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 # %% Internal package import
 
-from pyanno4rt.learning import MachineLearningModel
+from pyanno4rt.learning.models import MachineLearningModel
+from pyanno4rt.learning.models.forest import OptimizableRandomForest
 from pyanno4rt.logging import get_logger
 
 # %% Class definition
 
 
-class KNeighborsModel(MachineLearningModel):
+class RandomForestModel(MachineLearningModel):
     """
-    K-nearest neighbors model class.
+    Random forest model class.
 
     This class enables building an individual preprocessing pipeline, \
     fitting, making predictions, inspecting, and evaluating the predictive \
-    performance of a k-nearest neighbors model.
+    performance of a random forest model.
 
     See the machine learning model template class \
         :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
@@ -46,19 +47,45 @@ class KNeighborsModel(MachineLearningModel):
         # Get the internal hyperparameter search space
         tune_space_dict = tune_space.to_dict()
 
+        # Check if the maximum number of features is set to the default
+        if tune_space_dict['max_features'] == [0]:
+
+            # Adjust the maximum number of features by the dataset
+            tune_space_dict['max_features'] = [len(dataset['feature_names'])]
+
         # Configure the hyperopt search space
         hp_space = {
-            'n_neighbors': hp.choice(
-                'n_neighbors', tune_space_dict['n_neighbors']),
-            'weights': hp.choice('weights', tune_space_dict['weights']),
-            'leaf_size': hp.choice('leaf_size', tune_space_dict['leaf_size']),
-            'p': hp.choice('p', tune_space_dict['p'])}
+            'n_estimators': hp.choice(
+                'n_estimators', tune_space_dict['n_estimators']),
+            'criterion': hp.choice('criterion', tune_space_dict['criterion']),
+            'max_depth': hp.choice('max_depth', tune_space_dict['max_depth']),
+            'min_samples_split': hp.uniform(
+                'min_samples_split', tune_space_dict['min_samples_split'][0],
+                tune_space_dict['min_samples_split'][1]),
+            'min_samples_leaf': hp.uniform(
+                'min_samples_leaf', tune_space_dict['min_samples_leaf'][0],
+                tune_space_dict['min_samples_leaf'][1]),
+            'min_weight_fraction_leaf': hp.uniform(
+                'min_weight_fraction_leaf',
+                tune_space_dict['min_weight_fraction_leaf'][0],
+                tune_space_dict['min_weight_fraction_leaf'][1]),
+            'max_features': hp.choice(
+                'max_features', tune_space_dict['max_features']),
+            'bootstrap': hp.choice('bootstrap', tune_space_dict['bootstrap']),
+            'class_weight': hp.choice(
+                'class_weight', tune_space_dict['class_weight']),
+            'ccp_alpha': hp.uniform(
+                'ccp_alpha', tune_space_dict['ccp_alpha'][0],
+                tune_space_dict['ccp_alpha'][1])}
 
         # Initialize the superclass
         super().__init__(
             model_label, model_folder_path, dataset, preprocessing_steps,
             tune_space_dict, hp_space, tune_evaluations, tune_score,
             inspect_model, evaluate_model, display_options)
+
+        # Get the optimization surrogate of the random forest model
+        self.optimization_model = self.get_optimization_model()
 
     def get_hyperparameter_set(
             self,
@@ -80,10 +107,15 @@ class KNeighborsModel(MachineLearningModel):
         # Build the hyperparameter dictionary
         hyperparameters = {
             **proposal,
-            'algorithm': 'auto',
-            'metric': 'minkowski',
-            'metric_params': None,
-            'n_jobs': -1}
+            'max_leaf_nodes': None,
+            'min_impurity_decrease': 0.0,
+            'oob_score': False,
+            'n_jobs': -1,
+            'random_state': 42,
+            'verbose': 0,
+            'warm_start': False,
+            'max_samples': None,
+            'monotonic_cst': None}
 
         return hyperparameters
 
@@ -93,7 +125,7 @@ class KNeighborsModel(MachineLearningModel):
             labels,
             hyperparameters):
         """
-        Get the k-nearest neighbors model fit.
+        Get the random forest model fit.
 
         Parameters
         ----------
@@ -109,17 +141,36 @@ class KNeighborsModel(MachineLearningModel):
         Returns
         -------
         prediction_model : object of class \
-            :class:`~sklearn.neighbors.KNeighborsClassifier`
+            :class:`~sklearn.ensemble.RandomForestClassifier`
             The object used to represent the pre-fitted prediction model.
         """
 
-        # Initialize the k-nearest neighbors model
-        prediction_model = KNeighborsClassifier(**hyperparameters)
+        # Initialize the random forest model
+        prediction_model = RandomForestClassifier(**hyperparameters)
 
         # Fit the model with the training data
         prediction_model.fit(features, labels)
 
         return prediction_model
+
+    def get_optimization_model(self):
+        """
+        Get the random forest optimization model.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.forest._optimizable_random_forest.OptimizableRandomForest`
+            The object used to represent the optimization model.
+        """
+
+        # Initialize the optimizable random forest
+        optimization_model = OptimizableRandomForest()
+
+        # Initialize the members of the random forest
+        optimization_model.initialize_subtrees(self.prediction_model)
+
+        return optimization_model
 
     def predict(
             self,
@@ -134,7 +185,7 @@ class KNeighborsModel(MachineLearningModel):
             Values of the input features.
 
         predictor : object of class \
-            :class:`~sklearn.neighbors.KNeighborsClassifier`
+            :class:`~sklearn.ensemble.RandomForestClassifier`
             The object used to represent the prediction model.
 
         Returns
@@ -154,11 +205,11 @@ class KNeighborsModel(MachineLearningModel):
 
     def import_model(self):
         """
-        Import the k-nearest neighbors model.
+        Import the random forest model.
 
         Returns
         -------
-        object of class :class:`~sklearn.neighbors.KNeighborsClassifier`
+        object of class :class:`~sklearn.ensemble.RandomForestClassifier`
             The object used to represent the prediction model.
         """
 
@@ -169,7 +220,7 @@ class KNeighborsModel(MachineLearningModel):
         return load(open(self.model_path, 'rb'))
 
     def export_model(self):
-        """Export the k-nearest neighbors model."""
+        """Export the random forest model."""
 
         # Open a file stream
         with open(self.model_path, 'wb') as file:

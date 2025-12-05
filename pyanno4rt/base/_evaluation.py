@@ -127,7 +127,9 @@ class Evaluation():
             'reference_doses': (
                 partial(validate_type, options=(tuple, list)),
                 partial(validate_subtype, options=(int, float)),
-                partial(validate_item, reference=0, sign='>='))}
+                partial(validate_item, reference=0, sign='>=')
+                )
+            }
 
         # Loop over the inputs
         for key, value in inputs.items():

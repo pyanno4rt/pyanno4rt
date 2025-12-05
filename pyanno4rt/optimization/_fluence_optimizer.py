@@ -67,6 +67,12 @@ class FluenceOptimizer():
     handlers : dict
         See 'Parameters'.
 
+    initializer : object of class \
+        :class:`~pyanno4rt.optimization.initializers._data_medoid_initializer.DataMedoidInitializer`\
+        :class:`~pyanno4rt.optimization.initializers._target_coverage_initializer.TargetCoverageInitializer`\
+        :class:`~pyanno4rt.optimization.initializers._warm_start_initializer.WarmStartInitializer`
+        The object used to represent the fluence vector initializer.
+
     problem : object of class \
         :class:`~pyanno4rt.optimization.problems.lexicographic._lexicographic_problem.LexicographicProblem`\
         :class:`~pyanno4rt.optimization.problems.pareto._pareto_problem.ParetoProblem`\
@@ -98,9 +104,6 @@ class FluenceOptimizer():
 
     optimized_dose : ndarray
         Optimized dose cube (CT resolution).
-
-    from_copycat : bool
-        Indicator for loading the optimized fluence from a copycat.
     """
 
     def __init__(
@@ -147,9 +150,9 @@ class FluenceOptimizer():
             handlers['dose_handler'].dose_influence_matrix,
             handlers['plan_handler'].RBE)
 
-        # Calculate the initial fluence
-        initializer = maps.INITIALIZERS[initial_strategy](initial_fluence)
-        initial_fluence = initializer.run(handlers)
+        # Get the fluence initializer and calculate the initial vector
+        self.initializer = maps.INITIALIZERS[initial_strategy](initial_fluence)
+        initial_fluence = self.initializer.run(handlers)
 
         # Construct the optimization problem
         self.problem = maps.PROBLEMS[method](
@@ -171,9 +174,6 @@ class FluenceOptimizer():
         self.optimized_fluence, self.solver_info, self.optimized_dose = (
             None, None, None)
 
-        # Initialize the copycat indicator
-        self.from_copycat = False
-
     def solve(self):
         """Solve the optimization problem."""
 
@@ -187,7 +187,7 @@ class FluenceOptimizer():
         start_time = time()
 
         # Check if the fluence can not be loaded from a copycat
-        if not self.from_copycat:
+        if self.solver.maximum_iterations > 0:
 
             # Map the problem to the solution methods
             methods = {
@@ -201,15 +201,16 @@ class FluenceOptimizer():
 
         else:
 
-            # Log a message about the imported fluence
+            # Log a message about the  fluence
             get_logger().info(
-                "Retrieving solution from the loaded treatment plan ...")
+                "Maximum number of iterations is set to zero - retrieving "
+                "optimized fluence from the initialization ...")
+
+            # Get the optimized fluence from the initialization
+            self.optimized_fluence = self.problem.initial_fluence
 
             # Compute the optimized dose
             self.optimized_dose = self.compute_dose_3d(self.optimized_fluence)
-
-            # Reset the copycat indicator
-            self.from_copycat = False
 
         # Get the runtime for problem solving
         self.solver_time = round(time()-start_time, 2)

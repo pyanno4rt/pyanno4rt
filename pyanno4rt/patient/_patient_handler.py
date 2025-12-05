@@ -15,7 +15,7 @@ from scipy.ndimage import zoom
 
 from pyanno4rt.io.patient import DicomHandler, MatHandler
 from pyanno4rt.logging import get_logger
-from pyanno4rt.tools import apply
+from pyanno4rt.tools import apply, flatten
 
 # %% Class definition
 
@@ -91,8 +91,17 @@ class PatientHandler():
         # Save the patient imaging data
         handler().save(self.computed_tomography, self.segmentation, path)
 
-    def remove_overlap(self):
-        """Remove overlaps between segments."""
+    def remove_overlap(
+            self,
+            components):
+        """
+        Remove overlaps between segments.
+
+        Parameters
+        ----------
+        components : list
+            Plan components.
+        """
 
         def remove_segment_overlap(reference):
             """Remove the overlap from a reference segment."""
@@ -100,7 +109,8 @@ class PatientHandler():
             # Get the indices from all higher prioritized segments
             superior_indices = (
                 segmentation[segment]['raw_indices']
-                for segment in segmentation
+                for segment in flatten(
+                        component.segment for component in components)
                 if (segmentation[segment]['parameters']['priority']
                     < segmentation[reference]['parameters']['priority']))
 

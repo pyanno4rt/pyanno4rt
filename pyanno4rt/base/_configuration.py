@@ -186,7 +186,9 @@ class Configuration():
                 ),
             'number_of_fractions': (
                 partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>='))}
+                partial(validate_item, reference=1, sign='>=')
+                )
+            }
 
         # Loop over the inputs
         for key, value in inputs.items():

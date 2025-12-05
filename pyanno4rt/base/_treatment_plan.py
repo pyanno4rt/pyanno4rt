@@ -183,7 +183,7 @@ class TreatmentPlan():
                 self.configuration.dose_matrix_path)
 
             # Remove the segment overlaps
-            self.patient_handler.remove_overlap()
+            self.patient_handler.remove_overlap(self.plan_handler.components)
 
             # Resize the segments to the dose grid
             self.patient_handler.resize_segments(
