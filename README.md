@@ -55,7 +55,7 @@
 	<li> Scalarization & multi-objective optimization methods
 		<ul> 
 			<li> Lexicographic method </li> 
-			<li> Pareto analysis </li> 
+			<li> Pareto method </li> 
 			<li> Weighted-sum method
 		</ul>
 	</li>
@@ -74,10 +74,9 @@
 
 <h3>Data-driven outcome prediction model handling</h3>
 <ul> 
-	<li> Dataset import, handling & preprocessing </li>
+	<li> 7 internal ML model classes (decision tree, k-nearest neighbors, logistic regression, naive Bayes, neural network, random forest, support vector machine) with customizable modules for dataset loading, preprocessing, hyperparameter tuning, inspection & evaluation </li>
 	<li> 24-type dosiomic & radiomic feature catalogue </li>
-	<li> 7 internal ML models (decision tree, KNN, logistic regression, naive Bayes, neural network, random forest, SVM) with individual preprocessing, inspection & evaluation units + Bayesian hyperparameter tuning </li>
-	<li> External model loading from local folders </li>
+	<li> External model loading from local configuration folders </li>
 </ul>
 
 <h3>Plan evaluation tools</h3>
@@ -189,9 +188,9 @@ Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.1** for develop
 
 <h3>Contact</h3>
 <ul>
+	<li> <a href="https://tortka.github.io">Github Page</a>
 	<li> <a href="mailto:tim.ortkamp@gmx.de?subject=Request (pyanno4rt)">Mail</a> </li>
 	<li> <a href="https://www.linkedin.com/in/tim-ortkamp">Linkedin</a>
-	<li> <a href="https://tortka.github.io">Github Page</a>
 </ul>
 
 <h3>Citation</h3>

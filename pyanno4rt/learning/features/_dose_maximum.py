@@ -5,7 +5,7 @@
 # %% External package import
 
 from jax import grad, jit
-import jax.numpy as jnp
+from jax.numpy import max as jmax
 
 # %% Internal package import
 
@@ -18,7 +18,7 @@ class DoseMaximum(DosiomicFeature):
     """Dose maximum feature class."""
 
     @staticmethod
-    def function(dose):
+    def value(dose):
         """
         Compute the maximum dose.
 
@@ -33,7 +33,7 @@ class DoseMaximum(DosiomicFeature):
             Maximum dose value.
         """
 
-        return jnp.max(dose)
+        return jmax(dose)
 
     @staticmethod
     def compute(
@@ -48,7 +48,7 @@ class DoseMaximum(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -60,7 +60,7 @@ class DoseMaximum(DosiomicFeature):
         if not DoseMaximum.value_is_jitted:
 
             # Perform the jitting
-            DoseMaximum.value_function = jit(DoseMaximum.function)
+            DoseMaximum.value_function = jit(DoseMaximum.value)
 
             # Set 'value_is_jitted' to True
             DoseMaximum.value_is_jitted = True
@@ -80,7 +80,7 @@ class DoseMaximum(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -93,7 +93,7 @@ class DoseMaximum(DosiomicFeature):
 
             # Perform the jitting
             DoseMaximum.gradient_function = jit(grad(
-                DoseMaximum.function, argnums=0))
+                DoseMaximum.value, argnums=0))
 
             # Set 'gradient_is_jitted' to True
             DoseMaximum.gradient_is_jitted = True

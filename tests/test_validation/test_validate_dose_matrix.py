@@ -20,7 +20,7 @@ from pyanno4rt.validation import validate_dose_matrix
     'dose_shape, dose_matrix',
     [
      ((1, 2, 3), csr_matrix((6, 1))),
-     ((3, 3), csr_matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]]))
+     ((3, 1), csr_matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]]))
      ],
     ids=[
         '3D dose, equal beamlet number',
@@ -39,8 +39,8 @@ def test_validate_dose_matrix_positive(dose_shape, dose_matrix):
     'dose_shape, dose_matrix',
     [
      ((1, 2, 3), csr_matrix((5, 1))),
-     ((3, 3), csr_matrix([[-1, 0, 0], [0, 1, 0], [0, 0, 1]])),
-     ((3, 3), csr_matrix([[1, nan, 0], [0, 1, 0], [0, 0, 1]]))
+     ((3, 1), csr_matrix([[-1, 0, 0], [0, 1, 0], [0, 0, 1]])),
+     ((3, 1), csr_matrix([[1, nan, 0], [0, 1, 0], [0, 0, 1]]))
      ],
     ids=[
         '3D dose, different beamlet number',

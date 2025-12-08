@@ -4,7 +4,8 @@
 
 # %% External package import
 
-import jax.numpy as jnp
+from jax.numpy import array, linalg, meshgrid
+from jax.numpy import sum as jsum
 
 # %% Internal package import
 
@@ -19,7 +20,7 @@ class SegmentEigenvalues(RadiomicFeature):
     @staticmethod
     def compute(
             mask,
-            spacing):
+            resolution):
         """
         Compute the segment eigenvalues.
 
@@ -28,8 +29,8 @@ class SegmentEigenvalues(RadiomicFeature):
         mask : ndarray
             Binary mask for the segment.
 
-        spacing : ndarray
-            Spacing of the dose grid.
+        resolution : ndarray
+            Grid resolution (in mm).
 
         Returns
         -------
@@ -40,29 +41,19 @@ class SegmentEigenvalues(RadiomicFeature):
             Segment covariance matrix.
         """
 
-        def compute_masked_mean(array):
-            """Compute the array mean filtered by the mask."""
-
-            return jnp.sum(array*mask) / jnp.sum(mask)
-
-        def compute_masked_sum(array):
-            """Compute the array sum filtered by the mask."""
-
-            return jnp.sum(array*mask)
-
         # Determine the axis points
-        points = jnp.meshgrid(
-            jnp.array(range(mask.shape[1])),
-            jnp.array(range(mask.shape[0])),
-            jnp.array(range(mask.shape[2])))
+        points = meshgrid(
+            array(range(mask.shape[1])),
+            array(range(mask.shape[0])),
+            array(range(mask.shape[2])))
 
-        # Scale up with the grid spacings
+        # Scale up with the grid resolution
         points_x, points_y, points_z = (
-            point*space for point, space in zip(points, spacing))
+            point*spacing for point, spacing in zip(points, resolution))
 
         # Compute the masked means
         mean_x, mean_y, mean_z = tuple(
-            compute_masked_mean(points)
+            jsum(points*mask) / jsum(mask)
             for points in (points_x, points_y, points_z))
 
         # Compute the covariance matrix terms
@@ -78,13 +69,12 @@ class SegmentEigenvalues(RadiomicFeature):
             (points_z-mean_z)**2)
 
         # Compute the masked sums
-        matrix_elements = tuple(
-            compute_masked_sum(term) for term in covariance_terms)
+        matrix_elements = tuple(jsum(term*mask) for term in covariance_terms)
 
         # Reshape the matrix elements
-        covariance_matrix = jnp.array(matrix_elements).reshape((3, 3))
+        covariance_matrix = array(matrix_elements).reshape((3, 3))
 
         # Compute the eigenvalues
-        eigenvalues, _ = jnp.linalg.eig(covariance_matrix)
+        eigenvalues, _ = linalg.eig(covariance_matrix)
 
         return eigenvalues.real, covariance_matrix

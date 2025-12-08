@@ -5,7 +5,7 @@
 # %% External package import
 
 from jax import grad, jit
-import jax.numpy as jnp
+from jax.numpy import sum as jsum
 
 # %% Internal package import
 
@@ -18,19 +18,19 @@ class DoseVx(DosiomicFeature):
     """Dose-volume histogram ordinate feature class."""
 
     @staticmethod
-    def function(
-            level,
-            dose):
+    def value(
+            dose,
+            level):
         """
         Compute the dose-volume histogram ordinate.
 
         Parameters
         ----------
-        level : int or float
-            Reference dose level.
-
         dose : ndarray
             Dose array.
+
+        level : int or float
+            Reference dose level.
 
         Returns
         -------
@@ -38,11 +38,10 @@ class DoseVx(DosiomicFeature):
             Dose-volume histogram ordinate value.
         """
 
-        return jnp.sum(dose >= level) / len(dose)
+        return jsum(dose >= level) / len(dose)
 
     @staticmethod
     def compute(
-            level,
             dose,
             *args):
         """
@@ -50,14 +49,12 @@ class DoseVx(DosiomicFeature):
 
         Parameters
         ----------
-        level : int or float
-            Reference dose level.
-
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the \
+            reference dose level.
 
         Returns
         -------
@@ -69,16 +66,15 @@ class DoseVx(DosiomicFeature):
         if not DoseVx.value_is_jitted:
 
             # Perform the jitting
-            DoseVx.value_function = jit(DoseVx.function)
+            DoseVx.value_function = jit(DoseVx.value)
 
             # Set 'value_is_jitted' to True
             DoseVx.value_is_jitted = True
 
-        return DoseVx.value_function(level, dose)
+        return DoseVx.value_function(dose, args[0])
 
     @staticmethod
     def differentiate(
-            level,
             dose,
             *args):
         """
@@ -86,14 +82,12 @@ class DoseVx(DosiomicFeature):
 
         Parameters
         ----------
-        level : int or float
-            Reference dose level.
-
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the \
+            reference dose level.
 
         Returns
         -------
@@ -105,9 +99,9 @@ class DoseVx(DosiomicFeature):
         if not DoseVx.gradient_is_jitted:
 
             # Perform the jitting
-            DoseVx.gradient_function = jit(grad(DoseVx.function, argnums=1))
+            DoseVx.gradient_function = jit(grad(DoseVx.value, argnums=0))
 
             # Set 'gradient_is_jitted' to True
             DoseVx.gradient_is_jitted = True
 
-        return DoseVx.gradient_function(level, dose)
+        return DoseVx.gradient_function(dose, args[0])

@@ -4,103 +4,295 @@
 
 # %% External package import
 
+from os.path import abspath
 from pickle import dump, load
 
-from hyperopt import hp
-from sklearn.linear_model import LogisticRegression
+from copy import deepcopy
+from functools import partial
+from sklearn.linear_model import LogisticRegression as skLogReg
 
 # %% Internal package import
 
-from pyanno4rt.learning.models import MachineLearningModel
+from pyanno4rt.learning.datasets import TabularDataset
+from pyanno4rt.learning.evaluation import ModelEvaluator
+from pyanno4rt.learning.inspection import ModelInspector
+import pyanno4rt.learning._maps as maps
+from pyanno4rt.learning.preprocessing import TabularPreprocessor
 from pyanno4rt.logging import get_logger
+from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import validate_path, validate_type
 
 # %% Class definition
 
 
-class LogisticRegressionModel(MachineLearningModel):
+class LogisticRegression():
     """
     Logistic regression model class.
 
-    This class enables building an individual preprocessing pipeline, \
-    fitting, making predictions, inspecting, and evaluating the predictive \
-    performance of a logistic regression model.
+    Parameters
+    ----------
+    label : str
+        Label for the learning model.
 
-    See the machine learning model template class \
-        :class:`~pyanno4rt.learning._machine_learning_model.MachineLearningModel`
-    for information on the parameters and attributes.
+    dataset : None or object of class \
+        :class:`~pyanno4rt.learning.datasets._tabular_dataset.TabularDataset`,
+        default=None
+        The object used to represent the dataset.
+
+    preprocessor : None or object of class \
+        :class:`~pyanno4rt.learning.preprocessing._tabular_preprocessor.TabularPreprocessor`,
+        default=None
+        The object used to represent the data preprocessor.
+
+    tuner : None or object of class \
+        :class:`~pyanno4rt.learning.tuning._bayes_hp_tuner.BayesHPTuner`\
+        :class:`~pyanno4rt.learning.tuning._grid_hp_tuner.GridHPTuner`\
+        :class:`~pyanno4rt.learning.tuning._random_hp_tuner.RandomHPTuner`,
+        default=None
+        The object used to represent the hyperparameter tuner.
+
+    inspector : None or object of class \
+        :class:`~pyanno4rt.learning.inspection._model_inspector.ModelInspector`,
+        default=None
+        The object used to represent the model inspector.
+
+    evaluator : None or object of class \
+        :class:`~pyanno4rt.learning.evaluation._model_evaluator.ModelEvaluator`,
+        default=None
+        The object used to represent the model evaluator.
+
+    path : None or str, default=None
+        Path to an external model folder.
+
+    Attributes
+    ----------
+    label : str
+        See 'Parameters'.
+
+    dataset : None or object of class \
+        :class:`~pyanno4rt.learning.datasets._tabular_dataset.TabularDataset`
+        See 'Parameters'.
+
+    preprocessor : None or object of class \
+        :class:`~pyanno4rt.learning.preprocessing._tabular_preprocessor.TabularPreprocessor`
+        See 'Parameters'.
+
+    tuner : None or object of class \
+        :class:`~pyanno4rt.learning.tuning._bayes_hp_tuner.BayesHPTuner`\
+        :class:`~pyanno4rt.learning.tuning._grid_hp_tuner.GridHPTuner`\
+        :class:`~pyanno4rt.learning.tuning._random_hp_tuner.RandomHPTuner`
+        See 'Parameters'.
+
+    inspector : None or object of class \
+        :class:`~pyanno4rt.learning.inspection._model_inspector.ModelInspector`
+        See 'Parameters'.
+
+    evaluator : None or object of class \
+        :class:`~pyanno4rt.learning.evaluation._model_evaluator.ModelEvaluator`
+        See 'Parameters'.
+
+    path : None or str
+        See 'Parameters'.
+
+    hyperparameters : dict
+        Dictionary with the model hyperparameters.
+
+    predictor : object of class \
+        :class:`~sklearn.linear_model.LogisticRegression`
+        The object used to represent the prediction model.
     """
 
     def __init__(
             self,
-            model_label,
-            model_folder_path,
-            dataset,
-            preprocessing_steps,
-            tune_space,
-            tune_evaluations,
-            tune_score,
-            inspect_model,
-            evaluate_model,
-            display_options):
+            label,
+            dataset=None,
+            preprocessor=None,
+            tuner=None,
+            inspector=None,
+            evaluator=None,
+            path=None):
 
-        # Get the internal hyperparameter search space
-        tune_space_dict = tune_space.to_dict()
+        # Check if a path has been provided
+        if path is not None:
 
-        # Configure the hyperopt search space
-        hp_space = {
-            'regularization': hp.choice(
-                'regularization', [
-                    {'penalty': None,
-                     'solver': hp.choice(
-                         'solver_None',
-                         ['lbfgs', 'newton-cg', 'newton-cholesky', 'sag'])},
-                    *[{'penalty': norm,
-                       'solver': hp.choice(
-                           f'solver_{norm}',
-                           ['liblinear', 'saga'] if norm == 'l1'
-                           else [
-                               'lbfgs', 'liblinear', 'newton-cg',
-                               'newton-cholesky', 'sag', 'saga']),
-                       'C': hp.uniform(
-                           f'C_{norm}', tune_space_dict['C'][0],
-                           tune_space_dict['C'][1])
-                       }
-                      if norm != 'elasticnet' else
-                      {'penalty': 'elasticnet',
-                       'l1_ratio': 0.5,
-                       'solver': hp.choice(
-                           f'solver_{norm}', ['saga']),
-                       'C': hp.uniform(
-                           f'C_{norm}', tune_space_dict['C'][0],
-                           tune_space_dict['C'][1])
-                       }
-                      for norm in tune_space_dict['penalty']]
-                    ]),
-            'tol': hp.choice('tol', tune_space_dict['tol']),
-            'class_weight': hp.choice(
-                'class_weight', tune_space_dict['class_weight'])}
+            # Convert the path into an absolute value
+            path = abspath(path)
 
-        # Initialize the superclass
-        super().__init__(
-            model_label, model_folder_path, dataset, preprocessing_steps,
-            tune_space_dict, hp_space, tune_evaluations, tune_score,
-            inspect_model, evaluate_model, display_options)
+        # Get the input arguments
+        self.inputs = filter_dict(vars(), remove_keys=('self',))
 
-    def get_hyperparameter_set(
+        # Check the input arguments
+        self.validate(self.inputs)
+
+        # Get the instance attributes
+        self.label = label
+        self.dataset = dataset
+        self.preprocessor = preprocessor
+        self.tuner = tuner
+        self.inspector = inspector
+        self.evaluator = evaluator
+        self.path = path
+
+        # Initialize the prediction model attributes
+        self.feature_calculator = None
+        self.hyperparameters = {
+            'penalty': 'l2',
+            'solver': 'lbfgs',
+            'l1_ratio': None,
+            'C': 1.0,
+            'dual': False,
+            'tol': 0.0001,
+            'fit_intercept': True,
+            'intercept_scaling': 1,
+            'class_weight': None,
+            'random_state': 10,
+            'max_iter': 10**6,
+            'verbose': 0,
+            'warm_start': False,
+            'n_jobs': -1
+            }
+        self.predictor = skLogReg(**self.hyperparameters)
+
+    def to_dict(self):
+        """Serialize the model into a dictionary."""
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """Deserialize the model parameters from a dictionary."""
+
+    def load_data(self):
+        """Load the dataset."""
+
+        # Check if a dataset object has been provided
+        if self.dataset is not None:
+
+            # Generate the data
+            self.dataset.generate()
+
+    def fit_preprocessor(
+            self,
+            features,
+            labels):
+        """Fit the preprocessor."""
+
+        # Check if a preprocessor has been provided
+        if self.preprocessor is not None:
+
+            # Fit the preprocessor and transform the data
+            self.preprocessor.fit(features, labels)
+
+    def preprocess(
+            self,
+            features,
+            labels):
+        """Preprocess the dataset."""
+
+        # Check if a preprocessor has been provided
+        if self.preprocessor is not None:
+
+            # Transform the data
+            return self.preprocessor.transform(features, labels)
+
+        return features, labels
+
+    def tune_hyperparameters(
+            self,
+            features,
+            labels):
+        """Tune the model hyperparameters."""
+
+        # Check if a tuner has been provided
+        if self.tuner is not None:
+
+            # Search the hyperparameter set
+            proposal = self.tuner.search(deepcopy(self), features, labels)
+
+            # Check if a Bayesian hyperparameter tuner has been provided
+            if isinstance(self.tuner, maps.TUNERS['Bayes']):
+
+                # Get the full hyperparameter set
+                self.get_bayes_hp(proposal)
+
+            # Check if a grid hyperparameter tuner has been provided
+            elif isinstance(self.tuner, maps.TUNERS['Grid']):
+
+                # Get the full hyperparameter set
+                self.get_grid_hp(proposal)
+
+            # Check if a random hyperparameter tuner has been provided
+            elif isinstance(self.tuner, maps.TUNERS['Random']):
+
+                # Get the full hyperparameter set
+                self.get_random_hp(proposal)
+
+    def fit_predictor(
+            self,
+            features,
+            labels):
+        """Fit the model."""
+
+        # Initialize the predictor
+        self.predictor = self.predictor.set_params(**self.hyperparameters)
+
+        # Fit the predictor
+        self.predictor.fit(features, labels)
+
+    def predict(
+            self,
+            features):
+        """
+        Predict the label values.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        Returns
+        -------
+        float or ndarray
+            Value(s) of the predicted label(s).
+        """
+
+        # Check if the feature array has only a single row
+        if features.shape[0] == 1:
+
+            # Return a single label prediction value
+            return self.predictor.predict_proba(features)[0][1]
+
+        # Else, return an array with label predictions
+        return self.predictor.predict_proba(features)[:, 1]
+
+    def inspect(self):
+        """Inspect the model."""
+
+        #
+        if self.inspector is not None:
+
+            #
+            self.inspector.run()
+
+    def evaluate(self):
+        """Evaluate the model."""
+
+        #
+        if self.evaluator is not None:
+
+            #
+            self.evaluator.run()
+
+    def get_bayes_hp(
             self,
             proposal):
         """
-        Get the hyperparameter set.
+        Get the hyperparameters from a Bayesian search proposal set.
 
         Parameters
         ----------
         proposal : dict
-            Proposal for the hyperparameter set.
-
-        Returns
-        -------
-        hyperparameters : dict
-            Dictionary with the values of the hyperparameters.
+            Proposal for the tunable hyperparameters.
         """
 
         # Check if the proposal has a regularization subdictionary
@@ -116,89 +308,45 @@ class LogisticRegressionModel(MachineLearningModel):
                 'penalty', 'solver', 'l1_ratio', 'C')}
 
         # Build the hyperparameter dictionary
-        hyperparameters = {
+        self.hyperparameters = self.hyperparameters | {
             **regularization,
-            'dual': False,
             'tol': proposal['tol'],
-            'fit_intercept': True,
-            'intercept_scaling': 1,
             'class_weight': proposal['class_weight'],
-            'random_state': 42,
-            'max_iter': 10**6,
-            'verbose': 0,
-            'warm_start': False,
             'n_jobs': -1 if regularization['solver'] != 'liblinear' else 1}
 
-        return hyperparameters
-
-    def get_model_fit(
+    def get_grid_hp(
             self,
-            features,
-            labels,
-            hyperparameters):
+            proposal):
         """
-        Get the logistic regression model fit.
+        Get the hyperparameters from a grid search proposal set.
 
         Parameters
         ----------
-        features : ndarray
-            Values of the input features.
-
-        labels : ndarray
-            Values of the input labels.
-
-        hyperparameters : dict
-            Dictionary with the values of the hyperparameters.
-
-        Returns
-        -------
-        prediction_model : object of class \
-            :class:`~sklearn.linear_model.LogisticRegression`
-            The object used to represent the pre-fitted prediction model.
+        proposal : dict
+            Proposal for the tunable hyperparameters.
         """
 
-        # Initialize the logistic regression model
-        prediction_model = LogisticRegression(**hyperparameters)
-
-        # Fit the model with the training data
-        prediction_model.fit(features, labels)
-
-        return prediction_model
-
-    def predict(
+    def get_random_hp(
             self,
-            features,
-            predictor):
+            proposal):
         """
-        Predict the label values.
+        Get the hyperparameters from a random search proposal set.
 
         Parameters
         ----------
-        features : ndarray
-            Values of the input features.
-
-        predictor : object of class \
-            :class:`~sklearn.linear_model.LogisticRegression`
-            The object used to represent the prediction model.
-
-        Returns
-        -------
-        float or ndarray
-            Value(s) of the predicted label(s).
+        proposal : dict
+            Proposal for the tunable hyperparameters.
         """
 
-        # Check if the feature array has only a single row
-        if features.shape[0] == 1:
+    def featurize(self):
+        """Compute the model input feature vector."""
 
-            # Return a single label prediction value
-            return predictor.predict_proba(features)[0][1]
+    def gradientize(self):
+        """Derive the model input gradient."""
 
-        # Else, return an array with label predictions
-        return predictor.predict_proba(features)[:, 1]
-
-    def import_model(self):
+    def load(self):
         """
-        Import the logistic regression model.
+        Load an external logistic regression model.
 
         Returns
         -------
@@ -207,15 +355,65 @@ class LogisticRegressionModel(MachineLearningModel):
         """
 
         # Log a message about the model file reading
-        get_logger().info("Reading '%s' model from file ...", self.model_label)
+        get_logger().info("Reading '%s' model from file ...", self.label)
 
-        return load(open(self.model_path, 'rb'))
+        return load(open(self.path, 'rb'))
 
-    def export_model(self):
-        """Export the logistic regression model."""
+    def save(self):
+        """Save the model."""
 
         # Open a file stream
-        with open(self.model_path, 'wb') as file:
+        with open(self.path, 'wb') as file:
 
             # Dump the model
-            dump(self.prediction_model, file)
+            dump(self.predictor, file)
+
+    def validate(
+            self,
+            inputs):
+        """
+        Validate the input arguments.
+
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the mappings between argument names and values.
+        """
+
+        validation_map = {
+            'label': (
+                partial(validate_type, options=str),
+                ),
+            'dataset': (
+                partial(validate_type, options=(type(None), TabularDataset)),
+                ),
+            'preprocessor': (
+                partial(validate_type, options=(
+                    type(None), TabularPreprocessor)),
+                ),
+            'tuner': (
+                partial(validate_type, options=(
+                    type(None), *maps.TUNERS.values())),
+                ),
+            'inspector': (
+                partial(validate_type, options=(
+                    type(None), ModelInspector)),
+                ),
+            'evaluator': (
+                partial(validate_type, options=(
+                    type(None), ModelEvaluator)),
+                ),
+            'path': (
+                partial(validate_type, options=(type(None), str)),
+                partial(validate_path)
+                )
+            }
+
+        # Loop over the dictionary items
+        for key, value in inputs.items():
+
+            # Loop over the validation functions
+            for function in validation_map[key]:
+
+                # Run the validation function
+                function(key, value)

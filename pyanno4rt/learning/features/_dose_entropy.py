@@ -38,7 +38,7 @@ class DoseEntropy(DosiomicFeature):
 
     @staticmethod
     @njit
-    def function(dose):
+    def value(dose):
         """
         Compute the dose entropy.
 
@@ -99,24 +99,6 @@ class DoseEntropy(DosiomicFeature):
             Dose entropy gradient.
         """
 
-        # Set the number of histogram bins
-        number_of_bins = 256
-
-        # Determine the boundary values for the bins
-        bounds = linspace(dose.min(), dose.max(), number_of_bins+1)
-
-        # Derive the bin sequence
-        bins = [(bounds[i], bounds[i+1]) for i in range(number_of_bins)]
-
-        # Set the approximation parameter
-        prox = 1e6
-
-        # Get the length of the dose vector
-        length = len(dose)
-
-        # Set the offset parameter
-        eps = 1e-4
-
         def compute_prob(dos, bns):
             """Compute the bin probability."""
 
@@ -139,6 +121,24 @@ class DoseEntropy(DosiomicFeature):
                 * (1-sigmoid(-prox*(
                     dos-bns[0] if dos != bns[0] else dos-bns[0]+eps))))
 
+        # Set the number of histogram bins
+        number_of_bins = 256
+
+        # Determine the boundary values for the bins
+        bounds = linspace(dose.min(), dose.max(), number_of_bins+1)
+
+        # Derive the bin sequence
+        bins = [(bounds[i], bounds[i+1]) for i in range(number_of_bins)]
+
+        # Set the approximation parameter
+        prox = 1e6
+
+        # Get the length of the dose vector
+        length = len(dose)
+
+        # Set the offset parameter
+        eps = 1e-4
+
         # Compute the total gradient over all dose values
         gradient = array([sum([
             compute_prob_gradient(dos, bns) * log2(compute_prob(dos, bns))
@@ -148,7 +148,9 @@ class DoseEntropy(DosiomicFeature):
         return gradient
 
     @staticmethod
-    def compute(dose, *args):
+    def compute(
+            dose,
+            *args):
         """
         Call the value function.
 
@@ -158,7 +160,7 @@ class DoseEntropy(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -166,10 +168,12 @@ class DoseEntropy(DosiomicFeature):
             Dose entropy value.
         """
 
-        return DoseEntropy.function(dose)
+        return DoseEntropy.value(dose)
 
     @staticmethod
-    def differentiate(dose, *args):
+    def differentiate(
+            dose,
+            *args):
         """
         Call the gradient function.
 
@@ -179,7 +183,7 @@ class DoseEntropy(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------

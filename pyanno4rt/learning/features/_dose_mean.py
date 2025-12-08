@@ -5,7 +5,7 @@
 # %% External package import
 
 from jax import grad, jit
-import jax.numpy as jnp
+from jax.numpy import mean
 
 # %% Internal package import
 
@@ -18,7 +18,7 @@ class DoseMean(DosiomicFeature):
     """Dose mean feature class."""
 
     @staticmethod
-    def function(dose):
+    def value(dose):
         """
         Compute the mean dose.
 
@@ -33,7 +33,7 @@ class DoseMean(DosiomicFeature):
             Mean dose value.
         """
 
-        return jnp.mean(dose)
+        return mean(dose)
 
     @staticmethod
     def compute(
@@ -48,7 +48,7 @@ class DoseMean(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -60,7 +60,7 @@ class DoseMean(DosiomicFeature):
         if not DoseMean.value_is_jitted:
 
             # Perform the jitting
-            DoseMean.value_function = jit(DoseMean.function)
+            DoseMean.value_function = jit(DoseMean.value)
 
             # Set 'value_is_jitted' to True
             DoseMean.value_is_jitted = True
@@ -80,7 +80,7 @@ class DoseMean(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -92,8 +92,7 @@ class DoseMean(DosiomicFeature):
         if not DoseMean.gradient_is_jitted:
 
             # Perform the jitting
-            DoseMean.gradient_function = jit(grad(
-                DoseMean.function, argnums=0))
+            DoseMean.gradient_function = jit(grad(DoseMean.value, argnums=0))
 
             # Set 'gradient_is_jitted' to True
             DoseMean.gradient_is_jitted = True

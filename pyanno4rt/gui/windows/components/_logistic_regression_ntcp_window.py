@@ -18,9 +18,6 @@ from pyanno4rt.gui.compilations.components.logistic_regression_ntcp_window impor
     Ui_logistic_regression_ntcp_window)
 from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.windows import DataColumnsWindow
-from pyanno4rt.learning.models import ModelParameters
-from pyanno4rt.learning.evaluation import DisplayOptions
-from pyanno4rt.learning.tune_spaces import TuneSpaceLR
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.optimization.components import LogisticRegressionOutcome
 from pyanno4rt.tools import string_to_numeric

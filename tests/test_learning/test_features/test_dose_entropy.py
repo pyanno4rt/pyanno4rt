@@ -32,11 +32,11 @@ def test_sigmoid_entropy(value, expected):
     'dose, expected',
     [(tile([0, 255], 128), 1.0), (ones(256), 0.0)],
     ids=['extrema', 'homogeneous'])
-def test_dose_entropy_function(dose, expected):
-    """Test the 'DoseEntropy.function' method."""
+def test_dose_entropy_value(dose, expected):
+    """Test the 'DoseEntropy.value' method."""
 
     # Assert the equality between actual and expected outcome
-    assert DoseEntropy.function(dose) == expected
+    assert DoseEntropy.value(dose) == expected
 
 
 # Define the argument sets

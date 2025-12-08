@@ -16,11 +16,12 @@ from pyanno4rt.learning.features import SegmentEigenmid
 
 # Define the argument sets
 @mark.parametrize(
-    'mask, spacing, expected',
+    'mask, resolution, expected',
     [(*(array([identity(3), identity(3), identity(3)]), (1, 1, 1)), 6)],
     ids=['case_A'])
-def test_segment_eigenmid(mask, spacing, expected):
+def test_segment_eigenmid(mask, resolution, expected):
     """Test the 'SegmentEigenmid.compute' method."""
 
     # Assert the equality between actual and expected outcome
-    assert isclose(SegmentEigenmid.compute(mask, spacing), expected, atol=1e-6)
+    assert isclose(
+        SegmentEigenmid.compute(mask, resolution), expected, atol=1e-6)

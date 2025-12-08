@@ -5,7 +5,8 @@
 # %% External package import
 
 from jax import grad, jit
-import jax.numpy as jnp
+from jax.numpy import mean, std
+from jax.numpy import sum as jsum
 
 # %% Internal package import
 
@@ -18,7 +19,7 @@ class DoseKurtosis(DosiomicFeature):
     """Dose kurtosis feature class."""
 
     @staticmethod
-    def function(dose):
+    def value(dose):
         """
         Compute the dose kurtosis.
 
@@ -33,8 +34,7 @@ class DoseKurtosis(DosiomicFeature):
             Dose kurtosis value.
         """
 
-        return (
-            jnp.sum((dose-jnp.mean(dose))**4) / (jnp.std(dose)**4 * len(dose)))
+        return jsum((dose-mean(dose))**4) / (std(dose)**4 * len(dose))
 
     @staticmethod
     def compute(
@@ -49,7 +49,7 @@ class DoseKurtosis(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -61,7 +61,7 @@ class DoseKurtosis(DosiomicFeature):
         if not DoseKurtosis.value_is_jitted:
 
             # Perform the jitting
-            DoseKurtosis.value_function = jit(DoseKurtosis.function)
+            DoseKurtosis.value_function = jit(DoseKurtosis.value)
 
             # Set 'value_is_jitted' to True
             DoseKurtosis.value_is_jitted = True
@@ -81,7 +81,7 @@ class DoseKurtosis(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -94,7 +94,7 @@ class DoseKurtosis(DosiomicFeature):
 
             # Perform the jitting
             DoseKurtosis.gradient_function = jit(grad(
-                DoseKurtosis.function, argnums=0))
+                DoseKurtosis.value, argnums=0))
 
             # Set 'gradient_is_jitted' to True
             DoseKurtosis.gradient_is_jitted = True

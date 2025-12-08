@@ -4,7 +4,7 @@
 
 # %% External package import
 
-import jax.numpy as jnp
+from jax.numpy import min as jmin
 
 # %% Internal package import
 
@@ -20,7 +20,7 @@ class SegmentEigenmin(RadiomicFeature):
     @staticmethod
     def compute(
             mask,
-            spacing):
+            resolution):
         """
         Compute the minimum segment eigenvalue.
 
@@ -29,8 +29,8 @@ class SegmentEigenmin(RadiomicFeature):
         mask : ndarray
             Binary mask for the segment.
 
-        spacing : ndarray
-            Spacing of the dose grid.
+        resolution : ndarray
+            Grid resolution (in mm).
 
         Returns
         -------
@@ -39,6 +39,6 @@ class SegmentEigenmin(RadiomicFeature):
         """
 
         # Compute the eigenvalues
-        eigenvalues, _ = SegmentEigenvalues.compute(mask, spacing)
+        eigenvalues, _ = SegmentEigenvalues.compute(mask, resolution)
 
-        return jnp.min(eigenvalues)
+        return jmin(eigenvalues)

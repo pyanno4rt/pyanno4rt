@@ -5,7 +5,7 @@
 # %% External package import
 
 from jax import grad, jit
-import jax.numpy as jnp
+from jax.numpy import min as jmin
 
 # %% Internal package import
 
@@ -18,7 +18,7 @@ class DoseMinimum(DosiomicFeature):
     """Dose minimum feature class."""
 
     @staticmethod
-    def function(dose):
+    def value(dose):
         """
         Compute the minimum dose.
 
@@ -33,7 +33,7 @@ class DoseMinimum(DosiomicFeature):
             Minimum dose value.
         """
 
-        return jnp.min(dose)
+        return jmin(dose)
 
     @staticmethod
     def compute(
@@ -48,7 +48,7 @@ class DoseMinimum(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -60,7 +60,7 @@ class DoseMinimum(DosiomicFeature):
         if not DoseMinimum.value_is_jitted:
 
             # Perform the jitting
-            DoseMinimum.value_function = jit(DoseMinimum.function)
+            DoseMinimum.value_function = jit(DoseMinimum.value)
 
             # Set 'value_is_jitted' to True
             DoseMinimum.value_is_jitted = True
@@ -80,7 +80,7 @@ class DoseMinimum(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -93,7 +93,7 @@ class DoseMinimum(DosiomicFeature):
 
             # Perform the jitting
             DoseMinimum.gradient_function = jit(grad(
-                DoseMinimum.function, argnums=0))
+                DoseMinimum.value, argnums=0))
 
             # Set 'gradient_is_jitted' to True
             DoseMinimum.gradient_is_jitted = True

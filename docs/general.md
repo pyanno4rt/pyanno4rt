@@ -21,7 +21,7 @@
 
 *pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning.
 
-# Highlight Features
+# Highlight Features :telescope:
 
 <h3>Import of patient data and dose influence matrices from different sources</h3>
 <ul>
@@ -51,7 +51,7 @@
 	<li> Scalarization & multi-objective optimization methods
 		<ul> 
 			<li> Lexicographic method </li> 
-			<li> Pareto analysis </li> 
+			<li> Pareto method </li> 
 			<li> Weighted-sum method
 		</ul>
 	</li>
@@ -70,10 +70,9 @@
 
 <h3>Data-driven outcome prediction model handling</h3>
 <ul> 
-	<li> Dataset import, handling & preprocessing </li>
+	<li> 7 internal ML model classes (decision tree, k-nearest neighbors, logistic regression, naive Bayes, neural network, random forest, support vector machine) with customizable modules for dataset loading, preprocessing, hyperparameter tuning, inspection & evaluation </li>
 	<li> 24-type dosiomic & radiomic feature catalogue </li>
-	<li> 7 internal ML models (decision tree, KNN, logistic regression, naive Bayes, neural network, random forest, SVM) with individual preprocessing, inspection & evaluation units + Bayesian hyperparameter tuning </li>
-	<li> External model loading from local folders </li>
+	<li> External model loading from local configuration folders </li>
 </ul>
 
 <h3>Plan evaluation tools</h3>

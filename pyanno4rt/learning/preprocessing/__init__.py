@@ -1,5 +1,5 @@
 """
-Data preprocessing module.
+Preprocessing module.
 
 ==================================================================
 
@@ -9,10 +9,11 @@ data cleaning, reduction, (re-)sampling and scaling.
 
 # Author: Tim Ortkamp
 
-from . import scalers
+from ._tabular_preprocessor import TabularPreprocessor
 
-from ._data_preprocessor import DataPreprocessor
+from .scalers import StandardScaler, Whitening
 
 __all__ = [
-    'scalers',
-    'DataPreprocessor']
+    'TabularPreprocessor',
+    'StandardScaler',
+    'Whitening']

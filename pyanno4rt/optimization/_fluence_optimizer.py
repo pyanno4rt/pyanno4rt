@@ -486,7 +486,7 @@ class FluenceOptimizer():
 
             # Get the feature calculator of the component
             feature_calculator = (
-                component.data_model_handler.feature_calculator)
+                component.model.feature_calculator)
 
             # Reset the feature history
             feature_calculator.feature_history = empty(

@@ -9,7 +9,7 @@ from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.learning.models import ModelParameters
+from pyanno4rt.learning.models import LogisticRegression
 from pyanno4rt.tools import filter_dict, wrap
 from pyanno4rt.validation import (
     validate_item, validate_item_in_set, validate_length, validate_subtype,
@@ -42,9 +42,15 @@ class MachineLearningComponent(metaclass=ABCMeta):
     parameter_category : tuple
         Category of the component parameters.
 
-    model_parameters : object of class \
-        :class:`~pyanno4rt.learning._model_parameters.ModelParameters`
-        The object used to represent the learning model parameters.
+    model : object of class \
+        :class:`~pyanno4rt.learning._models._decision_tree.DecisionTree`\
+        :class:`~pyanno4rt.learning._models._k_nearest_neighbors.KNearestNeighbors`\
+        :class:`~pyanno4rt.learning._models._logistic_regression.LogisticRegression`\
+        :class:`~pyanno4rt.learning._models._naive_bayes.NaiveBayes`\
+        :class:`~pyanno4rt.learning._models._neural_network.NeuralNetwork`\
+        :class:`~pyanno4rt.learning._models._random_forest.RandomForest`\
+        :class:`~pyanno4rt.learning._models._support_vector_machine.SupportVectorMachine`
+        The object used to represent the outcome model.
 
     embedding : {'active', 'passive'}
         Mode of embedding for the component. In 'passive' mode, the component \
@@ -89,8 +95,14 @@ class MachineLearningComponent(metaclass=ABCMeta):
     parameter_value : list
         Value of the component parameters.
 
-    model_parameters : object of class \
-        :class:`~pyanno4rt.learning._model_parameters.ModelParameters`
+    model : object of class \
+        :class:`~pyanno4rt.learning._models._decision_tree.DecisionTree`\
+        :class:`~pyanno4rt.learning._models._k_nearest_neighbors.KNearestNeighbors`\
+        :class:`~pyanno4rt.learning._models._logistic_regression.LogisticRegression`\
+        :class:`~pyanno4rt.learning._models._naive_bayes.NaiveBayes`\
+        :class:`~pyanno4rt.learning._models._neural_network.NeuralNetwork`\
+        :class:`~pyanno4rt.learning._models._random_forest.RandomForest`\
+        :class:`~pyanno4rt.learning._models._support_vector_machine.SupportVectorMachine`
         See 'Parameters'.
 
     embedding : {'active', 'passive'}
@@ -111,14 +123,6 @@ class MachineLearningComponent(metaclass=ABCMeta):
     identifier : None or str
         See 'Parameters'.
 
-    data_model_handler : None
-        Initial variable for the object used to handle the dataset, the \
-        feature map generation and the feature (re-)calculation.
-
-    model : None
-        Initial variable for the object used to preprocess, tune, train, \
-        inspect and evaluate the machine learning model.
-
     adjusted_parameters : bool
         Indicator for the adjustment of the parameters due to fractionation.
 
@@ -137,7 +141,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
             component_type,
             parameter_name,
             parameter_category,
-            model_parameters,
+            model,
             embedding,
             weight,
             rank,
@@ -156,7 +160,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
         self.parameter_name = parameter_name
         self.parameter_category = parameter_category
         self.parameter_value = []
-        self.model_parameters = model_parameters
+        self.model = model
         self.embedding = embedding
         self.weight = float(weight)
         self.rank = rank
@@ -282,8 +286,8 @@ class MachineLearningComponent(metaclass=ABCMeta):
                 partial(validate_type, options=tuple),
                 partial(validate_subtype, options=str)
                 ),
-            'model_parameters': (
-                partial(validate_type, options=ModelParameters),
+            'model': (
+                partial(validate_type, options=(LogisticRegression,)),
                 ),
             'embedding': (
                 partial(validate_type, options=str),
@@ -329,10 +333,6 @@ class MachineLearningComponent(metaclass=ABCMeta):
             cls,
             dictionary):
         """Deserialize the component from a dictionary."""
-
-    @abstractmethod
-    def add_model(self):
-        """Add the machine learning model to the component."""
 
     @abstractmethod
     def translate(

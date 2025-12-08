@@ -32,11 +32,11 @@ def test_sigmoid_energy(value, expected):
     'dose, expected',
     [(tile([0, 255], 128), 0.5), (ones(256), 256.0)],
     ids=['extrema', 'homogeneous'])
-def test_dose_energy_function(dose, expected):
-    """Test the 'DoseEnergy.function' method."""
+def test_dose_energy_value(dose, expected):
+    """Test the 'DoseEnergy.value' method."""
 
     # Assert the equality between actual and expected outcome
-    assert DoseEnergy.function(dose) == expected
+    assert DoseEnergy.value(dose) == expected
 
 
 # Define the argument sets.

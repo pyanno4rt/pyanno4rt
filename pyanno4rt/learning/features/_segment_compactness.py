@@ -17,7 +17,7 @@ class SegmentCompactness(RadiomicFeature):
     @staticmethod
     def compute(
             mask,
-            spacing):
+            resolution):
         """
         Compute the segment compactness.
 
@@ -26,14 +26,15 @@ class SegmentCompactness(RadiomicFeature):
         mask : ndarray
             Binary mask for the segment.
 
-        spacing : ndarray
-            Spacing of the dose grid.
+        resolution : ndarray
+            Grid resolution (in mm).
 
         Returns
         -------
         object of class :class:`~jaxlib.xla_extension.ArrayImpl`
             Segment compactness.
         """
+
         return (
-            SegmentArea.compute(mask, spacing)
-            / SegmentVolume.compute(mask, spacing))
+            SegmentArea.compute(mask, resolution)
+            / SegmentVolume.compute(mask, resolution))

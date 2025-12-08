@@ -4,7 +4,8 @@
 
 # %% External package import
 
-import jax.numpy as jnp
+from jax.numpy import array
+from jax.numpy import sum as jsum
 
 # %% Internal package import
 
@@ -19,7 +20,7 @@ class SegmentArea(RadiomicFeature):
     @staticmethod
     def compute(
             mask,
-            spacing):
+            resolution):
         """
         Compute the segment area.
 
@@ -28,8 +29,8 @@ class SegmentArea(RadiomicFeature):
         mask : ndarray
             Binary mask for the segment.
 
-        spacing : ndarray
-            Spacing of the dose grid.
+        resolution : ndarray
+            Grid resolution (in mm).
 
         Returns
         -------
@@ -37,25 +38,24 @@ class SegmentArea(RadiomicFeature):
             Segment area.
         """
 
-        def compute_directional_area(element):
-            """Compute the area in one direction."""
+        def get_planar_area(inputs):
+            """Get the planar area."""
 
             # Compute the terms
-            terms = jnp.array([
-                jnp.sum(jnp.sum(value[2])) if value[0] in (0, element[0]-1)
-                else jnp.sum(jnp.sum(abs(value[1]-value[2])))
-                for value in element[1]])
+            terms = array([
+                jsum(jsum(value[2])) if value[0] in (0, inputs[0]-1)
+                else jsum(jsum(abs(value[1]-value[2])))
+                for value in inputs[1]])
 
-            return jnp.sum(terms) * element[2]
+            return jsum(terms) * inputs[2]
 
         # Set the input elements
-        elements = (
+        inputs = (
             (mask.shape[0], ((i, mask[i+1, :, :], mask[i, :, :])
-             for i in range(mask.shape[0]-1)), spacing[1]*spacing[2]),
+             for i in range(mask.shape[0]-1)), resolution[1]*resolution[2]),
             (mask.shape[1], ((j, mask[:, j+1, :], mask[:, j, :])
-             for j in range(mask.shape[1]-1)), spacing[0]*spacing[2]),
+             for j in range(mask.shape[1]-1)), resolution[0]*resolution[2]),
             (mask.shape[2], ((k, mask[:, :, k+1], mask[:, :, k])
-             for k in range(mask.shape[2]-1)), spacing[0]*spacing[1]))
+             for k in range(mask.shape[2]-1)), resolution[0]*resolution[1]))
 
-        return jnp.sum(jnp.array([
-            compute_directional_area(element) for element in elements]))
+        return jsum(array([get_planar_area(element) for element in inputs]))

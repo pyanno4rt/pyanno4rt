@@ -1,11 +1,10 @@
-"""Log loss computation."""
+"""Log loss."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
-from tensorflow import cast, float64
-from tensorflow.keras.losses import binary_crossentropy
+from sklearn.metrics import log_loss as sk_log_loss
 
 # %% Function definition
 
@@ -28,6 +27,4 @@ def log_loss(true_labels, predicted_labels):
         Log loss value.
     """
 
-    return binary_crossentropy(
-        cast(true_labels, float64),
-        cast(predicted_labels, float64)).numpy().mean()
+    return sk_log_loss(true_labels, predicted_labels)

@@ -33,20 +33,20 @@ def test_copycat():
                 SquaredOverdosing(
                     segment='Core', maximum_dose=25,
                     component_type='objective', embedding='active', weight=100,
-                    rank=1, bounds=None, link=None, display=True),
+                    rank=1, bounds=None, identifier=None),
                 SquaredDeviation(
                     segment='OuterTarget', target_dose=60,
                     component_type='objective', embedding='active',
-                    weight=1000, rank=1, bounds=None, link=None, display=True),
+                    weight=1000, rank=1, bounds=None, identifier=None),
                 SquaredOverdosing(
                     segment='BODY', maximum_dose=30,
                     component_type='objective', embedding='active', weight=800,
-                    rank=1, bounds=None, link=None, display=True)],
+                    rank=1, bounds=None, identifier=None)],
             method='weighted-sum',
             solver='scipy',
             algorithm='L-BFGS-B',
             initial_strategy='target-coverage',
-            initial_fluence_vector=None,
+            initial_fluence=None,
             lower_variable_bounds=0,
             upper_variable_bounds=None,
             maximum_iterations=500,
@@ -55,8 +55,8 @@ def test_copycat():
         evaluation=Evaluation(
             dvh_type='cumulative',
             number_of_points=1000,
-            reference_volume=[2, 5, 50, 95, 98],
-            reference_dose=[])
+            reference_volumes=[2, 5, 50, 95, 98],
+            reference_doses=[])
 
         )
 

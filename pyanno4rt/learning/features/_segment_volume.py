@@ -4,7 +4,8 @@
 
 # %% External package import
 
-import jax.numpy as jnp
+from jax.numpy import prod
+from jax.numpy import sum as jsum
 
 # %% Internal package import
 
@@ -19,7 +20,7 @@ class SegmentVolume(RadiomicFeature):
     @staticmethod
     def compute(
             mask,
-            spacing):
+            resolution):
         """
         Compute the segment volume.
 
@@ -28,8 +29,8 @@ class SegmentVolume(RadiomicFeature):
         mask : ndarray
             Binary mask for the segment.
 
-        spacing : ndarray
-            Spacing of the dose grid.
+        resolution : ndarray
+            Grid resolution (in mm).
 
         Returns
         -------
@@ -37,4 +38,4 @@ class SegmentVolume(RadiomicFeature):
             Segment volume.
         """
 
-        return jnp.sum(mask) * jnp.prod(spacing)
+        return jsum(mask) * prod(resolution)

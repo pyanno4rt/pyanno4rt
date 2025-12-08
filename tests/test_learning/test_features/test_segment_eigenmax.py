@@ -16,11 +16,12 @@ from pyanno4rt.learning.features import SegmentEigenmax
 
 # Define the argument sets
 @mark.parametrize(
-    'mask, spacing, expected',
+    'mask, resolution, expected',
     [(*(array([identity(3), identity(3), identity(3)]), (1, 1, 1)), 12)],
     ids=['case_A'])
-def test_segment_eigenmax(mask, spacing, expected):
+def test_segment_eigenmax(mask, resolution, expected):
     """Test the 'SegmentEigenmax.compute' method."""
 
     # Assert the equality between actual and expected outcome
-    assert isclose(SegmentEigenmax.compute(mask, spacing), expected, atol=1e-6)
+    assert isclose(
+        SegmentEigenmax.compute(mask, resolution), expected, atol=1e-6)

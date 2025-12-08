@@ -27,8 +27,7 @@ from pyanno4rt.evaluation import Dosimetrics
 from pyanno4rt.visualization import Visualizer
 
 # Supporting functions
-from pyanno4rt.tools import (
-    apply, copycat, get_machine_learning_components, snapshot)
+from pyanno4rt.tools import copycat, get_machine_learning_components, snapshot
 from pyanno4rt.validation import validate_type
 
 # %% Class definition
@@ -216,13 +215,27 @@ class TreatmentPlan():
 
             else:
 
-                #
-                # self.data_model_handler = DataModelHandler()
+                # Get the data handlers
+                handlers = {
+                    'patient_handler': self.patient_handler,
+                    'plan_handler': self.plan_handler,
+                    'dose_handler': self.dose_handler}
 
-                # Add the machine learning outcome models to the components
-                apply(lambda component: component.add_model(), (
-                    get_machine_learning_components(
-                        self.plan_handler.components)))
+                # Initialize the data model handler
+                self.data_model_handler = DataModelHandler(
+                    handlers=handlers)
+
+                # Load the datasets
+                self.data_model_handler.load_datasets()
+
+                # Add the feature calculators
+                self.data_model_handler.add_calculators()
+
+                # Fit the models
+                self.data_model_handler.fit_models()
+
+                #
+                raise ValueError
 
                 # Set the state
                 self.state = 2

@@ -6,7 +6,7 @@
 
 from math import pi
 
-import jax.numpy as jnp
+from jax.numpy import power
 
 # %% Internal package import
 
@@ -23,7 +23,7 @@ class SegmentSphericity(RadiomicFeature):
     @staticmethod
     def compute(
             mask,
-            spacing):
+            resolution):
         """
         Compute the segment sphericity.
 
@@ -32,8 +32,8 @@ class SegmentSphericity(RadiomicFeature):
         mask : ndarray
             Binary mask for the segment.
 
-        spacing : ndarray
-            Spacing of the dose grid.
+        resolution : ndarray
+            Grid resolution (in mm).
 
         Returns
         -------
@@ -42,9 +42,9 @@ class SegmentSphericity(RadiomicFeature):
         """
 
         # Compute the segment area
-        area = SegmentArea.compute(mask, spacing)
+        area = SegmentArea.compute(mask, resolution)
 
         # Compute the segment volume
-        volume = SegmentVolume.compute(mask, spacing)
+        volume = SegmentVolume.compute(mask, resolution)
 
-        return jnp.power(pi, 1/3) * jnp.power(6*volume, 2/3) / area
+        return power(pi, 1/3) * power(6*volume, 2/3) / area

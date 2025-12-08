@@ -22,15 +22,15 @@ case_A = (array([identity(3), identity(3), identity(3)]), (1, 1, 1),
 
 # Define the argument sets.
 @mark.parametrize(
-    'mask, spacing, expected',
+    'mask, resolution, expected',
     [case_A],
     ids=['case_A'])
-def test_segment_eigenvalue(mask, spacing, expected):
+def test_segment_eigenvalue(mask, resolution, expected):
     """Test the 'SegmentEigenvalues.compute' method."""
 
     # Assert the equality between actual and expected outcome
     assert allclose(
-        sort(SegmentEigenvalues.compute(mask, spacing)[0]), sort(expected[0]),
-        atol=1e-6)
+        sort(SegmentEigenvalues.compute(mask, resolution)[0]),
+        sort(expected[0]), atol=1e-6)
     assert array_equal(
-        SegmentEigenvalues.compute(mask, spacing)[1], expected[1])
+        SegmentEigenvalues.compute(mask, resolution)[1], expected[1])

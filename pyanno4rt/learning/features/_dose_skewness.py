@@ -5,7 +5,8 @@
 # %% External package import
 
 from jax import grad, jit
-import jax.numpy as jnp
+from jax.numpy import mean, std
+from jax.numpy import sum as jsum
 
 # %% Internal package import
 
@@ -18,7 +19,7 @@ class DoseSkewness(DosiomicFeature):
     """Dose skewness feature class."""
 
     @staticmethod
-    def function(dose):
+    def value(dose):
         """
         Compute the dose skewness.
 
@@ -33,8 +34,7 @@ class DoseSkewness(DosiomicFeature):
             Dose skewness value.
         """
 
-        return (
-            jnp.sum((dose-jnp.mean(dose))**3) / (jnp.std(dose)**3 * len(dose)))
+        return jsum((dose-mean(dose))**3) / (std(dose)**3 * len(dose))
 
     @staticmethod
     def compute(
@@ -49,7 +49,7 @@ class DoseSkewness(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -61,7 +61,7 @@ class DoseSkewness(DosiomicFeature):
         if not DoseSkewness.value_is_jitted:
 
             # Perform the jitting
-            DoseSkewness.value_function = jit(DoseSkewness.function)
+            DoseSkewness.value_function = jit(DoseSkewness.value)
 
             # Set 'value_is_jitted' to True
             DoseSkewness.value_is_jitted = True
@@ -94,7 +94,7 @@ class DoseSkewness(DosiomicFeature):
 
             # Perform the jitting
             DoseSkewness.gradient_function = jit(grad(
-                DoseSkewness.function, argnums=0))
+                DoseSkewness.value, argnums=0))
 
             # Set 'gradient_is_jitted' to True
             DoseSkewness.gradient_is_jitted = True

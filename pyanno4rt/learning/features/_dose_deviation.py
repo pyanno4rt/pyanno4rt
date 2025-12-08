@@ -5,7 +5,7 @@
 # %% External package import
 
 from jax import grad, jit
-import jax.numpy as jnp
+from jax.numpy import std
 
 # %% Internal package import
 
@@ -18,7 +18,7 @@ class DoseDeviation(DosiomicFeature):
     """Dose deviation feature class."""
 
     @staticmethod
-    def function(dose):
+    def value(dose):
         """
         Compute the dose deviation.
 
@@ -33,7 +33,7 @@ class DoseDeviation(DosiomicFeature):
             Dose deviation value.
         """
 
-        return jnp.std(dose)
+        return std(dose)
 
     @staticmethod
     def compute(
@@ -48,7 +48,7 @@ class DoseDeviation(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -60,7 +60,7 @@ class DoseDeviation(DosiomicFeature):
         if not DoseDeviation.value_is_jitted:
 
             # Perform the jitting
-            DoseDeviation.value_function = jit(DoseDeviation.function)
+            DoseDeviation.value_function = jit(DoseDeviation.value)
 
             # Set 'value_is_jitted' to True
             DoseDeviation.value_is_jitted = True
@@ -80,7 +80,7 @@ class DoseDeviation(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -93,7 +93,7 @@ class DoseDeviation(DosiomicFeature):
 
             # Perform the jitting
             DoseDeviation.gradient_function = jit(grad(
-                DoseDeviation.function, argnums=0))
+                DoseDeviation.value, argnums=0))
 
             # Set 'gradient_is_jitted' to True
             DoseDeviation.gradient_is_jitted = True

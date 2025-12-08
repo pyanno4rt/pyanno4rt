@@ -17,9 +17,6 @@ from pyanno4rt.gui.compilations.components.decision_tree_ntcp_window import (
     Ui_decision_tree_ntcp_window)
 from pyanno4rt.gui.custom_widgets import CheckableComboBox
 from pyanno4rt.gui.windows import DataColumnsWindow
-from pyanno4rt.learning.models import ModelParameters
-from pyanno4rt.learning.evaluation import DisplayOptions
-from pyanno4rt.learning.tune_spaces import TuneSpaceDT
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.optimization.components import DecisionTreeOutcome
 from pyanno4rt.tools import string_to_numeric

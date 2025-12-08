@@ -24,11 +24,11 @@ case_B = array([1, 2, 3, 4.0, 4])
     'dose, expected',
     [(case_A, 4), (case_B, 4)],
     ids=['integer', 'double'])
-def test_dose_maximum_function(dose, expected):
-    """Test the 'DoseMaximum.function' method."""
+def test_dose_maximum_value(dose, expected):
+    """Test the 'DoseMaximum.value' method."""
 
     # Assert the equality between actual and expected outcome
-    assert DoseMaximum.function(dose) == expected
+    assert DoseMaximum.value(dose) == expected
 
 
 # Define the argument sets

@@ -19,11 +19,11 @@ from pyanno4rt.learning.features import DoseKurtosis
     'dose, expected',
     [(array([1, 2, 3, 4, 5]), 1.7), (array([-2, -1, 0, 1, 2]), 1.7)],
     ids=['case_A', 'case_B'])
-def test_dose_kurtosis_function(dose, expected):
-    """Test the 'DoseKurtosis.function' method."""
+def test_dose_kurtosis_value(dose, expected):
+    """Test the 'DoseKurtosis.value' method."""
 
     # Assert the equality between actual and expected outcome
-    assert isclose(DoseKurtosis.function(dose), expected)
+    assert isclose(DoseKurtosis.value(dose), expected)
 
 
 # Define the argument sets

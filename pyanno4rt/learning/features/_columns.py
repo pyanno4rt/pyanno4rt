@@ -27,7 +27,7 @@ class DynamicFeature():
     Parameters
     ----------
     column : str
-        Name of the data column.
+        Data column.
 
     segment : None or str
         Segment associated with the feature.
@@ -58,6 +58,9 @@ class DynamicFeature():
     scale : {'metric', 'nominal', 'ordinal'}
         See 'Parameters'.
     """
+
+    # Set the column category
+    category = 'feature'
 
     def __init__(
             self,
@@ -196,7 +199,7 @@ class StaticFeature():
     Parameters
     ----------
     column : str
-        Name of the data column.
+        Data column.
 
     value : None, int, float or str
         Static feature value.
@@ -215,6 +218,9 @@ class StaticFeature():
     scale : {'metric', 'nominal', 'ordinal'}
         See 'Parameters'.
     """
+
+    # Set the column category
+    category = 'feature'
 
     def __init__(
             self,
@@ -309,7 +315,7 @@ class Label():
     column : str
         Name of the data column.
 
-    viewpoint : {'early', 'late', 'longitudinal', 'long-term', 'profile'}, \
+    viewpoint : {'early', 'late', 'longitudinal', 'long-term'}, \
         default='longitudinal'
         Label viewpoint for time-dependent modeling.
 
@@ -324,7 +330,7 @@ class Label():
     column : str
         See 'Parameters'.
 
-    viewpoint : {'early', 'late', 'longitudinal', 'long-term', 'profile'}
+    viewpoint : {'early', 'late', 'longitudinal', 'long-term'}
         See 'Parameters'.
 
     time_variable : None or str
@@ -333,6 +339,9 @@ class Label():
     bounds : list
         See 'Parameters'.
     """
+
+    # Set the column category
+    category = 'label'
 
     def __init__(
             self,
@@ -399,7 +408,7 @@ class Label():
             'viewpoint': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(
-                    'early', 'late', 'long-term', 'longitudinal', 'profile'))
+                    'early', 'late', 'long-term', 'longitudinal'))
                 ),
             'time_variable': (
                 partial(validate_type, options=(type(None), str)),

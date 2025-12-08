@@ -4,7 +4,7 @@
 
 # %% External package import
 
-import jax.numpy as jnp
+from jax.numpy import sort
 
 # %% Internal package import
 
@@ -20,7 +20,7 @@ class SegmentEigenmid(RadiomicFeature):
     @staticmethod
     def compute(
             mask,
-            spacing):
+            resolution):
         """
         Compute the middle segment eigenvalue.
 
@@ -29,8 +29,8 @@ class SegmentEigenmid(RadiomicFeature):
         mask : ndarray
             Binary mask for the segment.
 
-        spacing : ndarray
-            Spacing of the dose grid.
+        resolution : ndarray
+            Grid resolution (in mm).
 
         Returns
         -------
@@ -39,6 +39,6 @@ class SegmentEigenmid(RadiomicFeature):
         """
 
         # Compute the eigenvalues
-        eigenvalues, _ = SegmentEigenvalues.compute(mask, spacing)
+        eigenvalues, _ = SegmentEigenvalues.compute(mask, resolution)
 
-        return jnp.sort(eigenvalues)[1]
+        return sort(eigenvalues)[1]

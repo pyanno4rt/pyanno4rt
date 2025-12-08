@@ -5,7 +5,8 @@
 # %% External package import
 
 from jax import grad
-import jax.numpy as jnp
+from jax.numpy import (
+    array, count_nonzero, floor, int32, mean, nonzero, transpose)
 
 # %% Internal package import
 
@@ -18,23 +19,15 @@ class DoseSubvolume(DosiomicFeature):
     """Subvolume dose feature class."""
 
     @staticmethod
-    def function(
-            subvolume,
-            _,
-            *args):
+    def value(dose_cube, subvolume):
         """
         Compute the subvolume dose.
 
         Parameters
         ----------
-        subvolume : str
-            Subvolume label, e.g. 'x1of2'.
-
-        _ : ndarray
-            Dose array.
-
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the dose \
+            cube, and args[1] the label for the subvolume, e.g. 'x1of2'.
 
         Returns
         -------
@@ -42,44 +35,43 @@ class DoseSubvolume(DosiomicFeature):
             Subvolume dose value.
         """
 
+        def permute_cube(cube, order):
+            """Permute the cube."""
+
+            return transpose(cube, order[0]), transpose(cube, order[1])
+
         # Map the axes to the permutation orders
         orders = {
             'x': ([1, 0, 2], [1, 2, 0]),
             'y': ([0, 2, 1], [0, 1, 2]),
             'z': ([2, 0, 1], [2, 1, 0])}
 
-        def permute_cube(cube, order):
-            """Permute the cube."""
+        # Get the dose cube
+        dose_cube = array(dose_cube)
 
-            return jnp.transpose(cube, order[0]), jnp.transpose(cube, order[1])
-
-        # Get the index of the subvolume
-        subvolume_index = jnp.int32(subvolume[1])
-
-        # Get the dose cube from the argument
-        dose_cube = jnp.array(args[0])
+        # Get the subvolume index
+        subvolume_index = int32(subvolume[1])
 
         # Determine the number of values for each subvolume
-        number_of_values = jnp.int32(jnp.floor(
-            (jnp.count_nonzero(dose_cube)/jnp.int32(subvolume[4]))))
+        number_of_values = int32(floor(
+            (count_nonzero(dose_cube)/int32(subvolume[4]))))
 
         # Permute the dose cube
         first_permutation, second_permutation = permute_cube(
             dose_cube, orders[subvolume[0]])
 
-        return 1/2 * (
-            jnp.mean(
-                first_permutation[jnp.nonzero(first_permutation)][
+        return 0.5 * (
+            mean(
+                first_permutation[nonzero(first_permutation)][
                     ((subvolume_index-1) * number_of_values):(
                         subvolume_index * number_of_values)])
-            + jnp.mean(
-                second_permutation[jnp.nonzero(second_permutation)][
+            + mean(
+                second_permutation[nonzero(second_permutation)][
                     ((subvolume_index-1) * number_of_values):(
                         subvolume_index * number_of_values)]))
 
     @staticmethod
     def compute(
-            subvolume,
             dose,
             *args):
         """
@@ -87,14 +79,12 @@ class DoseSubvolume(DosiomicFeature):
 
         Parameters
         ----------
-        subvolume : str
-            Subvolume label, e.g. 'x1of2'.
-
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the dose \
+            cube, and args[1] the label for the subvolume, e.g. 'x1of2'.
 
         Returns
         -------
@@ -106,16 +96,15 @@ class DoseSubvolume(DosiomicFeature):
         if not DoseSubvolume.value_is_jitted:
 
             # Perform the jitting
-            DoseSubvolume.value_function = DoseSubvolume.function
+            DoseSubvolume.value_function = DoseSubvolume.value
 
             # Set 'value_is_jitted' to True
             DoseSubvolume.value_is_jitted = True
 
-        return DoseSubvolume.value_function(subvolume, dose, *args)
+        return DoseSubvolume.value_function(args[0], args[1])
 
     @staticmethod
     def differentiate(
-            subvolume,
             dose,
             *args):
         """
@@ -123,14 +112,12 @@ class DoseSubvolume(DosiomicFeature):
 
         Parameters
         ----------
-        subvolume : str
-            Subvolume label, e.g. 'x1of2'.
-
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the dose \
+            cube, and args[1] the label for the subvolume, e.g. 'x1of2'.
 
         Returns
         -------
@@ -143,10 +130,9 @@ class DoseSubvolume(DosiomicFeature):
 
             # Perform the jitting
             DoseSubvolume.gradient_function = grad(
-                DoseSubvolume.function, argnums=2)
+                DoseSubvolume.value, argnums=1)
 
             # Set 'gradient_is_jitted' to True
             DoseSubvolume.gradient_is_jitted = True
 
-        return DoseSubvolume.gradient_function(
-            subvolume, dose, *args).reshape(-1)
+        return DoseSubvolume.gradient_function(args[0], args[1]).reshape(-1)

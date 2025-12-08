@@ -1,4 +1,4 @@
-"""Brier score loss computation."""
+"""Brier score loss."""
 
 # Author: Tim Ortkamp
 

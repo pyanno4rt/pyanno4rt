@@ -4,7 +4,9 @@
 
 # %% External package import
 
-import jax.numpy as jnp
+from jax.numpy import sqrt
+from jax.numpy import min as jmin
+from jax.numpy import max as jmax
 
 # %% Internal package import
 
@@ -20,7 +22,7 @@ class SegmentEccentricity(RadiomicFeature):
     @staticmethod
     def compute(
             mask,
-            spacing):
+            resolution):
         """
         Compute the segment eccentricity.
 
@@ -29,8 +31,8 @@ class SegmentEccentricity(RadiomicFeature):
         mask : ndarray
             Binary mask for the segment.
 
-        spacing : ndarray
-            Spacing of the dose grid.
+        resolution : ndarray
+            Grid resolution (in mm).
 
         Returns
         -------
@@ -39,6 +41,6 @@ class SegmentEccentricity(RadiomicFeature):
         """
 
         # Compute the eigenvalues
-        eigenvalues, _ = SegmentEigenvalues.compute(mask, spacing)
+        eigenvalues, _ = SegmentEigenvalues.compute(mask, resolution)
 
-        return 1 - jnp.sqrt(jnp.min(eigenvalues)/jnp.max(eigenvalues))
+        return 1 - sqrt(jmin(eigenvalues)/jmax(eigenvalues))

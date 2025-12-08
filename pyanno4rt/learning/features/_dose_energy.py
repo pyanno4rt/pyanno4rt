@@ -38,7 +38,7 @@ class DoseEnergy(DosiomicFeature):
 
     @staticmethod
     @njit
-    def function(dose):
+    def value(dose):
         """
         Compute the dose energy.
 
@@ -99,24 +99,6 @@ class DoseEnergy(DosiomicFeature):
             Dose energy gradient.
         """
 
-        # Set the number of histogram bins
-        number_of_bins = 256
-
-        # Determine the boundary values for the bins
-        bounds = linspace(dose.min(), dose.max(), number_of_bins+1)
-
-        # Derive the bin sequence
-        bins = [(bounds[i], bounds[i+1]) for i in range(number_of_bins)]
-
-        # Set the approximation parameter
-        prox = 1e6
-
-        # Get the length of the dose vector
-        length = len(dose)
-
-        # Set the offset parameter
-        eps = 1e-4
-
         def compute_prob(dos, bns):
             """Compute the bin probability."""
 
@@ -139,6 +121,24 @@ class DoseEnergy(DosiomicFeature):
                 * (1-sigmoid(-prox*(
                     dos-bns[0] if dos != bns[0] else dos-bns[0]+eps))))
 
+        # Set the number of histogram bins
+        number_of_bins = 256
+
+        # Determine the boundary values for the bins
+        bounds = linspace(dose.min(), dose.max(), number_of_bins+1)
+
+        # Derive the bin sequence
+        bins = [(bounds[i], bounds[i+1]) for i in range(number_of_bins)]
+
+        # Set the approximation parameter
+        prox = 1e6
+
+        # Get the length of the dose vector
+        length = len(dose)
+
+        # Set the offset parameter
+        eps = 1e-4
+
         # Compute the total gradient over all dose values
         gradient = array([sum([
             2*compute_prob_gradient(dos, bns) * compute_prob(dos, bns)
@@ -159,7 +159,7 @@ class DoseEnergy(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -167,7 +167,7 @@ class DoseEnergy(DosiomicFeature):
             Dose energy value.
         """
 
-        return DoseEnergy.function(dose)
+        return DoseEnergy.value(dose)
 
     @staticmethod
     def differentiate(
@@ -182,7 +182,7 @@ class DoseEnergy(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------

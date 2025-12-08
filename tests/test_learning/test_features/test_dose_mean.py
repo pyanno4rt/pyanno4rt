@@ -24,11 +24,11 @@ case_B = array([2, 4, 6, 8])
     'dose, expected',
     [(case_A, 2.5), (case_B, 5)],
     ids=['case A', 'case B'])
-def test_dose_mean_function(dose, expected):
-    """Test the 'DoseMean.function' method."""
+def test_dose_mean_value(dose, expected):
+    """Test the 'DoseMean.value' method."""
 
     # Assert the equality between actual and expected outcome
-    assert DoseMean.function(dose) == expected
+    assert DoseMean.value(dose) == expected
 
 
 # Define the argument sets

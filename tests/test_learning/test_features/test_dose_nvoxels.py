@@ -19,11 +19,11 @@ from pyanno4rt.learning.features import DoseNVoxels
     'dose, expected',
     [((1, 2, 3, 4), 4), ((), 0)],
     ids=['case A', 'case B'])
-def test_dose_nvoxels_function(dose, expected):
-    """Test the 'DoseNVoxels.function' method."""
+def test_dose_nvoxels_value(dose, expected):
+    """Test the 'DoseNVoxels.value' method."""
 
     # Assert the equality between actual and expected outcome
-    assert DoseNVoxels.function(dose) == expected
+    assert DoseNVoxels.value(dose) == expected
 
 
 # Define the argument sets

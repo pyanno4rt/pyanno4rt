@@ -4,7 +4,7 @@
 
 # %% External package import
 
-import jax.numpy as jnp
+from jax.numpy import trace
 
 # %% Internal package import
 
@@ -21,7 +21,7 @@ class SegmentDensity(RadiomicFeature):
     @staticmethod
     def compute(
             mask,
-            spacing):
+            resolution):
         """
         Compute the segment density.
 
@@ -30,8 +30,8 @@ class SegmentDensity(RadiomicFeature):
         mask : ndarray
             Binary mask for the segment.
 
-        spacing : ndarray
-            Spacing of the dose grid.
+        resolution : ndarray
+            Grid resolution (in mm).
 
         Returns
         -------
@@ -40,9 +40,9 @@ class SegmentDensity(RadiomicFeature):
         """
 
         # Compute the covariance matrix
-        _, covariance_matrix = SegmentEigenvalues.compute(mask, spacing)
+        _, covariance_matrix = SegmentEigenvalues.compute(mask, resolution)
 
         # Compute the segment volume
-        volume = SegmentVolume.compute(mask, spacing)
+        volume = SegmentVolume.compute(mask, resolution)
 
-        return volume**(1/3) / jnp.trace(covariance_matrix)
+        return volume**(1/3) / trace(covariance_matrix)

@@ -9,7 +9,6 @@ from numpy import (
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.logging import get_logger
 
 # %% Class definition
@@ -21,15 +20,15 @@ class FeatureCalculator():
 
     Parameters
     ----------
-    write_features : bool
-        Indicator for tracking the feature values.
+    handlers : dict
+        Dictionary with the handlers (patient, plan, dose).
 
     verbose : bool, default=True
         Boolean indicator for the logging of the initialization.
 
     Attributes
     ----------
-    write_features : bool
+    handlers : dict
         See 'Parameters'.
 
     radiomics : dict
@@ -43,7 +42,7 @@ class FeatureCalculator():
         computation/differentiation functions.
 
     feature_history : ndarray or None
-        Feature values per iteration (only if ``write_features`` is True).
+        Feature values per iteration.
 
     inputs : dict
         Dictionary with the input values for feature calculation.
@@ -60,17 +59,10 @@ class FeatureCalculator():
 
     def __init__(
             self,
-            write_features,
-            verbose=True):
+            handlers):
 
-        # Check if verbose is True
-        if verbose:
-
-            # Log a message about the initialization of the class
-            get_logger().info("Initializing feature calculator ...")
-
-        # Get the feature writing indicator from the argument
-        self.write_features = write_features
+        # Get the handlers
+        self.handlers = handlers
 
         # Initialize the radiomic and static feature dictionaries
         self.radiomics = {}
@@ -109,12 +101,12 @@ class FeatureCalculator():
         # Initialize the static values map from the argument
         self.statics = statics
 
-    def add_feature_map(
+    def set_mapping(
             self,
             feature_map,
             return_self=False):
         """
-        Add the feature map to the calculator.
+        Set the feature map for (re-)calculation.
 
         Parameters
         ----------
@@ -123,17 +115,13 @@ class FeatureCalculator():
         """
 
         # Log a message about the feature map addition
-        get_logger().info(
-            "Adding feature map to the feature calculator ...")
+        get_logger().info("Setting feature map for (re-)calculation ...")
 
         # Initialize the feature map from the argument
         self.feature_map = feature_map
 
-        # Check if the feature values should be stored in a history
-        if self.write_features:
-
-            # Initialize the feature history from the argument
-            self.feature_history = empty(shape=(1, len(self.feature_map)))
+        # Initialize the feature history from the argument
+        self.feature_history = empty(shape=(1, len(self.feature_map)))
 
         # Check if the instance should be returned
         if return_self:
@@ -158,25 +146,18 @@ class FeatureCalculator():
             Tuple with the segment names.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the information units from the datahub
-        segmentation = hub.segmentation
-        dose_information = hub.dose_information
-
         def precompute_dose(dose):
             """Precompute the dose."""
 
             return (
-                dose_information['number_of_fractions'] * subdose.ravel()
+                dose_handler.number_of_fractions * subdose.ravel()
                 for subdose in dose)
 
         def precompute_dose_cube(segment):
             """Precompute the dose cube."""
 
             # Get the dose grid dimensions
-            dimensions = dose_information['cube_dimensions']
+            dimensions = dose_handler.cube_dimensions
 
             def get_subsegment_cube(subsegment):
                 """Get the dose cube for a single segment."""
@@ -220,8 +201,8 @@ class FeatureCalculator():
             """Precompute the segment masks."""
 
             # Get the cube dimensions from the information unit
-            ct_dimensions = hub.computed_tomography['cube_dimensions']
-            dose_dimensions = dose_information['cube_dimensions']
+            ct_dimensions = computed_tomography.cube_dimensions
+            dose_dimensions = dose_handler.cube_dimensions
 
             def get_subsegment_masks(subsegment):
                 """Get the masks for a single segment."""
@@ -232,8 +213,8 @@ class FeatureCalculator():
 
                 # Insert ones at the CT indices of the segment
                 radiomics_mask[unravel_index(
-                    segmentation[subsegment]['raw_indices'],
-                    ct_dimensions, order='F')] = 1
+                    segmentation[subsegment]['raw_indices'], ct_dimensions,
+                    order='F')] = 1
 
                 # Insert ones at the dose indices of the segment
                 dose_mask[unravel_index(
@@ -243,6 +224,12 @@ class FeatureCalculator():
                 return (radiomics_mask, dose_mask)
 
             return (get_subsegment_masks(subsegment) for subsegment in segment)
+
+        # Get the information units
+        computed_tomography = (
+            self.handlers['patient_handler'].computed_tomography)
+        segmentation = self.handlers['patient_handler'].segmentation
+        dose_handler = self.handlers['dose_handler']
 
         # Add the precomputed dose vectors to the input dictionary
         self.inputs['dose'] = dict(
@@ -325,9 +312,6 @@ class FeatureCalculator():
             Feature vector.
         """
 
-        # Initialize the datahub
-        hub = Datahub()
-
         def compute_feature_value(feature):
             """Compute a single feature value."""
 
@@ -360,8 +344,7 @@ class FeatureCalculator():
                 return self.feature_map[feature]['computation'](
                     self.inputs['dose'][segment],
                     self.inputs['dose_cube'][segment],
-                    fromiter(
-                        hub.dose_information['resolution'].values(), float),
+                    fromiter(dose_resolution.values(), float),
                     self.inputs['masks'][segment][1])
 
             def get_radiomic_value(feature, segment):
@@ -378,8 +361,7 @@ class FeatureCalculator():
                     feature]['computation'](
                         self.inputs['masks'][segment][0],
                         fromiter(
-                            hub.computed_tomography['resolution'].values(),
-                            float))
+                            computed_tomography['resolution'].values(), float))
 
                 return self.radiomics[feature]
 
@@ -394,8 +376,8 @@ class FeatureCalculator():
 
                 # Log a message about a missing static feature
                 get_logger().error(
-                    f"The feature '{feature}' is missing in the static "
-                    "values map ...")
+                    "The feature '%s' is missing in the static values map ...",
+                    feature)
 
                 # Raise an attribute error
                 raise AttributeError
@@ -412,6 +394,11 @@ class FeatureCalculator():
 
             return feature_value
 
+        # Get the information units
+        computed_tomography = (
+            self.handlers['patient_handler'].computed_tomography)
+        dose_resolution = self.handlers['dose_handler'].resolution
+
         # Run the computation function for all features in the feature map
         features = map(compute_feature_value, (*self.feature_map,))
 
@@ -419,7 +406,7 @@ class FeatureCalculator():
         feature_vector = array((*features,)).reshape(1, -1)
 
         # Check if the feature history should be written
-        if self.write_features and self.__iteration__[1] >= 1:
+        if self.__iteration__[1] >= 1:
 
             # Add the feature vector to the history
             self.feature_history = vstack((
@@ -447,21 +434,6 @@ class FeatureCalculator():
         csr_matrix
             Gradient matrix.
         """
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Get the information units from the datahub
-        dose_information = hub.dose_information
-
-        # Check if the dose has changed
-        if not array_equal(dose, self.__dose_cache__):
-
-            # Precompute the input for the feature calculation
-            self.precompute(dose, segment)
-
-            # Update the dose cache
-            self.__dose_cache__ = dose
 
         def compute_feature_gradient(feature):
             """Compute a single gradient."""
@@ -491,8 +463,7 @@ class FeatureCalculator():
                 if boolean_sum == 0:
 
                     # Compute the gradient vector
-                    return differentiate(
-                        dose, dose_information['number_of_voxels'], indices)
+                    return differentiate(dose, number_of_voxels, indices)
 
                 # Check if the boolean sum is one
                 if boolean_sum == 1:
@@ -504,7 +475,7 @@ class FeatureCalculator():
                 return differentiate(
                     dose,
                     dose_cube,
-                    fromiter(dose_information['resolution'].values(), float),
+                    fromiter(dose_resolution.values(), float),
                     masks[1])[indices]
 
             def get_radiomic_gradient(_, segment):
@@ -530,6 +501,19 @@ class FeatureCalculator():
 
             return pad(feature_gradient, self.inputs['paddings'][
                 self.feature_map[feature]['segment']])
+
+        # Get the information unit
+        dose_resolution = self.handlers['dose_handler'].resolution
+        number_of_voxels = self.handlers['dose_handler'].number_of_voxels
+
+        # Check if the dose has changed
+        if not array_equal(dose, self.__dose_cache__):
+
+            # Precompute the input for the feature calculation
+            self.precompute(dose, segment)
+
+            # Update the dose cache
+            self.__dose_cache__ = dose
 
         # Run the computation function for all features in the feature map
         gradients = map(compute_feature_gradient, (*self.feature_map,))

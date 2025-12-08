@@ -24,11 +24,11 @@ case_B = array([1.0, 1.0, 2.0, 3.0, 4.0])
     'dose, expected',
     [(case_A, 1.0), (case_B, 1.0)],
     ids=['unique', 'non-unique'])
-def test_dose_minimum_function(dose, expected):
-    """Test the 'DoseMinimum.function' method."""
+def test_dose_minimum_value(dose, expected):
+    """Test the 'DoseMinimum.value' method."""
 
     # Assert the equality between actual and expected outcome
-    assert DoseMinimum.function(dose) == expected
+    assert DoseMinimum.value(dose) == expected
 
 
 # Define the argument sets

@@ -5,7 +5,8 @@
 # %% External package import
 
 from jax import grad, jit, lax
-import jax.numpy as jnp
+from jax.numpy import ceil, floor, int32, sort
+from jax.numpy import round as jround
 
 # %% Internal package import
 
@@ -18,19 +19,19 @@ class DoseDx(DosiomicFeature):
     """Dose-volume histogram abscissa feature class."""
 
     @staticmethod
-    def pyfunction(
-            level,
-            dose):
+    def pyvalue(
+            dose,
+            level):
         """
         Compute the dose-volume histogram abscissa in 'python' mode.
 
         Parameters
         ----------
-        level : int
-            Reference (relative) volume.
-
         dose : ndarray
             Dose array.
+
+        level : int
+            Reference (relative) volume.
 
         Returns
         -------
@@ -38,22 +39,22 @@ class DoseDx(DosiomicFeature):
             Dose-volume histogram abscissa value.
         """
 
-        return jnp.sort(dose)[jnp.int32(jnp.round(len(dose)*(1-level/100)))]
+        return sort(dose)[int32(jround(len(dose)*(1-level/100)))]
 
     @staticmethod
-    def matfunction(
-            level,
-            dose):
+    def matvalue(
+            dose,
+            level):
         """
         Compute the dose-volume histogram abscissa in 'matlab' mode.
 
         Parameters
         ----------
-        level : int
-            Reference (relative) volume.
-
         dose : ndarray
             Dose array.
+
+        level : int
+            Reference (relative) volume.
 
         Returns
         -------
@@ -66,14 +67,12 @@ class DoseDx(DosiomicFeature):
 
         # Round the quantile value like MATLAB
         rounded_quantile = lax.cond(
-            (quantile-jnp.floor(quantile)) != 0.5, jnp.round, jnp.ceil,
-            quantile)
+            (quantile-floor(quantile)) != 0.5, jround, ceil, quantile)
 
-        return jnp.sort(dose)[jnp.int32(rounded_quantile)]
+        return sort(dose)[int32(rounded_quantile)]
 
     @staticmethod
     def compute(
-            level,
             dose,
             *args):
         """
@@ -81,14 +80,12 @@ class DoseDx(DosiomicFeature):
 
         Parameters
         ----------
-        level : int
-            Reference (relative) volume.
-
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the \
+            reference (relative) volume.
 
         Returns
         -------
@@ -104,16 +101,15 @@ class DoseDx(DosiomicFeature):
 
             # Perform the jitting
             DoseDx.value_function = jit(
-                DoseDx.matfunction if source == 'mat' else DoseDx.pyfunction)
+                DoseDx.matvalue if source == 'mat' else DoseDx.pyvalue)
 
             # Set 'value_is_jitted' to True
             DoseDx.value_is_jitted = True
 
-        return DoseDx.value_function(level, dose)
+        return DoseDx.value_function(dose, args[0])
 
     @staticmethod
     def differentiate(
-            level,
             dose,
             *args):
         """
@@ -121,14 +117,12 @@ class DoseDx(DosiomicFeature):
 
         Parameters
         ----------
-        level : int
-            Reference (relative) volume.
-
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the \
+            reference (relative) volume.
 
         Returns
         -------
@@ -144,10 +138,10 @@ class DoseDx(DosiomicFeature):
 
             # Perform the jitting
             DoseDx.gradient_function = jit(grad(
-                DoseDx.matfunction if source == 'mat'
-                else DoseDx.pyfunction, argnums=1))
+                DoseDx.matvalue if source == 'mat' else DoseDx.pyvalue,
+                argnums=0))
 
             # Set 'gradient_is_jitted' to True
             DoseDx.gradient_is_jitted = True
 
-        return DoseDx.gradient_function(level, dose)
+        return DoseDx.gradient_function(dose, args[0])

@@ -16,21 +16,14 @@ from pyanno4rt.learning.features import (
     DoseSubvolume, DoseVx, SegmentArea, SegmentCompactness, SegmentDensity,
     SegmentEccentricity, SegmentEigenmax, SegmentEigenmid, SegmentEigenmin,
     SegmentEigenvalues, SegmentSphericity, SegmentVolume)
-from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
-from pyanno4rt.learning.losses import brier_loss, log_loss
-from pyanno4rt.learning.preprocessing.scalers import (
-    Identity, StandardScaler, Whitening)
-from pyanno4rt.learning.tune_spaces import (
-    TuneSpaceDT, TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB, TuneSpaceNN,
-    TuneSpaceRF, TuneSpaceSVM)
+from pyanno4rt.learning.preprocessing import StandardScaler, Whitening
+from pyanno4rt.learning.tuning import (
+    BayesHPTuner, GridHPTuner, RandomHPTuner, TuneSpaceDT, TuneSpaceKNN,
+    TuneSpaceLR, TuneSpaceNB, TuneSpaceNN, TuneSpaceRF, TuneSpaceSVM)
+from pyanno4rt.learning.losses import auc_loss, brier_loss, log_loss
 
 # %% Map definitions
 
-
-COLUMNS = {
-    'Dynamic Feature': DynamicFeature,
-    'Label': Label,
-    'StaticFeature': StaticFeature}
 
 FEATURES = {
     'Dose Deviation': DoseDeviation,
@@ -59,6 +52,7 @@ FEATURES = {
     'Segment Volume': SegmentVolume}
 
 LOSSES = {
+    'AUC': auc_loss,
     'Brier score': brier_loss,
     'Logloss': log_loss}
 
@@ -72,16 +66,26 @@ NETWORK_OPTIMIZERS = {
     'Ftrl': Ftrl,
     'SGD': SGD}
 
+STEPS = {
+    'Identity': 0,
+    'StandardScaler': 1,
+    'Whitening': 2}
+
+TUNERS = {
+    'Bayes': BayesHPTuner,
+    'Grid': GridHPTuner,
+    'Random': RandomHPTuner}
+
 TUNE_SPACES = {
-    'forest': TuneSpaceRF,
-    'logistic': TuneSpaceLR,
-    'naive_bayes': TuneSpaceNB,
-    'neighbors': TuneSpaceKNN,
-    'neural_network': TuneSpaceNN,
-    'svm': TuneSpaceSVM,
-    'tree': TuneSpaceDT}
+    'Decision Tree': TuneSpaceDT,
+    'K-Nearest Neighbors': TuneSpaceKNN,
+    'Logistic Regression': TuneSpaceLR,
+    'Naive Bayes': TuneSpaceNB,
+    'Neural Network': TuneSpaceNN,
+    'Random Forest': TuneSpaceRF,
+    'Support Vector Machine': TuneSpaceSVM}
 
 TRANSFORMERS = {
-    'Identity': Identity,
     'StandardScaler': StandardScaler,
     'Whitening': Whitening}
+

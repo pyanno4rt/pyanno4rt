@@ -5,7 +5,8 @@
 # %% External package import
 
 from jax import grad, jit
-import jax.numpy as jnp
+from jax.numpy import count_nonzero, gradient
+from jax.numpy import sum as jsum
 
 # %% Internal package import
 
@@ -18,23 +19,16 @@ class DoseGradient(DosiomicFeature):
     """Dose gradient feature class."""
 
     @staticmethod
-    def function(
-            axis,
-            dose,
-            *args):
+    def value(*args):
         """
         Compute the dose gradient.
 
         Parameters
         ----------
-        axis : str
-            Axis label, e.g. 'x'.
-
-        dose : ndarray
-            Dose array.
-
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the dose \
+            cube, args[1] the resolution, args[2] the binary segment mask, \
+            and args[3] the axis label, e.g. 'x'.
 
         Returns
         -------
@@ -49,16 +43,15 @@ class DoseGradient(DosiomicFeature):
             'z': [args[1][2], 2]}
 
         # Extract the arguments
-        spacing, gradient_axis = axis_to_args[axis]
+        resolution, grad_axis = axis_to_args[args[3]]
 
         # Compute the gradient
-        gradient = jnp.gradient(args[0], spacing, axis=gradient_axis)*args[2]
+        grad = gradient(args[0], resolution, axis=grad_axis)*args[2]
 
-        return jnp.sum(gradient) / jnp.count_nonzero(gradient)
+        return jsum(grad) / count_nonzero(grad)
 
     @staticmethod
     def compute(
-            axis,
             dose,
             *args):
         """
@@ -66,14 +59,13 @@ class DoseGradient(DosiomicFeature):
 
         Parameters
         ----------
-        axis : str
-            Axis label, e.g. 'x'.
-
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the dose \
+            cube, args[1] the resolution, args[2] the binary segment mask, \
+            and args[3] the axis label, e.g. 'x'.
 
         Returns
         -------
@@ -86,16 +78,15 @@ class DoseGradient(DosiomicFeature):
 
             # Perform the jitting
             DoseGradient.value_function = jit(
-                DoseGradient.function, static_argnums=0)
+                DoseGradient.value, static_argnums=3)
 
             # Set 'value_is_jitted' to True
             DoseGradient.value_is_jitted = True
 
-        return DoseGradient.value_function(axis, dose, *args)
+        return DoseGradient.value_function(*args)
 
     @staticmethod
     def differentiate(
-            axis,
             dose,
             *args):
         """
@@ -103,14 +94,13 @@ class DoseGradient(DosiomicFeature):
 
         Parameters
         ----------
-        axis : str
-            Axis label, e.g. 'x'.
-
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters. args[0] should be the dose \
+            cube, args[1] the resolution, args[2] the binary segment mask, \
+            and args[3] the axis label, e.g. 'x'.
 
         Returns
         -------
@@ -123,9 +113,9 @@ class DoseGradient(DosiomicFeature):
 
             # Perform the jitting
             DoseGradient.gradient_function = jit(grad(
-                DoseGradient.function, argnums=2), static_argnums=0)
+                DoseGradient.value, argnums=0), static_argnums=3)
 
             # Set 'gradient_is_jitted' to True
             DoseGradient.gradient_is_jitted = True
 
-        return DoseGradient.gradient_function(axis, dose, *args).reshape(-1)
+        return DoseGradient.gradient_function(*args).reshape(-1)

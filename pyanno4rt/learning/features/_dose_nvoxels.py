@@ -5,7 +5,7 @@
 # %% External package import
 
 from jax import grad, jit
-import jax.numpy as jnp
+from jax.numpy import float32
 
 # %% Internal package import
 
@@ -18,7 +18,7 @@ class DoseNVoxels(DosiomicFeature):
     """Dose voxel number feature class."""
 
     @staticmethod
-    def function(dose):
+    def value(dose):
         """
         Compute the number of dose voxels.
 
@@ -33,7 +33,7 @@ class DoseNVoxels(DosiomicFeature):
             Dose voxel number.
         """
 
-        return jnp.float32(len(dose))
+        return float32(len(dose))
 
     @staticmethod
     def compute(
@@ -48,7 +48,7 @@ class DoseNVoxels(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -60,7 +60,7 @@ class DoseNVoxels(DosiomicFeature):
         if not DoseNVoxels.value_is_jitted:
 
             # Perform the jitting
-            DoseNVoxels.value_function = jit(DoseNVoxels.function)
+            DoseNVoxels.value_function = jit(DoseNVoxels.value)
 
             # Set 'value_is_jitted' to True
             DoseNVoxels.value_is_jitted = True
@@ -80,7 +80,7 @@ class DoseNVoxels(DosiomicFeature):
             Dose array.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -93,7 +93,7 @@ class DoseNVoxels(DosiomicFeature):
 
             # Perform the jitting
             DoseNVoxels.gradient_function = jit(grad(
-                DoseNVoxels.function, argnums=0))
+                DoseNVoxels.value, argnums=0))
 
             # Set 'gradient_is_jitted' to True
             DoseNVoxels.gradient_is_jitted = True

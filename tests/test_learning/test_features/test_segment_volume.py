@@ -23,11 +23,11 @@ case_B = array([[[1, 0, 1], [1, 0, 1], [1, 0, 1]],
 
 # Define the argument sets
 @mark.parametrize(
-    'mask, spacing, expected',
+    'mask, resolution, expected',
     [(case_A, array([5, 5, 5]), 500), (case_B, array([1, 1, 1]), 18)],
     ids=['2D mask', '3D mask'])
-def test_segment_volume(mask, spacing, expected):
+def test_segment_volume(mask, resolution, expected):
     """Test the 'SegmentVolume.compute' method."""
 
     # Assert the equality between actual and expected outcome
-    assert SegmentVolume.compute(mask, spacing) == expected
+    assert SegmentVolume.compute(mask, resolution) == expected

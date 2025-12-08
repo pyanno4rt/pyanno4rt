@@ -28,6 +28,9 @@ class PatientHandler():
 
     Attributes
     ----------
+    sources : None or dict
+        Dictionary with information on the external file sources and handlers.
+
     computed_tomography : None or dict
         Dictionary with information on the CT images.
 

@@ -4,17 +4,14 @@
 
 # %% External package import
 
-from os import listdir
-from os.path import isdir
+from functools import partial
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
-from pyanno4rt.learning.dataset import (
-    EmptyDataGenerator, ImageDataGenerator, TabularDataGenerator)
 from pyanno4rt.learning.features import FeatureCalculator
 from pyanno4rt.logging import get_logger
-from pyanno4rt.tools import filter_dict
+from pyanno4rt.tools import filter_dict, get_machine_learning_components
+from pyanno4rt.validation import validate_type
 
 # %% Class definition
 
@@ -23,173 +20,129 @@ class DataModelHandler():
     """
     Data & learning model handling class.
 
-    This class implements methods to handle the import of the base dataset \
-    and the feature (re)calculation.
+    This class implements methods to handle the outcome models.
 
     Parameters
     ----------
-    model_label : str
-        Label for the machine learning model.
-
-    model_folder_path : None or str
-        Path to a folder for loading an external model.
-
-    data_path : None or str
-        Path to the dataset used for fitting the machine learning model.
-
-    data_columns : list
-        List of :class:`~pyanno4rt.learning.features._columns.DynamicFeature` \
-        or :class:`~pyanno4rt.learning.features._columns.StaticFeature` \
-        and :class:`~pyanno4rt.learning.features._columns.Label` objects.
-
-    tune_splits : int
-        Number of splits for the stratified cross-validation within each \
-        hyperparameter optimization step.
-
-    tune_repeats : int
-        Number of repeats for the stratified cross-validation within each \
-        hyperparameter optimization step.
-
-    oof_splits : int
-        Number of splits for the stratified cross-validation within the \
-        out-of-folds evaluation step.
-
-    oof_repeats : int
-        Number of repeats for the stratified cross-validation within the \
-        out-of-folds evaluation step.
-
-    write_features : bool
-        Indicator for writing the iteratively calculated feature vectors into \
-        a feature history.
+    handlers : list
+        Dictionary with the handlers (patient, plan, dose).
 
     Attributes
     ----------
-    model_label : str
+    handlers : dict
         See 'Parameters'.
 
-    write_features : bool
-        See 'Parameters'.
+    models : list
+        Outcome models.
 
-    data_generator : object of class \
-        :class:`~pyanno4rt.learning.dataset._empty_data_generator.EmptyDataGenerator`\
-        :class:`~pyanno4rt.learning.dataset._tabular_data_generator.TabularDataGenerator`
-        The object used to handle the base dataset.
+        Currently available:
 
-    feature_calculator : object of class \
-        :class:`~pyanno4rt.learning.features._feature_calculator.FeatureCalculator`
-        The object used to (re)calculate the feature values and gradients.
+        - :class:`~pyanno4rt.learning.models._tree._decision_tree.DecisionTree`
+
+        - :class:`~pyanno4rt.learning.models._neighbors._k_nearest_neighbors.KNearestNeighbors`
+
+        - :class:`~pyanno4rt.learning.models._logistic._logistic_regression.LogisticRegression`
+
+        - :class:`~pyanno4rt.learning.models._naive_bayes._naive_bayes.NaiveBayes`
+
+        - :class:`~pyanno4rt.learning.models._neural_network._neural_network.NeuralNetwork`
+
+        - :class:`~pyanno4rt.learning.models._forest._random_forest.RandomForest`
+
+        - :class:`~pyanno4rt.learning.models._svm._support_vector_machine.SupportVectorMachine`
     """
 
     def __init__(
             self,
-            model_label,
-            model_folder_path,
-            data_path,
-            data_columns,
-            tune_splits,
-            tune_repeats,
-            oof_splits,
-            oof_repeats,
-            write_features):
+            handlers):
 
-        # Initialize the datahub
-        hub = Datahub()
+        # Log a message about the initialization of the class
+        get_logger().info("Initializing data model handler ...")
 
-        # Loop over the model-related datahub attributes
-        for attribute in (
-                'datasets', 'feature_maps', 'model_instances',
-                'model_inspections', 'model_evaluations', 'model_outcomes'):
+        # Validate the input arguments
+        self.validate(filter_dict(vars(), remove_keys=('self',)))
 
-            # Check if the attribute has not been initialized yet
-            if not getattr(hub, attribute):
+        # Get the instance attributes
+        self.handlers = handlers
+        self.models = [
+            component.model
+            for component in get_machine_learning_components(
+                handlers['plan_handler'].components)]
 
-                # Initialize the attribute
-                setattr(hub, attribute, {})
+    def load_datasets(self):
+        """Load the datasets for all models."""
 
-        # Get the instance attributes from the arguments
-        self.model_label, self.write_features = model_label, write_features
+        # Loop over the models
+        for model in self.models:
 
-        # Check if no data path has been passed
-        if not data_path:
+            # Log a message about the dataset loading
+            get_logger().info("Loading dataset for '%s' ...", model.label)
 
-            # Initialize the empty dataset generator
-            self.data_generator = EmptyDataGenerator(
-                model_label=model_label,
-                model_folder_path=model_folder_path,
-                data_columns={
-                    value['column']: (
-                        {'type': key}
-                        | filter_dict(value, remove_keys=('column',)))
-                    for item in data_columns
-                    for key, value in item.to_dict().items()})
+            # Load the model data
+            model.load_data()
 
-        # Check if the data path leads to a tabular file
-        elif data_path.endswith('.csv'):
+    def add_calculators(self):
+        """Add the feature calculators to the models."""
 
-            # Initialize the tabular dataset generator
-            self.data_generator = TabularDataGenerator(
-                model_label=model_label,
-                data_path=data_path,
-                data_columns={
-                    value['column']: (
-                        {'type': key}
-                        | filter_dict(value, remove_keys=('column',)))
-                    for item in data_columns
-                    for key, value in item.to_dict().items()},
-                tune_splits=tune_splits,
-                tune_repeats=tune_repeats,
-                oof_splits=oof_splits,
-                oof_repeats=oof_repeats)
+        # Loop over the models
+        for model in self.models:
 
-        # Check if the data path leads to a folder
-        elif isdir(data_path) and all(
-                any(file.endswith(extension) for extension in (
-                    '.jpg', '.npy', '.npz', '.png'))
-                for file in listdir(data_path)):
-
-            # Initialize the image dataset generator
-            self.data_generator = ImageDataGenerator(
-                model_label=model_label,
-                model_folder_path=model_folder_path)
-
-            # Raise an error to indicate the missing implementation
-            raise ValueError(
-                "Image-based data generation has not been implemented yet ...")
-
-        # Initialize the feature calculator
-        self.feature_calculator = FeatureCalculator(write_features)
-
-    def integrate(self):
-        """Integrate the learning model-related classes."""
-
-        # Generate the data information dictionary
-        data_information, feature_map = self.data_generator.generate()
-
-        # Add the static values map to the feature calculator
-        self.feature_calculator.add_static_map(
-            data_information['feature_statics'])
-
-        # Add the feature map to the feature calculator
-        self.feature_calculator.add_feature_map(feature_map)
-
-    def process_feature_history(self):
-        """Process the feature history from the feature calculator."""
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Check if the feature history has been written
-        if self.write_features:
-
-            # Transform the feature history into a dictionary
-            self.feature_calculator.feature_history = dict(zip(
-                (*hub.feature_maps[self.model_label],),
-                (*self.feature_calculator.feature_history[2:, :].transpose(),)
-                ))
-
-        else:
-
-            # Log a message about the missing feature history
+            # Log a message about setting up the feature calculator
             get_logger().info(
-                "Feature history has not been written for '%s' ...",
-                self.model_label)
+                "Adding feature calculator for '%s' ...", model.label)
+
+            # Initialize the feature calculator
+            model.feature_calculator = FeatureCalculator(self.handlers)
+
+            # Add the feature map
+            model.feature_calculator.set_mapping(model.dataset.feature_map)
+
+    def fit_models(self):
+        """Fit the models."""
+
+        # Loop over the models
+        for model in self.models:
+
+            # Log a message about the model fitting
+            get_logger().info("Fitting model '%s' ...", model.label)
+
+            # Get the features and labels
+            features, labels = (
+                model.dataset.feature_values, model.dataset.label_values)
+
+            # Fit the preprocessor
+            model.fit_preprocessor(features, labels)
+
+            # Tune the hyperparameters
+            model.tune_hyperparameters(features, labels)
+
+            # Fit the model
+            model.fit_predictor(features, labels)
+
+    def validate(
+            self,
+            inputs):
+        """
+        Validate the input arguments.
+
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the input arguments.
+        """
+
+        # Get the validation map
+        validation_map = {
+            'handlers': (
+                partial(validate_type, options=dict),
+                )
+            }
+
+        # Loop over the inputs
+        for key, value in inputs.items():
+
+            # Loop over the validation functions
+            for function in validation_map[key]:
+
+                # Run the validation function
+                function(key, value)

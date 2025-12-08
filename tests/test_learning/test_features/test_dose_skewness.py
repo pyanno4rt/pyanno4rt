@@ -24,11 +24,11 @@ case_B = array([1, 2, 2, 3, 4, 5, 6, 7, 8, 10])
     'dose, expected',
     [(case_A, 0), (case_B, 0.37304196)],
     ids=['case A', 'case B'])
-def test_dose_skewness_function(dose, expected):
-    """Test the 'DoseSkewness.function' method."""
+def test_dose_skewness_value(dose, expected):
+    """Test the 'DoseSkewness.value' method."""
 
     # Asser the equality between actual and expected outcome
-    assert isclose(DoseSkewness.function(dose), expected)
+    assert isclose(DoseSkewness.value(dose), expected)
 
 
 # Define the argument sets

@@ -18,7 +18,6 @@ from pyanno4rt.gui._custom_styles import (
     cbox, ledit, pbutton_composer, sbox, tbutton_composer)
 from pyanno4rt.gui.compilations.data_columns_window import (
     Ui_data_columns_window)
-from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import apply, string_to_numeric
 

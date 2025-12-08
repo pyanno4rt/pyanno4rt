@@ -3,16 +3,14 @@ Features module.
 
 ==================================================================
 
-The module aims to provide methods and classes to handle the dosiomic and \
-radiomic input features, including feature definitions and (re)calculation.
+The module aims to provide methods and classes to handle the model input \
+features, including feature definitions and the feature calculator.
 """
 
 # Author: Tim Ortkamp
 
-# Import the feature classes
-from ._feature_class import DosiomicFeature, RadiomicFeature
+from ._feature import DosiomicFeature, RadiomicFeature
 
-# Import the dosiomic features
 from ._dose_mean import DoseMean
 from ._dose_deviation import DoseDeviation
 from ._dose_maximum import DoseMaximum
@@ -28,7 +26,6 @@ from ._dose_subvolume import DoseSubvolume
 from ._dose_gradient import DoseGradient
 from ._dose_moment import DoseMoment
 
-# Import the radiomic features
 from ._segment_area import SegmentArea
 from ._segment_volume import SegmentVolume
 from ._segment_eigenvalues import SegmentEigenvalues
@@ -40,11 +37,9 @@ from ._segment_eigenmin import SegmentEigenmin
 from ._segment_eigenmid import SegmentEigenmid
 from ._segment_eigenmax import SegmentEigenmax
 
-# Import the feature calculator
-from ._feature_calculator import FeatureCalculator
-
-# Import the input column classes and the mapping dictionary
 from ._columns import DynamicFeature, Label, StaticFeature
+
+from ._feature_calculator import FeatureCalculator
 
 __all__ = [
     'DosiomicFeature',
@@ -73,8 +68,7 @@ __all__ = [
     'SegmentEigenmid',
     'SegmentEigenmax',
     'SegmentEigenvalues',
-    'FeatureCalculator',
     'DynamicFeature',
+    'Label',
     'StaticFeature',
-    'FEATURES',
-    'Label']
+    'FeatureCalculator']
