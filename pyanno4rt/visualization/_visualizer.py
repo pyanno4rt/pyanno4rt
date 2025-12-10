@@ -15,8 +15,7 @@ from PyQt5.QtWidgets import (
 # %% Internal package import
 
 from pyanno4rt.tools import (
-    get_conventional_components, get_machine_learning_components,
-    get_radiobiological_components)
+    get_machine_learning_components, get_radiobiological_components)
 from pyanno4rt.visualization.assets import resources_rc
 from pyanno4rt.visualization.custom_widgets import (
     ComponentGraphWidget, DVHGraphWidget, FeatureGraphWidget,
@@ -275,24 +274,14 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Check if the feature iterations button should be disabled
         if (self.plan.state < 3 or
-            (fluence_optimizer is not None and
-             (not hasattr(fluence_optimizer, 'problem') or
-              not hasattr(fluence_optimizer.problem, 'tracker')
-              or all(value == [] for value
-                     in fluence_optimizer.problem.tracker.values())))
-            or all(objective.model_parameters.write_features is False
-                   for objective in ml_components)):
+            any(component.model.feature_calculator.feature_history is None
+                for component in ml_components)):
             self.open_feat_graph_pbutton.setEnabled(False)
 
         # Check if the metrics tables and graphs buttons should be disabled
-        if (self.plan.state < 2 or
-            data_model_handler is None):
+        if self.plan.state < 2 or len(data_model_handler.models) == 0:
             self.open_metrics_graphs_pbutton.setEnabled(False)
             self.open_metrics_tables_pbutton.setEnabled(False)
-
-        # Check if the permutation importance button should be disabled
-        if (self.plan.state < 2 or
-            data_model_handler is None):
             self.open_perm_graph_pbutton.setEnabled(False)
 
         # Check if the plan evaluation buttons should be disabled
@@ -375,22 +364,20 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Get the segmentation and optimization data
         problem = self.plan.fluence_optimizer.problem
-        optimized_dose = self.plan.fluence_optimizer.optimized_dose
 
         # Get the ML model-based components
         components = get_machine_learning_components(
             problem.constraints + problem.objectives)
 
         # Check if the plan has already been optimized
-        if (self.plan.fluence_optimizer is not None
-                and optimized_dose is not None
-                and self.plan.state >= 3
-                and len(components) > 0):
+        if (self.plan.state >= 3 or
+            any(component.model.feature_calculator.feature_history is None
+                for component in components)):
 
             # Get the feature histories
             histories = {label: values for label, values in {
-                component.model.model_label: getattr(
-                    component.data_model_handler.feature_calculator,
+                component.model.label: getattr(
+                    component.model.feature_calculator,
                     'feature_history') for component in components}.items()
                 if values}
 
@@ -399,7 +386,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
                 # Get the outcome data
                 outcomes = {
-                    component.model.model_label: component.translate(
+                    component.model.label: component.translate(
                         problem.tracker[component.track_id])
                     for component in components}
 
@@ -763,7 +750,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         self.add_outcome_tracks()
 
         # Add the feature tracks
-        # self.add_feature_tracks()
+        self.add_feature_tracks()
 
         # Add the permutation importance boxplots
         # self.add_importance_boxplots()

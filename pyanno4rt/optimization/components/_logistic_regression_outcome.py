@@ -5,12 +5,10 @@
 # %% External package import
 
 from copy import deepcopy
-from numpy import array
 
 # %% Internal package import
 
 from pyanno4rt.learning.models.logistic import LogisticRegression
-from pyanno4rt.logging import get_logger
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import (
     filter_dict, inverse_salu, inverse_sigmoid, salu, sigmoid)
@@ -28,8 +26,8 @@ class LogisticRegressionOutcome(MachineLearningComponent):
 
     Parameters
     ----------
-    segment : str
-        Name of the segment associated with the component.
+    segment : str or list
+        Segment(s) associated with the component.
 
     outcome_type : {'NTCP', 'TCP'}
         Type of the outcome variable.
@@ -55,29 +53,19 @@ class LogisticRegressionOutcome(MachineLearningComponent):
     bounds : None or list, default=None
         Constraint bounds for the component.
 
-    link : None or list, default=None
-        Other segments used for joint evaluation.
-
     transform : bool, default=False
         Indicator for the transformation of the outcome function.
 
     identifier : None or str, default=None
         Additional string for naming the component.
 
-    display : bool, default=True
-        Indicator for the display of the component.
-
     Attributes
     ----------
     arguments : dict
         Dictionary with the component input arguments (for serialization).
 
-    model : object of class \
-        :class:`~pyanno4rt.learning.models.logistic._logistic_regression.LogisticRegression`
-        The object used to represent the logistic regression outcome model.
-
-    parameter_value : list
-        Logistic regression model coefficients.
+    See :class:`~pyanno4rt.optimization.compoonents._machine_learning_component.MachineLearningComponent`\
+    for details on the inherited attributes.
     """
 
     def __init__(
@@ -113,9 +101,6 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
 
-        # Convert the bounds
-        self.bounds = sorted(self.reverse(bound) for bound in self.bounds)
-
     def to_dict(self):
         """Serialize the component into a dictionary."""
 
@@ -123,8 +108,7 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         dictionary = deepcopy(self.arguments)
 
         # Serialize the model
-        dictionary['model'] = (
-            dictionary['model'].to_dict())
+        dictionary['model'] = dictionary['model'].to_dict()
 
         return {self.name: dictionary}
 
@@ -152,43 +136,16 @@ class LogisticRegressionOutcome(MachineLearningComponent):
 
         return cls(**dictionary)
 
-    def add_model(self):
-        """Add the logistic regression model to the component."""
+    def update_from_model(self):
+        """Update the component from the outcome model."""
 
-        # Log a message about the model addition
-        get_logger().info(
-            "Adding logistic regression model for '%s' ...", self.name)
+        # Store the logistic regression model coefficients
+        self.parameter_value = list(self.model.predictor.coef_[0])
 
-        # # Initialize the data model handler
-        # self.data_model_handler = DataModelHandler(
-        #     model_label=self.model_parameters.model_label,
-        #     model_folder_path=self.model_parameters.model_folder_path,
-        #     data_path=self.model_parameters.data_path,
-        #     data_columns=self.model_parameters.data_columns,
-        #     tune_splits=self.model_parameters.tune_splits,
-        #     tune_repeats=self.model_parameters.tune_repeats,
-        #     oof_splits=self.model_parameters.oof_splits,
-        #     oof_repeats=self.model_parameters.oof_repeats,
-        #     write_features=self.model_parameters.write_features)
-
-        # # Integrate the model-related classes
-        # self.data_model_handler.integrate()
-
-        # # Initialize the logistic regression model
-        # self.model = LogisticRegressionModel(
-        #     model_label=self.model_parameters.model_label,
-        #     model_folder_path=self.model_parameters.model_folder_path,
-        #     dataset=hub.datasets[self.model_parameters.model_label],
-        #     preprocessing_steps=self.model_parameters.preprocessing,
-        #     tune_space=self.model_parameters.tune_space,
-        #     tune_evaluations=self.model_parameters.tune_evaluations,
-        #     tune_score=self.model_parameters.tune_score,
-        #     inspect_model=self.model_parameters.inspect,
-        #     evaluate_model=self.model_parameters.evaluate,
-        #     display_options=self.model_parameters.display_options)
-
-        # Get the logistic regression model parameters
-        self.parameter_value = list(self.model.prediction_model.coef_[0])
+        # Update the bounds
+        self.bounds = sorted(
+            self.reverse(bound) for bound in self.convert_bounds(
+                self.arguments['bounds'], self.embedding))
 
     def translate(
             self,
@@ -207,23 +164,20 @@ class LogisticRegressionOutcome(MachineLearningComponent):
             Outcome value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the transformation should be applied
         if self.transform:
 
             # Return the transformed outcome value
-            return sigmoid(inverse_salu(value, sign))
+            return sigmoid(inverse_salu(value, self.sign))
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of outcome values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single outcome value
-        return sign*value
+        return self.sign*value
 
     def reverse(
             self,
@@ -242,23 +196,20 @@ class LogisticRegressionOutcome(MachineLearningComponent):
             Function value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the transformation should be applied
         if self.transform:
 
             # Return the transformed function value
-            return salu(inverse_sigmoid(value), sign)
+            return salu(inverse_sigmoid(value), self.sign)
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of function values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single function value
-        return sign*value
+        return self.sign*value
 
     def compute_value(
             self,
@@ -281,11 +232,10 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         raw_features = self.model.featurize(dose, self.segment)
 
         # Preprocess the feature vector
-        preprocessed_features = self.model.preprocess(raw_features)
+        preprocessed_features, _ = self.model.preprocess(raw_features)
 
         # Get the outcome prediction
-        prediction = self.model.predict(
-            preprocessed_features, self.model.prediction_model)
+        prediction = self.model.predict(preprocessed_features)
 
         # Clip the prediction for numerical stability
         prediction = max(1e-6, min(prediction, 1-1e-6))
@@ -313,10 +263,7 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         raw_features = self.model.featurize(dose, self.segment)
 
         # Preprocess the feature vector
-        preprocessed_features = self.model.preprocess(raw_features)
-
-        # Get the model coefficients
-        coefficients = array(self.parameter_value)
+        preprocessed_features, _ = self.model.preprocess(raw_features)
 
         # Get the outcome prediction
         prediction = self.model.predict(preprocessed_features)
@@ -324,25 +271,17 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         # Clip the prediction for numerical stability
         prediction = max(1e-6, min(prediction, 1-1e-6))
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
+        # Get the model gradients
+        feature_gradient, preprocessing_gradient, predictor_gradient = (
+            self.model.gradientize(dose, self.segment))
 
         # Check if the transformation should be applied
-        if self.transform and sign*prediction > sign*0.5:
+        if self.transform and self.sign*prediction > self.sign*0.5:
 
-            # Get the transformed model gradient
-            model_gradient = sign*0.25*array(coefficients)
+            # Get the transformed predictor gradient
+            predictor_gradient = (
+                0.25*predictor_gradient/(prediction - prediction**2))
 
-        else:
-
-            # Get the model gradient
-            model_gradient = sign*(prediction - prediction**2) * coefficients
-
-        # Compute the preprocessing pipeline gradient
-        preprocessing_gradient = (
-            self.model.preprocessor.gradientize(raw_features))
-
-        # Compute the feature gradient
-        feature_gradient = self.model.gradientize(dose, self.segment)
-
-        return (model_gradient * preprocessing_gradient) @ feature_gradient
+        return (
+            (self.sign*predictor_gradient * preprocessing_gradient)
+            @ feature_gradient)

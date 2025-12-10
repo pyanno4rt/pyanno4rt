@@ -234,9 +234,6 @@ class TreatmentPlan():
                 # Fit the models
                 self.data_model_handler.fit_models()
 
-                #
-                raise ValueError
-
                 # Set the state
                 self.state = 2
 
@@ -254,11 +251,10 @@ class TreatmentPlan():
                 self.logging.error(
                     "Please configure the treatment plan before optimization!")
 
-            # Check if any machine learning component has not been modeled
-            elif (None in (
-                    component.model for component in
-                    get_machine_learning_components(
-                        self.plan_handler.components))):
+            # Check if the outcome has not been modeled yet
+            elif (self.data_model_handler is None and
+                  len(get_machine_learning_components(
+                      self.plan_handler.components)) > 0):
 
                 # Log a message about the non-modeled component
                 self.logging.error(
@@ -278,19 +274,27 @@ class TreatmentPlan():
                     'data_model_handler': self.data_model_handler}
 
                 # Initialize the fluence optimizer
-                self.fluence_optimizer = FluenceOptimizer(
-                    handlers=handlers,
-                    method=self.optimization.method,
-                    solver=self.optimization.solver,
-                    algorithm=self.optimization.algorithm,
-                    initial_strategy=self.optimization.initial_strategy,
-                    initial_fluence=self.optimization.initial_fluence,
-                    lower_variable_bounds=(
-                        self.optimization.lower_variable_bounds),
-                    upper_variable_bounds=(
-                        self.optimization.upper_variable_bounds),
-                    maximum_iterations=self.optimization.maximum_iterations,
-                    tolerance=self.optimization.tolerance)
+                self.fluence_optimizer = FluenceOptimizer(handlers=handlers)
+
+                # Initialize the fluence
+                self.fluence_optimizer.initialize_fluence(
+                    self.optimization.initial_strategy,
+                    self.optimization.initial_fluence)
+
+                # Initialize the optimization problem
+                self.fluence_optimizer.initialize_problem(
+                    self.optimization.method,
+                    self.optimization.initial_strategy,
+                    self.optimization.initial_fluence,
+                    self.optimization.lower_variable_bounds,
+                    self.optimization.upper_variable_bounds)
+
+                # Initialize the solver
+                self.fluence_optimizer.initialize_solver(
+                    self.optimization.solver,
+                    self.optimization.algorithm,
+                    self.optimization.maximum_iterations,
+                    self.optimization.tolerance)
 
                 # Solve the optimization problem
                 self.fluence_optimizer.solve()

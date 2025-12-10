@@ -1,4 +1,4 @@
-"""Data & learning model handling."""
+"""Data model handling."""
 
 # Author: Tim Ortkamp
 
@@ -11,14 +11,14 @@ from functools import partial
 from pyanno4rt.learning.features import FeatureCalculator
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import filter_dict, get_machine_learning_components
-from pyanno4rt.validation import validate_type
+from pyanno4rt.validation import validate_length, validate_type
 
 # %% Class definition
 
 
 class DataModelHandler():
     """
-    Data & learning model handling class.
+    Data model handling class.
 
     This class implements methods to handle the outcome models.
 
@@ -50,27 +50,32 @@ class DataModelHandler():
         - :class:`~pyanno4rt.learning.models._forest._random_forest.RandomForest`
 
         - :class:`~pyanno4rt.learning.models._svm._support_vector_machine.SupportVectorMachine`
+
+    outcomes : dict
+        Dictionary with the outcome results for the models.
     """
 
     def __init__(
             self,
             handlers):
 
-        # Log a message about the initialization of the class
-        get_logger().info("Initializing data model handler ...")
-
         # Validate the input arguments
         self.validate(filter_dict(vars(), remove_keys=('self',)))
+
+        # Log a message about the initialization of the class
+        get_logger().info("Initializing data model handler ...")
 
         # Get the instance attributes
         self.handlers = handlers
         self.models = [
-            component.model
-            for component in get_machine_learning_components(
+            component.model for component in get_machine_learning_components(
                 handlers['plan_handler'].components)]
 
+        # Initialize the outcome dictionary
+        self.outcomes = {}
+
     def load_datasets(self):
-        """Load the datasets for all models."""
+        """Load the datasets for the models."""
 
         # Loop over the models
         for model in self.models:
@@ -119,6 +124,19 @@ class DataModelHandler():
             # Fit the model
             model.fit_predictor(features, labels)
 
+        # Loop over the machine learning components
+        for component in get_machine_learning_components(
+                self.handlers['plan_handler'].components):
+
+            # Update the model parameters
+            component.update_from_model()
+
+    def inspect_models(self):
+        """Inspect the models."""
+
+    def evaluate_models(self):
+        """Evaluate the models."""
+
     def validate(
             self,
             inputs):
@@ -135,6 +153,7 @@ class DataModelHandler():
         validation_map = {
             'handlers': (
                 partial(validate_type, options=dict),
+                partial(validate_length, reference=3, sign='=='),
                 )
             }
 

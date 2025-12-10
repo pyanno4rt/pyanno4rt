@@ -14,10 +14,11 @@ from numpy import array, logical_and, seterr, vstack, where
 # %% Internal package import
 
 from pyanno4rt.io.model_data import CSVHandler
-from pyanno4rt.learning._maps import FEATURES
+from pyanno4rt.learning._maps import COLUMNS, FEATURES
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import custom_round, deduplicate, filter_dict, replace_nan
-from pyanno4rt.validation import validate_file, validate_length, validate_type
+from pyanno4rt.validation import (
+    validate_file, validate_length, validate_subtype, validate_type)
 
 # %% Set package options
 
@@ -245,8 +246,8 @@ class TabularDataset():
             # Get the mean interior label value per patient
             interior_means = replace_nan((
                 numerator/denominator for numerator, denominator in zip(
-                    map(sum, interior_labels), map(sum, interior_mask[1]))),
-                0.0)
+                    map(sum, interior_labels),
+                    map(sum, interior_mask[1]))), 0.0)
 
             return array(list(map(custom_round, interior_means)))
 
@@ -360,6 +361,7 @@ class TabularDataset():
                 ),
             'columns': (
                 partial(validate_type, options=list),
+                partial(validate_subtype, options=(*COLUMNS.values(),)),
                 partial(validate_length, reference=2, sign='>=')
                 )
             }

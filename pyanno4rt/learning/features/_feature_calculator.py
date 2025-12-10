@@ -23,9 +23,6 @@ class FeatureCalculator():
     handlers : dict
         Dictionary with the handlers (patient, plan, dose).
 
-    verbose : bool, default=True
-        Boolean indicator for the logging of the initialization.
-
     Attributes
     ----------
     handlers : dict
@@ -68,8 +65,9 @@ class FeatureCalculator():
         self.radiomics = {}
         self.statics = {}
 
-        # Initialize the feature map and history
+        # Initialize the feature map, segment tuple and history
         self.feature_map = None
+        self.segment = None
         self.feature_history = None
 
         # Initialize the input dictionary
@@ -120,6 +118,10 @@ class FeatureCalculator():
         # Initialize the feature map from the argument
         self.feature_map = feature_map
 
+        # Get the mapped segments
+        self.segment = tuple(
+            set(value['segment'] for value in feature_map.values()))
+
         # Initialize the feature history from the argument
         self.feature_history = empty(shape=(1, len(self.feature_map)))
 
@@ -140,10 +142,10 @@ class FeatureCalculator():
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose values.
+            Dose vectors.
 
-        segment : tuple
-            Tuple with the segment names.
+        segment : list
+            Segment names.
         """
 
         def precompute_dose(dose):
@@ -201,7 +203,7 @@ class FeatureCalculator():
             """Precompute the segment masks."""
 
             # Get the cube dimensions from the information unit
-            ct_dimensions = computed_tomography.cube_dimensions
+            ct_dimensions = computed_tomography['cube_dimensions']
             dose_dimensions = dose_handler.cube_dimensions
 
             def get_subsegment_masks(subsegment):
@@ -519,3 +521,10 @@ class FeatureCalculator():
         gradients = map(compute_feature_gradient, (*self.feature_map,))
 
         return vstack(tuple(gradients))
+
+    def history_to_dict(self):
+        """Convert the feature history array to a dictionary."""
+
+        # Convert the feature history to a dictionary
+        self.feature_history = dict(zip(
+            (*self.feature_map,), (*self.feature_history[2:, :].transpose(),)))

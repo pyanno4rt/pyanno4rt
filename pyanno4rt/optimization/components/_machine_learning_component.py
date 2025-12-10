@@ -43,13 +43,13 @@ class MachineLearningComponent(metaclass=ABCMeta):
         Category of the component parameters.
 
     model : object of class \
-        :class:`~pyanno4rt.learning._models._decision_tree.DecisionTree`\
-        :class:`~pyanno4rt.learning._models._k_nearest_neighbors.KNearestNeighbors`\
-        :class:`~pyanno4rt.learning._models._logistic_regression.LogisticRegression`\
-        :class:`~pyanno4rt.learning._models._naive_bayes.NaiveBayes`\
-        :class:`~pyanno4rt.learning._models._neural_network.NeuralNetwork`\
-        :class:`~pyanno4rt.learning._models._random_forest.RandomForest`\
-        :class:`~pyanno4rt.learning._models._support_vector_machine.SupportVectorMachine`
+        :class:`~pyanno4rt.learning._models.forest._random_forest.RandomForest`\
+        :class:`~pyanno4rt.learning._models.logistic._logistic_regression.LogisticRegression`\
+        :class:`~pyanno4rt.learning._models.naive_bayes._naive_bayes.NaiveBayes`\
+        :class:`~pyanno4rt.learning._models.neighbors._k_nearest_neighbors.KNearestNeighbors`\
+        :class:`~pyanno4rt.learning._models.network._neural_network.NeuralNetwork`\
+        :class:`~pyanno4rt.learning._models.svm._support_vector_machine.SupportVectorMachine`\
+        :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
         The object used to represent the outcome model.
 
     embedding : {'active', 'passive'}
@@ -96,13 +96,13 @@ class MachineLearningComponent(metaclass=ABCMeta):
         Value of the component parameters.
 
     model : object of class \
-        :class:`~pyanno4rt.learning._models._decision_tree.DecisionTree`\
-        :class:`~pyanno4rt.learning._models._k_nearest_neighbors.KNearestNeighbors`\
-        :class:`~pyanno4rt.learning._models._logistic_regression.LogisticRegression`\
-        :class:`~pyanno4rt.learning._models._naive_bayes.NaiveBayes`\
-        :class:`~pyanno4rt.learning._models._neural_network.NeuralNetwork`\
-        :class:`~pyanno4rt.learning._models._random_forest.RandomForest`\
-        :class:`~pyanno4rt.learning._models._support_vector_machine.SupportVectorMachine`
+        :class:`~pyanno4rt.learning._models.forest._random_forest.RandomForest`\
+        :class:`~pyanno4rt.learning._models.logistic._logistic_regression.LogisticRegression`\
+        :class:`~pyanno4rt.learning._models.naive_bayes._naive_bayes.NaiveBayes`\
+        :class:`~pyanno4rt.learning._models.neighbors._k_nearest_neighbors.KNearestNeighbors`\
+        :class:`~pyanno4rt.learning._models.network._neural_network.NeuralNetwork`\
+        :class:`~pyanno4rt.learning._models.svm._support_vector_machine.SupportVectorMachine`\
+        :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
         See 'Parameters'.
 
     embedding : {'active', 'passive'}
@@ -131,6 +131,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
     indices : list
         Indices of the segment(s).
+
+    sign : {-1, 1}
+        Sign for the component (-1=TCP, 1=NTCP).
     """
 
     def __init__(
@@ -177,6 +180,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
         # Initialize the segment indices
         self.indices = None
+
+        # Get the sign
+        self.sign = (-1)**(outcome_type == 'TCP')
 
     def __eq__(
             self,
@@ -248,6 +254,45 @@ class MachineLearningComponent(metaclass=ABCMeta):
         return sorted(
             (0.0 if bounds[0] is None or bounds[0] < 0 else float(bounds[0]),
              1.0 if bounds[1] is None or bounds[1] > 1 else float(bounds[1])))
+
+    @abstractmethod
+    def to_dict(self):
+        """Serialize the component into a dictionary."""
+
+    @classmethod
+    @abstractmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """Deserialize the component from a dictionary."""
+
+    @abstractmethod
+    def update_from_model(self):
+        """Update the component from the outcome model."""
+
+    @abstractmethod
+    def translate(
+            self,
+            value):
+        """Translate function values to outcome values."""
+
+    @abstractmethod
+    def reverse(
+            self,
+            value):
+        """Reverse outcome values to function values."""
+
+    @abstractmethod
+    def compute_value(
+            self,
+            dose):
+        """Compute the component value."""
+
+    @abstractmethod
+    def compute_gradient(
+            self,
+            dose):
+        """Compute the component gradient."""
 
     def validate(
             self,
@@ -322,38 +367,3 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
                 # Run the validation function
                 function(key, value)
-
-    @abstractmethod
-    def to_dict(self):
-        """Serialize the component into a dictionary."""
-
-    @classmethod
-    @abstractmethod
-    def from_dict(
-            cls,
-            dictionary):
-        """Deserialize the component from a dictionary."""
-
-    @abstractmethod
-    def translate(
-            self,
-            value):
-        """Translate function values to outcome values."""
-
-    @abstractmethod
-    def reverse(
-            self,
-            value):
-        """Reverse outcome values to function values."""
-
-    @abstractmethod
-    def compute_value(
-            self,
-            dose):
-        """Compute the component value."""
-
-    @abstractmethod
-    def compute_gradient(
-            self,
-            dose):
-        """Compute the component gradient."""

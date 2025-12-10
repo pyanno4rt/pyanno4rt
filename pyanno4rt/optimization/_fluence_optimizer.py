@@ -35,51 +35,24 @@ class FluenceOptimizer():
     handlers : dict
         Dictionary with the handlers (patient, plan, dose, data models).
 
-    method : {'lexicographic', 'pareto', 'weighted-sum'}
-        Single- or multi-criteria optimization method.
-
-    solver : {'ipyopt', 'pyanno4rt', 'pymoo', 'pypop7', 'scipy'}
-        Python package to be used for solving the optimization problem.
-
-    algorithm : str
-        Solution algorithm from the chosen solver.
-
-    initial_strategy : {'data-medoid', 'target-coverage', 'warm-start'}
-        Initialization strategy for the fluence vector.
-
-    initial_fluence : None or list
-        User-defined initial fluence vector for the optimization problem.
-
-    lower_variable_bounds : None, int, float, or list
-        Lower bound(s) on the decision variables.
-
-    upper_variable_bounds : None, int, float, or list
-        Upper bound(s) on the decision variables.
-
-    maximum_iterations : int
-        Maximum number of iterations taken for the solver to converge.
-
-    tolerance : float
-        Precision goal for the objective function value.
-
     Attributes
     ----------
     handlers : dict
         See 'Parameters'.
 
-    initializer : object of class \
+    initializer : None or object of class \
         :class:`~pyanno4rt.optimization.initializers._data_medoid_initializer.DataMedoidInitializer`\
         :class:`~pyanno4rt.optimization.initializers._target_coverage_initializer.TargetCoverageInitializer`\
         :class:`~pyanno4rt.optimization.initializers._warm_start_initializer.WarmStartInitializer`
         The object used to represent the fluence vector initializer.
 
-    problem : object of class \
+    problem : None or object of class \
         :class:`~pyanno4rt.optimization.problems.lexicographic._lexicographic_problem.LexicographicProblem`\
         :class:`~pyanno4rt.optimization.problems.pareto._pareto_problem.ParetoProblem`\
         :class:`~pyanno4rt.optimization.problems.weighted._weighted_sum_problem.WeightedSumProblem`
         The object used to represent the optimization problem.
 
-    solver : object of class \
+    solver : None or object of class \
         :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
         :class:`~pyanno4rt.optimization.solvers._pyanno4rt_solver.Pyanno4rtSolver`\
         :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
@@ -87,14 +60,8 @@ class FluenceOptimizer():
         :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`
         The object used to represent the solver.
 
-    initial_time : float
-        Runtime for initializing the optimizer.
-
     solver_time : float
         Runtime for solving the optimization problem.
-
-    optimizer_time : float
-        Total runtime for the optimizer.
 
     optimized_fluence : ndarray
         Optimized fluence vector.
@@ -108,32 +75,129 @@ class FluenceOptimizer():
 
     def __init__(
             self,
-            handlers,
-            method,
-            solver,
-            algorithm,
-            initial_strategy,
-            initial_fluence,
-            lower_variable_bounds,
-            upper_variable_bounds,
-            maximum_iterations,
-            tolerance):
+            handlers):
 
         # Log a message about the initialization of the class
         get_logger().info("Initializing fluence optimizer ...")
 
-        # Start the constructor runtime recording
-        start_time = time()
-
         # Get the data handlers
         self.handlers = handlers
 
+        # Initialize the optimization attributes
+        self.initializer = None
+        self.problem = None
+        self.solver = None
+
+        # Initialize the solver runtime
+        self.solver_time = None
+
+        # Initialize the optimization results
+        self.optimized_fluence, self.solver_info, self.optimized_dose = (
+            None, None, None)
+
+    def initialize_fluence(
+            self,
+            initial_strategy='target-coverage',
+            initial_fluence=None):
+        """
+        Initialize the fluence vector.
+
+        Parameters
+        ----------
+        initial_strategy : {'data-medoid', 'target-coverage', 'warm-start'}, \
+            default='target-coverage'
+            Initialization strategy for the fluence vector.
+
+        initial_fluence : None or list, default=None
+            User-defined initial fluence vector for the optimization problem.
+
+        Returns
+        -------
+        ndarray
+            Initial fluence vector.
+        """
+
+        # Set the fluence initializer
+        self.initializer = maps.INITIALIZERS[initial_strategy](initial_fluence)
+
+        return self.initializer.run(self.handlers)
+
+    def initialize_problem(
+            self,
+            method='weighted-sum',
+            initial_strategy='target-coverage',
+            initial_fluence=None,
+            lower_variable_bounds=None,
+            upper_variable_bounds=None):
+        """
+        Initialize the optimization problem.
+
+        Parameters
+        ----------
+        method : {'lexicographic', 'pareto', 'weighted-sum'}, \
+            default='weighted-sum'
+            Single- or multi-criteria optimization method.
+
+        initial_strategy : {'data-medoid', 'target-coverage', 'warm-start'}, \
+            default='target-coverage'
+            Initialization strategy for the fluence vector.
+
+        initial_fluence : None or list, default=None
+            User-defined initial fluence vector for the optimization problem.
+
+        lower_variable_bounds : None, int, float, or list, default=None
+            Lower bound(s) on the decision variables.
+
+        upper_variable_bounds : None, int, float, or list, default=None
+            Upper bound(s) on the decision variables.
+        """
+
+        # Initialize the backprojection
+        backprojection = (
+            maps.PROJECTIONS[self.handlers['plan_handler'].modality](
+                self.handlers['dose_handler'].dose_influence_matrix,
+                self.handlers['plan_handler'].RBE))
+
         # Get the objective and constraint functions
-        objectives = get_objectives(handlers['plan_handler'].components)
-        constraints = get_constraints(handlers['plan_handler'].components)
+        objectives = get_objectives(self.handlers['plan_handler'].components)
+        constraints = get_constraints(self.handlers['plan_handler'].components)
+
+        # Get the initial fluence vector
+        initial_fluence = self.initialize_fluence(
+            initial_strategy, initial_fluence)
+
+        # Construct the optimization problem
+        self.problem = maps.PROBLEMS[method](
+            backprojection, objectives, constraints, lower_variable_bounds,
+            upper_variable_bounds, initial_fluence)
+
+    def initialize_solver(
+            self,
+            solver='scipy',
+            algorithm='L-BFGS-B',
+            maximum_iterations=500,
+            tolerance=1e-3):
+        """
+        Initialize the solver.
+
+        Parameters
+        ----------
+        solver : {'ipyopt', 'pyanno4rt', 'pymoo', 'pypop7', 'scipy'}, \
+            default='scipy'
+            Python package to be used for solving the optimization problem.
+
+        algorithm : str, default='L-BFGS-B'
+            Solution algorithm from the chosen solver.
+
+        maximum_iterations : int, default=500
+            Maximum number of iterations taken for the solver to converge.
+
+        tolerance : float, default=1e-3
+            Precision goal for the objective function value.
+        """
 
         # Check if the solver ignores any constraints
-        if len(constraints) > 0 and algorithm not in (
+        if len(self.problem.constraints) > 0 and algorithm not in (
                 'mumps', 'NSGA3', 'trust-constr'):
 
             # Log a message about ignoring the constraints
@@ -143,36 +207,12 @@ class FluenceOptimizer():
                 algorithm)
 
             # Reset the constraints
-            constraints = ()
-
-        # Initialize the backprojection
-        backprojection = maps.PROJECTIONS[handlers['plan_handler'].modality](
-            handlers['dose_handler'].dose_influence_matrix,
-            handlers['plan_handler'].RBE)
-
-        # Get the fluence initializer and calculate the initial vector
-        self.initializer = maps.INITIALIZERS[initial_strategy](initial_fluence)
-        initial_fluence = self.initializer.run(handlers)
-
-        # Construct the optimization problem
-        self.problem = maps.PROBLEMS[method](
-            backprojection, objectives, constraints, lower_variable_bounds,
-            upper_variable_bounds, initial_fluence)
+            self.problem.constraints = ()
 
         # Initialize the solver instance
         self.solver = maps.SOLVERS[solver](
             algorithm=algorithm, maximum_iterations=maximum_iterations,
             tolerance=tolerance)
-
-        # Get the initialization runtime
-        self.initial_time = time()-start_time
-
-        # Initialize the solver and optimizer runtimes
-        self.solver_time, self.optimizer_time = None, None
-
-        # Initialize the optimization results
-        self.optimized_fluence, self.solver_info, self.optimized_dose = (
-            None, None, None)
 
     def solve(self):
         """Solve the optimization problem."""
@@ -215,16 +255,20 @@ class FluenceOptimizer():
         # Get the runtime for problem solving
         self.solver_time = round(time()-start_time, 2)
 
+        # Loop over the machine learning outcome model-based components
+        for component in get_machine_learning_components(
+                self.problem.constraints + self.problem.objectives):
+
+            # Convert the feature histories to dictionaries
+            component.model.feature_calculator.history_to_dict()
+
         # Log the outcome result
         self.log_outcome()
 
-        # Get the runtime for the fluence optimizer
-        self.optimizer_time = round(time()-start_time+self.initial_time, 2)
-
         # Log a message about the optimization runtimes
         get_logger().info(
-            "Fluence optimizer took %s seconds (%s seconds for problem "
-            "solving) ...", self.optimizer_time, self.solver_time)
+            "Fluence optimizer took %s seconds for problem solving ...",
+            self.solver_time)
 
     def _solve_lexicography(self):
         """
@@ -485,8 +529,7 @@ class FluenceOptimizer():
                 self.problem.constraints + self.problem.objectives):
 
             # Get the feature calculator of the component
-            feature_calculator = (
-                component.model.feature_calculator)
+            feature_calculator = component.model.feature_calculator
 
             # Reset the feature history
             feature_calculator.feature_history = empty(
@@ -503,12 +546,12 @@ class FluenceOptimizer():
             for component in get_radiobiological_components(
                     self.problem.constraints + self.problem.objectives):
 
-                # Get the final (N)TCP prediction value
+                # Get the final outcome prediction value
                 value = (
                     (-1)**('NTCP' not in component.name)
                     * self.problem.tracker[component.track_id][-1])
 
-                # Log a message about the prediction value
+                # Log a message about the outcome value
                 get_logger().info(
                     "%s for the optimized plan: %s %% ...",
                     component.name, round(100*value, 2))
@@ -517,18 +560,15 @@ class FluenceOptimizer():
             for component in get_machine_learning_components(
                     self.problem.constraints + self.problem.objectives):
 
-                # Process the feature history
-                component.data_model_handler.process_feature_history()
-
-                # Get the final (N)TCP prediction
+                # Get the final outcome prediction
                 value = component.translate(
                     self.problem.tracker[component.track_id][-1])
 
-                # Store the prediction value
-                component.data_model_handler.model_outcomes[
-                    component.data_model_handler.model_label] = value
+                # Store the outcome value
+                self.handlers['data_model_handler'].outcomes[
+                    component.model.label] = value
 
-                # Log a message about the prediction value
+                # Log a message about the outcome value
                 get_logger().info(
                     "%s for the optimized plan: %s %% ...",
                     component.name, round(100*value, 2))

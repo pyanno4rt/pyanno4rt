@@ -16,6 +16,7 @@ from pyanno4rt.learning.features import (
     DoseSubvolume, DoseVx, SegmentArea, SegmentCompactness, SegmentDensity,
     SegmentEccentricity, SegmentEigenmax, SegmentEigenmid, SegmentEigenmin,
     SegmentEigenvalues, SegmentSphericity, SegmentVolume)
+from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
 from pyanno4rt.learning.preprocessing import StandardScaler, Whitening
 from pyanno4rt.learning.tuning import (
     BayesHPTuner, GridHPTuner, RandomHPTuner, TuneSpaceDT, TuneSpaceKNN,
@@ -24,6 +25,11 @@ from pyanno4rt.learning.losses import auc_loss, brier_loss, log_loss
 
 # %% Map definitions
 
+
+COLUMNS = {
+    'Dynamic Feature': DynamicFeature,
+    'Label': Label,
+    'Static Feature': StaticFeature}
 
 FEATURES = {
     'Dose Deviation': DoseDeviation,

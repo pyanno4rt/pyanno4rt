@@ -16,7 +16,7 @@ from sklearn.linear_model import LogisticRegression as skLogReg
 from pyanno4rt.learning.datasets import TabularDataset
 from pyanno4rt.learning.evaluation import ModelEvaluator
 from pyanno4rt.learning.inspection import ModelInspector
-import pyanno4rt.learning._maps as maps
+from pyanno4rt.learning._maps import TUNERS
 from pyanno4rt.learning.preprocessing import TabularPreprocessor
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import filter_dict
@@ -174,8 +174,18 @@ class LogisticRegression():
     def fit_preprocessor(
             self,
             features,
-            labels):
-        """Fit the preprocessor."""
+            labels=None):
+        """
+        Fit the preprocessor.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray, default=None
+            Values of the input labels.
+        """
 
         # Check if a preprocessor has been provided
         if self.preprocessor is not None:
@@ -186,8 +196,18 @@ class LogisticRegression():
     def preprocess(
             self,
             features,
-            labels):
-        """Preprocess the dataset."""
+            labels=None):
+        """
+        Preprocess the dataset.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray, default=None
+            Values of the input labels.
+        """
 
         # Check if a preprocessor has been provided
         if self.preprocessor is not None:
@@ -201,7 +221,17 @@ class LogisticRegression():
             self,
             features,
             labels):
-        """Tune the model hyperparameters."""
+        """
+        Tune the model hyperparameters.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+        """
 
         # Check if a tuner has been provided
         if self.tuner is not None:
@@ -210,19 +240,19 @@ class LogisticRegression():
             proposal = self.tuner.search(deepcopy(self), features, labels)
 
             # Check if a Bayesian hyperparameter tuner has been provided
-            if isinstance(self.tuner, maps.TUNERS['Bayes']):
+            if isinstance(self.tuner, TUNERS['Bayes']):
 
                 # Get the full hyperparameter set
                 self.get_bayes_hp(proposal)
 
             # Check if a grid hyperparameter tuner has been provided
-            elif isinstance(self.tuner, maps.TUNERS['Grid']):
+            elif isinstance(self.tuner, TUNERS['Grid']):
 
                 # Get the full hyperparameter set
                 self.get_grid_hp(proposal)
 
             # Check if a random hyperparameter tuner has been provided
-            elif isinstance(self.tuner, maps.TUNERS['Random']):
+            elif isinstance(self.tuner, TUNERS['Random']):
 
                 # Get the full hyperparameter set
                 self.get_random_hp(proposal)
@@ -231,7 +261,17 @@ class LogisticRegression():
             self,
             features,
             labels):
-        """Fit the model."""
+        """
+        Fit the model.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+        """
 
         # Initialize the predictor
         self.predictor = self.predictor.set_params(**self.hyperparameters)
@@ -268,19 +308,19 @@ class LogisticRegression():
     def inspect(self):
         """Inspect the model."""
 
-        #
+        # Check if an inspector has been provided
         if self.inspector is not None:
 
-            #
+            # Run the model inspection
             self.inspector.run()
 
     def evaluate(self):
         """Evaluate the model."""
 
-        #
+        # Check if an evaluator has been provided
         if self.evaluator is not None:
 
-            #
+            # Run the model evaluation
             self.evaluator.run()
 
     def get_bayes_hp(
@@ -338,11 +378,74 @@ class LogisticRegression():
             Proposal for the tunable hyperparameters.
         """
 
-    def featurize(self):
-        """Compute the model input feature vector."""
+    def featurize(
+            self,
+            dose,
+            segment):
+        """
+        Compute the model input feature vector.
 
-    def gradientize(self):
-        """Derive the model input gradient."""
+        Parameters
+        ----------
+        dose : tuple
+            Tuple with the dose values.
+
+        segment : tuple
+
+
+        Returns
+        -------
+        ndarray
+            Feature vector.
+        """
+
+        return self.feature_calculator.featurize(dose, segment)
+
+    def gradientize(
+            self,
+            dose,
+            segment):
+        """
+        Derive the model input gradients.
+
+        Parameters
+        ----------
+        dose : tuple
+            Tuple with the dose values.
+
+        segment : ..
+
+        Returns
+        -------
+        ndarray
+            Feature gradient w.r.t dose.
+
+        ndarray
+            Preprocessor gradient w.r.t the features.
+
+        ndarray
+            Predictor gradient w.r.t the preprocessed features.
+        """
+
+        # Get the feature vector
+        features = self.featurize(dose, segment)
+
+        # Preprocess the features
+        preprocessed_features, _ = self.preprocess(features)
+
+        # Calculate the model prediction
+        prediction = self.predict(preprocessed_features)
+
+        # Derive the feature gradient
+        feature_gradient = self.feature_calculator.gradientize(dose, segment)
+
+        # Derive the preprocessing gradient
+        preprocessing_gradient = self.preprocessor.gradientize(features)
+
+        # Derive the predictor gradient
+        predictor_gradient = (prediction-prediction**2)*self.predictor.coef_[0]
+
+        return feature_gradient, preprocessing_gradient, predictor_gradient
 
     def load(self):
         """
@@ -393,7 +496,7 @@ class LogisticRegression():
                 ),
             'tuner': (
                 partial(validate_type, options=(
-                    type(None), *maps.TUNERS.values())),
+                    type(None), *TUNERS.values())),
                 ),
             'inspector': (
                 partial(validate_type, options=(
@@ -404,7 +507,10 @@ class LogisticRegression():
                     type(None), ModelEvaluator)),
                 ),
             'path': (
-                partial(validate_type, options=(type(None), str)),
+                partial(validate_type, options={
+                    True: str,
+                    False: (type(None), str)},
+                    condition=(inputs['dataset'] is None)),
                 partial(validate_path)
                 )
             }
