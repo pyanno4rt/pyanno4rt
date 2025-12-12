@@ -46,7 +46,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `pandas`                       | <font size="3"> >=2.3.3 </font>       |
 | `jax`                          | <font size="3"> >=0.6.2 </font>       |
 | `jaxlib`                       | <font size="3"> >=0.6.2 </font>       |
-| `numba`                        | <font size="3"> >=0.63.0 </font>      |
+| `numba`                        | <font size="3"> >=0.63.1 </font>      |
 | `scikit-learn`                 | <font size="3"> >=1.7.2 </font>       |
 | `tensorflow`                   | <font size="3"> >=2.20.0 </font>      |
 | `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
@@ -54,7 +54,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |
 | `pyqt5`                        | <font size="3"> ==5.15.10 </font>     |
 | `pyqtgraph`                    | <font size="3"> >=0.14.0 </font>      |
-| `matplotlib`                   | <font size="3"> >=3.10.7 </font>      |
+| `matplotlib`                   | <font size="3"> >=3.10.8 </font>      |
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 

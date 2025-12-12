@@ -64,7 +64,7 @@ class DoseUniformity(ConventionalComponent):
             bounds=None,
             identifier=None):
 
-        # Call the superclass constructor to initialize and check attributes
+        # Call the superclass constructor
         super().__init__(
             name='Dose Uniformity',
             segment=segment,
@@ -103,7 +103,7 @@ class DoseUniformity(ConventionalComponent):
         -------
         object of class \
             :class:`~pyanno4rt.optimization.components._dose_uniformity.DoseUniformity`
-            The object used to handle the component parameters.
+            The object used to represent the dose uniformity component.
         """
 
         return cls(**dictionary)
@@ -117,7 +117,7 @@ class DoseUniformity(ConventionalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -136,7 +136,7 @@ class DoseUniformity(ConventionalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -155,7 +155,7 @@ def compute(dose):
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     Returns
     -------
@@ -163,7 +163,7 @@ def compute(dose):
         Function value.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     return sqrt(len(dose) / (len(dose)-1))*dose.std()
@@ -177,7 +177,7 @@ def differentiate(dose):
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     Returns
     -------
@@ -185,7 +185,7 @@ def differentiate(dose):
         Gradient vector.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     return (dose - dose.mean()) / (sqrt((len(dose)-1)*len(dose))*dose.std())

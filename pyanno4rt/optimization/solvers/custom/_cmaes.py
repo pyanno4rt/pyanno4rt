@@ -9,10 +9,10 @@ from time import time
 from collections import deque
 from math import inf
 from numpy import (
-    arange, argmin, argpartition, array, einsum, exp, eye, log, maximum,
+    arange, argmin, argpartition, array, diag, einsum, exp, eye, log, maximum,
     median, minimum, zeros)
 from numpy import sum as nsum
-from numpy.linalg import cholesky, inv, norm, svdvals
+from numpy.linalg import cholesky, inv, norm, svd, svdvals
 from numpy.random import seed, standard_normal
 
 # %% Covariance matrix adaptation evolution algorithm
@@ -92,16 +92,25 @@ class CMAES:
         self._weights = (
             (log((self._elite_size+0.5)/arange(1, self._elite_size+1)))
             / nsum(log((self._elite_size+0.5)/arange(1, self._elite_size+1))))
-        self._mu_eff = 1/nsum(self._weights)
-        self._lr_sigma = (
-            (self._mu_eff+2) / (self._number_of_variables+self._mu_eff+3))
-        self._lr_cov = 4/(self._number_of_variables+4)
-        self._lr_rank_1 = (
-            (2*min(1, self._pop_size/6))
-            / ((self._number_of_variables+1.3)**2+self._mu_eff))
-        self._lr_rank_mu = (
-            2*(self._mu_eff+1/self._mu_eff-2)
-            / ((self._number_of_variables+2)**2+self._mu_eff))
+        self._mu_eff = 1/nsum(self._weights**2)
+
+        # self._lr_sigma = (
+        #     (self._mu_eff+2) / (self._number_of_variables+self._mu_eff+3))
+        # self._lr_cov = 4/(self._number_of_variables+4)
+        # self._lr_rank_1 = (
+        #     (2*min(1, self._pop_size/6))
+        #     / ((self._number_of_variables+1.3)**2+self._mu_eff))
+        # self._lr_rank_mu = (
+        #     2*(self._mu_eff+1/self._mu_eff-2)
+        #     / ((self._number_of_variables+2)**2+self._mu_eff))
+
+        # -------------------- REMOVE LATER
+        self._lr_sigma = 0.0001
+        self._lr_cov = 0.0001
+        self._lr_rank_mu = 0.0001
+        self._lr_rank_1 = 0.0001
+        # --------------------
+
         self._lr_mean = 1
         self._damp_sigma = (
             1+2*max(0, ((self._mu_eff-1)/self._number_of_variables)**0.5 - 1)
@@ -286,6 +295,13 @@ class CMAES:
             # ---------------------------------------------- REMOVE LATER
             # Store the eigenvalues of the covariance matrix
             self._singular_values.append(svdvals(self._cov))
+            # ----------------------------------------------
+
+            # ---------------------------------------------- REMOVE LATER
+            # Low-rank approximation using SVD
+            # U, S, V = svd(self._cov)
+            # r = 2
+            # self._cov = U[:, :r]@diag(S[:r])@V[:r, :]
             # ----------------------------------------------
 
             # "Ask" for a new population
@@ -547,52 +563,52 @@ class CMAES:
 
 # %% Plotting
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
-# def plot_iter_sv(sv, iteration, fname, k):
+def plot_iter_sv(sv, iteration, fname, k):
 
-#     # Plotting on a semi-log scale (y-axis is logarithmic)
-#     plt.figure(figsize=(10, 6))
+    # Plotting on a semi-log scale (y-axis is logarithmic)
+    plt.figure(figsize=(10, 6))
 
-#     #
-#     values = sv[iteration][:k]
+    #
+    values = sv[iteration][:k]
 
-#     # Plot the singular values
-#     plt.semilogy(values, marker='o', linestyle='-', color='b')
+    # Plot the singular values
+    plt.semilogy(values, marker='o', linestyle='-', color='b')
 
-#     plt.title(f'{fname} (iteration {iteration})', fontweight='bold')
-#     plt.ylabel('Singular Value ($\sigma_i$) (log scale)')
-#     plt.xlabel('Singular Value Index')
-#     plt.xticks([i for i in range(len(values))])
-#     plt.grid(True, which="both", ls="--", color='0.7')
-#     plt.show()
-#     plt.savefig(f'/home/tim/Downloads/{fname}_{iteration}.pdf')
+    plt.title(f'{fname} (iteration {iteration})', fontweight='bold')
+    plt.ylabel('Singular Value ($\sigma_i$) (log scale)')
+    plt.xlabel('Singular Value Index')
+    # plt.xticks([i for i in range(len(values))])
+    plt.grid(True, which="both", ls="--", color='0.7')
+    plt.show()
+    # plt.savefig(f'/home/tim/Downloads/{fname}_{iteration}.pdf')
 
 # plot_iter_sv(sv, 0, prob.name, 20),
 # plot_iter_sv(sv, len(sv)//2, prob.name, 20)
 # plot_iter_sv(sv, len(sv)-1, prob.name, 20)
 
-# def plot_sv_paths(sv, fname, space):
+def plot_sv_paths(sv, fname, space):
 
-#     # Plotting on a semi-log scale (y-axis is logarithmic)
-#     plt.figure(figsize=(10, 6))
+    # Plotting on a semi-log scale (y-axis is logarithmic)
+    plt.figure(figsize=(10, 6))
 
-#     # Plot the singular values
-#     for values in zip(*sv):
+    # Plot the singular values
+    for values in zip(*sv):
 
-#         #
-#         subvalues = values[::space]
+        #
+        subvalues = values[::space]
 
-#         #
-#         plt.semilogy(
-#             array(range(len(subvalues)))*space, subvalues, marker='.',
-#             linestyle='-', color='b')
+        #
+        plt.semilogy(
+            array(range(len(subvalues)))*space, subvalues, marker='.',
+            linestyle='-', color='b')
 
-#     plt.title(f'{fname}', fontweight='bold')
-#     plt.ylabel('Singular Value ($\sigma_i$) (log scale)')
-#     plt.xlabel('Optimization iteration')
-#     plt.grid(True, which="both", ls="--", color='0.7')
-#     plt.show()
-#     plt.savefig(f'/home/tim/Downloads/{fname}.pdf')
+    plt.title(f'{fname}', fontweight='bold')
+    plt.ylabel('Singular Value ($\sigma_i$) (log scale)')
+    plt.xlabel('Optimization iteration')
+    plt.grid(True, which="both", ls="--", color='0.7')
+    plt.show()
+    # plt.savefig(f'/home/tim/Downloads/{fname}.pdf')
 
 # plot_sv_paths(sv, prob.name, 1)

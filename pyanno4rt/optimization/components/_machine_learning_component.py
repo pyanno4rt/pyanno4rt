@@ -77,7 +77,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
     name : str
         See 'Parameters'.
 
-    segment : list
+    segment : tuple
         See 'Parameters'.
 
     outcome_type : {'NTCP', 'TCP'}
@@ -157,7 +157,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
 
         # Get the instance attributes
         self.name = name
-        self.segment = wrap(segment, dtype='list')
+        self.segment = wrap(segment)
         self.outcome_type = outcome_type
         self.component_type = component_type
         self.parameter_name = parameter_name
@@ -205,11 +205,18 @@ class MachineLearningComponent(metaclass=ABCMeta):
             'name', 'segment', 'component_type', 'transform', 'identifier'))
 
     def __hash__(self):
-        """Return the hash value."""
+        """
+        Return the hash value.
+
+        Returns
+        -------
+        int
+            Hash value.
+        """
 
         return hash(
-            (self.name, tuple(self.segment), self.component_type,
-             self.transform, self.identifier))
+            (self.name, self.segment, self.component_type, self.transform,
+             self.identifier))
 
     def get_class(self):
         """

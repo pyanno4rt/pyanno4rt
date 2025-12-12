@@ -387,11 +387,11 @@ class LogisticRegression():
 
         Parameters
         ----------
-        dose : tuple
-            Tuple with the dose values.
+        dose : list
+            Dose vectors.
 
-        segment : tuple
-
+        segment : list
+            Segment names.
 
         Returns
         -------
@@ -406,14 +406,15 @@ class LogisticRegression():
             dose,
             segment):
         """
-        Derive the model input gradients.
+        Derive the model gradients.
 
         Parameters
         ----------
-        dose : tuple
-            Tuple with the dose values.
+        dose : list
+            Dose vectors.
 
-        segment : ..
+        segment : list
+            Segment names.
 
         Returns
         -------
@@ -455,21 +456,38 @@ class LogisticRegression():
         -------
         object of class :class:`~sklearn.linear_model.LogisticRegression`
             The object used to represent the prediction model.
+
+        object of class :class:`~pyanno4rt.learning.preprocessing._tabular_preprocessor.TabularPreprocessor`
+            The object used to represent the preprocessor.
         """
 
         # Log a message about the model file reading
         get_logger().info("Reading '%s' model from file ...", self.label)
 
-        return load(open(self.path, 'rb'))
+        return (
+            load(open(self.path+'/model.sav', 'rb')),
+            load(open(self.path+'/preprocessor.sav', 'rb')))
 
-    def save(self):
-        """Save the model."""
+    def save(
+            self,
+            path):
+        """
+        Save the model.
+
+        Parameters
+        ----------
+        path : str
+            Path for storing the logistic regression model.
+        """
 
         # Open a file stream
-        with open(self.path, 'wb') as file:
+        with open(path, 'wb') as file:
 
-            # Dump the model
+            # Dump the predictor
             dump(self.predictor, file)
+
+            # Dump the preprocessor
+            dump(self.preprocessor, file)
 
     def validate(
             self,
@@ -510,7 +528,7 @@ class LogisticRegression():
                 partial(validate_type, options={
                     True: str,
                     False: (type(None), str)},
-                    condition=(inputs['dataset'] is None)),
+                    condition=inputs['dataset'] is None),
                 partial(validate_path)
                 )
             }

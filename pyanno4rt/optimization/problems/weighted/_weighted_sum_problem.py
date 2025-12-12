@@ -117,7 +117,7 @@ class WeightedSumProblem():
             # Log a message about the objective
             get_logger().info(
                 "Using objective '%s' for %s ...",
-                objective.name, objective.segment)
+                objective.name, list(objective.segment))
 
         # Loop over the constraints
         for constraint in constraints:
@@ -125,7 +125,7 @@ class WeightedSumProblem():
             # Log a message about the constraint
             get_logger().info(
                 "Using constraint '%s' for %s ...",
-                constraint.name, constraint.segment)
+                constraint.name, list(constraint.segment))
 
     def get_variable_bounds(
             self,

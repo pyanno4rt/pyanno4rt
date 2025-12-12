@@ -67,7 +67,7 @@ class SquaredUnderdosing(ConventionalComponent):
             bounds=None,
             identifier=None):
 
-        # Call the superclass constructor to initialize and check attributes
+        # Call the superclass constructor
         super().__init__(
             name='Squared Underdosing',
             segment=segment,
@@ -106,7 +106,7 @@ class SquaredUnderdosing(ConventionalComponent):
         -------
         object of class \
             :class:`~pyanno4rt.optimization.components._squared_underdosing.SquaredUnderdosing`
-            The object used to handle the component parameters.
+            The object used to handle the squared underdosing component.
         """
 
         return cls(**dictionary)
@@ -120,7 +120,7 @@ class SquaredUnderdosing(ConventionalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -139,7 +139,7 @@ class SquaredUnderdosing(ConventionalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -158,7 +158,7 @@ def compute(dose, minimum_dose):
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     minimum_dose : float
         Minimum value for the dose.
@@ -169,7 +169,7 @@ def compute(dose, minimum_dose):
         Function value.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     # Compute the deviation from the minimum dose and clip values above zero
@@ -186,7 +186,7 @@ def differentiate(dose, minimum_dose):
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     minimum_dose : float
         Minimum value for the dose.
@@ -197,7 +197,7 @@ def differentiate(dose, minimum_dose):
         Gradient vector.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     # Compute the deviation from the minimum dose and clip values above zero

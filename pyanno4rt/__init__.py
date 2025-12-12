@@ -20,12 +20,11 @@ It also features an easy-to-use and clear graphical user interface.
 # Author: Tim Ortkamp
 
 from pyanno4rt import (
-    base, datahub, dose, evaluation, gui, io, learning, logging, optimization,
-    patient, plan, tools, validation, visualization)
+    base, dose, evaluation, gui, io, learning, logging, optimization, patient,
+    plan, tools, validation, visualization)
 
 __all__ = [
     'base',
-    'datahub',
     'dose',
     'evaluation',
     'gui',

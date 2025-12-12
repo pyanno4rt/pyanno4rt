@@ -8,7 +8,6 @@ from copy import deepcopy
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.logging import get_logger
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import (
@@ -315,10 +314,10 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose values.
+            Dose vectors.
 
         segment : tuple
-            Tuple with the segment names.
+            Segment names.
 
         Returns
         -------
@@ -352,10 +351,10 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose values.
+            Dose vectors.
 
         segment : tuple
-            Tuple with the segment names.
+            Segment names.
 
         Returns
         -------

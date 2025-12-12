@@ -64,7 +64,7 @@ class ConventionalComponent(metaclass=ABCMeta):
     name : str
         See 'Parameters'.
 
-    segment : list
+    segment : tuple
         See 'Parameters'.
 
     component_type : {'constraint', 'objective'}
@@ -125,7 +125,7 @@ class ConventionalComponent(metaclass=ABCMeta):
 
         # Get the instance attributes
         self.name = name
-        self.segment = wrap(segment, dtype='list')
+        self.segment = wrap(segment)
         self.component_type = component_type
         self.parameter_name = parameter_name
         self.parameter_category = parameter_category
@@ -167,11 +167,17 @@ class ConventionalComponent(metaclass=ABCMeta):
             'name', 'segment', 'component_type', 'identifier'))
 
     def __hash__(self):
-        """Return the hash value."""
+        """
+        Return the hash value.
+
+        Returns
+        -------
+        int
+            Hash value.
+        """
 
         return hash(
-            (self.name, tuple(self.segment), self.component_type,
-             self.identifier))
+            (self.name, self.segment, self.component_type, self.identifier))
 
     def get_class(self):
         """
@@ -216,6 +222,29 @@ class ConventionalComponent(metaclass=ABCMeta):
         return sorted(
             (-inf if bounds[0] is None else float(bounds[0]),
              inf if bounds[1] is None else float(bounds[1])))
+
+    @abstractmethod
+    def to_dict(self):
+        """Serialize the component into a dictionary."""
+
+    @classmethod
+    @abstractmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """Deserialize the component from a dictionary."""
+
+    @abstractmethod
+    def compute_value(
+            self,
+            dose):
+        """Compute the component value."""
+
+    @abstractmethod
+    def compute_gradient(
+            self,
+            dose):
+        """Compute the component gradient."""
 
     def validate(
             self,
@@ -304,26 +333,3 @@ class ConventionalComponent(metaclass=ABCMeta):
 
                 # Run the validation function
                 function(key, value)
-
-    @abstractmethod
-    def to_dict(self):
-        """Serialize the component into a dictionary."""
-
-    @classmethod
-    @abstractmethod
-    def from_dict(
-            cls,
-            dictionary):
-        """Deserialize the component from a dictionary."""
-
-    @abstractmethod
-    def compute_value(
-            self,
-            dose):
-        """Compute the component value."""
-
-    @abstractmethod
-    def compute_gradient(
-            self,
-            dose):
-        """Compute the component gradient."""

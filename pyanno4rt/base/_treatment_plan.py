@@ -276,11 +276,6 @@ class TreatmentPlan():
                 # Initialize the fluence optimizer
                 self.fluence_optimizer = FluenceOptimizer(handlers=handlers)
 
-                # Initialize the fluence
-                self.fluence_optimizer.initialize_fluence(
-                    self.optimization.initial_strategy,
-                    self.optimization.initial_fluence)
-
                 # Initialize the optimization problem
                 self.fluence_optimizer.initialize_problem(
                     self.optimization.method,

@@ -144,7 +144,7 @@ class FeatureCalculator():
         dose : tuple
             Dose vectors.
 
-        segment : list
+        segment : tuple
             Segment names.
         """
 
@@ -250,7 +250,7 @@ class FeatureCalculator():
 
             # Add the precomputed gradient paddings to the input dictionary
             self.inputs['paddings'] = dict(
-                zip(segment+[None], precompute_paddings()))
+                zip(segment+(None,), precompute_paddings()))
 
         # Check if the segment masks have not been computed yet
         if (self.inputs['masks'] is None
@@ -271,10 +271,10 @@ class FeatureCalculator():
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose values.
+            Dose vectors.
 
         segment : tuple
-            Tuple with the segment names.
+            Segment names.
 
         Returns
         -------
@@ -426,10 +426,10 @@ class FeatureCalculator():
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose values.
+            Dose vectors.
 
         segment : tuple
-            Tuple with the segment names.
+            Segment names.
 
         Returns
         -------

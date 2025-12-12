@@ -164,7 +164,8 @@ class Optimization():
                 length of the list must equal the number of decision variables)
 
     maximum_iterations : int, default=500
-        Maximum number of iterations taken for the solver to converge.
+        Maximum number of iterations taken for the solver to converge. If set \
+        to zero, the initial fluence is used as solution.
 
     tolerance : float, default=1e-3
         Precision goal for the objective function value.

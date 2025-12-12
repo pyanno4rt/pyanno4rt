@@ -1,4 +1,4 @@
-"""Minimum dose-volume histogram (Minimum DVH) component."""
+"""Minimum dose-volume histogram (Min DVH) component."""
 
 # Author: Tim Ortkamp
 
@@ -17,7 +17,7 @@ from pyanno4rt.tools import filter_dict
 
 class MinimumDVH(ConventionalComponent):
     """
-    Minimum dose-volume histogram (Minimum DVH) component class.
+    Minimum dose-volume histogram (Min DVH) component class.
 
     This class provides methods to compute the value and the gradient of the \
     minimum DVH component.
@@ -71,7 +71,7 @@ class MinimumDVH(ConventionalComponent):
             bounds=None,
             identifier=None):
 
-        # Call the superclass constructor to initialize and check attributes
+        # Call the superclass constructor
         super().__init__(
             name='Minimum DVH',
             segment=segment,
@@ -113,7 +113,7 @@ class MinimumDVH(ConventionalComponent):
         -------
         object of class \
             :class:`~pyanno4rt.optimization.components._minimum_dvh.MinimumDVH`
-            The object used to handle the component parameters.
+            The object used to represent the minimum DVH component.
         """
 
         return cls(**dictionary)
@@ -127,7 +127,7 @@ class MinimumDVH(ConventionalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -146,7 +146,7 @@ class MinimumDVH(ConventionalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -165,7 +165,7 @@ def compute(dose, target_dose, quantile_volume):
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     target_dose : float
         Target value for the dose.
@@ -179,7 +179,7 @@ def compute(dose, target_dose, quantile_volume):
         Function value.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     # Compute the deviation from the target dose
@@ -206,7 +206,7 @@ def differentiate(
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     target_dose : float
         Target value for the dose.
@@ -220,7 +220,7 @@ def differentiate(
         Gradient vector.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     # Compute the deviation from the target dose

@@ -80,7 +80,7 @@ class LQPoissonTCP(RadiobiologicalComponent):
             bounds=None,
             identifier=None):
 
-        # Call the superclass constructor to initialize and check attributes
+        # Call the superclass constructor
         super().__init__(
             name='LQ Poisson TCP',
             segment=segment,
@@ -125,7 +125,8 @@ class LQPoissonTCP(RadiobiologicalComponent):
         -------
         object of class \
             :class:`~pyanno4rt.optimization.components._lq_poisson_tcp.LQPoissonTCP`
-            The object used to handle the component parameters.
+            The object used to represent the linear-quadratic Poisson TCP \
+            component.
         """
 
         return cls(**dictionary)
@@ -191,7 +192,7 @@ class LQPoissonTCP(RadiobiologicalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -210,7 +211,7 @@ class LQPoissonTCP(RadiobiologicalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -232,7 +233,7 @@ def compute(dose, alpha, beta, volume_parameter, number_of_fractions):
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     alpha : float
         Alpha coefficient for the tumor volume (in the LQ model).
@@ -252,7 +253,7 @@ def compute(dose, alpha, beta, volume_parameter, number_of_fractions):
         Function value.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     # Compute the EUD
@@ -276,7 +277,7 @@ def differentiate(dose, alpha, beta, volume_parameter, number_of_fractions):
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     alpha : float
         Alpha coefficient for the tumor volume (in the LQ model).
@@ -296,7 +297,7 @@ def differentiate(dose, alpha, beta, volume_parameter, number_of_fractions):
         Gradient vector.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     # Compute the EUD

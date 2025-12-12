@@ -83,7 +83,7 @@ class FluenceOptimizer():
         # Get the data handlers
         self.handlers = handlers
 
-        # Initialize the optimization attributes
+        # Initialize the optimization model
         self.initializer = None
         self.problem = None
         self.solver = None
@@ -152,15 +152,17 @@ class FluenceOptimizer():
             Upper bound(s) on the decision variables.
         """
 
-        # Initialize the backprojection
-        backprojection = (
-            maps.PROJECTIONS[self.handlers['plan_handler'].modality](
-                self.handlers['dose_handler'].dose_influence_matrix,
-                self.handlers['plan_handler'].RBE))
+        # Get the data handlers
+        plan_handler = self.handlers['plan_handler']
+        dose_handler = self.handlers['dose_handler']
+
+        # Get the backprojection
+        backprojection = maps.PROJECTIONS[plan_handler.modality](
+            dose_handler.dose_influence_matrix, plan_handler.RBE)
 
         # Get the objective and constraint functions
-        objectives = get_objectives(self.handlers['plan_handler'].components)
-        constraints = get_constraints(self.handlers['plan_handler'].components)
+        objectives = get_objectives(plan_handler.components)
+        constraints = get_constraints(plan_handler.components)
 
         # Get the initial fluence vector
         initial_fluence = self.initialize_fluence(
@@ -190,7 +192,8 @@ class FluenceOptimizer():
             Solution algorithm from the chosen solver.
 
         maximum_iterations : int, default=500
-            Maximum number of iterations taken for the solver to converge.
+            Maximum number of iterations taken for the solver to converge. If \
+            set to zero, the initial fluence is used as solution.
 
         tolerance : float, default=1e-3
             Precision goal for the objective function value.
@@ -226,7 +229,7 @@ class FluenceOptimizer():
         # Start the solver runtime recording
         start_time = time()
 
-        # Check if the fluence can not be loaded from a copycat
+        # Check if the maximum number of iterations is set to zero
         if self.solver.maximum_iterations > 0:
 
             # Map the problem to the solution methods
@@ -235,13 +238,13 @@ class FluenceOptimizer():
                 'pareto': self._solve_pareto,
                 'weighted-sum': self._solve_weighted}
 
-            # Run the solution algorithm
+            # Solve the problem
             self.optimized_fluence, self.solver_info, self.optimized_dose = (
                 methods[self.problem.name]())
 
         else:
 
-            # Log a message about the  fluence
+            # Log a message about falling back to the initial solution
             get_logger().info(
                 "Maximum number of iterations is set to zero - retrieving "
                 "optimized fluence from the initialization ...")
@@ -252,20 +255,20 @@ class FluenceOptimizer():
             # Compute the optimized dose
             self.optimized_dose = self.compute_dose_3d(self.optimized_fluence)
 
-        # Get the runtime for problem solving
+        # Stop the solver runtime recording
         self.solver_time = round(time()-start_time, 2)
 
         # Loop over the machine learning outcome model-based components
         for component in get_machine_learning_components(
                 self.problem.constraints + self.problem.objectives):
 
-            # Convert the feature histories to dictionaries
+            # Convert the feature histories
             component.model.feature_calculator.history_to_dict()
 
         # Log the outcome result
         self.log_outcome()
 
-        # Log a message about the optimization runtimes
+        # Log a message about the solver runtime
         get_logger().info(
             "Fluence optimizer took %s seconds for problem solving ...",
             self.solver_time)
@@ -289,32 +292,32 @@ class FluenceOptimizer():
         # Get the initial fluence vector
         fluence = self.problem.subproblems[ranks[0]].initial_fluence
 
-        # Loop over the lexicographic ranks
+        # Loop over the lexicographic ranks and problems
         for rank, problem in self.problem.subproblems.items():
 
-            # Log a message about the lexicographic rank
+            # Log a message about the current rank
             get_logger().info("Considering lexicography at rank %s ...", rank)
 
             # Configure the solver
             self.solver.configure(problem)
 
-            # Solve the optimization problem at the current rank
+            # Solve the optimization problem
             fluence, solver_info = self.solver.run(fluence)
 
-            # Check if the current rank does not equal the final rank
+            # Check if the current rank is not the final one
             if rank != ranks[-1]:
 
                 # Get the next subproblem
                 next_problem = self.problem.subproblems[
                     ranks[ranks.index(rank)+1]]
 
-                # Overwrite the initial fluence
+                # Update the initial fluence
                 next_problem.initial_fluence = fluence
 
                 # Loop over the dynamic components
                 for objective in problem.objectives:
 
-                    # Adapt the upper bound
+                    # Update the upper bound
                     objective.bounds[1] = (
                         problem.tracker[objective.track_id][-1])
 
@@ -333,7 +336,7 @@ class FluenceOptimizer():
 
         else:
 
-            # Log a message about the unsolved problem
+            # Log a message about the infeasibility
             get_logger().info(
                 "Fluence optimizer did not find a feasible solution for the "
                 "lexicographic optimization problem ...")
@@ -350,17 +353,11 @@ class FluenceOptimizer():
         Returns
         -------
         ndarray
-            Optimized fluence vector.
+            Optimized fluence vector(s).
 
         str
             Description for the cause of termination.
         """
-
-        # Get the segmentation data
-        segmentation = self.handlers['patient_handler'].segmentation
-
-        # Get the dose-influence matrix
-        dose_matrix = self.handlers['dose_handler'].dose_influence_matrix
 
         # Configure the solver
         self.solver.configure(self.problem)
@@ -377,10 +374,16 @@ class FluenceOptimizer():
                 "Pareto analysis resulted in %s non-dominated solutions ...",
                 optimized_fluence.shape[0])
 
-            # Log a message about the selection procedure
+            # Log a message about the sorting criterion
             get_logger().info(
                 "Selecting best solution with respect to the maximum mean "
                 "dose difference between targets and organs at risk ...")
+
+            # Get the segmentation data
+            segmentation = self.handlers['patient_handler'].segmentation
+
+            # Get the dose-influence matrix
+            dose_matrix = self.handlers['dose_handler'].dose_influence_matrix
 
             # Get the indices of relevant targets and OARs
             target_indices, oar_indices = (reduce(
@@ -391,8 +394,8 @@ class FluenceOptimizer():
                  if segmentation[segment]['type'] == string), -1)
                 for string in ('TARGET', 'OAR'))
 
-            # Initialize the score list
-            scores = []
+            # Initialize the results list
+            results = []
 
             # Loop over the non-dominated solutions
             for fluence in optimized_fluence:
@@ -400,20 +403,21 @@ class FluenceOptimizer():
                 # Calculate the dose vector
                 dose = dose_matrix @ fluence
 
-                # Add the solution-score pair
-                scores.append(
-                    (fluence,
-                     dose[target_indices].mean() - dose[oar_indices].mean()))
+                # Calculate the mean dose difference
+                delta = dose[target_indices].mean() - dose[oar_indices].mean()
 
-            # Sort the results
-            scores = sorted(scores, key=lambda x: x[1])
+                # Add the fluence/score
+                results.append((fluence, delta))
 
-            # Compute the optimized dose from the "best" fluence
-            optimized_dose = self.compute_dose_3d(scores[0][0])
+            # Sort the results by the score
+            results = sorted(results, key=lambda x: x[1])
+
+            # Compute the optimized dose from the "best" result
+            optimized_dose = self.compute_dose_3d(results[0][0])
 
         else:
 
-            # Log a message about the unsolved problem
+            # Log a message about the infeasibility
             get_logger().info(
                 "Fluence optimizer did not find a feasible solution for the "
                 "Pareto optimization problem ...")
@@ -451,7 +455,7 @@ class FluenceOptimizer():
 
         else:
 
-            # Log a message about the unsolved problem
+            # Log a message about the infeasibility
             get_logger().info(
                 "Fluence optimizer did not find a feasible solution for the "
                 "weighted-sum optimization problem ...")
@@ -470,7 +474,7 @@ class FluenceOptimizer():
         Parameters
         ----------
         optimized_fluence : ndarray
-            Optimized fluence vector(s).
+            Optimized fluence vector.
 
         Returns
         -------
@@ -501,7 +505,7 @@ class FluenceOptimizer():
         # Get the zoom factors for all cube dimensions
         zooms = (pair[0]/pair[1] for pair in zip(ct_dim, dose_dim))
 
-        # Interpolate the dose cube to the CT grid and multiply by the RBE
+        # Interpolate the dose cube to the CT grid and apply rescaling
         optimized_dose = (
             zoom(optimized_dose, zooms, order=1)
             * plan_handler.RBE
@@ -515,7 +519,7 @@ class FluenceOptimizer():
         # Reset the problem tracker
         self.problem.tracker = {key: [] for key in self.problem.tracker}
 
-        # Check if lexicographic optimization has been selected
+        # Check if the lexicographic method has been selected
         if self.problem.name == 'lexicographic':
 
             # Loop over the subproblems
@@ -524,11 +528,11 @@ class FluenceOptimizer():
                 # Reset the subproblem tracker
                 subproblem.tracker = {key: [] for key in subproblem.tracker}
 
-        # Loop over the machine learning model-based components
+        # Loop over the machine learning outcome model-based components
         for component in get_machine_learning_components(
                 self.problem.constraints + self.problem.objectives):
 
-            # Get the feature calculator of the component
+            # Get the feature calculator
             feature_calculator = component.model.feature_calculator
 
             # Reset the feature history
@@ -538,37 +542,33 @@ class FluenceOptimizer():
     def log_outcome(self):
         """Log the outcome model-based component results."""
 
-        # Check if the optimization problem has a tracker dictionary
-        if hasattr(self.problem, 'tracker') and all(value != [] for value
-           in self.problem.tracker.values()):
+        # Loop over the radiobiological outcome model-based components
+        for component in get_radiobiological_components(
+                self.problem.constraints + self.problem.objectives):
 
-            # Loop over the radiobiological outcome model-based components
-            for component in get_radiobiological_components(
-                    self.problem.constraints + self.problem.objectives):
+            # Get the final outcome prediction value
+            value = (
+                (-1)**('NTCP' not in component.name)
+                * self.problem.tracker[component.track_id][-1])
 
-                # Get the final outcome prediction value
-                value = (
-                    (-1)**('NTCP' not in component.name)
-                    * self.problem.tracker[component.track_id][-1])
+            # Log a message about the outcome value
+            get_logger().info(
+                "%s for the optimized plan: %s %% ...", component.name,
+                round(100*value, 2))
 
-                # Log a message about the outcome value
-                get_logger().info(
-                    "%s for the optimized plan: %s %% ...",
-                    component.name, round(100*value, 2))
+        # Loop over the machine learning outcome model-based components
+        for component in get_machine_learning_components(
+                self.problem.constraints + self.problem.objectives):
 
-            # Loop over the machine learning outcome model-based components
-            for component in get_machine_learning_components(
-                    self.problem.constraints + self.problem.objectives):
+            # Get the final outcome prediction
+            value = component.translate(
+                self.problem.tracker[component.track_id][-1])
 
-                # Get the final outcome prediction
-                value = component.translate(
-                    self.problem.tracker[component.track_id][-1])
+            # Store the outcome value
+            self.handlers['data_model_handler'].outcomes[
+                component.model.label] = value
 
-                # Store the outcome value
-                self.handlers['data_model_handler'].outcomes[
-                    component.model.label] = value
-
-                # Log a message about the outcome value
-                get_logger().info(
-                    "%s for the optimized plan: %s %% ...",
-                    component.name, round(100*value, 2))
+            # Log a message about the outcome value
+            get_logger().info(
+                "%s (%s) for the optimized plan: %s %% ...",
+                component.name, component.outcome_type, round(100*value, 2))

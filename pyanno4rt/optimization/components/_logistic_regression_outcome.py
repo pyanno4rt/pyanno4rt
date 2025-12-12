@@ -64,7 +64,7 @@ class LogisticRegressionOutcome(MachineLearningComponent):
     arguments : dict
         Dictionary with the component input arguments (for serialization).
 
-    See :class:`~pyanno4rt.optimization.compoonents._machine_learning_component.MachineLearningComponent`\
+    See :class:`~pyanno4rt.optimization.components._machine_learning_component.MachineLearningComponent`\
     for details on the inherited attributes.
     """
 
@@ -127,8 +127,9 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.optimization.components._logistic_regression_outcome.LogisticRegressionOutcome`
-            The object used to handle the component parameters.
+            :class:`~pyanno4rt.optimization.components.logistic._logistic_regression_outcome.LogisticRegressionOutcome`
+            The object used to represent the logistic regression outcome \
+            component.
         """
 
         # Deserialize the model
@@ -220,7 +221,7 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -251,7 +252,7 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------

@@ -63,7 +63,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
     name : str
         See 'Parameters'.
 
-    segment : list
+    segment : tuple
         See 'Parameters'.
 
     component_type : {'constraint', 'objective'}
@@ -124,7 +124,7 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
 
         # Get the instance attributes
         self.name = name
-        self.segment = wrap(segment, dtype='list')
+        self.segment = wrap(segment)
         self.component_type = component_type
         self.parameter_name = parameter_name
         self.parameter_category = parameter_category
@@ -166,11 +166,17 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
             'name', 'segment', 'component_type', 'identifier'))
 
     def __hash__(self):
-        """Return the hash value."""
+        """
+        Return the hash value.
+
+        Returns
+        -------
+        int
+            Hash value.
+        """
 
         return hash(
-            (self.name, tuple(self.segment), self.component_type,
-             self.identifier))
+            (self.name, self.segment, self.component_type, self.identifier))
 
     def get_class(self):
         """
@@ -218,6 +224,41 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
         return sorted(
             (0.0 if bounds[0] is None or bounds[0] < 0 else sign*bounds[0],
              sign if bounds[1] is None or bounds[1] > 1 else sign*bounds[1]))
+
+    @abstractmethod
+    def to_dict(self):
+        """Serialize the component into a dictionary."""
+
+    @classmethod
+    @abstractmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """Deserialize the component from a dictionary."""
+
+    @abstractmethod
+    def translate(
+            self,
+            value):
+        """Translate function values to outcome values."""
+
+    @abstractmethod
+    def reverse(
+            self,
+            value):
+        """Reverse outcome values to function values."""
+
+    @abstractmethod
+    def compute_value(
+            self,
+            dose):
+        """Compute the component value."""
+
+    @abstractmethod
+    def compute_gradient(
+            self,
+            dose):
+        """Compute the component gradient."""
 
     def validate(
             self,
@@ -302,38 +343,3 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
 
                 # Run the validation function
                 function(key, value)
-
-    @abstractmethod
-    def to_dict(self):
-        """Serialize the component into a dictionary."""
-
-    @classmethod
-    @abstractmethod
-    def from_dict(
-            cls,
-            dictionary):
-        """Deserialize the component from a dictionary."""
-
-    @abstractmethod
-    def translate(
-            self,
-            value):
-        """Translate function values to outcome values."""
-
-    @abstractmethod
-    def reverse(
-            self,
-            value):
-        """Reverse outcome values to function values."""
-
-    @abstractmethod
-    def compute_value(
-            self,
-            dose):
-        """Compute the component value."""
-
-    @abstractmethod
-    def compute_gradient(
-            self,
-            dose):
-        """Compute the component gradient."""

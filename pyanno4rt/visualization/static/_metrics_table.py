@@ -11,7 +11,6 @@ from pandas import DataFrame
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.tools import (
     get_machine_learning_constraints, get_machine_learning_objectives)
 

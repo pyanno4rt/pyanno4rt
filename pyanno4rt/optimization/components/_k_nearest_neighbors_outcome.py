@@ -8,7 +8,6 @@ from copy import deepcopy
 
 # %% Internal package import
 
-from pyanno4rt.datahub import Datahub
 from pyanno4rt.logging import get_logger
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict
@@ -259,7 +258,7 @@ class KNeighborsOutcome(MachineLearningComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose values.
+            Dose vectors.
 
         Returns
         -------
@@ -292,7 +291,7 @@ class KNeighborsOutcome(MachineLearningComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose values.
+            Dose vectors.
 
         Returns
         -------

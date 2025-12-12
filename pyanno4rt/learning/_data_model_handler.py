@@ -74,6 +74,14 @@ class DataModelHandler():
         # Initialize the outcome dictionary
         self.outcomes = {}
 
+        # Check if no models have been provided
+        if len(self.models) == 0:
+
+            # Log a message about the missing models
+            get_logger().warning(
+                "Treatment plan does not include model-based components - "
+                "outcome modeling is skipped ...")
+
     def load_datasets(self):
         """Load the datasets for the models."""
 
@@ -153,7 +161,7 @@ class DataModelHandler():
         validation_map = {
             'handlers': (
                 partial(validate_type, options=dict),
-                partial(validate_length, reference=3, sign='=='),
+                partial(validate_length, reference=3, sign='==')
                 )
             }
 

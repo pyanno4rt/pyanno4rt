@@ -67,7 +67,7 @@ class MeanDose(ConventionalComponent):
             bounds=None,
             identifier=None):
 
-        # Call the superclass constructor to initialize and check attributes
+        # Call the superclass constructor
         super().__init__(
             name='Mean Dose',
             segment=segment,
@@ -106,7 +106,7 @@ class MeanDose(ConventionalComponent):
         -------
         object of class \
             :class:`~pyanno4rt.optimization.components._mean_dose.MeanDose`
-            The object used to handle the component parameters.
+            The object used to represent the mean dose component.
         """
 
         return cls(**dictionary)
@@ -120,7 +120,7 @@ class MeanDose(ConventionalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -139,7 +139,7 @@ class MeanDose(ConventionalComponent):
         Parameters
         ----------
         dose : tuple
-            Tuple with the dose arrays.
+            Dose vectors.
 
         Returns
         -------
@@ -158,7 +158,7 @@ def compute(dose, target_dose):
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     target_dose : float
         Target value for the dose.
@@ -169,7 +169,7 @@ def compute(dose, target_dose):
         Function value.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     return (sum(dose)/len(dose) - target_dose)**2
@@ -183,7 +183,7 @@ def differentiate(dose, target_dose):
     Parameters
     ----------
     dose : tuple
-        Tuple with the dose arrays.
+        Dose vectors.
 
     target_dose : float
         Target value for the dose.
@@ -194,7 +194,7 @@ def differentiate(dose, target_dose):
         Gradient vector.
     """
 
-    # Concatenate the dose arrays
+    # Concatenate the dose vectors
     dose = concatenate(dose)
 
     return 2*(dose.mean() - target_dose)*ones(dose.shape)/len(dose)
