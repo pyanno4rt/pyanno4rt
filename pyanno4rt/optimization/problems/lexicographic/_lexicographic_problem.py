@@ -29,13 +29,13 @@ class LexicographicProblem():
     backprojection : object of class \
         :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
-        The object representing the type of backprojection.
+        The object representing the projection between dose and fluence.
 
     objectives : list
-        Internally configured plan objectives.
+        Plan objectives.
 
     constraints : list
-        Internally configured plan constraints.
+        Plan constraints.
 
     lower_variable_bounds : None, int, float, or list
         Lower bound(s) on the decision variables.
@@ -324,21 +324,15 @@ class LexicographicProblem():
         # Loop over the subproblem trackers
         for tracker in trackers:
 
-            # Get the equal and different keys
-            equal_keys = set(self.tracker).intersection(tracker)
-            diff_keys = set(self.tracker).difference(tracker)
-
-            # Get the number of rank iterations
-            length = len(tracker[next(iter(tracker))])
-
             # Loop over the equal keys
-            for key in equal_keys:
+            for key in set(self.tracker).intersection(tracker):
 
                 # Extend the respective tracker values
                 self.tracker[key].extend(tracker[key])
 
             # Loop over the different keys
-            for key in diff_keys:
+            for key in set(self.tracker).difference(tracker):
 
                 # Extend the respective tracker values by None
-                self.tracker[key].extend([None]*length)
+                self.tracker[key].extend(
+                    [None]*len(tracker[next(iter(tracker))]))

@@ -29,13 +29,13 @@ class ParetoProblem():
     backprojection : object of class \
         :class:`~pyanno4rt.optimization.projections._dose_projection.DoseProjection`\
         :class:`~pyanno4rt.optimization.projections._constant_rbe_projection.ConstantRBEProjection`
-        The object representing the type of backprojection.
+        The object representing the projection between dose and fluence.
 
     objectives : list
-        Internally configured plan objectives.
+        Plan objectives.
 
     constraints : list
-        Internally configured plan constraints.
+        Plan constraints.
 
     lower_variable_bounds : None, int, float, or list
         Lower bound(s) on the decision variables.

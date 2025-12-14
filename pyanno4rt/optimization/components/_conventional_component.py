@@ -232,19 +232,56 @@ class ConventionalComponent(metaclass=ABCMeta):
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the component from a dictionary."""
+        """
+        Deserialize the component from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the component parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.optimization.components._conventional_component.ConventionalComponent`
+            The object used to represent the conventional component.
+        """
 
     @abstractmethod
     def compute_value(
             self,
             dose):
-        """Compute the component value."""
+        """
+        Compute the component value.
+
+        Parameters
+        ----------
+        dose : tuple
+            Dose vectors.
+
+        Returns
+        -------
+        float
+            Function value.
+        """
 
     @abstractmethod
     def compute_gradient(
             self,
             dose):
-        """Compute the component gradient."""
+        """
+        Compute the component gradient.
+
+        Parameters
+        ----------
+        dose : tuple
+            Dose vectors.
+
+        Returns
+        -------
+        ndarray
+            Gradient vector.
+        """
 
     def validate(
             self,

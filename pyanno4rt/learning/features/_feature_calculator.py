@@ -1,4 +1,4 @@
-"""Feature values and gradient (re)calculation."""
+"""Feature calculator."""
 
 # Author: Tim Ortkamp
 
@@ -16,7 +16,10 @@ from pyanno4rt.logging import get_logger
 
 class FeatureCalculator():
     """
-    Feature values and gradient (re)calculation class.
+    Feature calculator class.
+
+    This class implements methods to (re)calculate input features and their \
+    gradients for a specific feature-to-function mapping.
 
     Parameters
     ----------
@@ -102,7 +105,8 @@ class FeatureCalculator():
     def set_mapping(
             self,
             feature_map,
-            return_self=False):
+            return_self=False,
+            verbose=True):
         """
         Set the feature map for (re-)calculation.
 
@@ -112,8 +116,11 @@ class FeatureCalculator():
             ...
         """
 
-        # Log a message about the feature map addition
-        get_logger().info("Setting feature map for (re-)calculation ...")
+        # Check if messages should be printed
+        if verbose:
+
+            # Log a message about the feature map addition
+            get_logger().info("Setting feature map for (re-)calculation ...")
 
         # Initialize the feature map from the argument
         self.feature_map = feature_map

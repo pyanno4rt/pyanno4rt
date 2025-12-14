@@ -28,10 +28,9 @@ class PymooSolver():
     """
     Pymoo wrapper class.
 
-    This class serves as a wrapper for the multi-objective (Pareto) \
-    optimization algorithms from the Pymoo solver. It takes the problem \
-    structure, configures the selected algorithm, and defines the method to \
-    run the solver.
+    This class serves as a wrapper for the multi-objective optimization \
+    algorithms from Pymoo. It takes the problem structure, configures the \
+    selected algorithm, and defines the method to run the solver.
 
     Parameters
     ----------
@@ -63,7 +62,7 @@ class PymooSolver():
 
     pymoo_problem : object of class from :mod:`pymoo.core.problem`
         The object used to represent the Pymoo-compatible structure of the \
-        multi-objective (Pareto) optimization problem.
+        multi-objective optimization problem.
 
     termination : object of class from :mod:`pymoo.termination`
         The object used to represent the termination criterion.
@@ -84,7 +83,7 @@ class PymooSolver():
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
 
-        # Initialize the function, algorithm, problem and termination
+        # Initialize the function, algorithm, problem and termination objects
         self.fun, self.pymoo_alg, self.pymoo_prob, self.termination = (
             None, None, None, None)
 
@@ -296,10 +295,10 @@ class PymooProblem(ElementwiseProblem):
             Dictionary with the objective and constraint values.
 
         *args : tuple
-            Tuple with optional (non-keyworded) parameters.
+            Optional (non-keyworded) parameters.
 
         **kwargs : dict
-            Dictionary with optional (keyworded) parameters.
+            Optional (keyworded) parameters.
         """
 
         # Get the objective function values

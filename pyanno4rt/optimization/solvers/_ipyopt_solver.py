@@ -20,9 +20,8 @@ class IpyoptSolver():
     Ipyopt wrapper class.
 
     This class serves as a wrapper for the interior-point optimization \
-    algorithms from the Ipyopt solver. It takes the problem structure, \
-    configures the selected algorithm, and defines the method to run the \
-    solver.
+    algorithms from Ipyopt. It takes the problem structure, configures the \
+    selected algorithm, and defines the method to run the solver.
 
     Parameters
     ----------
@@ -80,7 +79,7 @@ class IpyoptSolver():
         Parameters
         ----------
         *args : tuple
-            Tuple with the callback parameters of the Ipyopt solver.
+            Callback parameters of the Ipyopt solver.
 
         Returns
         -------
@@ -95,10 +94,9 @@ class IpyoptSolver():
         if self.arguments['m'] > 0:
 
             # Extend the output string
-            output_string = (
-                f"{output_string}, viol_g={around(args[3], 4)}")
+            output_string = f"{output_string}, viol_g={around(args[3], 4)}"
 
-        # Log a message about the intermediate function value(s)
+        # Log a message about the intermediate result
         get_logger().info(output_string)
 
         return True
@@ -156,8 +154,8 @@ class IpyoptSolver():
             'g_u': array(problem.constraint_bounds[1]),
             'sparsity_indices_jac_g': tuple(
                 arr for arr in indices((
-                    len(problem.constraints),
-                    len(problem.initial_fluence))).reshape(2, -1)),
+                    len(problem.constraints), len(problem.initial_fluence))
+                    ).reshape(2, -1)),
             'sparsity_indices_h': None,
             'eval_f': objective,
             'eval_grad_f': gradient,

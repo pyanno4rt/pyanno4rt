@@ -18,34 +18,34 @@ class WarmStartInitializer():
     Warm-start initialization class.
 
     This class provides methods to initialize the fluence vector with respect \
-    to a reference point.
+    to a reference vector.
 
     Parameters
     ----------
-    initial_fluence_vector: None or list
-        User-defined initial fluence vector for the optimization problem.
+    initial_fluence: None or list
+        Initial fluence vector.
 
     Attributes
     ----------
-    initial_fluence_vector : None or list
+    initial_fluence : None or list
         See 'Parameters'.
     """
 
     def __init__(
             self,
-            initial_fluence_vector):
+            initial_fluence):
 
         # Log a message about the initialization of the class
         get_logger().info("Initializing warm-start strategy ...")
 
         # Get the initial fluence
-        self.initial_fluence_vector = initial_fluence_vector
+        self.initial_fluence = initial_fluence
 
     def run(
             self,
             _):
         """
-        Initialize the fluence vector with respect to target coverage.
+        Initialize the fluence vector with respect to a reference vector.
 
         Returns
         -------
@@ -58,4 +58,4 @@ class WarmStartInitializer():
             "Initializing fluence vector with respect to a reference point "
             "...")
 
-        return array(self.initial_fluence_vector)
+        return array(self.initial_fluence)

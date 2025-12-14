@@ -20,8 +20,8 @@ class SciPySolver():
     SciPy wrapper class.
 
     This class serves as a wrapper for the local optimization algorithms from \
-    the SciPy solver. It takes the problem structure, configures the selected \
-    algorithm, and defines the method to run the solver.
+    SciPy. It takes the problem structure, configures the selected algorithm, \
+    and defines the method to run the solver.
 
     Parameters
     ----------
@@ -98,7 +98,7 @@ class SciPySolver():
                 f"{output_string}, "
                 f"g={around(intermediate_result['constr'][0], 4)}")
 
-        # Log a message about the intermediate function value(s)
+        # Log a message about the intermediate result
         get_logger().info(output_string)
 
         # Increment the iteration counter
@@ -178,7 +178,7 @@ class SciPySolver():
                 'callback': self.callback}
 
             # Check if any constraints have been passed
-            if problem.constraint_bounds != ([], []):
+            if len(problem.constraints) > 0:
 
                 # Update the argument dictionary
                 self.arguments |= {
@@ -187,8 +187,7 @@ class SciPySolver():
                         problem.constraint_bounds[0],
                         problem.constraint_bounds[1],
                         jac=problem.jacobian,
-                        hess=SR1()),
-                    'cfun': problem.constraint}
+                        hess=SR1())}
 
     def run(
             self,
@@ -220,21 +219,20 @@ class SciPySolver():
             objective_value = self.arguments['fun'](initial_fluence, False)
 
             # Set the base output string
-            output_string = (
-                f"At iterate 0: f={around(objective_value, 4)}")
+            output_string = f"At iterate 0: f={around(objective_value, 4)}"
 
-            # Check if the constraint function is included
-            if 'cfun' in self.arguments:
+            # Check if any constraints have been passed
+            if 'constraints' in self.arguments:
 
                 # Get the initial constraint value
-                constraint_value = self.arguments.pop('cfun')(
+                constraint_value = self.arguments['constraints'].fun(
                     initial_fluence, False)
 
                 # Extend the output string
                 output_string = (
                     f"{output_string}, g={around(constraint_value, 4)}")
 
-            # Log a message about the initial function values
+            # Log a message about the initial result
             get_logger().info(output_string)
 
         # Solve the optimization problem

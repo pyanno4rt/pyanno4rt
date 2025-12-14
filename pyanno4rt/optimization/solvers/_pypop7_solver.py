@@ -22,9 +22,8 @@ class PyPop7Solver():
     PyPop7 wrapper class.
 
     This class serves as a wrapper for the population-based optimization \
-    algorithms from the PyPop7 solver. It takes the problem structure, \
-    configures the selected algorithm, and defines the method to run the \
-    solver.
+    algorithms from PyPop7. It takes the problem structure, configures the \
+    selected algorithm, and defines the method to run the solver.
 
     Parameters
     ----------
@@ -70,7 +69,7 @@ class PyPop7Solver():
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
 
-        # Initialize the instance and the arguments
+        # Initialize the algorithm instance and the arguments
         self.instance, self.arguments = None, None
 
     def configure(
@@ -127,7 +126,8 @@ class PyPop7Solver():
                     'n_parents': int(number_of_individuals/2),
                     'verbose': 1}}
 
-        else:
+        # Else, check if the algorithm is 'LMMAES'
+        elif self.algorithm == 'LMMAES':
 
             # Set the optimization function
             self.instance = LMMAES
@@ -174,11 +174,11 @@ class PyPop7Solver():
             Description for the cause of termination.
         """
 
-        # Enter the initial fluence into the arguments dictionary
+        # Set the initial vector
         self.arguments['options']['mean'] = initial_fluence
         self.arguments['options']['x'] = initial_fluence
 
-        # Initialize the instance
+        # Initialize the algorithm instance
         self.instance = self.instance(**self.arguments)
 
         # Solve the optimization problem

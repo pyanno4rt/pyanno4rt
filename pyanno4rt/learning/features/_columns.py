@@ -27,7 +27,7 @@ class DynamicFeature():
     Parameters
     ----------
     column : str
-        Data column.
+        Name of the feature.
 
     segment : None or str
         Segment associated with the feature.
@@ -76,11 +76,12 @@ class DynamicFeature():
         # Validate the input arguments
         self.validate(inputs)
 
-        # Loop over the input arguments
-        for item in inputs.items():
-
-            # Set the attribute
-            setattr(self, *item)
+        # Get the input attributes
+        self.column = column
+        self.segment = segment
+        self.function = function
+        self.argument = argument
+        self.scale = scale
 
     def to_dict(self):
         """Serialize the feature into a dictionary."""
@@ -121,7 +122,7 @@ class DynamicFeature():
         """
 
         # Get the validation functions for the function argument
-        validate_argument = {
+        argument_map = {
             'Dose Gradient': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=('x', 'y', 'z'))
@@ -165,9 +166,8 @@ class DynamicFeature():
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=tuple(maps.FEATURES))
                 ),
-            'argument': validate_argument[
-                inputs['function']
-                if inputs['function'] in (
+            'argument': argument_map[
+                inputs['function'] if inputs['function'] in (
                     'Dx', 'Vx', 'Dose Gradient', 'Dose Moment',
                     'Dose Subvolume')
                 else 'other'
@@ -199,7 +199,7 @@ class StaticFeature():
     Parameters
     ----------
     column : str
-        Data column.
+        Name of the feature.
 
     value : None, int, float or str
         Static feature value.
@@ -234,11 +234,10 @@ class StaticFeature():
         # Validate the input arguments
         self.validate(inputs)
 
-        # Loop over the input arguments
-        for item in inputs.items():
-
-            # Set the attribute
-            setattr(self, *item)
+        # Get the input attributes
+        self.column = column
+        self.value = value
+        self.scale = scale
 
     def to_dict(self):
         """Serialize the feature into a dictionary."""
@@ -313,7 +312,7 @@ class Label():
     Parameters
     ----------
     column : str
-        Name of the data column.
+        Name of the label.
 
     viewpoint : {'early', 'late', 'longitudinal', 'long-term'}, \
         default='longitudinal'
@@ -322,7 +321,7 @@ class Label():
     time_variable : None or str, default=None
         Name of the data column for time-dependent modeling.
 
-    bounds : list, default=[1, 1]
+    bounds : tuple or list, default=(1, 1)
         Bounds for binarization of the label values.
 
     Attributes
@@ -348,7 +347,7 @@ class Label():
             column,
             viewpoint='longitudinal',
             time_variable=None,
-            bounds=[1, 1]):
+            bounds=(1, 1)):
 
         # Get the input arguments
         inputs = filter_dict(vars(), remove_keys=('self',))
@@ -356,11 +355,11 @@ class Label():
         # Validate the input arguments
         self.validate(inputs)
 
-        # Loop over the input arguments
-        for item in inputs.items():
-
-            # Set the attribute
-            setattr(self, *item)
+        # Get the input attributes
+        self.column = column
+        self.viewpoint = viewpoint
+        self.time_variable = time_variable
+        self.bounds = list(bounds)
 
     def to_dict(self):
         """Serialize the label into a dictionary."""
@@ -414,7 +413,7 @@ class Label():
                 partial(validate_type, options=(type(None), str)),
                 ),
             'bounds': (
-                partial(validate_type, options=list),
+                partial(validate_type, options=(tuple, list)),
                 partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=(type(None), int, float))
                 )

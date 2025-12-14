@@ -23,24 +23,24 @@ class TargetCoverageInitializer():
 
     Parameters
     ----------
-    initial_fluence_vector: None or list
-        User-defined initial fluence vector for the optimization problem.
+    initial_fluence: None or list
+        Initial fluence vector.
 
     Attributes
     ----------
-    initial_fluence_vector : None or list
+    initial_fluence : None or list
         See 'Parameters'.
     """
 
     def __init__(
             self,
-            initial_fluence_vector=None):
+            initial_fluence=None):
 
         # Log a message about the initialization of the class
         get_logger().info("Initializing target coverage strategy ...")
 
         # Get the initial fluence
-        self.initial_fluence_vector = initial_fluence_vector
+        self.initial_fluence = initial_fluence
 
     def run(
             self,
@@ -68,16 +68,16 @@ class TargetCoverageInitializer():
                 if category == 'dose')
 
         # Check if an initial fluence vector has been provided
-        if self.initial_fluence_vector is not None:
+        if self.initial_fluence is not None:
 
-            # Log a message about returning the user-defined vector
+            # Log a message about falling back to warm-start strategy
             get_logger().warning(
                 "User has provided an initial fluence vector - falling back "
                 "to warm-start strategy ...")
 
-            return array(self.initial_fluence_vector)
+            return array(self.initial_fluence)
 
-        # Log a message about the run
+        # Log a message about the initialization
         get_logger().info(
             "Initializing fluence vector with respect to target coverage ...")
 

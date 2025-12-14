@@ -3,8 +3,7 @@ Initializers module.
 
 ==================================================================
 
-This module aims to provide methods and classes for initializing the fluence \
-vector by different strategies.
+This module aims to provide methods and classes for fluence initialization.
 """
 
 # Author: Tim Ortkamp

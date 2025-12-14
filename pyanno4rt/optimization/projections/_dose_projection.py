@@ -23,15 +23,12 @@ class DoseProjection(Backprojection):
     ----------
     dose_influence_matrix : csr_matrix
         Dose-influence matrix.
-
-    RBE : int or float, default=1.0
-        Relative biological effectiveness.
     """
 
     def __init__(
             self,
             dose_influence_matrix,
-            RBE=1.0):
+            _):
 
         # Log a message about the initialization of the class
         get_logger().info("Initializing dose projection ...")
@@ -41,7 +38,6 @@ class DoseProjection(Backprojection):
 
         # Get the input attributes
         self.dose_influence_matrix = dose_influence_matrix
-        self.RBE = RBE
 
     def compute_dose_result(
             self,

@@ -234,31 +234,92 @@ class RadiobiologicalComponent(metaclass=ABCMeta):
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the component from a dictionary."""
+        """
+        Deserialize the component from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the component parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.optimization.components._radiobiological_component.RadiobiologicalComponent`
+            The object used to represent the radiobiological component.
+        """
 
     @abstractmethod
     def translate(
             self,
             value):
-        """Translate function values to outcome values."""
+        """
+        Translate function values to outcome values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Function value to translate.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Outcome value.
+        """
 
     @abstractmethod
     def reverse(
             self,
             value):
-        """Reverse outcome values to function values."""
+        """
+        Reverse outcome values to function values.
+
+        Parameters
+        ----------
+        value : int, float, tuple or list
+            Outcome value to reverse.
+
+        Returns
+        -------
+        int, float, tuple or list
+            Function value.
+        """
 
     @abstractmethod
     def compute_value(
             self,
             dose):
-        """Compute the component value."""
+        """
+        Compute the component value.
+
+        Parameters
+        ----------
+        dose : tuple
+            Dose vectors.
+
+        Returns
+        -------
+        float
+            Function value.
+        """
 
     @abstractmethod
     def compute_gradient(
             self,
             dose):
-        """Compute the component gradient."""
+        """
+        Compute the component gradient.
+
+        Parameters
+        ----------
+        dose : tuple
+            Dose vectors.
+
+        Returns
+        -------
+        ndarray
+            Gradient vector.
+        """
 
     def validate(
             self,

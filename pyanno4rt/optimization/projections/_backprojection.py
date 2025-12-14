@@ -44,7 +44,7 @@ class Backprojection():
             self,
             fluence):
         """
-        Compute the dose vector from the fluence vector and update the cache.
+        Compute the dose vector from the fluence vector.
 
         Parameters
         ----------
@@ -60,7 +60,7 @@ class Backprojection():
         # Check if the cached fluence does not resemble the input
         if not array_equal(self.__fluence__, fluence):
 
-            # Compute the dose vector from the fluence
+            # Update the cached dose vector
             self.__dose__ = self.compute_dose_result(fluence)
 
             # Update the cached fluence
@@ -72,8 +72,7 @@ class Backprojection():
             self,
             dose_gradient):
         """
-        Compute the fluence gradient from the dose gradient and update the \
-        cache.
+        Compute the fluence gradient from the dose gradient.
 
         Parameters
         ----------
@@ -89,7 +88,7 @@ class Backprojection():
         # Check if the cached dose gradient does not resemble the input
         if not array_equal(self.__dose_gradient__, dose_gradient):
 
-            # Compute the fluence gradient from the dose gradient
+            # Update the cached fluence gradient
             self.__fluence_gradient__ = self.compute_fluence_gradient_result(
                 dose_gradient)
 

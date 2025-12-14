@@ -5,7 +5,7 @@ Solvers module.
 
 This module aims to provide methods and classes for wrapping the local and \
 global solution algorithms from the external optimization packages as well as \
-setting up the internal custom implementations.
+setting up the internal pyanno4rt implementations.
 """
 
 # Author: Tim Ortkamp

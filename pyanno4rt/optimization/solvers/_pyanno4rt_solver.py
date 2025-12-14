@@ -44,13 +44,13 @@ class Pyanno4rtSolver():
     tolerance : float
         See 'Parameters'.
 
-    instance : object
+    instance : None or object
         The object used to represent the optimization algorithm.
 
-    arguments : dict
+    arguments : None or dict
         Dictionary with the solver arguments.
 
-    counter : int
+    counter : None or int
         Iteration counter.
     """
 
@@ -69,7 +69,7 @@ class Pyanno4rtSolver():
         self.maximum_iterations = maximum_iterations
         self.tolerance = tolerance
 
-        # Initialize the instance, arguments, and iteration counter
+        # Initialize the algorithm instance, arguments, and iteration counter
         self.instance, self.arguments, self.counter = None, None, None
 
     def callback(
@@ -84,7 +84,7 @@ class Pyanno4rtSolver():
             Dictionary with the intermediate results of the current iteration.
         """
 
-        # Log a message about the intermediate function value
+        # Log a message about the intermediate result
         get_logger().info(
             "At iterate %s: f=%s",
             self.counter, around(intermediate_result['optimal_value'], 4))

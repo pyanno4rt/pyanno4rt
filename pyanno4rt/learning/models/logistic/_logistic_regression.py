@@ -29,6 +29,8 @@ class LogisticRegression():
     """
     Logistic regression model class.
 
+    This class implements methods to handle logistic regression models.
+
     Parameters
     ----------
     label : str

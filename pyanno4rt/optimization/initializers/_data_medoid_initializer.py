@@ -9,14 +9,14 @@ from random import sample
 from functools import partial
 from math import inf
 from numpy import (
-    array, argmin, ceil, concatenate, divide, floor, log, mean, median, ones,
-    std, where, zeros)
+    array, argmin, ceil, concatenate, divide, floor, hstack, log, mean, median,
+    ones, std, where, zeros)
 from numpy.linalg import norm
 from scipy.optimize import minimize, minimize_scalar
-from scipy.sparse import hstack as shstack
 
 # %% Internal package import
 
+from pyanno4rt.learning.features import FeatureCalculator
 from pyanno4rt.logging import get_logger
 
 # %% Class definition
@@ -24,37 +24,37 @@ from pyanno4rt.logging import get_logger
 
 class DataMedoidInitializer():
     """
-    Data Medoid initialization class.
+    Data medoid initialization class.
 
     This class provides methods to initialize the fluence vector with respect \
     to data medoid points.
 
     Parameters
     ----------
-    initial_fluence_vector: None or list
-        User-defined initial fluence vector for the optimization problem.
+    initial_fluence: None or list
+        Initial fluence vector.
 
     Attributes
     ----------
-    initial_fluence_vector : None or list
+    initial_fluence : None or list
         See 'Parameters'.
     """
 
     def __init__(
             self,
-            initial_fluence_vector=None):
+            initial_fluence=None):
 
         # Log a message about the initialization of the class
         get_logger().info("Initializing data medoid strategy ...")
 
         # Get the initial fluence
-        self.initial_fluence_vector = initial_fluence_vector
+        self.initial_fluence = initial_fluence
 
     def run(
             self,
             handlers):
         """
-        Initialize the fluence vector with respect to target coverage.
+        Initialize the fluence vector with respect to data medoid points.
 
         Parameters
         ----------
@@ -67,62 +67,31 @@ class DataMedoidInitializer():
             Initial fluence vector.
         """
 
-        # Check if an initial fluence vector has been provided
-        if self.initial_fluence_vector is not None:
-
-            # Log a message about returning the user-defined vector
-            get_logger().info(
-                "Falling back to user-defined initial fluence vector ...")
-
-            return array(self.initial_fluence_vector)
-
-        # Log a message about the initialization
-        get_logger().info(
-            "Initializing fluence vector with respect to data medoid points "
-            "...")
-
-        # Get the datasets and feature maps from the datahub
-        datasets = handlers['data_model_handler'].datasets
-        feature_maps = handlers['data_model_handler'].feature_maps
-
-        # Check if no datasets have been provided
-        if datasets is None:
-
-            # Log a message about falling back to target coverage strategy
-            get_logger().info(
-                "No datasets have been provided - falling back to target "
-                "coverage initialization strategy ...")
-
-            # Import the initializers dynamically
-            from pyanno4rt.optimization._maps import INITIALIZERS
-
-            return INITIALIZERS['target-coverage']().run(handlers)
-
-        def get_standardized_features(key):
+        def standardize(dataset, feature_map):
             """Get the standardized dose features."""
 
             # Get the columns of the dosiomic features
             columns = [
-                index for index, feature in enumerate(feature_maps[key])
-                if feature_maps[key][feature]['class'] == 'Dosiomics']
+                index for index, feature in enumerate(feature_map)
+                if feature_map[feature]['class'] == 'Dosiomics']
 
             # Extract the dosiomic feature values
-            values = datasets[key]['feature_values'][:, columns]
+            features = dataset.feature_values[:, columns]
 
-            # Calculate the mean and standard deviation per column
-            means = mean(values, axis=0)
-            deviations = std(values, axis=0)
+            # Calculate the column-wise mean and standard deviation
+            means = mean(features, axis=0)
+            deviations = std(features, axis=0)
 
-            return divide(values-means, deviations), means, deviations
+            return divide(features-means, deviations), means, deviations
 
-        def get_data_medoid(dataset):
+        def get_data_medoid(features):
             """
             Get the medoid from a dataset via Correlated Sequential Halving.
 
             Adapted from Baharav & Tse (2019): https://arxiv.org/abs/1906.04356
             """
 
-            def pull_arms(index_set, number_of_pulls):
+            def pull_arms(indices, number_of_pulls):
                 """
                 Pull the arms of the multi-armed bandit to update the \
                 scores and the pull history.
@@ -132,85 +101,81 @@ class DataMedoidInitializer():
                 random_arms = sample(range(number_of_samples), number_of_pulls)
 
                 # Estimate the correlated distances
-                estimates = array([
-                    mean(norm(dataset[random_arms, :] - dataset[index, :]))
-                    for index in index_set])
+                corr_distances = array([
+                    mean(norm(features[random_arms, :] - features[index, :]))
+                    for index in indices])
 
-                # Update the scores taking the pull history into account
-                scores[index_set] = (
-                    (pull_history[index_set]*scores[index_set]
-                     + number_of_pulls*estimates) /
-                    (pull_history[index_set]+number_of_pulls))
+                # Update the scores by the pull history
+                scores[indices] = (
+                    (pull_history[indices]*scores[indices]
+                     + number_of_pulls*corr_distances) /
+                    (pull_history[indices]+number_of_pulls))
 
                 # Check if all bandit arms are pulled
                 if number_of_pulls == number_of_samples:
 
-                    # Update the scores by the exact estimates
-                    scores[index_set] = estimates
+                    # Update the scores
+                    scores[indices] = corr_distances
 
                 # Update the pull history
-                pull_history[index_set] += number_of_pulls
+                pull_history[indices] += number_of_pulls
 
-                return scores[index_set]
+                return scores[indices]
 
-            # Get the number of samples in the dataset
-            number_of_samples = dataset.shape[0]
+            # Get the number of samples
+            number_of_samples = features.shape[0]
 
-            # Initialize the index set
-            index_set = array(range(number_of_samples))
+            # Initialize the indices
+            indices = array(range(number_of_samples))
 
-            # Initialize the scores for all samples
+            # Initialize the scores
             scores = zeros(number_of_samples)
 
             # Initialize the multi-armed bandit pull history
             pull_history = zeros(number_of_samples, dtype=int)
 
-            # Loop while the cardinality of the index set exceeds one
-            while len(index_set) > 1:
+            # Loop while the cardinality of the indices exceeds one
+            while len(indices) > 1:
 
                 # Get the number of pulls on the bandit
                 number_of_pulls = int(
-                    min(max(1, floor(30*number_of_samples/(len(index_set)*ceil(
+                    min(max(1, floor(30*number_of_samples/(len(indices)*ceil(
                         log(number_of_samples))))), number_of_samples))
 
                 # Get the updated score set
-                score_set = pull_arms(index_set, number_of_pulls)
+                score_set = pull_arms(indices, number_of_pulls)
 
                 # Check if all bandit arms are pulled
                 if number_of_pulls == number_of_samples:
 
                     # Return the sample assigned with the lowest score
-                    return dataset[index_set[argmin(score_set)]]
+                    return features[indices[argmin(score_set)]]
 
-                # Reduce the index set by eliminating the worse half of arms
-                index_set = index_set[
-                    where(score_set <= median(score_set))[0]]
+                # Reduce the indices by eliminating the worse half of arms
+                indices = indices[where(score_set <= median(score_set))[0]]
 
-            return dataset[index_set, :]
+            return features[indices, :]
 
-        def optimize_fluence(medoids, means, deviations):
-            """Optimize the fluence vector with respect to the data medoids."""
-
-            # Get the degrees of freedom from the datahub
-            degrees_of_freedom = handlers['dose_handler'].degrees_of_freedom
+        def approximate_fluence(medoids, means, deviations):
+            """Approximate the fluence with respect to the data medoids."""
 
             def precompute(fluence, factor):
-                """Precompute the features and the segment doses/names."""
+                """Precompute the features, doses and segment names."""
 
-                # Get the dose vector from the fluence
+                # Get the segments across the feature maps
+                segments = tuple(tuple(set(feature['segment']
+                    for feature in feature_map.values()))
+                    for feature_map in feature_maps)
+
+                # Calculate the dose from the fluence
                 dose = (
                     handlers['dose_handler'].dose_influence_matrix
                     @ (fluence*factor))
 
-                # Get the segments across the feature maps
-                segments = tuple(set(
-                    feature_map[feature]['segment'] for feature in feature_map)
-                    for feature_map in feature_maps.values())
-
-                # Get the dose vectors for the segments
+                # Get the segment doses
                 doses = tuple(
-                    (dose[handlers['patient_handler'].segmentation[subsegment][
-                        'resized_indices']] for subsegment in segment)
+                    [dose[handlers['patient_handler'].segmentation[subsegment][
+                        'resized_indices']] for subsegment in segment]
                     for segment in segments)
 
                 # Calculate the dosiomic feature values
@@ -226,76 +191,121 @@ class DataMedoidInitializer():
 
                 return sum(
                     (divide(precompute(fluence, factor)[0]-means, deviations)
-                     - reference)**2)
+                     - medoids)**2)
 
             def gradient(fluence):
                 """Compute the squared L2 objective gradient."""
 
-                # Get the feature vector, doses and segments
+                # Get the features, doses and segments
                 features, doses, segments = precompute(fluence, factor=1)
 
                 # Get the dose gradient of the features
-                feature_gradient = shstack(
+                feature_gradient = hstack(
                     [calculator.gradientize(dose, segment).T
                      for calculator, dose, segment in zip(
                              calculators, doses, segments)])
 
-                return ((
-                    2*(divide(features-means, deviations)-reference)
-                    * (1/deviations)*feature_gradient.T)
-                    @ handlers['dose_handler'].dose_influence_matrix)
+                # Get the segment indices
+                indices = concatenate(tuple(
+                    [handlers['patient_handler'].segmentation[subsegment][
+                        'resized_indices'] for subsegment in segment]
+                    for segment in segments)).reshape(-1)
 
-            # Concatenate the data medoids, mean values and standard deviations
-            reference = concatenate(list(medoids))
+                # Get the dose-influence matrix
+                dose_matrix = handlers['dose_handler'].dose_influence_matrix
+
+                return (
+                    dose_matrix[indices, :].T
+                    @ (2*(divide(features-means, deviations)-medoids)
+                       *(1/deviations)*feature_gradient)).sum(axis=1)
+
+            # Concatenate the data medoids, means and standard deviations
+            medoids = concatenate(medoids)
             means = concatenate(means)
             deviations = concatenate(deviations)
 
-            # Get the feature maps reduced to dosiomic features
-            dose_feature_maps = tuple(
+            # Get the feature maps for the dosiomic features
+            dose_feature_maps = (
                 {key: value for key, value in feature_map.items()
                  if feature_map[key]['class'] == 'Dosiomics'}
-                for feature_map in feature_maps.values())
+                for feature_map in feature_maps)
 
-            # Get the feature calculator for each dosiomic subset
-            calculators = tuple(FeatureCalculator(
-                write_features=False, verbose=False).add_feature_map(
-                    dose_map, return_self=True)
+            # Get the corresponding feature calculators
+            calculators = tuple(
+                FeatureCalculator(handlers).set_mapping(
+                    dose_map, return_self=True, verbose=False)
                 for dose_map in dose_feature_maps)
 
-            # Optimize the fluence under homogeneity condition
-            factor_result = minimize_scalar(
+            # Get the degrees of freedom
+            degrees_of_freedom = handlers['dose_handler'].degrees_of_freedom
+
+            # Approximate the fluence under homogeneity condition
+            uniform = minimize_scalar(
                 fun=partial(objective, ones(degrees_of_freedom)),
-                bounds=(0, 100),
+                bounds=(0, 1000),
                 method='bounded',
                 options={
                     'disp': False,
                     'maxiter': 1000})
 
-            # Optimize the fluence under heterogeneity condition
-            fluence_result = minimize(
-                x0=[factor_result.x]*degrees_of_freedom,
+            # Approximate the fluence under heterogeneity condition
+            result = minimize(
+                x0=[uniform.x]*degrees_of_freedom,
                 fun=partial(objective, factor=1),
                 jac=gradient,
                 bounds=zip([0]*degrees_of_freedom, [inf]*degrees_of_freedom),
-                tol=0.001,
+                tol=1e-4,
                 method='L-BFGS-B',
                 callback=None,
                 options={
                     'disp': False,
-                    'ftol': 0.001,
+                    'ftol': 1e-4,
                     'maxiter': 1000,
                     'maxls': 20})
 
-            return fluence_result.x
+            return result.x
+
+        # Check if an initial fluence vector has been provided
+        if self.initial_fluence is not None:
+
+            # Log a message about falling back to warm-start strategy
+            get_logger().warning(
+                "User has provided an initial fluence vector - falling back "
+                "to warm-start strategy ...")
+
+            return array(self.initial_fluence)
+
+        # Log a message about the initialization
+        get_logger().info(
+            "Initializing fluence vector with respect to data medoid points "
+            "...")
+
+        # Get the datasets and feature maps
+        datasets, feature_maps = zip(*(
+            (model.dataset, model.feature_calculator.feature_map)
+            for model in handlers['data_model_handler'].models))
+
+        # Check if no datasets have been provided
+        if len(datasets) == 0:
+
+            # Log a message about falling back to target coverage strategy
+            get_logger().info(
+                "No datasets have been provided - falling back to target "
+                "coverage initialization strategy ...")
+
+            # Import the initializers dynamically
+            from pyanno4rt.optimization._maps import INITIALIZERS
+
+            return INITIALIZERS['target-coverage']().run(handlers)
 
         # Get the standardized datasets, mean vectors and standard deviations
         standardized_data, means, deviations = zip(*map(
-            get_standardized_features, datasets))
+            standardize, datasets, feature_maps))
 
         # Get the data medoids
-        medoids = map(get_data_medoid, standardized_data)
+        medoids = tuple(map(get_data_medoid, standardized_data))
 
-        # Optimize the fluence by reconstructing the medoids
-        initial_fluence = optimize_fluence(medoids, means, deviations)
+        # Approximate the initial fluence by reconstructing the medoids
+        initial_fluence = approximate_fluence(medoids, means, deviations)
 
         return initial_fluence
