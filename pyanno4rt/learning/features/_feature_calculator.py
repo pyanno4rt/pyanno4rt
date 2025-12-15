@@ -31,30 +31,29 @@ class FeatureCalculator():
     handlers : dict
         See 'Parameters'.
 
-    radiomics : dict
-        Dictionary with the radiomic feature names and values for caching.
+    radiomics : None or dict
+        Dictionary with the (cached) radiomic feature names and values.
 
-    statics : dict
-        Dictionary with the static (fixed) feature names and values.
+    statics : None or dict
+        Dictionary with the (cached) static feature names and values.
 
-    feature_map : dict
-        Dictionary with the mappings of feature names, segments and \
-        computation/differentiation functions.
+    feature_map : None or dict
+        Dictionary with mappings between features and calculation functions.
 
-    feature_history : ndarray or None
+    feature_history : None or ndarray
         Feature values per iteration.
 
-    inputs : dict
+    inputs : None or dict
         Dictionary with the input values for feature calculation.
 
-    __iteration__ : list
-        Iteration numbers for feature calculation and optimization problem.
+    _iteration : list
+        Iteration numbers for synchronization with the optimization problem.
 
-    __dose_cache__ : tuple
-        Cache tuple for the dose values.
+    _dose_cache : tuple
+        Cache for the dose values.
 
-    __feature_cache__ : ndarray
-        Cache array for the feature values.
+    _feature_cache : ndarray
+        Cache for the feature values.
     """
 
     def __init__(
@@ -64,14 +63,66 @@ class FeatureCalculator():
         # Get the handlers
         self.handlers = handlers
 
-        # Initialize the radiomic and static feature dictionaries
+        # Initialize the radiomics and statics dictionaries
+        self.radiomics = None
+        self.statics = None
+
+        # Initialize the feature map and history
+        self.feature_map = None
+        self.feature_history = None
+
+        # Initialize the input dictionary
+        self.inputs = None
+
+        # Initialize the iteration numbers for synchronization
+        self._iteration = [0, 0]
+
+        # Initialize the dose and feature cache
+        self._dose_cache = tuple(array([]))
+        self._feature_cache = array([])
+
+    def set_mapping(
+            self,
+            feature_map,
+            return_self=False,
+            verbose=True):
+        """
+        Set the feature-to-function mapping.
+
+        Parameters
+        ----------
+        feature_map : dict
+            Dictionary with mappings between features and calculation \
+            functions.
+
+        return_self : bool, default=False
+            Indicator for returning the feature calculator instance.
+
+        verbose : bool, default=True
+            Indicator for logging output messages.
+
+        Returns
+        -------
+        None or object of class \
+            :class:`~pyanno4rt.learning.features._feature_calculator.FeatureCalculator`
+            None if `return_self` is False, else the instance.
+        """
+
+        # Check if messages should be printed
+        if verbose:
+
+            # Log a message about setting the feature map
+            get_logger().info("Setting feature map for (re)calculation ...")
+
+        # Initialize the radiomics and statics dictionaries
         self.radiomics = {}
         self.statics = {}
 
-        # Initialize the feature map, segment tuple and history
-        self.feature_map = None
-        self.segment = None
-        self.feature_history = None
+        # Initialize the feature map
+        self.feature_map = feature_map
+
+        # Initialize the feature history
+        self.feature_history = empty(shape=(1, len(self.feature_map)))
 
         # Initialize the input dictionary
         self.inputs = {
@@ -83,60 +134,13 @@ class FeatureCalculator():
             'require_spacing': ('Dose Gradient',),
             'masks': None}
 
-        # Initialize the iteration numbers for synchronization
-        self.__iteration__ = [0, 0]
-
-        # Initialize the dose and the feature cache
-        self.__dose_cache__ = tuple(array([]))
-        self.__feature_cache__ = array([])
-
-    def add_static_map(
-            self,
-            statics):
-        """."""
-
-        # Log a message about the static values map addition
-        get_logger().info(
-            "Adding static values map to the feature calculator ...")
-
-        # Initialize the static values map from the argument
-        self.statics = statics
-
-    def set_mapping(
-            self,
-            feature_map,
-            return_self=False,
-            verbose=True):
-        """
-        Set the feature map for (re-)calculation.
-
-        Parameters
-        ----------
-        feature_map : dict
-            ...
-        """
-
-        # Check if messages should be printed
-        if verbose:
-
-            # Log a message about the feature map addition
-            get_logger().info("Setting feature map for (re-)calculation ...")
-
-        # Initialize the feature map from the argument
-        self.feature_map = feature_map
-
-        # Get the mapped segments
-        self.segment = tuple(
-            set(value['segment'] for value in feature_map.values()))
-
-        # Initialize the feature history from the argument
-        self.feature_history = empty(shape=(1, len(self.feature_map)))
-
-        # Check if the instance should be returned
+        # Check if self should be returned
         if return_self:
 
+            # Return the instance
             return self
 
+        # Else, return None
         return None
 
     def precompute(
@@ -144,7 +148,7 @@ class FeatureCalculator():
             dose,
             segment):
         """
-        Precompute the input quantities for the feature calculation.
+        Precompute the input quantities.
 
         Parameters
         ----------
@@ -155,47 +159,46 @@ class FeatureCalculator():
             Segment names.
         """
 
-        def precompute_dose(dose):
-            """Precompute the dose."""
+        def get_dose(dose):
+            """Get the dose vectors."""
 
             return (
                 dose_handler.number_of_fractions * subdose.ravel()
                 for subdose in dose)
 
-        def precompute_dose_cube(segment):
-            """Precompute the dose cube."""
+        def get_dose_cubes(segment):
+            """Get the dose cubes for all segments."""
 
-            # Get the dose grid dimensions
-            dimensions = dose_handler.cube_dimensions
-
-            def get_subsegment_cube(subsegment):
+            def subcube(subsegment):
                 """Get the dose cube for a single segment."""
 
                 # Initialize the dose cube
                 dose_cube = zeros(dimensions)
 
-                # Insert the dose values of the segment into the dose cube
+                # Insert the dose values of the segment
                 dose_cube[unravel_index(
                     segmentation[subsegment]['resized_indices'], dimensions,
                     order='F')] = self.inputs['dose'][subsegment]
 
                 return dose_cube
 
-            return (get_subsegment_cube(subsegment) for subsegment in segment)
+            # Get the dose cube dimensions
+            dimensions = dose_handler.cube_dimensions
 
-        def precompute_indices(segment):
-            """Precompute the segment indices."""
+            return map(subcube, segment)
+
+        def get_indices(segment):
+            """Get the segment indices."""
 
             return (
                 segmentation[subsegment]['resized_indices']
                 for subsegment in segment)
 
-        def precompute_paddings():
-            """Precompute the gradient paddings."""
+        def get_paddings():
+            """Get the gradient paddings."""
 
             # Get the lengths of the segment indices
-            lengths = tuple(
-                len(index) for index in self.inputs['indices'].values())
+            lengths = tuple(map(len, self.inputs['indices'].values()))
 
             return (tuple(
                 (0, sum(lengths[1:]))
@@ -206,14 +209,10 @@ class FeatureCalculator():
                 for index, _ in enumerate(lengths))
                 + ((0, sum(lengths)),))
 
-        def precompute_masks(segment):
-            """Precompute the segment masks."""
+        def get_masks(segment):
+            """Get the segment masks."""
 
-            # Get the cube dimensions from the information unit
-            ct_dimensions = computed_tomography['cube_dimensions']
-            dose_dimensions = dose_handler.cube_dimensions
-
-            def get_subsegment_masks(subsegment):
+            def submasks(subsegment):
                 """Get the masks for a single segment."""
 
                 # Initialize the masks
@@ -232,7 +231,11 @@ class FeatureCalculator():
 
                 return (radiomics_mask, dose_mask)
 
-            return (get_subsegment_masks(subsegment) for subsegment in segment)
+            # Get the CT and dose cube dimensions
+            ct_dimensions = computed_tomography['cube_dimensions']
+            dose_dimensions = dose_handler.cube_dimensions
+
+            return map(submasks, segment)
 
         # Get the information units
         computed_tomography = (
@@ -240,40 +243,36 @@ class FeatureCalculator():
         segmentation = self.handlers['patient_handler'].segmentation
         dose_handler = self.handlers['dose_handler']
 
-        # Add the precomputed dose vectors to the input dictionary
-        self.inputs['dose'] = dict(
-            zip(segment, precompute_dose(dose)))
+        # Add the precomputed dose vectors
+        self.inputs['dose'] = dict(zip(segment, get_dose(dose)))
 
-        # Add the precomputed dose cubes to the input dictionary
-        self.inputs['dose_cube'] = dict(
-            zip(segment, precompute_dose_cube(segment)))
+        # Add the precomputed dose cubes
+        self.inputs['dose_cube'] = dict(zip(segment, get_dose_cubes(segment)))
 
         # Check if the segment indices have not been computed yet
         if self.inputs['indices'] is None:
 
-            # Add the precomputed segment indices to the input dictionary
-            self.inputs['indices'] = dict(
-                zip(segment, precompute_indices(segment)))
+            # Add the precomputed segment indices
+            self.inputs['indices'] = dict(zip(segment, get_indices(segment)))
 
-            # Add the precomputed gradient paddings to the input dictionary
-            self.inputs['paddings'] = dict(
-                zip(segment+(None,), precompute_paddings()))
+            # Add the precomputed gradient paddings
+            self.inputs['paddings'] = dict(zip(
+                segment+(None,), get_paddings()))
 
         # Check if the segment masks have not been computed yet
         if (self.inputs['masks'] is None
                 or tuple(segment) != (*self.inputs['masks'],)):
 
-            # Add the precomputed masks by segment to the input dictionary
-            self.inputs['masks'] = dict(
-                zip(segment, precompute_masks(segment)))
+            # Add the precomputed masks by segment
+            self.inputs['masks'] = dict(zip(segment, get_masks(segment)))
 
     def featurize(
             self,
             dose,
             segment,
-            no_cache=False):
+            update_cache=False):
         """
-        Transform dose and segment information into the feature vector.
+        Convert dose and segment information into a feature vector.
 
         Parameters
         ----------
@@ -283,35 +282,38 @@ class FeatureCalculator():
         segment : tuple
             Segment names.
 
+        update_cache : bool, default=False
+            Indicator for enforcing cache updates.
+
         Returns
         -------
         ndarray
             Feature vector.
         """
 
-        # Check if the feature cache needs to be updated
-        if (len(self.__feature_cache__) == 0
-                or self.__iteration__[0] != self.__iteration__[1]
-                or no_cache):
+        # Check if the feature cache should be updated
+        if (len(self._feature_cache) == 0
+                or self._iteration[0] != self._iteration[1]
+                or update_cache):
 
             # Synchronize the iteration numbers
-            self.__iteration__[0] = self.__iteration__[1]
+            self._iteration[0] = self._iteration[1]
 
             # Check if the dose has changed
-            if not array_equal(dose, self.__dose_cache__):
+            if not array_equal(dose, self._dose_cache):
 
-                # Precompute the input for the feature calculation
+                # Precompute the input quantities
                 self.precompute(dose, segment)
 
                 # Update the dose cache
-                self.__dose_cache__ = dose
+                self._dose_cache = dose
 
-            # Retrieve and cache the feature vector
-            self.__feature_cache__ = self.get_feature_vector()
+            # Compute and cache the feature vector
+            self._feature_cache = self._compute_features()
 
-        return self.__feature_cache__
+        return self._feature_cache
 
-    def get_feature_vector(self):
+    def _compute_features(self):
         """
         Get the feature vector.
 
@@ -415,7 +417,7 @@ class FeatureCalculator():
         feature_vector = array((*features,)).reshape(1, -1)
 
         # Check if the feature history should be written
-        if self.__iteration__[1] >= 1:
+        if self._iteration[1] >= 1:
 
             # Add the feature vector to the history
             self.feature_history = vstack((
@@ -516,13 +518,13 @@ class FeatureCalculator():
         number_of_voxels = self.handlers['dose_handler'].number_of_voxels
 
         # Check if the dose has changed
-        if not array_equal(dose, self.__dose_cache__):
+        if not array_equal(dose, self._dose_cache):
 
             # Precompute the input for the feature calculation
             self.precompute(dose, segment)
 
             # Update the dose cache
-            self.__dose_cache__ = dose
+            self._dose_cache = dose
 
         # Run the computation function for all features in the feature map
         gradients = map(compute_feature_gradient, (*self.feature_map,))

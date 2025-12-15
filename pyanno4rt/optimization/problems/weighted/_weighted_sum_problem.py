@@ -216,7 +216,7 @@ class WeightedSumProblem():
         for objective in get_machine_learning_objectives(self.objectives):
 
             # Increment the feature calculator iteration
-            objective.model.feature_calculator.__iteration__[1] += 1
+            objective.model.feature_calculator._iteration[1] += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
@@ -305,7 +305,7 @@ class WeightedSumProblem():
         for constraint in get_machine_learning_constraints(self.constraints):
 
             # Increment the feature calculator iteration
-            constraint.model.feature_calculator.__iteration__[1] += 1
+            constraint.model.feature_calculator._iteration[1] += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)

@@ -19,26 +19,26 @@ class Backprojection():
 
     Attributes
     ----------
-    __dose__ : ndarray
-        Current (cached) dose vector.
+    _dose : ndarray
+        Cached dose vector.
 
-    __dose_gradient__ : ndarray
-        Current (cached) dose gradient.
+    _dose_gradient : ndarray
+        Cached dose gradient.
 
-    __fluence__ : ndarray
-        Current (cached) fluence vector.
+    _fluence : ndarray
+        Cached fluence vector.
 
-    __fluence_gradient__ : ndarray
-        Current (cached) fluence gradient.
+    _fluence_gradient : ndarray
+        Cached fluence gradient.
     """
 
     def __init__(self):
 
         # Initialize the dose, dose gradient, fluence and fluence gradient
-        self.__dose__ = array([])
-        self.__dose_gradient__ = array([])
-        self.__fluence__ = array([])
-        self.__fluence_gradient__ = array([])
+        self._dose = array([])
+        self._dose_gradient = array([])
+        self._fluence = array([])
+        self._fluence_gradient = array([])
 
     def compute_dose(
             self,
@@ -58,15 +58,15 @@ class Backprojection():
         """
 
         # Check if the cached fluence does not resemble the input
-        if not array_equal(self.__fluence__, fluence):
+        if not array_equal(self._fluence, fluence):
 
             # Update the cached dose vector
-            self.__dose__ = self.compute_dose_result(fluence)
+            self._dose = self.compute_dose_result(fluence)
 
             # Update the cached fluence
-            self.__fluence__ = copy(fluence)
+            self._fluence = copy(fluence)
 
-        return self.__dose__
+        return self._dose
 
     def compute_fluence_gradient(
             self,
@@ -86,16 +86,16 @@ class Backprojection():
         """
 
         # Check if the cached dose gradient does not resemble the input
-        if not array_equal(self.__dose_gradient__, dose_gradient):
+        if not array_equal(self._dose_gradient, dose_gradient):
 
             # Update the cached fluence gradient
-            self.__fluence_gradient__ = self.compute_fluence_gradient_result(
+            self._fluence_gradient = self.compute_fluence_gradient_result(
                 dose_gradient)
 
             # Update the cached dose gradient
-            self.__dose_gradient__ = copy(dose_gradient)
+            self._dose_gradient = copy(dose_gradient)
 
-        return self.__fluence_gradient__
+        return self._fluence_gradient
 
     def get_dose(self):
         """
@@ -107,7 +107,7 @@ class Backprojection():
             Dose vector.
         """
 
-        return self.__dose__
+        return self._dose
 
     def get_fluence_gradient(self):
         """
@@ -119,7 +119,7 @@ class Backprojection():
             Fluence gradient.
         """
 
-        return self.__fluence_gradient__
+        return self._fluence_gradient
 
     @abstractmethod
     def compute_dose_result(

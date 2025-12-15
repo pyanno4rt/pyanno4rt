@@ -215,7 +215,7 @@ class ParetoProblem():
         for objective in get_machine_learning_objectives(self.objectives):
 
             # Increment the feature calculator iteration
-            objective.feature_calculator.__iteration__[1] += 1
+            objective.feature_calculator._iteration[1] += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
@@ -265,7 +265,7 @@ class ParetoProblem():
         for constraint in get_machine_learning_constraints(self.constraints):
 
             # Increment the feature calculator iteration
-            constraint.feature_calculator.__iteration__[1] += 1
+            constraint.feature_calculator._iteration[1] += 1
 
         # Compute the dose from the fluence
         dose = self.backprojection.compute_dose(fluence)
