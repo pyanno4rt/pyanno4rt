@@ -52,7 +52,7 @@ class DataModelHandler():
         - :class:`~pyanno4rt.learning.models._svm._support_vector_machine.SupportVectorMachine`
 
     outcomes : dict
-        Dictionary with the outcome results for the models.
+        Dictionary with the outcome results.
     """
 
     def __init__(
@@ -88,9 +88,6 @@ class DataModelHandler():
         # Loop over the models
         for model in self.models:
 
-            # Log a message about the dataset loading
-            get_logger().info("Loading dataset for '%s' ...", model.label)
-
             # Load the model data
             model.load_data()
 
@@ -116,7 +113,7 @@ class DataModelHandler():
         # Loop over the models
         for model in self.models:
 
-            # Log a message about the model fitting
+            # Log a message about fitting the model
             get_logger().info("Fitting model '%s' ...", model.label)
 
             # Get the features and labels
@@ -142,8 +139,20 @@ class DataModelHandler():
     def inspect_models(self):
         """Inspect the models."""
 
+        # Loop over the models
+        for model in self.models:
+
+            # Inspect the model
+            model.inspect()
+
     def evaluate_models(self):
         """Evaluate the models."""
+
+        # Loop over the models
+        for model in self.models:
+
+            # Evaluate the model
+            model.evaluate()
 
     def validate(
             self,

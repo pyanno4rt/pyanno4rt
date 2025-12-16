@@ -136,16 +136,8 @@ class ComponentGraph():
         # Set the value for the track identifiers
         identifiers = [] if identifiers is None else identifiers
 
-        # Get the segmentation and tracking data
-        problem = treatment_plan.fluence_optimizer.problem
-
-        # Get all optimization components
-        components = problem.constraints + problem.objectives
-
         # Get the tracks to be displayed
-        tracker = {
-            component.track_id: problem.tracker[component.track_id]
-            for component in components if component.display}
+        tracker = treatment_plan.fluence_optimizer.problem.tracker
 
         # Get the track statistics
         track_min = min(filter(None, flatten(tracker.values())))

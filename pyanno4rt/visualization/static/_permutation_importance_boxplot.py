@@ -121,25 +121,25 @@ class PermutationImportanceBoxplot():
         model_name : str
             Identifier for the outcome model.
 
-        domain : {'Training', 'Out-of-folds'}
+        domain : {'Single-run', 'Multi-run'}
             Domain of the permutation importance statistics.
 
         number_of_features : int
             Number of features to be displayed.
         """
 
-        # Get the datasets and inspection results
-        datasets, inspection = (
-            getattr(treatment_plan.datahub, attribute) for attribute in (
-                'datasets', 'model_inspections'))
+        # Get the model
+        model = next((
+            model for model in treatment_plan.data_model_handler.models
+            if model.label == model_name), None)
 
         # Get the plot data
         data = list((
             model_name,
-            inspection[model_name]['permutation_importance']['score'],
+            model.inspector.results['permutation_importances']['score'],
             DataFrame(
-                data=inspection[model_name]['permutation_importance'][domain],
-                columns=datasets[model_name]['feature_names'])))
+                data=model.inspector.results['permutation_importances'][domain],
+                columns=model.dataset.feature_names)))
 
         # Preprocess the permutation importance values
         data[2] = data[2].reindex(
@@ -148,7 +148,7 @@ class PermutationImportanceBoxplot():
 
         # Set the colormap
         colors = get_cmap('tab20b')(
-            linspace(0, 1.0, len(datasets[model_name]['feature_names'])))
+            linspace(0, 1.0, len(model.dataset.feature_names)))
 
         # Get the figure and axis objects
         figure, axis = subplots(figsize=(14, 8))

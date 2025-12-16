@@ -517,9 +517,9 @@ jaxlib==0.6.2 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:da4601b2b5dc8c23d6afb293eacfb9aec4e1d1871cb2f29c5a151d103e73b0f8 \
     --hash=sha256:f1dd09b481a93c1d4c750013f467f74194493ba7bd29fcd4d1cec16e3a214f65 \
     --hash=sha256:f94163f14c8fd3ba93ae14b631abacf14cb031bba0b59138869984b4d10375f8
-joblib==1.5.2 ; python_version >= "3.10" and python_version < "4.0" \
-    --hash=sha256:3faa5c39054b2f03ca547da9b2f52fde67c06240c31853f306aea97f13647b55 \
-    --hash=sha256:4e1f0bdbb987e6d843c70cf43714cb276623def372df3c22fe5266b2670bc241
+joblib==1.5.3 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:5fc3c5039fc5ca8c0276333a188bbd59d6b7ab37fe6632daa76bc7f9ec18e713 \
+    --hash=sha256:8561a3269e6801106863fd0d6d84bb737be9e7631e33aaed3fb9ce5953688da3
 keras==3.12.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:02b69e007d5df8042286c3bcc2a888539e3e487590ffb08f6be1b4354df50aa8 \
     --hash=sha256:536e3f8385a05ae04e82e08715a1a59988578087e187b04cb0a6fad11743f07f

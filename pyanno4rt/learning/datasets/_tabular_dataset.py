@@ -9,7 +9,8 @@ from os.path import splitext
 
 from functools import partial
 from itertools import compress, tee
-from numpy import array, logical_and, seterr, vstack, where
+from numpy import arange, array, logical_and, seterr, vstack, where
+from sklearn.model_selection import train_test_split
 
 # %% Internal package import
 
@@ -18,7 +19,8 @@ from pyanno4rt.learning._maps import COLUMNS, FEATURES
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import custom_round, deduplicate, filter_dict, replace_nan
 from pyanno4rt.validation import (
-    validate_file, validate_length, validate_subtype, validate_type)
+    validate_file, validate_item, validate_length, validate_subtype,
+    validate_type)
 
 # %% Set package options
 
@@ -52,6 +54,9 @@ class TabularDataset():
         .. note:: This list acts as a filter on the raw dataset, i.e., after \
             loading the external file, only columns included will be retained.
 
+    holdout : int, default=None
+        Size of the holdout set.
+
     Attributes
     ----------
     sources : None or dict
@@ -61,6 +66,9 @@ class TabularDataset():
         See 'Parameters'.
 
     columns : list
+        See 'Parameters'.
+
+    holdout : int
         See 'Parameters'.
 
     dataframe : object of class :class:`~pandas.core.frame.DataFrame`
@@ -95,6 +103,9 @@ class TabularDataset():
 
     feature_map : dict
         Dictionary with mappings between features and calculation functions.
+
+    holdout_set : dict
+        Dictionary with the holdout data.
     """
 
     # Map the path extensions to the handlers
@@ -104,7 +115,8 @@ class TabularDataset():
     def __init__(
             self,
             path,
-            columns):
+            columns,
+            holdout=None):
 
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
@@ -118,6 +130,7 @@ class TabularDataset():
         # Get the instance attributes
         self.path = path
         self.columns = columns
+        self.holdout = holdout
 
         # Initialize the data attributes
         self.dataframe = None
@@ -133,6 +146,18 @@ class TabularDataset():
 
         # Initialize the feature map
         self.feature_map = None
+
+        # Initialize the holdout dataset
+        self.holdout_set = None
+
+    def to_dict(self):
+        """Serialize the tabular dataset into a dictionary."""
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """Deserialize the tabular dataset from a dictionary."""
 
     def load(self):
         """Load the dataset."""
@@ -182,6 +207,12 @@ class TabularDataset():
 
         # Binarize the label values
         self._binarize()
+
+        # Check if a holdout set should be created
+        if self.holdout is not None:
+
+            # Create the holdout data
+            self._create_holdout()
 
         # Build the feature map
         self._build_map()
@@ -294,6 +325,31 @@ class TabularDataset():
             (self.label_values >= label_bounds[0])
             & (self.label_values <= label_bounds[1]), 1, 0)
 
+    def _create_holdout(self):
+        """Create the holdout dataset."""
+
+        # Clamp the holdout size
+        self.holdout = min(len(self.dataframe)-1, self.holdout)
+
+        # Get the training and holdout indices
+        train_indices, holdout_indices = train_test_split(
+            arange(len(self.dataframe)), test_size=self.holdout,
+            stratify=self.dataframe[self.label_name], random_state=42)
+
+        # Get the holdout set
+        self.holdout_set = {
+            'dataframe': self.dataframe.iloc[holdout_indices],
+            'feature_values': self.feature_values[holdout_indices],
+            'label_values': self.label_values[holdout_indices],
+            'time_variable_values': self.time_variable_values[holdout_indices]
+            }
+
+        # Reduce the training data
+        self.dataframe = self.dataframe.iloc[train_indices]
+        self.feature_values = self.feature_values[train_indices]
+        self.label_values = self.label_values[train_indices]
+        self.time_variable_values = self.time_variable_values[train_indices]
+
     def _build_map(self):
         """Build the feature map."""
 
@@ -323,10 +379,7 @@ class TabularDataset():
             # Return the static feature map
             return {
                 'value': feature.value,
-                'segment': None,
-                'class': 'Statics',
-                'computation': None,
-                'differentiation': None}
+                'class': 'Statics'}
 
         # Log a message about the feature map build
         get_logger().info("Building the feature map ...")
@@ -363,6 +416,10 @@ class TabularDataset():
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=(*COLUMNS.values(),)),
                 partial(validate_length, reference=2, sign='>=')
+                ),
+            'holdout': (
+                partial(validate_type, options=(type(None), int)),
+                partial(validate_item, reference=0, sign='>')
                 )
             }
 

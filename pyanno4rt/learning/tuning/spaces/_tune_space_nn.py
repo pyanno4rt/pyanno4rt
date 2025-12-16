@@ -229,13 +229,12 @@ class TuneSpaceNN():
                 ),
             'optimizer': (
                 partial(validate_type, options=list),
-                partial(validate_item_in_set, options=tuple(
-                    maps.NETWORK_OPTIMIZERS))
+                partial(validate_item_in_set, options=(
+                    *maps.NETWORK_OPTIMIZERS,))
                 ),
             'loss': (
                 partial(validate_type, options=list),
-                partial(validate_item_in_set, options=tuple(
-                    maps.NETWORK_LOSSES))
+                partial(validate_item_in_set, options=(*maps.NETWORK_LOSSES,))
                 )
             }
 

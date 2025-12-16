@@ -36,9 +36,8 @@ import pyanno4rt.optimization._maps as opt_maps
 from pyanno4rt.optimization.components import (
     ConventionalComponent, MachineLearningComponent, RadiobiologicalComponent)
 from pyanno4rt.tools import (
-    add_square_brackets, apply, get_machine_learning_constraints,
-    get_machine_learning_objectives, load_list_from_file,
-    load_segments_from_path, string_to_numeric)
+    add_square_brackets, apply, get_machine_learning_components,
+    load_list_from_file, load_segments_from_path, string_to_numeric)
 
 # %% Class definition
 
@@ -801,13 +800,9 @@ class MainWindow(QMainWindow, Ui_main_window):
                 # Update the slice widget images
                 self.slice_widget.update_images()
 
-                # Get the segmentation dictionary from the instance
-                segmentation = instance.patient_handler.segmentation
-
                 # Get the machine learning components
-                ml_components = (
-                    get_machine_learning_constraints(segmentation)
-                    + get_machine_learning_objectives(segmentation))
+                ml_components = get_machine_learning_components(
+                    instance.plan_handler.components)
 
                 # Check if any machine learning components are present
                 if len(ml_components) > 0:
@@ -834,7 +829,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
                 # Check if the instance has already been optimized
                 if (instance.fluence_optimizer is not None
-                        and 'optimized_dose' in instance.datahub.optimization
+                        and instance.fluence_optimizer.optimized_dose is not None
                         and instance.state >= 3):
 
                     # Add the dose cube to the slice widget
@@ -1635,13 +1630,9 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Update the slice widget images
             self.slice_widget.update_images()
 
-            # Get the segmentation dictionary from the instance
-            segmentation = instance.patient_handler.segmentation
-
             # Get the machine learning components
-            ml_components = (
-                get_machine_learning_constraints(segmentation)
-                + get_machine_learning_objectives(segmentation))
+            ml_components = get_machine_learning_components(
+                instance.plan_handler.components)
 
             # Check if any machine learning components are present
             if len(ml_components) > 0:
@@ -1685,7 +1676,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Get the icon path
             icon_path = paths[
                 f'{component.component_type}_'
-                f'{self.segments[component.segment]}']
+                f'{self.segments[component.segment[0]]}']
 
             # Initialize the icon object
             icon = QIcon()
@@ -1696,7 +1687,7 @@ class MainWindow(QMainWindow, Ui_main_window):
             # Build the component string
             component_string = ' - '.join((
                 string for string in filter(None, (
-                    component.segment, component.name, component.identifier,
+                    str(component.segment), component.name, component.identifier,
                     f'embedding: {component.embedding}',
                     f'weight: {str(component.weight)}'))))
 
@@ -2168,13 +2159,10 @@ class MainWindow(QMainWindow, Ui_main_window):
         self.set_disabled((
             'model_pbutton', 'optimize_pbutton', 'evaluate_pbutton'))
 
-        # Get the segmentation dictionary
-        segmentation = self.plans[
-            self.plan_ledit.text()].patient_handler.segmentation
-
         # Check if any machine learning components are non-
-        if len(get_machine_learning_constraints(segmentation)
-               + get_machine_learning_objectives(segmentation)) > 0:
+        if len(get_machine_learning_components(
+                self.plans[self.plan_ledit.text()].plan_handler.components)
+                ) > 0:
 
             # Enable the modeling button
             self.model_pbutton.setEnabled(True)
@@ -2480,8 +2468,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
         # Create the datahub tree from the internal plan dictionaries
         self.datahub_window.create_tree_from_dict(data={
-            key: value for key, value in vars(instance.datahub).items()
-            if isinstance(value, dict)},
+            key: value for key, value in vars(instance).items()},
             parent=self.datahub_window.tree_widget)
 
         # Set the resize mode for the first tree column

@@ -4446,12 +4446,12 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <item>
                               <property name="text">
-                               <string>Training</string>
+                               <string>Single-run</string>
                               </property>
                              </item>
                              <item>
                               <property name="text">
-                               <string>Out-of-folds</string>
+                               <string>Multi-run</string>
                               </property>
                              </item>
                             </widget>

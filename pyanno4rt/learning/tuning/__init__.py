@@ -11,7 +11,7 @@ hyperparameters.
 
 from ._bayes_hp_tuner import BayesHPTuner
 from ._grid_hp_tuner import GridHPTuner
-from ._random_HP_tuner import RandomHPTuner
+from ._random_hp_tuner import RandomHPTuner
 
 from .spaces import (
     TuneSpaceDT, TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB, TuneSpaceNN,

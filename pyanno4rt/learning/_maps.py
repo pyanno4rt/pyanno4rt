@@ -17,11 +17,12 @@ from pyanno4rt.learning.features import (
     SegmentEccentricity, SegmentEigenmax, SegmentEigenmid, SegmentEigenmin,
     SegmentEigenvalues, SegmentSphericity, SegmentVolume)
 from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
+from pyanno4rt.learning.inspection import permutation_importances
+from pyanno4rt.learning.losses import auc_loss, brier_loss, log_loss
 from pyanno4rt.learning.preprocessing import StandardScaler, Whitening
 from pyanno4rt.learning.tuning import (
     BayesHPTuner, GridHPTuner, RandomHPTuner, TuneSpaceDT, TuneSpaceKNN,
     TuneSpaceLR, TuneSpaceNB, TuneSpaceNN, TuneSpaceRF, TuneSpaceSVM)
-from pyanno4rt.learning.losses import auc_loss, brier_loss, log_loss
 
 # %% Map definitions
 
@@ -57,6 +58,9 @@ FEATURES = {
     'Segment Sphericity': SegmentSphericity,
     'Segment Volume': SegmentVolume}
 
+INSPECTIONS = {
+    'permutation_importances': permutation_importances}
+
 LOSSES = {
     'AUC': auc_loss,
     'Brier score': brier_loss,
@@ -71,11 +75,6 @@ NETWORK_OPTIMIZERS = {
     'Adam': Adam,
     'Ftrl': Ftrl,
     'SGD': SGD}
-
-STEPS = {
-    'Identity': 0,
-    'StandardScaler': 1,
-    'Whitening': 2}
 
 TUNERS = {
     'Bayes': BayesHPTuner,

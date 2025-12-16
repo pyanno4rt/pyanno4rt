@@ -302,11 +302,11 @@ class Optimization():
                 partial(validate_type, options=list),
                 partial(validate_length, reference=1, sign='>='),
                 partial(
-                    validate_subtype, options=tuple(maps.COMPONENTS.values()))
+                    validate_subtype, options=(*maps.COMPONENTS.values(),))
                 ),
             'method': (
                 partial(validate_type, options=str),
-                partial(validate_item_in_set, options=tuple(maps.PROBLEMS))
+                partial(validate_item_in_set, options=(*maps.PROBLEMS,))
                 ),
             'solver': (
                 partial(validate_type, options=str),

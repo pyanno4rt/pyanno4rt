@@ -5,7 +5,7 @@
 # %% External package import
 
 from numpy import (
-    array, array_equal, empty, fromiter, pad, unravel_index, vstack, zeros)
+    array, array_equal, fromiter, pad, unravel_index, vstack, zeros)
 
 # %% Internal package import
 
@@ -19,7 +19,7 @@ class FeatureCalculator():
     Feature calculator class.
 
     This class implements methods to (re)calculate input features and their \
-    gradients for a specific feature-to-function mapping.
+    dose gradients for a specific feature-to-function mapping.
 
     Parameters
     ----------
@@ -40,7 +40,7 @@ class FeatureCalculator():
     feature_map : None or dict
         Dictionary with mappings between features and calculation functions.
 
-    feature_history : None or ndarray
+    feature_history : None or list
         Feature values per iteration.
 
     inputs : None or dict
@@ -122,7 +122,7 @@ class FeatureCalculator():
         self.feature_map = feature_map
 
         # Initialize the feature history
-        self.feature_history = empty(shape=(1, len(self.feature_map)))
+        self.feature_history = []
 
         # Initialize the input dictionary
         self.inputs = {
@@ -130,11 +130,9 @@ class FeatureCalculator():
             'dose_cube': None,
             'indices': None,
             'paddings': None,
-            'require_cube': ('Dose Subvolume', 'Dose Moment', 'Dose Gradient'),
-            'require_spacing': ('Dose Gradient',),
             'masks': None}
 
-        # Check if self should be returned
+        # Check if the instance should be returned
         if return_self:
 
             # Return the instance
@@ -272,7 +270,7 @@ class FeatureCalculator():
             segment,
             update_cache=False):
         """
-        Convert dose and segment information into a feature vector.
+        Convert dose and segment information into the feature vector.
 
         Parameters
         ----------
@@ -291,7 +289,7 @@ class FeatureCalculator():
             Feature vector.
         """
 
-        # Check if the feature cache should be updated
+        # Check if the caches should be updated
         if (len(self._feature_cache) == 0
                 or self._iteration[0] != self._iteration[1]
                 or update_cache):
@@ -315,7 +313,7 @@ class FeatureCalculator():
 
     def _compute_features(self):
         """
-        Get the feature vector.
+        Compute the feature vector.
 
         Returns
         -------
@@ -323,114 +321,77 @@ class FeatureCalculator():
             Feature vector.
         """
 
-        def compute_feature_value(feature):
+        def compute_feature(feature):
             """Compute a single feature value."""
 
-            def get_dosiomic_value(feature, segment):
-                """Get the value of a dosiomic feature."""
+            def get_dosiomic():
+                """Get the value for a dosiomic feature."""
 
-                # Determine the number of input conditions fulfilled
-                boolean_sum = sum((
-                    any(label in self.feature_map[feature]['name']
-                        for label in self.inputs['require_cube']),
-                    any(label in self.feature_map[feature]['name']
-                        for label in self.inputs['require_spacing'])))
-
-                # Check if the boolean sum is zero
-                if boolean_sum == 0:
-
-                    # Compute the feature value
-                    return self.feature_map[feature]['computation'](
-                        self.inputs['dose'][segment])
-
-                # Check if the boolean sum is one
-                if boolean_sum == 1:
-
-                    # Compute the feature value
-                    return self.feature_map[feature]['computation'](
-                        self.inputs['dose'][segment],
-                        self.inputs['dose_cube'][segment])
-
-                # Else, compute the feature value for the boolean sum of two
-                return self.feature_map[feature]['computation'](
-                    self.inputs['dose'][segment],
-                    self.inputs['dose_cube'][segment],
+                return mapping['computation'](
+                    self.inputs['dose'][mapping['segment']],
+                    self.inputs['dose_cube'][mapping['segment']],
                     fromiter(dose_resolution.values(), float),
-                    self.inputs['masks'][segment][1])
+                    self.inputs['masks'][mapping['segment']][1])
 
-            def get_radiomic_value(feature, segment):
-                """Get the value of a radiomic feature."""
+            def get_radiomic():
+                """Get the value for a radiomic feature."""
 
-                # Check if the feature has already been computed
-                if feature in self.radiomics:
+                # Check if the feature has not been computed yet
+                if feature not in self.radiomics:
 
-                    # Return the feature value from the radiomics dictionary
-                    return self.radiomics[feature]
-
-                # Compute the feature value
-                self.radiomics[feature] = self.feature_map[
-                    feature]['computation'](
-                        self.inputs['masks'][segment][0],
-                        fromiter(
-                            computed_tomography['resolution'].values(), float))
+                    # Add the feature value to the radiomics dictionary
+                    self.radiomics[feature] = mapping['computation'](
+                            self.inputs['masks'][mapping['segment']][0],
+                            fromiter(
+                                computed_tomography['resolution'].values(),
+                                float))
 
                 return self.radiomics[feature]
 
-            def get_static_value(feature, _):
-                """Get the value of a static feature."""
+            def get_static():
+                """Get the value for a static feature."""
 
-                # Check if the feature is included as static
-                if feature in self.statics:
+                # Check if the feature has not been included yet
+                if feature not in self.statics:
 
-                    # Return the value from the static feature dictionary
-                    return self.statics[feature]
+                    # Add the feature value to the statics dictionary
+                    self.statics[feature] = mapping['value']
 
-                # Log a message about a missing static feature
-                get_logger().error(
-                    "The feature '%s' is missing in the static values map ...",
-                    feature)
+                return self.statics[feature]
 
-                # Raise an attribute error
-                raise AttributeError
+            # Map the feature classes to the calculation functions
+            functions = {
+                'Dosiomics': get_dosiomic,
+                'Radiomics': get_radiomic,
+                'Statics': get_static}
 
-            # Map the feature types to the get functions
-            get_functions = {
-                'Dosiomics': get_dosiomic_value,
-                'Radiomics': get_radiomic_value,
-                'Statics': get_static_value}
+            # Get the feature-to-function mapping
+            mapping = self.feature_map[feature]
 
-            # Run the specific get function to retrieve the feature value
-            feature_value = get_functions[self.feature_map[feature]['class']](
-                feature, self.feature_map[feature]['segment'])
+            # Compute the feature value
+            feature_value = functions[mapping['class']]()
 
             return feature_value
 
-        # Get the information units
+        # Get the CT and dose resolution
         computed_tomography = (
             self.handlers['patient_handler'].computed_tomography)
         dose_resolution = self.handlers['dose_handler'].resolution
 
-        # Run the computation function for all features in the feature map
-        features = map(compute_feature_value, (*self.feature_map,))
+        # Compute the features from the mapping
+        feature_vector = array(tuple(map(compute_feature, self.feature_map)))
 
-        # Convert the features into a shaped array
-        feature_vector = array((*features,)).reshape(1, -1)
+        # Add the feature vector to the history
+        self.feature_history.append(feature_vector)
 
-        # Check if the feature history should be written
-        if self._iteration[1] >= 1:
-
-            # Add the feature vector to the history
-            self.feature_history = vstack((
-                self.feature_history, feature_vector))
-
-        return feature_vector
+        return feature_vector.reshape(1, -1)
 
     def gradientize(
             self,
             dose,
             segment):
         """
-        Transform dose and segment information into the gradient matrix.
+        Convert dose and segment information into the dose Jacobian.
 
         Parameters
         ----------
@@ -442,98 +403,79 @@ class FeatureCalculator():
 
         Returns
         -------
-        csr_matrix
-            Gradient matrix.
+        ndarray
+            Dose Jacobian.
         """
 
-        def compute_feature_gradient(feature):
+        def compute_gradient(feature):
             """Compute a single gradient."""
 
-            def get_dosiomic_gradient(feature, segment):
-                """Get the gradient of a dosiomic feature."""
+            def get_dosiomic():
+                """Get the gradient for a dosiomic feature."""
 
-                # Get the inputs
-                dose = self.inputs['dose'][segment]
-                dose_cube = self.inputs['dose_cube'][segment]
-                indices = self.inputs['indices'][segment]
-                require_cube = self.inputs['require_cube']
-                require_spacing = self.inputs['require_spacing']
-                masks = self.inputs['masks'][segment]
-
-                # Get the gradient function
-                differentiate = self.feature_map[feature]['differentiation']
-
-                # Determine the number of input conditions fulfilled
-                boolean_sum = sum((
-                    any(label in self.feature_map[feature]['name']
-                        for label in require_cube),
-                    any(label in self.feature_map[feature]['name']
-                        for label in require_spacing)))
-
-                # Check if the boolean sum is zero
-                if boolean_sum == 0:
-
-                    # Compute the gradient vector
-                    return differentiate(dose, number_of_voxels, indices)
-
-                # Check if the boolean sum is one
-                if boolean_sum == 1:
-
-                    # Compute the gradient vector
-                    return differentiate(dose, dose_cube)[indices]
-
-                # Else, compute the gradient vector for the boolean sum of two
-                return differentiate(
-                    dose,
-                    dose_cube,
+                # Calculate the dose gradient
+                dose_gradient = mapping['differentiation'](
+                    self.inputs['dose'][mapping['segment']],
+                    self.inputs['dose_cube'][mapping['segment']],
                     fromiter(dose_resolution.values(), float),
-                    masks[1])[indices]
+                    self.inputs['masks'][mapping['segment']][1])
 
-            def get_radiomic_gradient(_, segment):
-                """Get the gradient of a radiomic feature."""
+                # Check if the feature is cube-based
+                if mapping['name'] in (
+                        'Dose Gradient', 'Dose Moment', 'Dose Subvolume'):
 
-                return zeros((len(self.inputs['indices'][segment]),))
+                    # Return the indexed dose gradient
+                    return dose_gradient[
+                        self.inputs['indices'][mapping['segment']]]
 
-            def get_static_gradient(_, __):
-                """Get the gradient of a static feature."""
+                return dose_gradient
+
+            def get_radiomic():
+                """Get the gradient for a radiomic feature."""
+
+                return zeros(
+                    (len(self.inputs['indices'][mapping['segment']]),))
+
+            def get_static():
+                """Get the gradient for a static feature."""
 
                 return zeros((0,))
 
-            # Map the feature types to the get functions
-            get_functions = {
-                'Dosiomics': get_dosiomic_gradient,
-                'Radiomics': get_radiomic_gradient,
-                'Statics': get_static_gradient}
+            # Map the feature classes to the calculation functions
+            functions = {
+                'Dosiomics': get_dosiomic,
+                'Radiomics': get_radiomic,
+                'Statics': get_static}
 
-            # Run the specific get function to retrieve the feature gradient
-            feature_gradient = (
-                get_functions[self.feature_map[feature]['class']](
-                    feature, self.feature_map[feature]['segment']))
+            # Get the feature-to-function mapping
+            mapping = self.feature_map[feature]
 
-            return pad(feature_gradient, self.inputs['paddings'][
-                self.feature_map[feature]['segment']])
+            # Compute the feature gradient
+            feature_gradient = functions[mapping['class']]()
 
-        # Get the information unit
+            return pad(
+                feature_gradient, self.inputs['paddings'][mapping['segment']])
+
+        # Get the dose resolution
         dose_resolution = self.handlers['dose_handler'].resolution
-        number_of_voxels = self.handlers['dose_handler'].number_of_voxels
 
         # Check if the dose has changed
         if not array_equal(dose, self._dose_cache):
 
-            # Precompute the input for the feature calculation
+            # Precompute the input quantities
             self.precompute(dose, segment)
 
             # Update the dose cache
             self._dose_cache = dose
 
-        # Run the computation function for all features in the feature map
-        gradients = map(compute_feature_gradient, (*self.feature_map,))
+        # Compute the gradients from the mapping
+        gradients = map(compute_gradient, self.feature_map)
 
         return vstack(tuple(gradients))
 
     def history_to_dict(self):
-        """Convert the feature history array to a dictionary."""
+        """Convert the feature history to a dictionary."""
 
-        # Convert the feature history to a dictionary
         self.feature_history = dict(zip(
-            (*self.feature_map,), (*self.feature_history[2:, :].transpose(),)))
+            (*self.feature_map,),
+            (*vstack(self.feature_history)[1:, :].transpose(),)))

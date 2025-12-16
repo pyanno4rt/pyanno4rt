@@ -52,7 +52,7 @@ class TabularPreprocessor():
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the preprocessor parameters from a dictionary."""
+        """Deserialize the preprocessor from a dictionary."""
 
     def fit(
             self,
@@ -184,7 +184,7 @@ class TabularPreprocessor():
             'steps': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=str),
-                partial(validate_item_in_set, options=tuple(maps.TRANSFORMERS))
+                partial(validate_item_in_set, options=(*maps.TRANSFORMERS,))
                 )
             }
 

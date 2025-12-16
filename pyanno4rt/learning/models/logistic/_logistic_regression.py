@@ -36,7 +36,7 @@ class LogisticRegression():
     label : str
         Label for the learning model.
 
-    dataset : None or object of class \
+    dataset : object of class \
         :class:`~pyanno4rt.learning.datasets._tabular_dataset.TabularDataset`,
         default=None
         The object used to represent the dataset.
@@ -71,7 +71,7 @@ class LogisticRegression():
     label : str
         See 'Parameters'.
 
-    dataset : None or object of class \
+    dataset : object of class \
         :class:`~pyanno4rt.learning.datasets._tabular_dataset.TabularDataset`
         See 'Parameters'.
 
@@ -107,7 +107,7 @@ class LogisticRegression():
     def __init__(
             self,
             label,
-            dataset=None,
+            dataset,
             preprocessor=None,
             tuner=None,
             inspector=None,
@@ -156,22 +156,22 @@ class LogisticRegression():
         self.predictor = skLogReg(**self.hyperparameters)
 
     def to_dict(self):
-        """Serialize the model into a dictionary."""
+        """Serialize the logistic regression model into a dictionary."""
 
     @classmethod
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the model parameters from a dictionary."""
+        """Deserialize the logistic regression model from a dictionary."""
 
     def load_data(self):
         """Load the dataset."""
 
-        # Check if a dataset object has been provided
-        if self.dataset is not None:
+        # Log a message about loading the dataset
+        get_logger().info("Loading dataset for '%s' ...", self.label)
 
-            # Generate the data
-            self.dataset.generate()
+        # Generate the data
+        self.dataset.generate()
 
     def fit_preprocessor(
             self,
@@ -200,7 +200,7 @@ class LogisticRegression():
             features,
             labels=None):
         """
-        Preprocess the dataset.
+        Preprocess the inputs.
 
         Parameters
         ----------
@@ -259,72 +259,6 @@ class LogisticRegression():
                 # Get the full hyperparameter set
                 self.get_random_hp(proposal)
 
-    def fit_predictor(
-            self,
-            features,
-            labels):
-        """
-        Fit the model.
-
-        Parameters
-        ----------
-        features : ndarray
-            Values of the input features.
-
-        labels : ndarray
-            Values of the input labels.
-        """
-
-        # Initialize the predictor
-        self.predictor = self.predictor.set_params(**self.hyperparameters)
-
-        # Fit the predictor
-        self.predictor.fit(features, labels)
-
-    def predict(
-            self,
-            features):
-        """
-        Predict the label values.
-
-        Parameters
-        ----------
-        features : ndarray
-            Values of the input features.
-
-        Returns
-        -------
-        float or ndarray
-            Value(s) of the predicted label(s).
-        """
-
-        # Check if the feature array has only a single row
-        if features.shape[0] == 1:
-
-            # Return a single label prediction value
-            return self.predictor.predict_proba(features)[0][1]
-
-        # Else, return an array with label predictions
-        return self.predictor.predict_proba(features)[:, 1]
-
-    def inspect(self):
-        """Inspect the model."""
-
-        # Check if an inspector has been provided
-        if self.inspector is not None:
-
-            # Run the model inspection
-            self.inspector.run()
-
-    def evaluate(self):
-        """Evaluate the model."""
-
-        # Check if an evaluator has been provided
-        if self.evaluator is not None:
-
-            # Run the model evaluation
-            self.evaluator.run()
-
     def get_bayes_hp(
             self,
             proposal):
@@ -380,6 +314,78 @@ class LogisticRegression():
             Proposal for the tunable hyperparameters.
         """
 
+    def fit_predictor(
+            self,
+            features,
+            labels):
+        """
+        Fit the model.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+        """
+
+        # Initialize the predictor
+        self.predictor = self.predictor.set_params(**self.hyperparameters)
+
+        # Fit the predictor
+        self.predictor.fit(features, labels)
+
+    def predict(
+            self,
+            features):
+        """
+        Predict the label values.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        Returns
+        -------
+        float or ndarray
+            Value(s) of the predicted label(s).
+        """
+
+        # Check if the feature array has only a single row
+        if features.shape[0] == 1:
+
+            # Return a single label prediction value
+            return self.predictor.predict_proba(features)[0][1]
+
+        # Else, return an array with label predictions
+        return self.predictor.predict_proba(features)[:, 1]
+
+    def inspect(self):
+        """Inspect the model."""
+
+        # Check if an inspector has been provided
+        if self.inspector is not None:
+
+            # Log a message about inspecting the model
+            get_logger().info("Inspecting model '%s' ...", self.label)
+
+            # Run the model inspection
+            self.inspector.run(deepcopy(self))
+
+    def evaluate(self):
+        """Evaluate the model."""
+
+        # Check if an evaluator has been provided
+        if self.evaluator is not None:
+
+            # Log a message about evaluating the model
+            get_logger().info("Evaluating model '%s' ...", self.label)
+
+            # Run the model evaluation
+            self.evaluator.run(deepcopy(self))
+
     def featurize(
             self,
             dose,
@@ -389,10 +395,10 @@ class LogisticRegression():
 
         Parameters
         ----------
-        dose : list
+        dose : tuple
             Dose vectors.
 
-        segment : list
+        segment : tuple
             Segment names.
 
         Returns
@@ -412,10 +418,10 @@ class LogisticRegression():
 
         Parameters
         ----------
-        dose : list
+        dose : tuple
             Dose vectors.
 
-        segment : list
+        segment : tuple
             Segment names.
 
         Returns

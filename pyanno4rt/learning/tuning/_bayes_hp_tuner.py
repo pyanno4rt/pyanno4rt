@@ -162,11 +162,14 @@ class BayesHPTuner():
 
             # Compute the objective function value (score) across all folds
             repeat_scores = (mean(map(compute_fold_score, (
-                (training_indices, validation_indices)
-                for training_indices, validation_indices in (
-                    (where(folds[:, index] != number),
-                     where(folds[:, index] == number))
-                    for number in set(folds[:, index]) if number != 0))))
+                ((training_indices, validation_indices)
+                 for training_indices, validation_indices in (
+                         (where(folds[:, index] != number),
+                          where(folds[:, index] == number))
+                         for number in set(folds[:, index])))
+                if len(set(folds[:, index])) > 2
+                else ((where(folds[:, index] != 1),
+                       where(folds[:, index] == 1)),))))
                 for index in range(folds.shape[1]))
 
             # Check if the first evaluation step has been passed
@@ -289,8 +292,7 @@ class BayesHPTuner():
         # Get the validation map
         validation_map = {
             'space': (
-                partial(validate_type, options=tuple(
-                    maps.TUNE_SPACES.values())),
+                partial(validate_type, options=(*maps.TUNE_SPACES.values(),)),
                 ),
             'evaluations': (
                 partial(validate_type, options=int),

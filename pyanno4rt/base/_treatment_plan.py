@@ -234,6 +234,12 @@ class TreatmentPlan():
                 # Fit the models
                 self.data_model_handler.fit_models()
 
+                # Inspect the models
+                self.data_model_handler.inspect_models()
+
+                # Evaluate the models
+                self.data_model_handler.evaluate_models()
+
                 # Set the state
                 self.state = 2
 
@@ -320,16 +326,16 @@ class TreatmentPlan():
                     dvh_type=self.evaluation.dvh_type,
                     number_of_points=self.evaluation.number_of_points)
 
-                # Compute the dose-volume histogram
-                self.dvh.evaluate_segments(
-                    self.patient_handler.segmentation,
-                    self.fluence_optimizer.optimized_dose)
-
                 # Initialize the dosimetrics
                 self.dosimetrics = Dosimetrics(
                     self.evaluation.reference_volumes,
                     self.evaluation.reference_doses,
                     self.configuration.number_of_fractions)
+
+                # Compute the dose-volume histogram
+                self.dvh.evaluate_segments(
+                    self.patient_handler.segmentation,
+                    self.fluence_optimizer.optimized_dose)
 
                 # Compute the dosimetrics
                 self.dosimetrics.evaluate_segments(
@@ -445,10 +451,6 @@ class TreatmentPlan():
                     # Overwrite the components in the plan handler
                     self.plan_handler.components = value
 
-                    # Update the components
-                    self.plan_handler.set_components(
-                        self.patient_handler.segmentation, verbose=False)
-
     def print_state(self):
         """Print the current state of the treatment plan."""
 
@@ -502,8 +504,7 @@ class TreatmentPlan():
             path,
             ignore_optimum=False):
         """
-        Load a treatment plan from a snapshot. See \
-        :func:`~pyanno4rt.tools._copycat.copycat` for details.
+        Load a treatment plan from a snapshot.
 
         Parameters
         ----------

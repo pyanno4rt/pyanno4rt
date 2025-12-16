@@ -274,6 +274,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Check if the feature iterations button should be disabled
         if (self.plan.state < 3 or
+            len(ml_components) == 0 or
             any(component.model.feature_calculator.feature_history is None
                 for component in ml_components)):
             self.open_feat_graph_pbutton.setEnabled(False)
@@ -406,29 +407,25 @@ class Visualizer(QMainWindow, Ui_visualization_window):
     def add_importance_boxplots(self):
         """."""
 
-        # Get the model inspections from the datahub
-        model_inspections = self.plan.datahub.model_inspections
-
         # Reset the importance boxplots
         self.perm_widget.reset_boxplots()
 
-        # Check if the plan has already been evaluated
-        if (model_inspections is not None
-                and len(model_inspections) > 0
-                and self.plan.state >= 2):
+        # Check if the plan has already been inspected
+        if (self.plan.state >= 2 and
+                len(self.plan.data_model_handler.models) > 0):
 
-            # Get the permutation importance data
+            #
             importances = {
-                key: value['permutation_importance']
-                for key, value in self.plan.datahub.model_inspections.items()
-                if 'permutation_importance' in value}
+                model.label: model.inspector.results['permutation_importances']
+                for model in self.plan.data_model_handler.models
+                if model is not None and model.inspector is not None}
 
             # Add the model names
             self.model_name_cbox.addItems(importances)
 
             # Get the number of features
             number_of_features = importances[
-                self.model_name_cbox.currentText()]['Training'].shape[1]
+                self.model_name_cbox.currentText()]['Single-run'].shape[1]
 
             # Set the initial range for the top-k features
             self.num_features_sbox.setRange(1, number_of_features)
@@ -753,7 +750,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         self.add_feature_tracks()
 
         # Add the permutation importance boxplots
-        # self.add_importance_boxplots()
+        self.add_importance_boxplots()
 
         # Add the CT/dose images
         self.add_images()

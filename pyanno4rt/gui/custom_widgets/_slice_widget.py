@@ -216,7 +216,7 @@ class SliceWidget(QWidget):
 
         #
         self.dose_cube = zoom(
-            plan.datahub.optimization['optimized_dose'], self.zooms, order=1)
+            plan.fluence_optimizer.optimized_dose, self.zooms, order=1)
 
         self.minimum, self.maximum = self.dose_cube.min(), self.dose_cube.max()
 

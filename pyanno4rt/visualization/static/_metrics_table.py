@@ -34,9 +34,6 @@ class MetricsTable():
     def view(self):
         """Open the metrics table."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
         def dict_to_dataframe(indicators, display_metrics):
             """Convert the indicator dictionaries into dataframe elements."""
 

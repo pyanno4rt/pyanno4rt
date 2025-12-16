@@ -275,14 +275,14 @@ class PermutationImportanceWidget(QWidget):
 
         # Initialize the statistics dictionary
         statistics = {
-            key: {'Training': None, 'Out-of-folds': None}
+            key: {'Single-run': None, 'Multi-run': None}
             for key in importances}
 
         # Loop over the importance results
         for key, value in importances.items():
 
             # Loop over the domains
-            for domain in ('Training', 'Out-of-folds'):
+            for domain in ('Single-run', 'Multi-run'):
 
                 # Calculate and sort the importance statistics
                 statistics[key][domain] = sorted((
@@ -291,14 +291,13 @@ class PermutationImportanceWidget(QWidget):
                         'mean', 'med', 'q1', 'q3', 'whislo', 'whishi',
                         'fliers')))
                     for feature, stats in zip(
-                            self.parent.plan.datahub.datasets[key][
-                                'feature_names'],
+                            importances[key]['feature_names'],
                             boxplot_stats(value[domain]))),
                     reverse=True, key=lambda x: x[1][0])
 
             # Add the number of features
             statistics[key]['number_of_features'] = len(
-                statistics[key]['Training'])
+                statistics[key]['Single-run'])
 
         return statistics
 

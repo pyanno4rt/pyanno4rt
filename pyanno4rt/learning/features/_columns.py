@@ -164,7 +164,7 @@ class DynamicFeature():
                 ),
             'function': (
                 partial(validate_type, options=str),
-                partial(validate_item_in_set, options=tuple(maps.FEATURES))
+                partial(validate_item_in_set, options=(*maps.FEATURES,))
                 ),
             'argument': argument_map[
                 inputs['function'] if inputs['function'] in (

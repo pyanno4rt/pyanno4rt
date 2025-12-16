@@ -7,7 +7,7 @@
 from time import time
 
 from functools import reduce
-from numpy import empty, union1d
+from numpy import union1d
 from scipy.ndimage import zoom
 
 # %% Internal package import
@@ -536,8 +536,7 @@ class FluenceOptimizer():
             feature_calculator = component.model.feature_calculator
 
             # Reset the feature history
-            feature_calculator.feature_history = empty(
-                shape=(1, len(feature_calculator.feature_map)))
+            feature_calculator.feature_history = []
 
     def log_outcome(self):
         """Log the outcome model-based component results."""

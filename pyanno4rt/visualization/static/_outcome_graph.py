@@ -6,14 +6,13 @@
 
 from itertools import islice, cycle
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import ceil, divide, linspace, multiply
+from numpy import ceil, linspace, multiply
 
 # %% Internal package import
 
 from pyanno4rt.tools import (
-    filter_dict, get_machine_learning_constraints,
-    get_machine_learning_objectives, get_radiobiological_constraints,
-    get_radiobiological_objectives)
+    filter_dict, get_machine_learning_components,
+    get_radiobiological_components)
 
 # %% Class definition
 
@@ -139,23 +138,18 @@ class OutcomeGraph():
         # Set the value for the track identifiers
         identifiers = [] if identifiers is None else identifiers
 
-        # Get the segmentation and optimization data
-        segmentation, optimization = (
-            getattr(treatment_plan.datahub, attribute) for attribute in (
-                'segmentation', 'optimization'))
-
         # Get the outcome model-based optimization components
         components = (
-            get_machine_learning_constraints(segmentation)
-            + get_machine_learning_objectives(segmentation)
-            + get_radiobiological_constraints(segmentation)
-            + get_radiobiological_objectives(segmentation))
+            get_machine_learning_components(
+                treatment_plan.plan_handler.components)
+            + get_radiobiological_components(
+                treatment_plan.plan_handler.components))
 
-        # Get the tracks to be displayed
+        # Convert the tracks to outcome values
         tracker = {
             component.track_id: component.translate(
-                optimization['problem'].tracker[component.track_id])
-            for component in components if component.display}
+                treatment_plan.fluence_optimizer.problem.tracker[component.track_id])
+            for component in components}
 
         # Get the track statistics
         track_len = max(len(track) for track in tracker.values())
