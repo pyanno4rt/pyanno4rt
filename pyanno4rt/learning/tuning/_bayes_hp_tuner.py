@@ -6,6 +6,7 @@
 
 from statistics import mean
 
+from copy import deepcopy
 from functools import partial
 from hyperopt import fmin, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
 from numpy import where, zeros
@@ -60,13 +61,40 @@ class BayesHPTuner():
         self._step = None
 
     def to_dict(self):
-        """Serialize the model into a dictionary."""
+        """Serialize the tuner into a dictionary."""
+
+        # Get the parameter dictionary
+        dictionary = deepcopy(self.inputs)
+
+        # Serialize the space
+        dictionary['space'] = self.space.to_dict()
+
+        return {'Bayes': dictionary}
 
     @classmethod
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the model parameters from a dictionary."""
+        """
+        Deserialize the tuner from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the tuner parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.tuning._bayes_hp_tuner.BayesHPTuner`
+            The object used to represent the tuner.
+        """
+
+        # Deserialize the tune space
+        dictionary['space'] = maps.TUNE_SPACES['Logistic Regression'](
+            **dictionary['space'])
+
+        return cls(**dictionary)
 
     def search(
             self,

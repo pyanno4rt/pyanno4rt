@@ -91,21 +91,14 @@ class DataModelHandler():
             # Load the model data
             model.load_data()
 
-    def add_calculators(self):
-        """Add the feature calculators to the models."""
+    def set_calculators(self):
+        """Set the feature calculators for the models."""
 
         # Loop over the models
         for model in self.models:
 
-            # Log a message about setting up the feature calculator
-            get_logger().info(
-                "Adding feature calculator for '%s' ...", model.label)
-
-            # Initialize the feature calculator
-            model.feature_calculator = FeatureCalculator(self.handlers)
-
-            # Add the feature map
-            model.feature_calculator.set_mapping(model.dataset.feature_map)
+            # Add the feature calculator
+            model.add_calculator(FeatureCalculator(self.handlers))
 
     def fit_models(self):
         """Fit the models."""

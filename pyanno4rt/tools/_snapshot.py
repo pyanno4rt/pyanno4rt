@@ -47,44 +47,35 @@ def snapshot(
         Indicator for the storage of the optimized fluence array.
     """
 
-    # def export_model_files(data):
-    #     """Export the machine learning model data files."""
+    def export_model_files(model):
+        """Export the machine learning model data files."""
 
-    #     # Get the model folder path
-    #     model_path = f'{snap_path}/{data[0]}'
+        # Get the model folder path
+        path = f'{snap_path}/{model.label}'
 
-    #     # Check if the path does not yet exist
-    #     if not exists(model_path):
+        # Check if the path does not yet exist
+        if not exists(path):
 
-    #         # Create a new folder
-    #         mkdir(model_path)
+            # Create a new folder
+            mkdir(path)
 
-    #     # Get the model object
-    #     model = data[1]
+        # Save the model
+        model.save(path)
 
-    #     # Set the file paths
-    #     model.set_file_paths(model_path)
+        # Export the configuration file
+        # model.export_configuration(include_model_data)
 
-    #     # Export the configuration file
-    #     model.export_configuration(include_model_data)
+        # Export the hyperparameter file
+        # model.export_hyperparameters()
 
-    #     # Export the hyperparameter file
-    #     model.export_hyperparameters()
+        # Check if the model data should be included and is not None
+        if include_model_data:
 
-    #     # Export the prediction model file
-    #     model.export_model()
+            # Get the file extension
+            _, extension = splitext(model.dataset.path)
 
-    #     # Export the preprocessor file
-    #     model.export_preprocessor()
-
-    #     # Check if the model data should be included and is not None
-    #     if include_model_data and data[2] is not None:
-
-    #         # Get the file extension
-    #         _, extension = splitext(data[2])
-
-    #         # Copy the model data into a file
-    #         copy(data[2], f'{model_path}/model_data{extension}')
+            # Copy the model data into a file
+            copy(model.dataset.path, f'{path}/dataset{extension}')
 
     # Get the snapshot folder path
     snap_path = abspath(f'{path}/{instance.configuration.label}')
@@ -144,12 +135,10 @@ def snapshot(
         save(f'{snap_path}/optimized_fluence.npy',
              instance.fluence_optimizer.optimized_fluence)
 
-    # # Get the machine learning model data
-    # ml_model_data = tuple((
-    #     component.model.model_label, component.model,
-    #     component.model_parameters.data_path)
-    #     for component in get_machine_learning_components(
-    #             instance.plan_handler.components))
+    # Get the machine learning models
+    models = tuple(
+        component.model for component in get_machine_learning_components(
+            instance.plan_handler.components))
 
-    # # Export the machine learning model files
-    # apply(export_model_files, ml_model_data)
+    # Export the machine learning model files
+    apply(export_model_files, models)

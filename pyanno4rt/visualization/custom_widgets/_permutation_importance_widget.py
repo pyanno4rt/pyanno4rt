@@ -275,14 +275,14 @@ class PermutationImportanceWidget(QWidget):
 
         # Initialize the statistics dictionary
         statistics = {
-            key: {'Single-run': None, 'Multi-run': None}
+            key: {'Full': None, 'Cross-validated': None}
             for key in importances}
 
         # Loop over the importance results
         for key, value in importances.items():
 
             # Loop over the domains
-            for domain in ('Single-run', 'Multi-run'):
+            for domain in statistics[key]:
 
                 # Calculate and sort the importance statistics
                 statistics[key][domain] = sorted((
@@ -297,7 +297,7 @@ class PermutationImportanceWidget(QWidget):
 
             # Add the number of features
             statistics[key]['number_of_features'] = len(
-                statistics[key]['Single-run'])
+                statistics[key]['Full'])
 
         return statistics
 

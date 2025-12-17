@@ -121,7 +121,7 @@ class PermutationImportanceBoxplot():
         model_name : str
             Identifier for the outcome model.
 
-        domain : {'Single-run', 'Multi-run'}
+        domain : {'Full', 'Cross-validated'}
             Domain of the permutation importance statistics.
 
         number_of_features : int

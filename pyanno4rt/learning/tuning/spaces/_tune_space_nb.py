@@ -73,7 +73,7 @@ class TuneSpaceNB():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return vars(self)
+        return {'Naive Bayes': vars(self)}
 
     @classmethod
     def from_dict(

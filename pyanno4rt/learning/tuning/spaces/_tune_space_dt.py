@@ -130,7 +130,7 @@ class TuneSpaceDT():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return vars(self)
+        return {'Decision Tree': vars(self)}
 
     @classmethod
     def from_dict(

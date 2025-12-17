@@ -9,11 +9,6 @@ from matplotlib.pyplot import cm, get_current_fig_manager, subplots
 from numpy import full
 from pandas import DataFrame
 
-# %% Internal package import
-
-from pyanno4rt.tools import (
-    get_machine_learning_constraints, get_machine_learning_objectives)
-
 # %% Set options
 
 try:
@@ -31,17 +26,17 @@ class MetricsTable():
     This class provides a metrics table for the data-driven models.
     """
 
-    def view(self):
+    def view(
+            self,
+            treatment_plan,
+            model_name):
         """Open the metrics table."""
 
-        def dict_to_dataframe(indicators, display_metrics):
-            """Convert the indicator dictionaries into dataframe elements."""
+        def dict_to_dataframe(indicators):
+            """Convert the indicator dictionary into a dataframe."""
 
-            # Get the dataframes
-            dataframes = tuple(
-                DataFrame(subdict).transpose().astype(float)[
-                    display_metrics[index]]
-                for index, subdict in enumerate(indicators))
+            # Get the dataframe
+            dataframe = DataFrame(indicators).transpose().astype(float)
 
             # Map the up- and downarrows to the metrics
             arrows = {
@@ -57,69 +52,56 @@ class MetricsTable():
                 'MCC': r'$\uparrow$',
                 'AUC': r'$\uparrow$'}
 
-            # Loop over the dataframes
-            for dataframe in dataframes:
+            # Modify the column names
+            dataframe.columns = [
+                r'{}{}'.format(el[0], el[1]) for el in zip(
+                    dataframe.columns,
+                    tuple(arrows[column] for column in dataframe.columns))]
 
-                # Modify the column names
-                dataframe.columns = [
-                    r'{}{}'.format(el[0], el[1]) for el in zip(
-                        dataframe.columns,
-                        tuple(arrows[column] for column in dataframe.columns))]
-
-            return tuple((
+            return (
                 dataframe.values.round(4), dataframe.index, dataframe.columns)
-                for dataframe in dataframes)
 
-        # Get the evaluation data
-        data = tuple((
-            key, value['kpi'],
-            hub.model_instances[key]['display_options'].kpis)
-            for key, value in hub.model_evaluations.items()
-            if any(component.model_parameters.model_label == key
-                   for component in (
-                           get_machine_learning_constraints(hub.segmentation)
-                           + get_machine_learning_objectives(hub.segmentation)
-                           )))
+        # Get the model
+        model = next((
+            model for model in treatment_plan.data_model_handler.models
+            if model.label == model_name), None)
 
-        # Unzip the data into separate elements
-        model_names, indicators, display_metrics = tuple(zip(*data))
+        # Get the KPI data
+        indicators = model.evaluator.results['kpi']
 
-        # Convert the indicator dictionaries into dataframes
-        dataframes = dict_to_dataframe(indicators, display_metrics)
+        # Convert the indicator dictionary into a dataframe
+        dataframe = dict_to_dataframe(indicators)
 
         # Create a figure and subplots
         figure, axis = subplots(
-            nrows=len(dataframes), ncols=1, figsize=(14, 8), squeeze=False)
+            nrows=1, ncols=1, figsize=(14, 8), squeeze=False)
 
         # Set the figure patch to invisible
         figure.patch.set_visible(False)
 
-        # Loop over the number of dataframes
-        for i, _ in enumerate(dataframes):
+        # Disable the plot axis
+        axis[0, 0].axis('off')
 
-            # Disable the plot axis
-            axis[i, 0].axis('off')
+        # Specify the row and column header colors
+        row_colors = cm.BuPu(full(len(dataframe[1]), 0.1))
+        column_colors = cm.BuPu(full(len((*dataframe[2],)), 0.1))
 
-            # Specify the row and column header colors
-            row_colors = cm.BuPu(full(len(dataframes[i][1]), 0.1))
-            column_colors = cm.BuPu(full(len((*dataframes[i][2],)), 0.1))
+        # Set the title for the table
+        axis[0, 0].set_title(model.label, fontweight='semibold', pad=10)
 
-            # Set the title for the table
-            axis[i, 0].set_title(model_names[i], fontweight='semibold', pad=10)
+        # Generate the table from the dataframe
+        table = axis[0, 0].table(
+            cellText=dataframe[0],
+            cellLoc='center',
+            rowLabels=dataframe[1],
+            colLabels=dataframe[2],
+            rowColours=row_colors,
+            colColours=column_colors,
+            loc='center')
 
-            # Generate the table from the dataframe
-            table = axis[i, 0].table(
-                cellText=dataframes[i][0],
-                cellLoc='center',
-                rowLabels=dataframes[i][1],
-                colLabels=dataframes[i][2],
-                rowColours=row_colors,
-                colColours=column_colors,
-                loc='center')
-
-            # Set the font size manually
-            table.auto_set_font_size(False)
-            table.set_fontsize(8)
+        # Set the font size manually
+        table.auto_set_font_size(False)
+        table.set_fontsize(8)
 
         # Apply a tight layout
         figure.tight_layout()
@@ -128,7 +110,7 @@ class MetricsTable():
         figure_manager = get_current_fig_manager()
 
         # Set the window title
-        figure_manager.set_window_title("pyanno4rt - metrics table")
+        figure_manager.set_window_title("Metrics Table")
 
         # Show the full-screen plot
         figure_manager.window.showMaximized()

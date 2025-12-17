@@ -454,7 +454,8 @@ class FeatureCalculator():
             feature_gradient = functions[mapping['class']]()
 
             return pad(
-                feature_gradient, self.inputs['paddings'][mapping['segment']])
+                feature_gradient,
+                self.inputs['paddings'][mapping.get('segment')])
 
         # Get the dose resolution
         dose_resolution = self.handlers['dose_handler'].resolution

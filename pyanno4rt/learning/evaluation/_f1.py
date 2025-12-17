@@ -24,13 +24,12 @@ def f1(true_labels, predicted_labels):
         Ground truth label values.
 
     predicted_labels : tuple
-        Tuple of arrays with the training and out-of-folds labels predicted \
-        by the machine learning model.
+        Arrays with the predicted full data and out-of-folds labels.
 
     Returns
     -------
     scores : dict
-        Dictionary with the training and out-of-folds F1 scores and the \
+        Dictionary with the full data and out-of-folds F1 scores and the \
         location of the best score.
     """
 
@@ -38,22 +37,24 @@ def f1(true_labels, predicted_labels):
     get_logger().info("Computing F1 scores ...")
 
     # Initialize the F1 scores dictionary
-    scores = {'Training': {'values': None, 'best': None},
-              'Out-of-folds': {'values': None, 'best': None}}
+    scores = {
+        'Full': {'values': None, 'best': None},
+        'Cross-validated': {'values': None, 'best': None}}
 
-    # Loop over the enumerated dictionary keys
-    for i, source in enumerate(scores):
+    # Loop over the dictionary elements
+    for index, source in enumerate(scores):
 
-        # Get the threshold values from the precision-recall curve
+        # Get the thresholds from the PR curve
         _, _, thresholds = precision_recall_curve(
-            true_labels, predicted_labels[i])
+            true_labels, predicted_labels[index])
 
-        # Enter the F1 values into the dictionary
+        # Store the F1 values
         scores[source]['values'] = Series(
-            {threshold: f1_score(true_labels, predicted_labels[i] > threshold)
+            {threshold: f1_score(
+                true_labels, predicted_labels[index] > threshold)
              for threshold in thresholds})
 
-        # Enter the maximum F1 value index into the dictionary
+        # Store the location of the maximum F1 value
         scores[source]['best'] = scores[source]['values'].idxmax()
 
     return scores

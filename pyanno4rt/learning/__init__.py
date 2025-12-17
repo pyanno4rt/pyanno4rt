@@ -10,7 +10,8 @@ preprocessing, model fitting, inspection & evaluation.
 # Author: Tim Ortkamp
 
 from . import (
-    datasets, evaluation, features, inspection, models, preprocessing, tuning)
+    datasets, evaluation, features, inspection, losses, models, preprocessing,
+    tuning)
 
 from ._data_model_handler import DataModelHandler
 
@@ -19,6 +20,7 @@ __all__ = [
     'evaluation',
     'features',
     'inspection',
+    'losses',
     'models',
     'preprocessing',
     'tuning',

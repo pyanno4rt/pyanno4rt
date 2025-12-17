@@ -17,7 +17,6 @@ from pyanno4rt.learning.features import (
     SegmentEccentricity, SegmentEigenmax, SegmentEigenmid, SegmentEigenmin,
     SegmentEigenvalues, SegmentSphericity, SegmentVolume)
 from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
-from pyanno4rt.learning.inspection import permutation_importances
 from pyanno4rt.learning.losses import auc_loss, brier_loss, log_loss
 from pyanno4rt.learning.preprocessing import StandardScaler, Whitening
 from pyanno4rt.learning.tuning import (
@@ -58,9 +57,6 @@ FEATURES = {
     'Segment Sphericity': SegmentSphericity,
     'Segment Volume': SegmentVolume}
 
-INSPECTIONS = {
-    'permutation_importances': permutation_importances}
-
 LOSSES = {
     'AUC': auc_loss,
     'Brier score': brier_loss,
@@ -93,4 +89,3 @@ TUNE_SPACES = {
 TRANSFORMERS = {
     'StandardScaler': StandardScaler,
     'Whitening': Whitening}
-

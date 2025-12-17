@@ -27,72 +27,79 @@ def kpi(true_labels, predicted_labels, thresholds=(0.5, 0.5)):
         Ground truth label values.
 
     predicted_labels : tuple
-        Tuple of arrays with the training and out-of-folds labels predicted \
-        by the machine learning model.
+        Arrays with the predicted full data and out-of-folds labels.
 
     thresholds : tuple, default=(0.5, 0.5)
-        Probability thresholds for the binarization of the probability \
-        predictions.
+        Probability thresholds for binarization.
 
     Returns
     -------
     scores : dict
-        Dictionary with the training and out-of-folds KPIs.
+        Dictionary with the full data and out-of-folds KPIs.
     """
 
     # Log a message about the KPI computation
     get_logger().info("Computing KPIs ...")
 
-    # Binarize the predicted labels
-    binaries = tuple(
-        label >= thresholds[i] if thresholds[i] == 1 else label > thresholds[i]
-        for i, label in enumerate(predicted_labels))
-
     # Initialize the KPI dictionary
-    scores = {source: {kpi: None for kpi in (
-        'Logloss', 'Brier score', 'Subset accuracy', 'Cohen Kappa',
-        'Hamming loss', 'Jaccard score', 'Precision', 'Recall', 'F1 score',
-        'MCC', 'AUC')} for source in ('Training', 'Out-of-folds')}
+    scores = {
+        source: {
+            kpi: None for kpi in (
+                'Logloss', 'Brier score', 'Subset accuracy', 'Cohen Kappa',
+                'Hamming loss', 'Jaccard score', 'Precision', 'Recall',
+                'F1 score', 'MCC', 'AUC')
+            }
+        for source in ('Full', 'Cross-validated')}
 
-    # Loop over the enumerated dictionary keys
-    for i, source in enumerate(scores):
+    # Binarize the predicted labels
+    binarized = tuple(
+        labels >= thresholds[index] if thresholds[index] == 1
+        else labels > thresholds[index]
+        for index, labels in enumerate(predicted_labels))
+
+    # Loop over the dictionary elements
+    for index, source in enumerate(scores):
 
         # Compute the log loss
         scores[source]['Logloss'] = binary_crossentropy(
-            true_labels, predicted_labels[i]).numpy().mean()
+            true_labels, predicted_labels[index]).numpy().mean()
 
         # Compute the Brier score
         scores[source]['Brier score'] = brier_score_loss(
-            true_labels, predicted_labels[i])
+            true_labels, predicted_labels[index])
 
         # Compute the (subset) accuracy
         scores[source]['Subset accuracy'] = accuracy_score(
-            true_labels, binaries[i])
+            true_labels, binarized[index])
 
         # Compute Cohen's Kappa
         scores[source]['Cohen Kappa'] = cohen_kappa_score(
-            true_labels, binaries[i])
+            true_labels, binarized[index])
 
         # Compute the Hamming loss
-        scores[source]['Hamming loss'] = hamming_loss(true_labels, binaries[i])
+        scores[source]['Hamming loss'] = hamming_loss(
+            true_labels, binarized[index])
 
         # Compute the Jaccard score
         scores[source]['Jaccard score'] = jaccard_score(
-            true_labels, binaries[i])
+            true_labels, binarized[index])
 
         # Compute the precision score
-        scores[source]['Precision'] = precision_score(true_labels, binaries[i])
+        scores[source]['Precision'] = precision_score(
+            true_labels, binarized[index])
 
         # Compute the recall score
-        scores[source]['Recall'] = recall_score(true_labels, binaries[i])
+        scores[source]['Recall'] = recall_score(true_labels, binarized[index])
 
         # Compute the F1 score
-        scores[source]['F1 score'] = f1_score(true_labels, binaries[i])
+        scores[source]['F1 score'] = f1_score(true_labels, binarized[index])
 
         # Compute the Matthews correlation
-        scores[source]['MCC'] = matthews_corrcoef(true_labels, binaries[i])
+        scores[source]['MCC'] = matthews_corrcoef(
+            true_labels, binarized[index])
 
         # Compute the AUC score
-        scores[source]['AUC'] = roc_auc_score(true_labels, predicted_labels[i])
+        scores[source]['AUC'] = roc_auc_score(
+            true_labels, predicted_labels[index])
 
     return scores

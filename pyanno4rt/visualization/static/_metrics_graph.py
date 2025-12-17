@@ -31,11 +31,11 @@ class MetricsGraph():
     This class provides a metrics graph for the data-driven models.
     """
 
-    def view(self):
+    def view(
+            self,
+            treatment_plan,
+            model_name):
         """Open the metrics graph."""
-
-        # Initialize the datahub
-        hub = Datahub()
 
         def create_subtitle(figure, grid, title):
             """Create a row subtitle."""
@@ -52,137 +52,101 @@ class MetricsGraph():
             # Hide the axis
             row.axis('off')
 
-        # Get the evaluation metrics data
-        data = tuple((
-            key, value['auc_pr'], value['auc_roc'], value['f1'])
-            for key, value in hub.model_evaluations.items()
-            if any(component.model_parameters.model_label == key
-                   for component in (
-                       get_machine_learning_constraints(hub.segmentation)
-                       + get_machine_learning_objectives(hub.segmentation))))
+        # Get the model
+        model = next((
+            model for model in treatment_plan.data_model_handler.models
+            if model.label == model_name), None)
 
-        # Unzip the data into the separate elements
-        evaluated_models, auc_prs, auc_rocs, f1s = tuple(zip(*data))
+        # Get the evaluation metrics data
+        data = model.evaluator.results
 
         # Specify the evaluation modes
-        modes = ('Training', 'Out-of-folds')
+        modes = ('Full', 'Cross-validated')
 
-        # Get the number of graphs per model
-        number_of_graphs = tuple(
-            len(hub.model_instances[model_label]['display_options'].graphs)
-            for model_label in hub.model_instances)
+        # Create a figure and subplots
+        figure, axis = subplots(
+            nrows=2, ncols=3, figsize=(8, 11), squeeze=False)
 
-        # Loop over the number of evaluation subsets
-        for i, _ in enumerate(evaluated_models):
+        # Initialize the row number and the grid layout object
+        row_number = 0
+        grid = GridSpec(2, 3)
 
-            # Create a figure and subplots
-            figure, axis = subplots(
-                nrows=2, ncols=number_of_graphs[i], figsize=(8, 11),
-                squeeze=False)
+        # Loop over the number of modes
+        for j, _ in enumerate(modes):
 
-            # Initialize the row number and the grid layout object
-            row_number = 0
-            grid = GridSpec(2, number_of_graphs[i])
+            # Plot the AUC-ROC points
+            scatterplot(
+                x="False Positive Rate", y="True Positive Rate",
+                data=data['auc_roc'][modes[j]]['curve'], s=50,
+                legend=False, ax=axis[row_number, 0])
 
-            # Loop over the number of modes
-            for j, _ in enumerate(modes):
+            # Add the interpolation line to the AUC-ROC plot
+            axis[row_number, 0].plot(
+                "False Positive Rate", "True Positive Rate",
+                data=data['auc_roc'][modes[j]]['curve'], lw=1, color='k')
 
-                # Initialize the column number
-                column_number = 0
+            # Add the diagonal line to the AUC-ROC plot
+            axis[row_number, 0].plot(
+                linspace(0, 1, 100), linspace(0, 1, 100), color='k',
+                ls='--', lw=1)
 
-                # Check if the AUC-ROC scores should be displayed
-                if 'AUC-ROC' in hub.model_instances[evaluated_models[i]][
-                        'display_options'].graphs:
+            # Fill the region under the interpolation line
+            axis[row_number, 0].fill_between(
+                y1=data['auc_roc'][modes[j]]['curve']['True Positive Rate'],
+                x=data['auc_roc'][modes[j]]['curve']['False Positive Rate'],
+                alpha=.3, color='red')
 
-                    # Plot the AUC-ROC points
-                    scatterplot(
-                        x="False Positive Rate", y="True Positive Rate",
-                        data=auc_rocs[i][modes[j]]['curve'], s=50,
-                        legend=False, ax=axis[row_number, column_number])
+            # Set the plot title
+            axis[row_number, 0].set_title(
+                "Receiver Operating Characteristic", fontsize=11)
 
-                    # Add the interpolation line to the AUC-ROC plot
-                    axis[row_number, column_number].plot(
-                        "False Positive Rate", "True Positive Rate",
-                        data=auc_rocs[i][modes[j]]['curve'], lw=1, color='k')
+            # Add the AUC-ROC value to the plot
+            axis[row_number, 0].annotate(
+                r"AUC$=$"f'{round(data["auc_roc"][modes[j]]["value"], 4)}',
+                xy=(0.82, 0.03), fontsize=8)
 
-                    # Add the diagonal line to the AUC-ROC plot
-                    axis[row_number, column_number].plot(
-                        linspace(0, 1, 100), linspace(0, 1, 100), color='k',
-                        ls='--', lw=1)
+            # Add the plot grid
+            axis[row_number, 0].grid()
 
-                    # Fill the region under the interpolation line
-                    axis[row_number, column_number].fill_between(
-                        y1=auc_rocs[i][modes[j]]['curve']['True Positive Rate'],
-                        x=auc_rocs[i][modes[j]]['curve']['False Positive Rate'],
-                        alpha=.3, color='red')
+            # Plot the AUC-PR line
+            lineplot(
+                x="Recall", y="Precision", data=data['auc_pr'][modes[j]],
+                ax=axis[row_number, 1])
 
-                    # Set the plot title
-                    axis[row_number, column_number].set_title(
-                        "Receiver Operating Characteristic", fontsize=11)
+            # Set the limits for the y-axis
+            axis[row_number, 1].set_ylim(0, 1)
 
-                    # Add the AUC-ROC value to the plot
-                    axis[row_number, column_number].annotate(
-                        r"AUC$=$"f'{round(auc_rocs[i][modes[j]]["value"], 4)}',
-                        xy=(0.82, 0.03), fontsize=8)
+            # Set the plot title
+            axis[row_number, 1].set_title(
+                "Precision-Recall Curve", fontsize=11)
 
-                    # Add the plot grid
-                    axis[row_number, column_number].grid()
+            # Add the plot grid
+            axis[row_number, 1].grid()
 
-                    # Increment the column number
-                    column_number += 1
+            # Plot the F1 line
+            data['f1'][modes[j]]['values'].plot(
+                ax=axis[row_number, 2], ylim=(0, 1))
 
-                # Check if the AUC-PR scores should be displayed
-                if 'AUC-PR' in hub.model_instances[evaluated_models[i]][
-                        'display_options'].graphs:
+            # Set the labels for x- and y-axis
+            axis[row_number, 2].set_xlabel("Threshold")
+            axis[row_number, 2].set_ylabel("F1 Score")
 
-                    # Plot the AUC-PR line
-                    lineplot(
-                        x="Recall", y="Precision", data=auc_prs[i][modes[j]],
-                        ax=axis[row_number, column_number])
+            # Set the plot title
+            axis[row_number, 2].set_title("F1 Curve", fontsize=11)
 
-                    # Set the limits for the y-axis
-                    axis[row_number, column_number].set_ylim(0, 1)
+            # Add a vertical line to indicate the best F1 position
+            axis[row_number, 2].axvline(
+                data['f1'][modes[j]]['best'], lw=1, ls='--', color='k')
 
-                    # Set the plot title
-                    axis[row_number, column_number].set_title(
-                        "Precision-Recall Curve", fontsize=11)
+            # Add the plot grid
+            axis[row_number, 2].grid()
 
-                    # Add the plot grid
-                    axis[row_number, column_number].grid()
+            # Create the subtitle for the plot row
+            create_subtitle(
+                figure, grid[row_number, ::], f'{model.label} ({modes[j]})')
 
-                    # Increment the column number
-                    column_number += 1
-
-                # Check if the ROC scores should be displayed
-                if 'F1' in hub.model_instances[evaluated_models[i]][
-                        'display_options'].graphs:
-
-                    # Plot the F1 line
-                    f1s[i][modes[j]]['values'].plot(
-                        ax=axis[row_number, column_number], ylim=(0, 1))
-
-                    # Set the labels for x- and y-axis
-                    axis[row_number, column_number].set_xlabel("Threshold")
-                    axis[row_number, column_number].set_ylabel("F1 Score")
-
-                    # Set the plot title
-                    axis[row_number, column_number].set_title(
-                        "F1 Curve", fontsize=11)
-
-                    # Add a vertical line to indicate the best F1 position
-                    axis[row_number, column_number].axvline(
-                        f1s[i][modes[j]]['best'], lw=1, ls='--', color='k')
-
-                    # Add the plot grid
-                    axis[row_number, column_number].grid()
-
-                # Create the subtitle for the plot row
-                create_subtitle(
-                    figure, grid[row_number, ::],
-                    f'{evaluated_models[i]} ({modes[j]})')
-
-                # Increment the row number
-                row_number += 1
+            # Increment the row number
+            row_number += 1
 
             # Apply a tight layout
             figure.tight_layout()
@@ -191,7 +155,7 @@ class MetricsGraph():
             figure_manager = get_current_fig_manager()
 
             # Set the window title
-            figure_manager.set_window_title("pyanno4rt - metrics graph")
+            figure_manager.set_window_title("Metrics Graphs")
 
             # Show the full-screen plot
             figure_manager.window.showMaximized()

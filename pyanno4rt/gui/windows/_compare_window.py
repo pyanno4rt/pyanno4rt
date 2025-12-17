@@ -5,7 +5,7 @@
 # %% External package import
 
 from matplotlib.pyplot import get_cmap, get_current_fig_manager, subplots
-from numpy import ceil, divide, linspace, multiply
+from numpy import ceil, linspace, multiply
 from PyQt5.QtWidgets import QMainWindow
 from pyqtgraph import mkPen
 
@@ -17,9 +17,8 @@ from pyanno4rt.gui.compilations.compare_window import Ui_compare_window
 from pyanno4rt.gui.custom_widgets import (
     DVHGraphCompareWidget, SliceCompareWidget)
 from pyanno4rt.tools import (
-    get_constraint_segments, get_objective_segments,
-    get_machine_learning_constraints, get_machine_learning_objectives,
-    get_radiobiological_constraints, get_radiobiological_objectives)
+    get_all_segments, get_machine_learning_components,
+    get_radiobiological_components)
 
 # %% Class definition
 
@@ -211,11 +210,11 @@ class CompareWindow(QMainWindow, Ui_compare_window):
 
         # Get the joint minimum and maximum dose
         minimum = min(
-            baseline.datahub.optimization['optimized_dose'].min(),
-            reference.datahub.optimization['optimized_dose'].min())
+            baseline.fluence_optimizer.optimized_dose.min(),
+            reference.fluence_optimizer.optimized_dose.min())
         maximum = max(
-            baseline.datahub.optimization['optimized_dose'].max(),
-            reference.datahub.optimization['optimized_dose'].max())
+            baseline.fluence_optimizer.optimized_dose.max(),
+            reference.fluence_optimizer.optimized_dose.max())
 
         #
         self.baseline_dose_slice_widget.add_image_data(
@@ -246,8 +245,8 @@ class CompareWindow(QMainWindow, Ui_compare_window):
         dvh = DVH(dvh_type='cumulative', number_of_points=1000)
         dvh.evaluate_segments(
             baseline.patient_handler.segmentation,
-            baseline.datahub.optimization['optimized_dose']
-            - reference.datahub.optimization['optimized_dose'])
+            baseline.fluence_optimizer.optimized_dose
+            - reference.fluence_optimizer.optimized_dose)
         dvh_diff = dvh.histogram
 
         #
@@ -276,13 +275,11 @@ class CompareWindow(QMainWindow, Ui_compare_window):
 
         # Check if any of the plans has no ML components
         if any(len(
-                get_machine_learning_constraints(segmentation)
-                + get_machine_learning_objectives(segmentation)
-                + get_radiobiological_constraints(segmentation)
-                + get_radiobiological_objectives(segmentation)) == 0
-                for segmentation in (
-                        self.baseline.patient_handler.segmentation,
-                        self.reference.patient_handler.segmentation)):
+                get_machine_learning_components(components)
+                + get_radiobiological_components(components)) == 0
+                for components in (
+                        self.baseline.plan_handler.components,
+                        self.reference.plan_handler.components)):
 
             # Disable the button
             self.joint_outcome_pbutton.setEnabled(False)
@@ -428,9 +425,9 @@ class CompareWindow(QMainWindow, Ui_compare_window):
     def open_joint_dvh(self):
         """Open the joint DVH graph."""
 
-        # Get the segmentation dictionaries
-        baseline_segmentation = self.baseline.patient_handler.segmentation
-        reference_segmentation = self.reference.patient_handler.segmentation
+        # Get the components
+        baseline_components = self.baseline.plan_handler.components
+        reference_components = self.reference.plan_handler.components
 
         # Get the dose histogram dictionaries
         baseline_dvh = self.baseline.dvh.histogram
@@ -438,10 +435,8 @@ class CompareWindow(QMainWindow, Ui_compare_window):
 
         # Get the segments to be displayed
         segments = sorted(
-            set(get_constraint_segments(baseline_segmentation)
-                + get_objective_segments(baseline_segmentation)) &
-            set(get_constraint_segments(reference_segmentation)
-                + get_objective_segments(reference_segmentation)))
+            set(get_all_segments(baseline_components)) &
+            set(get_all_segments(reference_components)))
 
         # Get the colormap
         colors = get_cmap('tab20b')(linspace(0, 1.0, len(segments)))
@@ -523,38 +518,29 @@ class CompareWindow(QMainWindow, Ui_compare_window):
     def open_joint_outcome(self):
         """Open the joint iterative outcome graph."""
 
-        # Get the segmentation dictionaries
-        baseline_segmentation = self.baseline.patient_handler.segmentation
-        reference_segmentation = self.reference.patient_handler.segmentation
-
-        # Get the dose histogram dictionaries
-        baseline_opt = self.baseline.datahub.optimization
-        reference_opt = self.reference.datahub.optimization
+        # Get the optimizers
+        baseline_opt = self.baseline.fluence_optimizer
+        reference_opt = self.reference.fluence_optimizer
 
         # Get the outcome model-based optimization components
         baseline_components, reference_components = ((
-            get_machine_learning_constraints(segmentation)
-            + get_machine_learning_objectives(segmentation)
-            + get_radiobiological_constraints(segmentation)
-            + get_radiobiological_objectives(segmentation))
-            for segmentation in (baseline_segmentation, reference_segmentation)
-            )
+            get_machine_learning_components(components)
+            + get_radiobiological_components(components))
+            for components in (
+                    self.baseline.plan_handler.components,
+                    self.reference.plan_handler.components))
 
         # Get the baseline tracks to be displayed
         baseline_tracker = {
             component.track_id: component.translate(list(
-                divide(
-                    baseline_opt['problem'].tracker[component.track_id],
-                    component.weight)))
-            for component in baseline_components if component.display}
+                baseline_opt.problem.tracker[component.track_id]))
+            for component in baseline_components}
 
         # Get the reference tracks to be displayed
         reference_tracker = {
             component.track_id: component.translate(list(
-                divide(
-                    reference_opt['problem'].tracker[component.track_id],
-                    component.weight)))
-            for component in reference_components if component.display}
+                reference_opt.problem.tracker[component.track_id]))
+            for component in reference_components}
 
         # Get the track statistics
         track_len = max(

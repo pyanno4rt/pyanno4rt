@@ -24,29 +24,28 @@ def auc_pr(true_labels, predicted_labels):
         Ground truth label values.
 
     predicted_labels : tuple
-        Tuple of arrays with the training and out-of-folds labels predicted \
-        by the machine learning model.
+        Arrays with the predicted full data and out-of-folds labels.
 
     Returns
     -------
     scores : dict
-        Dictionary with the training and out-of-folds AUC-PR scores.
+        Dictionary with the full data and out-of-folds AUC-PR scores.
     """
 
     # Log a message about the AUC-PR computation
     get_logger().info("Computing AUC-PR scores ...")
 
     # Initialize the AUC-PR scores dictionary
-    scores = {'Training': None, 'Out-of-folds': None}
+    scores = {'Full': None, 'Cross-validated': None}
 
-    # Loop over the enumerated dictionary keys
-    for i, source in enumerate(scores):
+    # Loop over the dictionary elements
+    for index, source in enumerate(scores):
 
         # Compute the AUC-PR scores
         precision, recall, _ = precision_recall_curve(
-            true_labels, predicted_labels[i])
+            true_labels, predicted_labels[index])
 
-        # Enter the AUC-PR scores into the dictionary
+        # Store the AUC-PR scores
         scores[source] = DataFrame({'Precision': precision, 'Recall': recall})
 
     return scores

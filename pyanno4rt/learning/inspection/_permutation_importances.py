@@ -40,15 +40,15 @@ def permutation_importances(
         Number of permutations.
 
     splits : int, default=5
-        Number of splits for multi-run evaluation.
+        Number of splits for cross-validated evaluation.
 
     repeats : int, default=1
-        Number of repeats for multi-run evaluation.
+        Number of repeats for cross-validated evaluation.
 
     Returns
     -------
     dict
-        Dictionary with the single- and multi-run permutation importances.
+        Dictionary with the full and cross-validated permutation importances.
     """
 
     def compute_fold_importances(indices):
@@ -82,10 +82,10 @@ def permutation_importances(
 
         return scorer(true_labels, model.predict(features))
 
-    # Log a message about computing the single-run permutation importance
+    # Log a message about computing the full data permutation importance
     get_logger().info(
-        "Computing single-run permutation importances for '%s' with %s "
-        "permutations ...", model.label, repeats)
+        "Computing full data permutation importances for '%s' with %s "
+        "permutations ...", model.label, permutations)
 
     # Check if a holdout dataset is available
     if model.dataset.holdout_set is not None:
@@ -103,15 +103,15 @@ def permutation_importances(
     # Map the score labels to the score functions
     scorer = maps.LOSSES[score]
 
-    # Compute the single-run permutation importances
-    single_run_importances = permutation_importance(
+    # Compute the full data permutation importances
+    full_importances = permutation_importance(
         model.predictor, *model.preprocessor.fit_transform(features, labels),
         scoring=score_model, n_repeats=permutations, random_state=42)[
             'importances'].T
 
-    # Log a message about computing the multi-run permutation importances
+    # Log a message about computing the cross-validated permutation importances
     get_logger().info(
-        "Computing multi-run permutation importances for '%s' with %s "
+        "Computing cross-validated permutation importances for '%s' with %s "
         "permutations for %s splits and %s repeats ...",
         model.label, permutations, splits, repeats)
 
@@ -144,8 +144,8 @@ def permutation_importances(
             folds[validation_index, column] = (
                 int(number) if splits != 1 else 1)
 
-    # Compute the multi-run permutation importances
-    multi_run_importances = map(compute_fold_importances, (
+    # Compute the cross-validated permutation importances
+    cv_importances = map(compute_fold_importances, (
         (training_indices, validation_indices)
         for training_indices, validation_indices in (
                 (where(folds[:, index] != number),
@@ -154,7 +154,7 @@ def permutation_importances(
                 for number in set(folds[:, index]))))
 
     return {
-        'Single-run': single_run_importances,
-        'Multi-run': vstack(list(multi_run_importances)),
+        'Full': full_importances,
+        'Cross-validated': vstack(list(cv_importances)),
         'feature_names': model.dataset.feature_names,
         'score': score}

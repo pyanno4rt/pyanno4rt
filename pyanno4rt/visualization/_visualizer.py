@@ -280,7 +280,9 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             self.open_feat_graph_pbutton.setEnabled(False)
 
         # Check if the metrics tables and graphs buttons should be disabled
-        if self.plan.state < 2 or len(data_model_handler.models) == 0:
+        if (self.plan.state < 2
+            or data_model_handler is None
+            or len(data_model_handler.models) == 0):
             self.open_metrics_graphs_pbutton.setEnabled(False)
             self.open_metrics_tables_pbutton.setEnabled(False)
             self.open_perm_graph_pbutton.setEnabled(False)
@@ -412,6 +414,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
 
         # Check if the plan has already been inspected
         if (self.plan.state >= 2 and
+                self.plan.data_model_handler is not None and
                 len(self.plan.data_model_handler.models) > 0):
 
             #
@@ -420,24 +423,27 @@ class Visualizer(QMainWindow, Ui_visualization_window):
                 for model in self.plan.data_model_handler.models
                 if model is not None and model.inspector is not None}
 
-            # Add the model names
-            self.model_name_cbox.addItems(importances)
+            #
+            if len(importances) > 0:
 
-            # Get the number of features
-            number_of_features = importances[
-                self.model_name_cbox.currentText()]['Single-run'].shape[1]
+                # Add the model names
+                self.model_name_cbox.addItems(importances)
 
-            # Set the initial range for the top-k features
-            self.num_features_sbox.setRange(1, number_of_features)
+                # Get the number of features
+                number_of_features = importances[
+                    self.model_name_cbox.currentText()]['Full'].shape[1]
 
-            # Set the initial value for the top-k features
-            self.num_features_sbox.setValue(min(5, number_of_features))
+                # Set the initial range for the top-k features
+                self.num_features_sbox.setRange(1, number_of_features)
 
-            # Add style and data
-            self.perm_widget.add_style_and_data(importances)
+                # Set the initial value for the top-k features
+                self.num_features_sbox.setValue(min(5, number_of_features))
 
-            # Update the importance boxplots
-            self.perm_widget.update_boxplots()
+                # Add style and data
+                self.perm_widget.add_style_and_data(importances)
+
+                # Update the importance boxplots
+                self.perm_widget.update_boxplots()
 
     def add_images(self):
         """."""
@@ -632,7 +638,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         plotter = MetricsGraph()
 
         # Open the view
-        plotter.view()
+        plotter.view(self.plan, self.model_name_cbox.currentText())
 
     def open_metrics_table(self):
         """Open the metrics table."""
@@ -641,7 +647,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
         plotter = MetricsTable()
 
         # Open the view
-        plotter.view()
+        plotter.view(self.plan, self.model_name_cbox.currentText())
 
     def open_importance_boxplots(self):
         """Open the permutation importance boxplot."""

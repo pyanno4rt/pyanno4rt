@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from copy import deepcopy
 from functools import partial
 from numpy import prod, vstack
 
@@ -48,11 +49,31 @@ class TabularPreprocessor():
     def to_dict(self):
         """Serialize the preprocessor into a dictionary."""
 
+        # Get the parameter dictionary
+        dictionary = deepcopy(self.inputs)
+
+        return {'Tabular': dictionary}
+
     @classmethod
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the preprocessor from a dictionary."""
+        """
+        Deserialize the preprocessor from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the preprocessor parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.preprocessing._tabular_preprocessor.TabularPreprocessor`
+            The object used to represent the preprocessor.
+        """
+
+        return cls(**dictionary)
 
     def fit(
             self,

@@ -108,8 +108,8 @@ class SliceCompareWidget(QWidget):
             #
             self.plan = plan[0]
             self.dose_cube = (
-                plan[0].datahub.optimization['optimized_dose']
-                - plan[1].datahub.optimization['optimized_dose'])
+                plan[0].fluence_optimizer.optimized_dose
+                - plan[1].fluence_optimizer.optimized_dose)
             max_diff = max(
                 abs(self.dose_cube.min()), abs(self.dose_cube.max()))
             self.minimum, self.maximum = -max_diff, max_diff
@@ -127,7 +127,7 @@ class SliceCompareWidget(QWidget):
 
             #
             self.plan = plan
-            self.dose_cube = self.plan.datahub.optimization['optimized_dose']
+            self.dose_cube = self.plan.fluence_optimizer.optimized_dose
             self.minimum, self.maximum = minimum, maximum
 
             quantiles = [0.1*factor1 for factor1 in range(1, 10)]

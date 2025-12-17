@@ -814,8 +814,7 @@ class MainWindow(QMainWindow, Ui_main_window):
                     self.status_bar.showMessage("Ready for modeling ...")
 
                     # Check if any component has not been modeled yet
-                    if (any(getattr(component, unit) is None
-                            for unit in ('data_model_handler', 'model')
+                    if (any(component.model.predictor is None
                             for component in ml_components)
                             or instance.state == 1):
 

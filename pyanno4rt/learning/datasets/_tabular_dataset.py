@@ -5,8 +5,9 @@
 # %% External package import
 
 from math import inf
-from os.path import splitext
+from os.path import abspath, splitext
 
+from copy import deepcopy
 from functools import partial
 from itertools import compress, tee
 from numpy import arange, array, logical_and, seterr, vstack, where
@@ -40,7 +41,7 @@ class TabularDataset():
     path : str
         Path to the dataset.
 
-    columns : list
+    columns : None or list
         The objects used to represent the relevant dataset columns.
 
         Currently available:
@@ -65,7 +66,7 @@ class TabularDataset():
     path : str
         See 'Parameters'.
 
-    columns : list
+    columns : None or list
         See 'Parameters'.
 
     holdout : int
@@ -115,8 +116,14 @@ class TabularDataset():
     def __init__(
             self,
             path,
-            columns,
+            columns=None,
             holdout=None):
+
+        # Check if a path has been provided
+        if path is not None:
+
+            # Convert the path into an absolute value
+            path = abspath(path)
 
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
@@ -151,13 +158,46 @@ class TabularDataset():
         self.holdout_set = None
 
     def to_dict(self):
-        """Serialize the tabular dataset into a dictionary."""
+        """Serialize the dataset into a dictionary."""
+
+        # Get the parameter dictionary
+        dictionary = deepcopy(self.inputs)
+
+        # Check if column information is available
+        if dictionary['columns'] is not None:
+
+            # Serialize the columns
+            dictionary['columns'] = [
+                item.to_dict() for item in dictionary['columns']]
+
+        return {'Tabular': dictionary}
 
     @classmethod
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the tabular dataset from a dictionary."""
+        """
+        Deserialize the dataset from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the dataset parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.datasets._tabular_dataset.TabularDataset`
+            The object used to represent the dataset.
+        """
+
+        # Deserialize the columns
+        dictionary['columns'] = [
+            COLUMNS[key].from_dict(value)
+            for item in dictionary['columns']
+            for key, value in item.items()]
+
+        return cls(**dictionary)
 
     def load(self):
         """Load the dataset."""
@@ -165,12 +205,28 @@ class TabularDataset():
         # Get the file string and handler
         source, handler = self.sources[splitext(self.path)[1]]
 
-        # Log a message about the dataset loading
+        # Log a message about loading the dataset
         get_logger().info("Importing dataset from %s ...", source)
 
         # Load the dataset
-        self.dataframe = handler().load(self.path)[
-            [item.column for item in self.columns]]
+        self.dataframe = handler().load(self.path)
+
+        # Check if column information has been provided
+        if self.columns is not None:
+
+            # Slice the dataset
+            self.dataframe = self.dataframe[[
+                item.column for item in self.columns]]
+
+        else:
+
+            # Log a message about inferring the column information
+            get_logger().warning(
+                "User has not provided column information, inferring list of "
+                "objects from dataset ...")
+
+            # Infer the column information
+            self.columns = self.infer_columns()
 
     def save(
             self,
@@ -187,11 +243,37 @@ class TabularDataset():
         # Get the file string and handler
         source, handler = self.sources[splitext(path)[1]]
 
-        # Log a message about the dataset saving
+        # Log a message about saving the dataset
         get_logger().info("Saving dataset to %s ...", source)
 
         # Save the dataset
         handler().save(self.dataframe, path)
+
+    def infer_columns(self):
+        """
+        Infer the column information from the dataset.
+
+        Returns
+        -------
+        list
+            The objects used to represent the relevant dataset columns.
+
+        Notes
+        -----
+        This function should later be "smart", i.e., infer the column \
+        information based on e.g. fuzzy similarity matching. \
+        Currently, assumptions are:
+
+            1. All columns except the last one represent static features with \
+                the label included as the last column
+
+            2. Static values can be approximated by the column mean.
+        """
+
+        return ([
+            COLUMNS['Static Feature'](column, self.dataframe[column].mean())
+            for column in self.dataframe.columns[:-1]]
+            + [COLUMNS['Label'](self.dataframe.columns[-1])])
 
     def generate(self):
         """Generate the data attributes."""
@@ -331,6 +413,10 @@ class TabularDataset():
         # Clamp the holdout size
         self.holdout = min(len(self.dataframe)-1, self.holdout)
 
+        # Log a message about creating the holdout dataset
+        get_logger().info(
+            "Creating holdout dataset with %s samples ...", self.holdout)
+
         # Get the training and holdout indices
         train_indices, holdout_indices = train_test_split(
             arange(len(self.dataframe)), test_size=self.holdout,
@@ -413,7 +499,7 @@ class TabularDataset():
                 partial(validate_file, options=('.csv',))
                 ),
             'columns': (
-                partial(validate_type, options=list),
+                partial(validate_type, options=(type(None), list)),
                 partial(validate_subtype, options=(*COLUMNS.values(),)),
                 partial(validate_length, reference=2, sign='>=')
                 ),
@@ -422,6 +508,12 @@ class TabularDataset():
                 partial(validate_item, reference=0, sign='>')
                 )
             }
+
+        # Check if no column information has been provided
+        if inputs['columns'] is None:
+
+            # Reduce the validation map
+            validation_map['columns'] = (validation_map['columns'][0],)
 
         # Loop over the dictionary items
         for key, value in inputs.items():
@@ -433,7 +525,7 @@ class TabularDataset():
                 function(key, value)
 
             # Check if the key is 'column'
-            if key == 'columns':
+            if key == 'columns' and inputs['columns'] is not None:
 
                 # Check if no feature has been passed
                 if sum(item.category == 'feature'

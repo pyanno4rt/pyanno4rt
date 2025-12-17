@@ -4446,12 +4446,12 @@ border-color: rgb(186, 189, 182);</string>
                              </property>
                              <item>
                               <property name="text">
-                               <string>Single-run</string>
+                               <string>Full</string>
                               </property>
                              </item>
                              <item>
                               <property name="text">
-                               <string>Multi-run</string>
+                               <string>Cross-validated</string>
                               </property>
                              </item>
                             </widget>

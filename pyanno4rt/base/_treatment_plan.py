@@ -228,8 +228,8 @@ class TreatmentPlan():
                 # Load the datasets
                 self.data_model_handler.load_datasets()
 
-                # Add the feature calculators
-                self.data_model_handler.add_calculators()
+                # Set the feature calculators
+                self.data_model_handler.set_calculators()
 
                 # Fit the models
                 self.data_model_handler.fit_models()

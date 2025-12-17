@@ -106,7 +106,7 @@ class TuneSpaceSVM():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return vars(self)
+        return {'Support Vector Machine': vars(self)}
 
     @classmethod
     def from_dict(

@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from copy import deepcopy
 from functools import partial
 
 # %% Internal package import
@@ -78,11 +79,31 @@ class ModelInspector():
     def to_dict(self):
         """Serialize the model inspector into a dictionary."""
 
+        # Get the parameter dictionary
+        dictionary = deepcopy(self.inputs)
+
+        return dictionary
+
     @classmethod
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the model inspector from a dictionary."""
+        """
+        Deserialize the model inspector from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the model inspector parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.inspection._model_inspector.ModelInspector`
+            The object used to represent the model inspector.
+        """
+
+        return cls(**dictionary)
 
     def run(
             self,

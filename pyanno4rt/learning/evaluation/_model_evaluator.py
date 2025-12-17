@@ -4,6 +4,7 @@
 
 # %% External package import
 
+from copy import deepcopy
 from functools import partial
 from numpy import where, zeros
 from sklearn.model_selection import RepeatedStratifiedKFold
@@ -22,8 +23,7 @@ class ModelEvaluator():
     """
     Model evaluation class.
 
-    This class provides the computation method for a number of evaluation \
-    metrics on a machine learning model.
+    This class provides methods to evaluate an outcome model.
 
     Parameters
     ----------
@@ -69,11 +69,114 @@ class ModelEvaluator():
     def to_dict(self):
         """Serialize the model evaluator into a dictionary."""
 
+        # Get the parameter dictionary
+        dictionary = deepcopy(self.inputs)
+
+        return dictionary
+
     @classmethod
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the model evaluator from a dictionary."""
+        """
+        Deserialize the model evaluator from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the model evaluator parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.evaluation._model_evaluator.ModelEvaluator`
+            The object used to represent the model evaluator.
+        """
+
+        return cls(**dictionary)
+
+    def evaluate(
+            self,
+            true_labels,
+            predicted_labels):
+        """
+        Evaluate the performance metrics.
+
+        Parameters
+        ----------
+        true_labels : ndarray
+            Ground truth labels.
+
+        predicted_labels : tuple
+            Arrays with the predicted full data and out-of-folds labels.
+        """
+
+        # Calculate the PR-AUC scores
+        self.results['auc_pr'] = auc_pr(true_labels, predicted_labels)
+
+        # Calculate the ROC-AUC scores
+        self.results['auc_roc'] = auc_roc(true_labels, predicted_labels)
+
+        # Calculate the F1 scores
+        self.results['f1'] = f1(true_labels, predicted_labels)
+
+        # Calculate the KPIs
+        self.results['kpi'] = kpi(
+            true_labels, predicted_labels,
+            (self.results['f1']['Full']['best'],
+             self.results['f1']['Cross-validated']['best']))
+
+    def get_folds(
+            self,
+            features,
+            labels):
+        """
+        Get the fold numbers for cross-validation.
+
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
+
+        labels : ndarray
+            Values of the input labels.
+
+        Returns
+        -------
+        ndarray
+            Fold numbers.
+        """
+
+        # Clamp the number of splits
+        clamped_n_splits = min(self.splits, sum(labels))
+
+        # Initialize the stratified k-fold cross-validator
+        cross_validator = RepeatedStratifiedKFold(
+            n_splits=5 if clamped_n_splits == 1 else clamped_n_splits,
+            n_repeats=self.repeats, random_state=1)
+
+        # Get the stratification splits
+        splits = tuple(cross_validator.split(features, labels))
+
+        # Divide the splits into chunks (for each repeat)
+        chunks = [
+            splits[index:index+self.splits] for index in range(
+                0, clamped_n_splits*self.repeats, clamped_n_splits)]
+
+        # Initialize the fold numbers
+        folds = zeros((len(labels), self.repeats))
+
+        # Loop over the chunks
+        for column, chunk in enumerate(chunks):
+
+            # Loop over the chunk splits
+            for number, (_, validation_index) in enumerate(chunk):
+
+                # Enter the fold number for the validation set repetition
+                folds[validation_index, column] = (
+                    int(number) if self.splits != 1 else 1)
+
+        return folds
 
     def run(
             self,
@@ -128,28 +231,27 @@ class ModelEvaluator():
             features = model.dataset.feature_values
             labels = model.dataset.label_values
 
-        # Log a message about the training prediction
+        # Log a message about the full data prediction
         get_logger().info(
-            "Evaluating training predictions for %s ...", model.label)
+            "Yielding full data predictions for '%s' ...", model.label)
 
-        # Get the training prediction
-        training_prediction = model.predict(
-            model.preprocess(features, labels)[0])
+        # Get the full data prediction
+        full_prediction = model.predict(model.preprocess(features, labels)[0])
 
         # Log a message about the out-of-folds prediction
         get_logger().info(
             "Performing %s-fold cross-validation with %s repeat(s) to yield "
-            "out-of-folds predictions for %s",
+            "out-of-folds predictions for '%s' ...",
             self.splits, self.repeats, model.label)
 
-        # Initialize the out-of-folds label prediction array
-        oof_prediction = zeros((len(labels),))
+        # Initialize the array for the out-of-folds predictions
+        cv_prediction = zeros((len(labels),))
 
-        # Get the out-of-folds numbers
+        # Get the fold numbers
         folds = self.get_folds(features, labels)
 
-        # Compute the returns across all repeats
-        rep_returns = (map(compute_fold_labels, (
+        # Get the repeated cross-validation returns
+        cv_returns = (map(compute_fold_labels, (
             (training_indices, validation_indices)
             for training_indices, validation_indices in (
                 (where(folds[:, index] != number),
@@ -158,80 +260,13 @@ class ModelEvaluator():
                 for number in set(folds[:, index])))))
 
         # Loop over the returns
-        for fold_indices, fold_labels in rep_returns:
+        for fold_indices, fold_labels in cv_returns:
 
-            # Insert the fold labels at the fold indices
-            oof_prediction[fold_indices] += fold_labels/folds.shape[1]
+            # Insert the fold labels
+            cv_prediction[fold_indices] += fold_labels/folds.shape[1]
 
-        #
-        self.results['auc_pr'] = auc_pr(
-            labels, (training_prediction, oof_prediction))
-
-        #
-        self.results['auc_roc'] = auc_roc(
-            labels, (training_prediction, oof_prediction))
-
-        #
-        self.results['f1'] = f1(labels, (training_prediction, oof_prediction))
-
-        #
-        self.results['kpi'] = kpi(
-            labels, (training_prediction, oof_prediction),
-            tuple(
-                self.results['f1'][source]['best']
-                for source in ('Training', 'Out-of-folds')))
-
-    def get_folds(
-            self,
-            features,
-            labels):
-        """
-        Get the fold numbers for cross-validation.
-
-        Parameters
-        ----------
-        features : ndarray
-            Values of the input features.
-
-        labels : ndarray
-            Values of the input labels.
-
-        Returns
-        -------
-        ndarray
-            Fold numbers.
-        """
-
-        # Clamp the number of splits
-        clamped_n_splits = min(self.splits, sum(labels))
-
-        # Initialize the stratified k-fold cross-validator
-        cross_validator = RepeatedStratifiedKFold(
-            n_splits=5 if clamped_n_splits == 1 else clamped_n_splits,
-            n_repeats=self.repeats, random_state=3)
-
-        # Get the stratification splits
-        splits = tuple(cross_validator.split(features, labels))
-
-        # Divide the splits into chunks (for each repeat)
-        chunks = [
-            splits[index:index+self.splits] for index in range(
-                0, clamped_n_splits*self.repeats, clamped_n_splits)]
-
-        # Initialize the fold numbers
-        folds = zeros((len(labels), self.repeats))
-
-        # Loop over the chunks
-        for column, chunk in enumerate(chunks):
-
-            # Loop over the chunk splits
-            for number, (_, validation_index) in enumerate(chunk):
-
-                # Enter the fold number for the validation set repetition
-                folds[validation_index, column] = (
-                    int(number) if self.splits != 1 else 1)
-
-        return folds
+        # Evaluate the model predictions
+        self.evaluate(labels, (full_prediction, cv_prediction))
 
     def validate(
             self,

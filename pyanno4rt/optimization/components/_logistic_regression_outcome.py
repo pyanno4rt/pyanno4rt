@@ -64,6 +64,8 @@ class LogisticRegressionOutcome(MachineLearningComponent):
     arguments : dict
         Dictionary with the component input arguments (for serialization).
 
+    Notes
+    -----
     See :class:`~pyanno4rt.optimization.components._machine_learning_component.MachineLearningComponent`\
     for details on the inherited attributes.
     """

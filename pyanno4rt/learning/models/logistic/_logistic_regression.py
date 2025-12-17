@@ -9,6 +9,7 @@ from pickle import dump, load
 
 from copy import deepcopy
 from functools import partial
+from numpy import ones
 from sklearn.linear_model import LogisticRegression as skLogReg
 
 # %% Internal package import
@@ -156,13 +157,46 @@ class LogisticRegression():
         self.predictor = skLogReg(**self.hyperparameters)
 
     def to_dict(self):
-        """Serialize the logistic regression model into a dictionary."""
+        """Serialize the model into a dictionary."""
+
+        # Get the parameter dictionary
+        dictionary = deepcopy(self.inputs)
+
+        # Loop over the object-related keys
+        for key in (
+                'dataset', 'preprocessor', 'tuner', 'inspector', 'evaluator'):
+
+            # Check if a value is available
+            if dictionary[key] is not None:
+
+                # Serialize the attribute objects
+                dictionary[key] = dictionary[key].to_dict()
+
+        return {'Logistic Regression': dictionary}
 
     @classmethod
     def from_dict(
             cls,
             dictionary):
-        """Deserialize the logistic regression model from a dictionary."""
+        """
+        Deserialize the model from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the model parameters.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.models.logistic._logistic_regression.LogisticRegression`
+            The object used to represent the model.
+        """
+
+        # Deserialize the attribute objects
+        dictionary['dataset'] = TabularDataset.from_dict(dictionary['dataset'])
+
+        return cls(**dictionary)
 
     def load_data(self):
         """Load the dataset."""
@@ -172,6 +206,29 @@ class LogisticRegression():
 
         # Generate the data
         self.dataset.generate()
+
+    def add_calculator(
+            self,
+            calculator):
+        """
+        Add the feature calculator.
+
+        Parameters
+        ----------
+        calculator : object of class \
+            :class:`~pyanno4rt.learning.features._feature_calculator.FeatureCalculator`
+            The object used to (re)calculate input features and gradients.
+        """
+
+        # Log a message about adding the feature calculator
+        get_logger().info(
+            "Adding feature calculator for '%s' ...", self.label)
+
+        # Initialize the feature calculator
+        self.feature_calculator = calculator
+
+        # Add the feature map
+        self.feature_calculator.set_mapping(self.dataset.feature_map)
 
     def fit_preprocessor(
             self,
@@ -448,8 +505,16 @@ class LogisticRegression():
         # Derive the feature gradient
         feature_gradient = self.feature_calculator.gradientize(dose, segment)
 
-        # Derive the preprocessing gradient
-        preprocessing_gradient = self.preprocessor.gradientize(features)
+        # Check if a preprocessor object has been provided
+        if self.preprocessor is not None:
+
+            # Derive the preprocessing gradient
+            preprocessing_gradient = self.preprocessor.gradientize(features)
+
+        else:
+
+            # Use the default preprocessing gradient
+            preprocessing_gradient = ones((len(features),))
 
         # Derive the predictor gradient
         predictor_gradient = (prediction-prediction**2)*self.predictor.coef_[0]
@@ -473,7 +538,7 @@ class LogisticRegression():
         get_logger().info("Reading '%s' model from file ...", self.label)
 
         return (
-            load(open(self.path+'/model.sav', 'rb')),
+            load(open(self.path+'/predictor.sav', 'rb')),
             load(open(self.path+'/preprocessor.sav', 'rb')))
 
     def save(
@@ -488,11 +553,14 @@ class LogisticRegression():
             Path for storing the logistic regression model.
         """
 
-        # Open a file stream
-        with open(path, 'wb') as file:
+        # Open a file stream for the predictor
+        with open(path+'/predictor.sav', 'wb') as file:
 
             # Dump the predictor
             dump(self.predictor, file)
+
+        # Open a file stream for the preprocessor
+        with open(path+'/preprocessor.sav', 'wb') as file:
 
             # Dump the preprocessor
             dump(self.preprocessor, file)
