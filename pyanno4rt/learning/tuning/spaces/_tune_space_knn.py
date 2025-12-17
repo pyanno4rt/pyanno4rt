@@ -5,7 +5,7 @@
 # %% External package import
 
 from functools import partial
-import hyperopt as hp
+from hyperopt.hp import choice
 
 # %% Internal package import
 
@@ -123,10 +123,10 @@ class TuneSpaceKNN():
 
         # Get the hyperopt search space
         return {
-            'n_neighbors': hp.choice('n_neighbors', self.n_neighbors),
-            'weights': hp.choice('weights', self.weights),
-            'leaf_size': hp.choice('leaf_size', self.leaf_size),
-            'p': hp.choice('p', self.p)
+            'n_neighbors': choice('n_neighbors', self.n_neighbors),
+            'weights': choice('weights', self.weights),
+            'leaf_size': choice('leaf_size', self.leaf_size),
+            'p': choice('p', self.p)
             }
 
     def validate(

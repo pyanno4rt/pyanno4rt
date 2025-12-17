@@ -5,7 +5,7 @@
 # %% External package import
 
 from functools import partial
-import hyperopt as hp
+from hyperopt.hp import choice, uniform
 
 # %% Internal package import
 
@@ -108,8 +108,8 @@ class TuneSpaceNB():
 
         # Get the hyperopt search space
         return {
-            'priors': hp.choice('priors', self.priors),
-            'var_smoothing': hp.uniform(
+            'priors': choice('priors', self.priors),
+            'var_smoothing': uniform(
                 'var_smoothing', self.var_smoothing[0], self.var_smoothing[1])
             }
 

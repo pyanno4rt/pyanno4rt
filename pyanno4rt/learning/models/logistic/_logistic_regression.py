@@ -337,15 +337,17 @@ class LogisticRegression():
         else:
 
             # Get the regularization parameters directly
-            regularization = {key: proposal.get(key) for key in (
-                'penalty', 'solver', 'l1_ratio', 'C')}
+            regularization = {
+                key: proposal[key] for key in (
+                    'penalty', 'solver', 'l1_ratio', 'C')
+                if key in proposal}
 
         # Build the hyperparameter dictionary
         self.hyperparameters = self.hyperparameters | {
             **regularization,
-            'tol': proposal['tol'],
-            'class_weight': proposal['class_weight'],
-            'n_jobs': -1 if regularization['solver'] != 'liblinear' else 1}
+            'tol': proposal.get('tol', 0.0001),
+            'class_weight': proposal.get('class_weight'),
+            'n_jobs': -1 if regularization.get('solver') != 'liblinear' else 1}
 
     def get_grid_hp(
             self,

@@ -5,7 +5,7 @@
 # %% External package import
 
 from functools import partial
-import hyperopt as hp
+from hyperopt.hp import choice, uniform
 
 # %% Internal package import
 
@@ -165,21 +165,21 @@ class TuneSpaceDT():
 
         # Get the hyperopt search space
         return {
-            'criterion': hp.choice('criterion', self.criterion),
-            'splitter': hp.choice('splitter', self.splitter),
-            'max_depth': hp.choice('max_depth', self.max_depth),
-            'min_samples_split': hp.uniform(
+            'criterion': choice('criterion', self.criterion),
+            'splitter': choice('splitter', self.splitter),
+            'max_depth': choice('max_depth', self.max_depth),
+            'min_samples_split': uniform(
                 'min_samples_split', self.min_samples_split[0],
                 self.min_samples_split[1]),
-            'min_samples_leaf': hp.uniform(
+            'min_samples_leaf': uniform(
                 'min_samples_leaf', self.min_samples_leaf[0],
                 self.min_samples_leaf[1]),
-            'min_weight_fraction_leaf': hp.uniform(
+            'min_weight_fraction_leaf': uniform(
                 'min_weight_fraction_leaf', self.min_weight_fraction_leaf[0],
                 self.min_weight_fraction_leaf[1]),
-            'max_features': hp.choice('max_features', self.max_features),
-            'class_weight': hp.choice('class_weight', self.class_weight),
-            'ccp_alpha': hp.uniform(
+            'max_features': choice('max_features', self.max_features),
+            'class_weight': choice('class_weight', self.class_weight),
+            'ccp_alpha': uniform(
                 'ccp_alpha', self.ccp_alpha[0], self.ccp_alpha[1])
             }
 

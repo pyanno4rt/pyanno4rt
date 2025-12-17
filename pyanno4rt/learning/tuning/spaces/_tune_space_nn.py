@@ -5,7 +5,7 @@
 # %% External package import
 
 from functools import partial
-import hyperopt as hp
+from hyperopt.hp import choice, uniform
 
 # %% Internal package import
 
@@ -157,29 +157,29 @@ class TuneSpaceNN():
 
         # Get the hyperopt search space
         return {
-            'hidden_layers': hp.choice(
+            'hidden_layers': choice(
                 'hidden_layers', [
                     {'hidden_layer_number': n+1,
                      'hidden_neuron_number': [
-                         hp.choice(
+                         choice(
                              f'{n+1}L{m+1}_neuron_number',
                              self.hidden_neuron_number)
                          for m in range(n+1)],
                      'hidden_activation': [
-                         hp.choice(
+                         choice(
                              f'{n+1}L{m+1}_activation', self.hidden_activation)
                          for m in range(n+1)],
                      'hidden_dropout_rate': [
-                         hp.choice(
+                         choice(
                              f'{n+1}L{m+1}_hidden_dropout',
                              self.hidden_dropout_rate)
                          for m in range(n+1)]}
                     for n in range(self.max_hidden_layers)]),
-            'batch_size': hp.choice('batch_size', self.batch_size),
-            'learning_rate': hp.uniform(
+            'batch_size': choice('batch_size', self.batch_size),
+            'learning_rate': uniform(
                 'learning_rate', self.learning_rate[0], self.learning_rate[1]),
-            'optimizer': hp.choice('optimizer', self.optimizer),
-            'loss': hp.choice('loss', self.loss)
+            'optimizer': choice('optimizer', self.optimizer),
+            'loss': choice('loss', self.loss)
             }
 
     def validate(

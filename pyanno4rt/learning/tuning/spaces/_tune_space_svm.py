@@ -5,7 +5,7 @@
 # %% External package import
 
 from functools import partial
-import hyperopt as hp
+from hyperopt.hp import choice, uniform
 
 # %% Internal package import
 
@@ -141,12 +141,12 @@ class TuneSpaceSVM():
 
         # Get the hyperopt search space
         return {
-            'C': hp.uniform('C', self.C[0], self.C[1]),
-            'kernel': hp.choice('kernel', self.kernel),
-            'degree': hp.choice('degree', self.degree),
-            'gamma': hp.uniform('gamma', self.gamma[0], self.gamma[1]),
-            'tol': hp.choice('tol', self.tol),
-            'class_weight': hp.choice('class_weight', self.class_weight)
+            'C': uniform('C', self.C[0], self.C[1]),
+            'kernel': choice('kernel', self.kernel),
+            'degree': choice('degree', self.degree),
+            'gamma': uniform('gamma', self.gamma[0], self.gamma[1]),
+            'tol': choice('tol', self.tol),
+            'class_weight': choice('class_weight', self.class_weight)
             }
 
     def validate(
