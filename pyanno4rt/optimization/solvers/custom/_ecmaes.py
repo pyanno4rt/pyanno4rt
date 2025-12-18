@@ -233,13 +233,6 @@ class ECMAES:
             self._singular_values.append(svdvals(self._cov))
             # ----------------------------------------------
 
-            # ---------------------------------------------- REMOVE LATER
-            # Low-rank approximation using SVD
-            # U, S, V = svd(self._cov)
-            # r = 2
-            # self._cov = U[:, :r]@diag(S[:r])@V[:r, :]
-            # ----------------------------------------------
-
             # "Ask" for a new population
             population, steps = self.ask()
 
@@ -479,7 +472,7 @@ solver = ECMAES(
     maximum_wall_time=7200,
     fitness_threshold=None,
     fitness_window_size=None,
-    tolerance=1e-6,
+    tolerance=1e-3,
     callback=None)
 
 # Optimize the variables
@@ -509,8 +502,8 @@ def plot_iter_sv(svals, iteration, fname, k):
     plt.xlabel('Singular Value Index')
     # plt.xticks([i for i in range(len(values))])
     plt.grid(True, which="both", ls="--", color='0.7')
-    plt.show()
     plt.savefig(f'/home/tim/Downloads/{fname}_{iteration}.pdf')
+    plt.show()
 
 plot_iter_sv(sv, 0, prob.name, 20)
 plot_iter_sv(sv, len(sv)//2, prob.name, 20)
@@ -537,7 +530,7 @@ def plot_sv_paths(svals, fname, space):
     plt.ylabel('Singular Value ($\sigma_i$) (log scale)')
     plt.xlabel('Optimization iteration')
     plt.grid(True, which="both", ls="--", color='0.7')
-    plt.show()
     plt.savefig(f'/home/tim/Downloads/{fname}.pdf')
+    plt.show()
 
 plot_sv_paths(sv, prob.name, 1)

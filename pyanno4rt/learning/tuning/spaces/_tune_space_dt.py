@@ -130,7 +130,7 @@ class TuneSpaceDT():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return {'Decision Tree': vars(self)}
+        return vars(self)|{'name': 'Decision Tree'}
 
     @classmethod
     def from_dict(
@@ -147,7 +147,7 @@ class TuneSpaceDT():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tune_spaces._tune_space_dt.TuneSpaceDT`
+            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_dt.TuneSpaceDT`
             The object used to handle the tune space parameters.
         """
 

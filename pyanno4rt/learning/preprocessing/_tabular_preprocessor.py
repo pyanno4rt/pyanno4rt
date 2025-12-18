@@ -52,7 +52,7 @@ class TabularPreprocessor():
         # Get the parameter dictionary
         dictionary = deepcopy(self.inputs)
 
-        return {'Tabular': dictionary}
+        return dictionary|{'name': 'Tabular'}
 
     @classmethod
     def from_dict(
@@ -73,7 +73,7 @@ class TabularPreprocessor():
             The object used to represent the preprocessor.
         """
 
-        return cls(**dictionary)
+        return cls(**filter_dict(dictionary, remove_keys=('name',)))
 
     def fit(
             self,

@@ -138,7 +138,7 @@ class TuneSpaceRF():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return {'Random Forest': vars(self)}
+        return vars(self)|{'name': 'Random Forest'}
 
     @classmethod
     def from_dict(
@@ -155,7 +155,7 @@ class TuneSpaceRF():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tune_spaces._tune_space_rf.TuneSpaceRF`
+            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_rf.TuneSpaceRF`
             The object used to handle the tune space parameters.
         """
 

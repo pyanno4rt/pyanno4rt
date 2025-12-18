@@ -172,7 +172,7 @@ class LogisticRegression():
                 # Serialize the attribute objects
                 dictionary[key] = dictionary[key].to_dict()
 
-        return {'Logistic Regression': dictionary}
+        return dictionary
 
     @classmethod
     def from_dict(
@@ -193,8 +193,41 @@ class LogisticRegression():
             The object used to represent the model.
         """
 
-        # Deserialize the attribute objects
-        dictionary['dataset'] = TabularDataset.from_dict(dictionary['dataset'])
+        # Check if a dataset dictionary has been passed
+        if dictionary['dataset'] is not None:
+
+            # Deserialize the dataset
+            dictionary['dataset'] = TabularDataset.from_dict(
+                dictionary['dataset'])
+
+        # Check if a preprocessor dictionary has been passed
+        if dictionary['preprocessor'] is not None:
+
+            # Deserialize the preprocessor
+            dictionary['preprocessor'] = TabularPreprocessor.from_dict(
+                dictionary['preprocessor'])
+
+        # Check if a tuner dictionary has been passed
+        if dictionary['tuner'] is not None:
+
+            # Deserialize the tuner
+            dictionary['tuner'] = (
+                TUNERS[dictionary['tuner'].pop('name')].from_dict(
+                    dictionary['tuner']))
+
+        # Check if an inspector dictionary has been passed
+        if dictionary['inspector'] is not None:
+
+            # Deserialize the inspector
+            dictionary['inspector'] = ModelInspector.from_dict(
+                dictionary['inspector'])
+
+        # Check if an evaluator dictionary has been passed
+        if dictionary['evaluator'] is not None:
+
+            # Deserialize the evaluator
+            dictionary['evaluator'] = ModelEvaluator.from_dict(
+                dictionary['evaluator'])
 
         return cls(**dictionary)
 

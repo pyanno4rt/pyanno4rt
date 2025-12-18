@@ -106,7 +106,7 @@ class TuneSpaceSVM():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return {'Support Vector Machine': vars(self)}
+        return vars(self)|{'name': 'Support Vector Machine'}
 
     @classmethod
     def from_dict(
@@ -123,7 +123,7 @@ class TuneSpaceSVM():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tune_spaces._tune_space_svm.TuneSpaceSVM`
+            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_svm.TuneSpaceSVM`
             The object used to handle the tune space parameters.
         """
 

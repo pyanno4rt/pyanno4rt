@@ -122,7 +122,7 @@ class TuneSpaceNN():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return {'Neural Network': vars(self)}
+        return vars(self)|{'name': 'Neural Network'}
 
     @classmethod
     def from_dict(
@@ -139,7 +139,7 @@ class TuneSpaceNN():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tune_spaces._tune_space_nn.TuneSpaceNN`
+            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nn.TuneSpaceNN`
             The object used to handle the tune space parameters.
         """
 

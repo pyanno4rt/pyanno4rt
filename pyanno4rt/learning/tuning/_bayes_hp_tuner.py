@@ -29,11 +29,54 @@ class BayesHPTuner():
 
     Parameters
     ----------
+    space : object of class \
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_rf.TuneSpaceRF`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_lr.TuneSpaceLR`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nb.TuneSpaceNB`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_knn.TuneSpaceKNN`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nn.TuneSpaceNN`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_svm.TuneSpaceSVM`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_dt.TuneSpaceDT`
+        The object used to represent the hyperparameter search space.
 
+    evaluations : int, default=25
+        Number of evaluation steps (trials).
+
+    score : {'AUC', 'Brier score', 'Logloss'}, default='AUC'
+        Scoring function for the hyperparameter set evaluation.
+
+    splits : int, default=5
+        Number of splits for cross-validation.
+
+    repeats : int, default=1
+        Number of repeats for cross-validation.
 
     Attributes
     ----------
+    space : object of class \
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_rf.TuneSpaceRF`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_lr.TuneSpaceLR`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nb.TuneSpaceNB`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_knn.TuneSpaceKNN`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nn.TuneSpaceNN`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_svm.TuneSpaceSVM`\
+        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_dt.TuneSpaceDT`
+        See 'Parameters'.
 
+    evaluations : int
+        See 'Parameters'.
+
+    score : {'AUC', 'Brier score', 'Logloss'}
+        See 'Parameters'.
+
+    splits : int
+        See 'Parameters'.
+
+    repeats : int
+        See 'Parameters'.
+
+    _step : int
+        Step counter.
     """
 
     def __init__(
@@ -57,26 +100,26 @@ class BayesHPTuner():
         self.splits = splits
         self.repeats = repeats
 
-        # Initialize the step counter for the hyperparameter search
+        # Initialize the step counter
         self._step = None
 
     def to_dict(self):
-        """Serialize the tuner into a dictionary."""
+        """Serialize the Bayesian hyperparameter tuner into a dictionary."""
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.inputs)
 
-        # Serialize the space
+        # Serialize the tune space
         dictionary['space'] = self.space.to_dict()
 
-        return {'Bayes': dictionary}
+        return dictionary|{'name': 'Bayes'}
 
     @classmethod
     def from_dict(
             cls,
             dictionary):
         """
-        Deserialize the tuner from a dictionary.
+        Deserialize the Bayesian hyperparameter tuner from a dictionary.
 
         Parameters
         ----------
@@ -91,8 +134,9 @@ class BayesHPTuner():
         """
 
         # Deserialize the tune space
-        dictionary['space'] = maps.TUNE_SPACES['Logistic Regression'](
-            **dictionary['space'])
+        dictionary['space'] = (
+            maps.TUNE_SPACES[dictionary['space'].pop('name')].from_dict(
+                dictionary['space']))
 
         return cls(**dictionary)
 
@@ -102,15 +146,13 @@ class BayesHPTuner():
             features,
             labels):
         """
-        Tune the hyperparameters of the machine learning model via sequential \
-        model-based optimization using tree-structured Parzen estimators and \
-        robust evaluation using stratified k-fold cross-validation.
+        Search the hyperparameter tune space.
 
         Parameters
         ----------
         model : object of class \
             :class:`~pyanno4rt.learning.models.logistic._logistic_regression.LogisticRegression`
-            The object used to represent the machine learning model.
+            The object used to represent the tunable model.
 
         features : ndarray
             Values of the input features.
@@ -124,9 +166,8 @@ class BayesHPTuner():
             Dictionary with the values of the tuned hyperparameters.
         """
 
-        # Define the output string function
         def log_trial(step, trials):
-            """Log the result of a single trial."""
+            """Log the result of a trial."""
 
             get_logger().info(
                 "Tuning hyperparameters (%s/%s) - best loss: %s ...",
@@ -134,10 +175,10 @@ class BayesHPTuner():
                 round(min(filter(None, trials.losses())), 4))
 
         def objective(proposal, trials, space):
-            """Compute the objective function for a set of hyperparameters."""
+            """Compute the objective function for a hyperparameter set."""
 
             def compute_fold_score(indices):
-                """Compute the score for a single train-validation split."""
+                """Compute the score for a single cross-validation split."""
 
                 # Get the training and validation split
                 split = [
@@ -225,7 +266,7 @@ class BayesHPTuner():
         # Get the hyperopt search space
         hp_space = self.space.to_hyperopt()
 
-        # Map the score labels to the score functions
+        # Get the score function
         scorer = maps.LOSSES[self.score]
 
         # Get the tune folds
@@ -245,7 +286,7 @@ class BayesHPTuner():
             verbose=False,
             show_progressbar=False)
 
-        # Log a message about the tuning status
+        # Log a message about the tuning completion
         get_logger().info(
             "Completed hyperparameter tuning (%s/%s) - best loss: %s ... ",
             self._step, self.evaluations,

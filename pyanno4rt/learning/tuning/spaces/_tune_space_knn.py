@@ -88,7 +88,7 @@ class TuneSpaceKNN():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return {'K-Nearest Neighbors': vars(self)}
+        return vars(self)|{'name': 'K-Nearest Neighbors'}
 
     @classmethod
     def from_dict(
@@ -105,7 +105,7 @@ class TuneSpaceKNN():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tune_spaces._tune_space_knn.TuneSpaceKNN`
+            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_knn.TuneSpaceKNN`
             The object used to handle the tune space parameters.
         """
 

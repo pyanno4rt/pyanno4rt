@@ -60,7 +60,7 @@ class TabularDataset():
 
     Attributes
     ----------
-    sources : None or dict
+    _sources : None or dict
         Dictionary with information on the external file sources and handlers.
 
     path : str
@@ -110,7 +110,7 @@ class TabularDataset():
     """
 
     # Map the path extensions to the handlers
-    sources = {
+    _sources = {
         '.csv': ('CSV file', CSVHandler)}
 
     def __init__(
@@ -170,7 +170,7 @@ class TabularDataset():
             dictionary['columns'] = [
                 item.to_dict() for item in dictionary['columns']]
 
-        return {'Tabular': dictionary}
+        return dictionary|{'name': 'Tabular'}
 
     @classmethod
     def from_dict(
@@ -191,19 +191,22 @@ class TabularDataset():
             The object used to represent the dataset.
         """
 
-        # Deserialize the columns
-        dictionary['columns'] = [
-            COLUMNS[key].from_dict(value)
-            for item in dictionary['columns']
-            for key, value in item.items()]
+        # Check if column dictionaries have been passed
+        if dictionary['columns'] is not None:
 
-        return cls(**dictionary)
+            # Deserialize the columns
+            dictionary['columns'] = [
+                COLUMNS[key].from_dict(value)
+                for item in dictionary['columns']
+                for key, value in item.items()]
+
+        return cls(**filter_dict(dictionary, remove_keys=('name',)))
 
     def load(self):
         """Load the dataset."""
 
         # Get the file string and handler
-        source, handler = self.sources[splitext(self.path)[1]]
+        source, handler = self._sources[splitext(self.path)[1]]
 
         # Log a message about loading the dataset
         get_logger().info("Importing dataset from %s ...", source)
@@ -241,7 +244,7 @@ class TabularDataset():
         """
 
         # Get the file string and handler
-        source, handler = self.sources[splitext(path)[1]]
+        source, handler = self._sources[splitext(path)[1]]
 
         # Log a message about saving the dataset
         get_logger().info("Saving dataset to %s ...", source)

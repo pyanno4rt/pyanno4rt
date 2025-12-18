@@ -114,7 +114,7 @@ class CMAES:
         # Initialize the adaptive algorithm variables
         self._wall_start = None
         self._opt_iter = 0
-        self._sigma = 0.1 if initial_sigma is None else initial_sigma
+        self._sigma = 0.3 if initial_sigma is None else initial_sigma
         self._path_sigma = zeros(self._number_of_variables)
         self._path_cov = zeros(self._number_of_variables)
         self._mean = zeros(self._number_of_variables)

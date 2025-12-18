@@ -90,7 +90,7 @@ class TuneSpaceLR():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return {'Logistic Regression': vars(self)}
+        return vars(self)|{'name': 'Logistic Regression'}
 
     @classmethod
     def from_dict(
@@ -107,7 +107,7 @@ class TuneSpaceLR():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tune_spaces._tune_space_lr.TuneSpaceLR`
+            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_lr.TuneSpaceLR`
             The object used to handle the tune space parameters.
         """
 

@@ -73,7 +73,7 @@ class TuneSpaceNB():
     def to_dict(self):
         """Serialize the tune space into a dictionary."""
 
-        return {'Naive Bayes': vars(self)}
+        return vars(self)|{'name': 'Naive Bayes'}
 
     @classmethod
     def from_dict(
@@ -90,7 +90,7 @@ class TuneSpaceNB():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tune_spaces._tune_space_nb.TuneSpaceNB`
+            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nb.TuneSpaceNB`
             The object used to handle the tune space parameters.
         """
 

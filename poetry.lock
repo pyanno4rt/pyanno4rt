@@ -336,13 +336,13 @@ test = ["dateparser (==1.*)", "pre-commit", "pytest", "pytest-cov", "pytest-mock
 
 [[package]]
 name = "astroid"
-version = "3.3.11"
+version = "4.0.2"
 description = "An abstract syntax tree for Python with inference support."
 optional = false
-python-versions = ">=3.9.0"
+python-versions = ">=3.10.0"
 files = [
-    {file = "astroid-3.3.11-py3-none-any.whl", hash = "sha256:54c760ae8322ece1abd213057c4b5bba7c49818853fc901ef09719a60dbf9dec"},
-    {file = "astroid-3.3.11.tar.gz", hash = "sha256:1e5a5011af2920c7c67a53f65d536d65bfa7116feeaf2354d8b94f29573bb0ce"},
+    {file = "astroid-4.0.2-py3-none-any.whl", hash = "sha256:d7546c00a12efc32650b19a2bb66a153883185d3179ab0d4868086f807338b9b"},
+    {file = "astroid-4.0.2.tar.gz", hash = "sha256:ac8fb7ca1c08eb9afec91ccc23edbd8ac73bb22cbdd7da1d488d9fb8d6579070"},
 ]
 
 [package.dependencies]
@@ -2446,13 +2446,13 @@ arrow = ">=0.15.0"
 
 [[package]]
 name = "isort"
-version = "6.1.0"
+version = "7.0.0"
 description = "A Python utility / library to sort Python imports."
 optional = false
-python-versions = ">=3.9.0"
+python-versions = ">=3.10.0"
 files = [
-    {file = "isort-6.1.0-py3-none-any.whl", hash = "sha256:58d8927ecce74e5087aef019f778d4081a3b6c98f15a80ba35782ca8a2097784"},
-    {file = "isort-6.1.0.tar.gz", hash = "sha256:9b8f96a14cfee0677e78e941ff62f03769a06d412aabb9e2a90487b3b7e8d481"},
+    {file = "isort-7.0.0-py3-none-any.whl", hash = "sha256:1bcabac8bc3c36c7fb7b98a76c8abb18e0f841a3ba81decac7691008592499c1"},
+    {file = "isort-7.0.0.tar.gz", hash = "sha256:5513527951aadb3ac4292a41a16cbc50dd1642432f5e8c20057d414bdafb4187"},
 ]
 
 [package.extras]
@@ -5169,24 +5169,24 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pylint"
-version = "3.3.9"
+version = "4.0.4"
 description = "python code static checker"
 optional = false
-python-versions = ">=3.9.0"
+python-versions = ">=3.10.0"
 files = [
-    {file = "pylint-3.3.9-py3-none-any.whl", hash = "sha256:01f9b0462c7730f94786c283f3e52a1fbdf0494bbe0971a78d7277ef46a751e7"},
-    {file = "pylint-3.3.9.tar.gz", hash = "sha256:d312737d7b25ccf6b01cc4ac629b5dcd14a0fcf3ec392735ac70f137a9d5f83a"},
+    {file = "pylint-4.0.4-py3-none-any.whl", hash = "sha256:63e06a37d5922555ee2c20963eb42559918c20bd2b21244e4ef426e7c43b92e0"},
+    {file = "pylint-4.0.4.tar.gz", hash = "sha256:d9b71674e19b1c36d79265b5887bf8e55278cbe236c9e95d22dc82cf044fdbd2"},
 ]
 
 [package.dependencies]
-astroid = ">=3.3.8,<=3.4.0.dev0"
+astroid = ">=4.0.2,<=4.1.dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = [
     {version = ">=0.2", markers = "python_version < \"3.11\""},
     {version = ">=0.3.6", markers = "python_version >= \"3.11\""},
     {version = ">=0.3.7", markers = "python_version >= \"3.12\""},
 ]
-isort = ">=4.2.5,<5.13 || >5.13,<7"
+isort = ">=5,<5.13 || >5.13,<8"
 mccabe = ">=0.6,<0.8"
 platformdirs = ">=2.2"
 tomli = {version = ">=1.1", markers = "python_version < \"3.11\""}
@@ -5683,13 +5683,13 @@ dev = ["pre-commit", "pytest"]
 
 [[package]]
 name = "python-lsp-server"
-version = "1.13.2"
+version = "1.14.0"
 description = "Python Language Server for the Language Server Protocol"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "python_lsp_server-1.13.2-py3-none-any.whl", hash = "sha256:695dbf25a2473494ae31b1b2eefb83341915f6f77bf96d2564da5bcbbf32f7f0"},
-    {file = "python_lsp_server-1.13.2.tar.gz", hash = "sha256:d507fc6be69861740827f4e4dffa1c9b1dec97c0ead859cfef86aa342a4c7904"},
+    {file = "python_lsp_server-1.14.0-py3-none-any.whl", hash = "sha256:a71a917464effc48f4c70363f90b8520e5e3ba8201428da80b97a7ceb259e32a"},
+    {file = "python_lsp_server-1.14.0.tar.gz", hash = "sha256:509c445fc667f41ffd3191cb7512a497bf7dd76c14ceb1ee2f6c13ebe71f9a6b"},
 ]
 
 [package.dependencies]
@@ -5703,7 +5703,7 @@ pluggy = ">=1.0.0"
 pycodestyle = {version = ">=2.12.0,<2.13.0", optional = true, markers = "extra == \"all\""}
 pydocstyle = {version = ">=6.3.0,<6.4.0", optional = true, markers = "extra == \"all\""}
 pyflakes = {version = ">=3.2.0,<3.3.0", optional = true, markers = "extra == \"all\""}
-pylint = {version = ">=3.1,<4", optional = true, markers = "extra == \"all\""}
+pylint = {version = ">=3.1,<4.1.0", optional = true, markers = "extra == \"all\""}
 python-lsp-jsonrpc = ">=1.1.0,<2.0.0"
 rope = {version = ">=1.11.0", optional = true, markers = "extra == \"all\""}
 ujson = ">=3.0.0"
@@ -5711,16 +5711,16 @@ whatthepatch = {version = ">=1.0.2,<2.0.0", optional = true, markers = "extra ==
 yapf = {version = ">=0.33.0", optional = true, markers = "extra == \"all\""}
 
 [package.extras]
-all = ["autopep8 (>=2.0.4,<2.1.0)", "flake8 (>=7.1,<8)", "mccabe (>=0.7.0,<0.8.0)", "pycodestyle (>=2.12.0,<2.13.0)", "pydocstyle (>=6.3.0,<6.4.0)", "pyflakes (>=3.2.0,<3.3.0)", "pylint (>=3.1,<4)", "rope (>=1.11.0)", "whatthepatch (>=1.0.2,<2.0.0)", "yapf (>=0.33.0)"]
+all = ["autopep8 (>=2.0.4,<2.1.0)", "flake8 (>=7.1,<8)", "mccabe (>=0.7.0,<0.8.0)", "pycodestyle (>=2.12.0,<2.13.0)", "pydocstyle (>=6.3.0,<6.4.0)", "pyflakes (>=3.2.0,<3.3.0)", "pylint (>=3.1,<4.1.0)", "rope (>=1.11.0)", "whatthepatch (>=1.0.2,<2.0.0)", "yapf (>=0.33.0)"]
 autopep8 = ["autopep8 (>=2.0.4,<2.1.0)"]
 flake8 = ["flake8 (>=7.1,<8)"]
 mccabe = ["mccabe (>=0.7.0,<0.8.0)"]
 pycodestyle = ["pycodestyle (>=2.12.0,<2.13.0)"]
 pydocstyle = ["pydocstyle (>=6.3.0,<6.4.0)"]
 pyflakes = ["pyflakes (>=3.2.0,<3.3.0)"]
-pylint = ["pylint (>=3.1,<4)"]
+pylint = ["pylint (>=3.1,<4.1.0)"]
 rope = ["rope (>=1.11.0)"]
-test = ["coverage", "flaky", "matplotlib", "numpy", "pandas", "pylint (>=3.1,<4)", "pyqt6", "pytest", "pytest-cov", "websockets (>=10.3)"]
+test = ["coverage", "flaky", "matplotlib", "numpy", "pandas", "pylint (>=3.1,<4.1.0)", "pyqt6", "pytest", "pytest-cov", "websockets (>=10.3)"]
 websockets = ["websockets (>=10.3)"]
 yapf = ["whatthepatch (>=1.0.2,<2.0.0)", "yapf (>=0.33.0)"]
 
@@ -6949,13 +6949,13 @@ test = ["pytest"]
 
 [[package]]
 name = "spyder"
-version = "6.1.1"
+version = "6.1.2"
 description = "The Scientific Python Development Environment"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "spyder-6.1.1-py3-none-any.whl", hash = "sha256:3ad390fbb670c82e17256d281f3d7d0420ce9b9f1459b8d894b6ec18bd5b6e77"},
-    {file = "spyder-6.1.1.tar.gz", hash = "sha256:b30a488e692b1258da3dcd9e03b61b5f05d1baada63af81ae999bcbf869c614e"},
+    {file = "spyder-6.1.2-py3-none-any.whl", hash = "sha256:f1e39e7c692e3683f5d805a09c5d83daa01bae52f8ff00f0a69b92ba7bd117fa"},
+    {file = "spyder-6.1.2.tar.gz", hash = "sha256:6e09228a17eaa881e761eb3982f22f01d43b6ab5009bb36618b6aa9cffcc978d"},
 ]
 
 [package.dependencies]
@@ -6985,14 +6985,14 @@ pickleshare = ">=0.4"
 psutil = ">=5.3"
 pygithub = ">=2.3.0"
 pygments = ">=2.0"
-pylint = ">=3.1,<4"
+pylint = ">=3.1,<5"
 pylint-venv = ">=3.0.2"
 pyls-spyder = ">=0.4.0"
 pyqt5 = ">=5.15,<5.16"
 pyqtwebengine = ">=5.15,<5.16"
 python-lsp-black = ">=2.0.0,<3.0.0"
 python-lsp-ruff = ">=2.3.0,<3.0.0"
-python-lsp-server = {version = ">=1.13.2,<1.14.0", extras = ["all"]}
+python-lsp-server = {version = ">=1.14.0,<1.15.0", extras = ["all"]}
 pyuca = ">=1.2"
 pyxdg = {version = ">=0.26", markers = "platform_system == \"Linux\""}
 pyzmq = ">=24.0.0"
@@ -8139,4 +8139,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <4.0"
-content-hash = "2f1f37692b84d8a465d0a70765f83725202e76e6743fd4093212e0971b1bb440"
+content-hash = "6d4cd3668f9138e230f9b561b3739484b1a4e47a9bf40866ff58926fa8f5bd1a"
