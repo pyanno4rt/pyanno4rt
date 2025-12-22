@@ -322,7 +322,7 @@ class Optimization():
                 partial(validate_item_in_set, options={
                     'lexicographic/ipyopt': ('mumps',),
                     'weighted-sum/ipyopt': ('mumps',),
-                    'weighted-sum/pyanno4rt': ('CMAES',),
+                    'weighted-sum/pyanno4rt': ('CMAES', 'LRCMAES'),
                     'pareto/pymoo': ('NSGA3',),
                     'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),
                     'lexicographic/scipy': ('trust-constr',),

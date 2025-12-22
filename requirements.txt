@@ -299,9 +299,8 @@ directsearch==1.0 ; python_version >= "3.10" and python_version < "4.0" \
 farama-notifications==0.0.4 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:13fceff2d14314cf80703c8266462ebf3733c7d165336eee998fc58e545efd18 \
     --hash=sha256:14de931035a41961f7c056361dc7f980762a143d05791ef5794a751a2caf05ae
-flatbuffers==25.9.23 ; python_version >= "3.10" and python_version < "4.0" \
-    --hash=sha256:255538574d6cb6d0a79a17ec8bc0d30985913b87513a01cce8bcdb6b4c44d0e2 \
-    --hash=sha256:676f9fa62750bb50cf531b42a0a2a118ad8f7f797a511eda12881c016f093b12
+flatbuffers==25.12.19 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4
 fonttools==4.61.1 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:0de30bfe7745c0d1ffa2b0b7048fb7123ad0d71107e10ee090fa0b16b9452e87 \
     --hash=sha256:10d88e55330e092940584774ee5e8a6971b01fc2f4d3466a1d6c158230880796 \
@@ -428,12 +427,12 @@ grpcio==1.76.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:f9f7bd5faab55f47231ad8dba7787866b69f5e93bc306e3915606779bbfb4ba8 \
     --hash=sha256:fd5ef5932f6475c436c4a55e4336ebbe47bd3272be04964a03d316bbf4afbcbc \
     --hash=sha256:ff8a59ea85a1f2191a0ffcc61298c571bc566332f82e5f5be1b83c9d8e668a62
-gymnasium==1.2.2 ; python_version >= "3.10" and python_version < "4.0" \
-    --hash=sha256:46d927328f8518bb5a689dbe270d228c1da2b08bcb71ae0152c10aa66f48d530 \
-    --hash=sha256:f04ec362b1fdf73a8b327db5ef89384a3f2ba411e05d3521513414fbbb2199c8
-gymnasium[classic-control]==1.2.2 ; python_version >= "3.10" and python_version < "4.0" \
-    --hash=sha256:46d927328f8518bb5a689dbe270d228c1da2b08bcb71ae0152c10aa66f48d530 \
-    --hash=sha256:f04ec362b1fdf73a8b327db5ef89384a3f2ba411e05d3521513414fbbb2199c8
+gymnasium==1.2.3 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:2b2cb5b5fbbbdf3afb9f38ca952cc48aa6aa3e26561400d940747fda3ad42509 \
+    --hash=sha256:e6314bba8f549c7fdcc8677f7cd786b64908af6e79b57ddaa5ce1825bffb5373
+gymnasium[classic-control]==1.2.3 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:2b2cb5b5fbbbdf3afb9f38ca952cc48aa6aa3e26561400d940747fda3ad42509 \
+    --hash=sha256:e6314bba8f549c7fdcc8677f7cd786b64908af6e79b57ddaa5ce1825bffb5373
 h5py==3.15.1 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:01f55111ca516f5568ae7a7fc8247dfce607de331b4467ee8a9a6ed14e5422c7 \
     --hash=sha256:0e2f471688402c3404fa4e13466e373e622fd4b74b47b56cfdff7cc688209422 \

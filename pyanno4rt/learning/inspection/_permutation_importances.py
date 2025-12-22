@@ -4,9 +4,8 @@
 
 # %% External package import
 
-from numpy import vstack, where, zeros
+from numpy import unique, vstack, where
 from sklearn.inspection import permutation_importance
-from sklearn.model_selection import RepeatedStratifiedKFold
 
 # %% Internal package import
 
@@ -16,8 +15,7 @@ from pyanno4rt.logging import get_logger
 # %% Function definition
 
 
-def permutation_importances(
-        model, score='AUC', permutations=20, splits=5, repeats=1):
+def permutation_importances(model, score='AUC', permutations=20):
     """
     Compute the permutation importances.
 
@@ -38,12 +36,6 @@ def permutation_importances(
 
     permutations : int, default=20
         Number of permutations.
-
-    splits : int, default=5
-        Number of splits for cross-validated evaluation.
-
-    repeats : int, default=1
-        Number of repeats for cross-validated evaluation.
 
     Returns
     -------
@@ -93,19 +85,27 @@ def permutation_importances(
         # Get the holdout data
         features = model.dataset.holdout_set['feature_values']
         labels = model.dataset.holdout_set['label_values']
+        folds = model.dataset.holdout_set['folds']
 
     else:
 
         # Get the training data
         features = model.dataset.feature_values
         labels = model.dataset.label_values
+        folds = model.dataset.folds
 
     # Map the score labels to the score functions
     scorer = maps.LOSSES[score]
 
+    # Check if a preprocessor has been provided
+    if model.preprocessor is not None:
+
+        # Fit the preprocessor
+        model.fit_preprocessor(features, labels)
+
     # Compute the full data permutation importances
     full_importances = permutation_importance(
-        model.predictor, *model.preprocessor.fit_transform(features, labels),
+        model.predictor, *model.preprocess(features, labels),
         scoring=score_model, n_repeats=permutations, random_state=42)[
             'importances'].T
 
@@ -113,36 +113,7 @@ def permutation_importances(
     get_logger().info(
         "Computing cross-validated permutation importances for '%s' with %s "
         "permutations for %s splits and %s repeats ...",
-        model.label, permutations, splits, repeats)
-
-    # Clamp the number of splits
-    clamped_n_splits = min(splits, sum(labels))
-
-    # Initialize the stratified k-fold cross-validator
-    cross_validator = RepeatedStratifiedKFold(
-        n_splits=5 if clamped_n_splits == 1 else clamped_n_splits,
-        n_repeats=repeats, random_state=4)
-
-    # Get the stratification splits
-    stratifications = tuple(cross_validator.split(features, labels))
-
-    # Divide the splits into chunks (for each repeat)
-    chunks = [
-        stratifications[index:index+splits] for index in range(
-            0, clamped_n_splits*repeats, clamped_n_splits)]
-
-    # Initialize the fold numbers
-    folds = zeros((len(labels), repeats))
-
-    # Loop over the chunks
-    for column, chunk in enumerate(chunks):
-
-        # Loop over the chunk splits
-        for number, (_, validation_index) in enumerate(chunk):
-
-            # Enter the fold number for the validation set repetition
-            folds[validation_index, column] = (
-                int(number) if splits != 1 else 1)
+        model.label, permutations, len(unique(folds)), folds.shape[1])
 
     # Compute the cross-validated permutation importances
     cv_importances = map(compute_fold_importances, (

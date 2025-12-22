@@ -19,15 +19,24 @@ class DoseSubvolume(DosiomicFeature):
     """Subvolume dose feature class."""
 
     @staticmethod
-    def value(dose_cube, subvolume):
+    def value(
+            subvolume,
+            _,
+            *args):
         """
         Compute the subvolume dose.
 
         Parameters
         ----------
+        subvolume : str
+            Subvolume label, e.g. 'x1of2'.
+
+        _ : ndarray
+            Dose array.
+
         *args : tuple
             Optional (non-keyworded) parameters. args[0] should be the dose \
-            cube, and args[1] the label for the subvolume, e.g. 'x1of2'.
+            cube, args[1] the resolution, and args[2] the binary segment mask.
 
         Returns
         -------
@@ -47,7 +56,7 @@ class DoseSubvolume(DosiomicFeature):
             'z': ([2, 0, 1], [2, 1, 0])}
 
         # Get the dose cube
-        dose_cube = array(dose_cube)
+        dose_cube = array(args[0])
 
         # Get the subvolume index
         subvolume_index = int32(subvolume[1])
@@ -72,6 +81,7 @@ class DoseSubvolume(DosiomicFeature):
 
     @staticmethod
     def compute(
+            subvolume,
             dose,
             *args):
         """
@@ -79,12 +89,15 @@ class DoseSubvolume(DosiomicFeature):
 
         Parameters
         ----------
-        dose : ndarray
+        subvolume : str
+            Subvolume label, e.g. 'x1of2'.
+
+        _ : ndarray
             Dose array.
 
         *args : tuple
             Optional (non-keyworded) parameters. args[0] should be the dose \
-            cube, and args[1] the label for the subvolume, e.g. 'x1of2'.
+            cube, args[1] the resolution, and args[2] the binary segment mask.
 
         Returns
         -------
@@ -101,10 +114,11 @@ class DoseSubvolume(DosiomicFeature):
             # Set 'value_is_jitted' to True
             DoseSubvolume.value_is_jitted = True
 
-        return DoseSubvolume.value_function(args[0], args[1])
+        return DoseSubvolume.value_function(subvolume, dose, *args)
 
     @staticmethod
     def differentiate(
+            subvolume,
             dose,
             *args):
         """
@@ -112,12 +126,15 @@ class DoseSubvolume(DosiomicFeature):
 
         Parameters
         ----------
-        dose : ndarray
+        subvolume : str
+            Subvolume label, e.g. 'x1of2'.
+
+        _ : ndarray
             Dose array.
 
         *args : tuple
             Optional (non-keyworded) parameters. args[0] should be the dose \
-            cube, and args[1] the label for the subvolume, e.g. 'x1of2'.
+            cube, args[1] the resolution, and args[2] the binary segment mask.
 
         Returns
         -------
@@ -130,9 +147,10 @@ class DoseSubvolume(DosiomicFeature):
 
             # Perform the jitting
             DoseSubvolume.gradient_function = grad(
-                DoseSubvolume.value, argnums=1)
+                DoseSubvolume.value, argnums=2)
 
             # Set 'gradient_is_jitted' to True
             DoseSubvolume.gradient_is_jitted = True
 
-        return DoseSubvolume.gradient_function(args[0], args[1]).reshape(-1)
+        return DoseSubvolume.gradient_function(
+            subvolume, dose, *args).reshape(-1)

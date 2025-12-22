@@ -9,7 +9,7 @@ from numpy import around, array, log
 # %% Internal package import
 
 from pyanno4rt.logging import get_logger
-from pyanno4rt.optimization.solvers.custom import CMAES
+from pyanno4rt.optimization.solvers.custom import CMAES, LRCMAES
 
 # %% Class definition
 
@@ -112,6 +112,29 @@ class Pyanno4rtSolver():
 
             # Set the optimization function
             self.instance = CMAES
+
+            # Initialize the arguments dictionary
+            self.arguments = {
+                'number_of_variables': len(problem.initial_fluence),
+                'objective': problem.objective,
+                'lower_variable_bounds': array(problem.variable_bounds[0]),
+                'upper_variable_bounds': array(problem.variable_bounds[1]),
+                'gradient': problem.gradient,
+                'number_of_individuals': None,
+                'initial_sigma': 0.1,
+                'maximum_iterations': self.maximum_iterations,
+                'maximum_wall_time': 7200,
+                'fitness_threshold': None,
+                'fitness_window_size': int(20*log(self.maximum_iterations)),
+                'sigma_threshold': 1e-3,
+                'tolerance': self.tolerance,
+                'callback': self.callback}
+
+        # Check if the algorithm is 'LRCMAES'
+        elif self.algorithm == 'LRCMAES':
+
+            # Set the optimization function
+            self.instance = LRCMAES
 
             # Initialize the arguments dictionary
             self.arguments = {

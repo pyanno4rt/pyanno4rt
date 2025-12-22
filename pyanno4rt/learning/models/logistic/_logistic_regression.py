@@ -329,7 +329,8 @@ class LogisticRegression():
         if self.tuner is not None:
 
             # Search the hyperparameter set
-            proposal = self.tuner.search(deepcopy(self), features, labels)
+            proposal = self.tuner.search(
+                deepcopy(self), features, labels, self.dataset.folds)
 
             # Check if a Bayesian hyperparameter tuner has been provided
             if isinstance(self.tuner, TUNERS['Bayes']):

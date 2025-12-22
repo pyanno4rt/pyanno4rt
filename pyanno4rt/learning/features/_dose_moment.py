@@ -19,15 +19,24 @@ class DoseMoment(DosiomicFeature):
     """Dose moment feature class."""
 
     @staticmethod
-    def value(*args):
+    def value(
+            coefficients,
+            _,
+            *args):
         """
         Compute the dose moment.
 
         Parameters
         ----------
+        coefficients : str
+            Moment coefficient string, e.g. '111'.
+
+        _ : ndarray
+            Dose array.
+
         *args : tuple
             Optional (non-keyworded) parameters. args[0] should be the dose \
-            cube, and args[1] the moment coefficient string, e.g. '111'.
+            cube, args[1] the resolution, and args[2] the binary segment mask.
 
         Returns
         -------
@@ -44,11 +53,12 @@ class DoseMoment(DosiomicFeature):
         dose_cube = args[0]
 
         # Get the coefficients of the moment function from the argument
-        coeff_1, coeff_2, coeff_3 = tuple(map(int32, args[1]))
+        coeff_1, coeff_2, coeff_3 = tuple(map(int32, coefficients))
 
         # Determine the axis points from a meshed grid
         points_x, points_y, points_z = meshgrid(
-            array(range(dose_cube.shape[0])), array(range(dose_cube.shape[1])),
+            array(range(dose_cube.shape[0])),
+            array(range(dose_cube.shape[1])),
             array(range(dose_cube.shape[2])))
 
         # Compute the means of the axis points
@@ -67,6 +77,7 @@ class DoseMoment(DosiomicFeature):
 
     @staticmethod
     def compute(
+            coefficients,
             dose,
             *args):
         """
@@ -74,12 +85,15 @@ class DoseMoment(DosiomicFeature):
 
         Parameters
         ----------
+        coefficients : str
+            Moment coefficient string, e.g. '111'.
+
         dose : ndarray
             Dose array.
 
         *args : tuple
             Optional (non-keyworded) parameters. args[0] should be the dose \
-            cube, and args[1] the moment coefficient string, e.g. '111'.
+            cube, args[1] the resolution, and args[2] the binary segment mask.
 
         Returns
         -------
@@ -96,10 +110,11 @@ class DoseMoment(DosiomicFeature):
             # Set 'value_is_jitted' to True
             DoseMoment.value_is_jitted = True
 
-        return DoseMoment.value_function(*args)
+        return DoseMoment.value_function(coefficients, dose, *args)
 
     @staticmethod
     def differentiate(
+            coefficients,
             dose,
             *args):
         """
@@ -107,12 +122,15 @@ class DoseMoment(DosiomicFeature):
 
         Parameters
         ----------
+        coefficients : str
+            Moment coefficient string, e.g. '111'.
+
         dose : ndarray
             Dose array.
 
         *args : tuple
             Optional (non-keyworded) parameters. args[0] should be the dose \
-            cube, and args[1] the moment coefficient string, e.g. '111'.
+            cube, args[1] the resolution, and args[2] the binary segment mask.
 
         Returns
         -------
@@ -125,9 +143,10 @@ class DoseMoment(DosiomicFeature):
 
             # Perform the jitting
             DoseMoment.gradient_function = jit(grad(
-                DoseMoment.value, argnums=1), static_argnums=2)
+                DoseMoment.value, argnums=2), static_argnums=0)
 
             # Set 'gradient_is_jitted' to True
             DoseMoment.gradient_is_jitted = True
 
-        return DoseMoment.gradient_function(*args).reshape(-1)
+        return DoseMoment.gradient_function(
+            coefficients, dose, *args).reshape(-1)

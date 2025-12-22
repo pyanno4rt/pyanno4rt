@@ -5,16 +5,13 @@
 # %% External package import
 
 from copy import deepcopy
-from functools import partial
-from numpy import where, zeros
-from sklearn.model_selection import RepeatedStratifiedKFold
+from numpy import unique, where, zeros
 
 # %% Internal package import
 
 from pyanno4rt.learning.evaluation import auc_pr, auc_roc, f1, kpi
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import filter_dict
-from pyanno4rt.validation import validate_item, validate_type
 
 # %% Class definition
 
@@ -25,30 +22,13 @@ class ModelEvaluator():
 
     This class provides methods to evaluate an outcome model.
 
-    Parameters
-    ----------
-    splits : int, default=5
-        Number of splits for the out-of-folds evaluation.
-
-    repeats : int, default=1
-        Number of repeats for the out-of-folds evaluation.
-
     Attributes
     ----------
-    splits : int
-        See 'Parameters'.
-
-    repeats : int
-        See 'Parameters'.
-
     results : dict
         Dictionary with the model evaluation results.
     """
 
-    def __init__(
-            self,
-            splits,
-            repeats):
+    def __init__(self):
 
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
@@ -58,10 +38,6 @@ class ModelEvaluator():
 
         # Log a message about the initialization of the model evaluator
         get_logger().info("Initializing model evaluator ...")
-
-        # Get the input attributes
-        self.splits = splits
-        self.repeats = repeats
 
         # Initialize the results dictionary
         self.results = {}
@@ -126,58 +102,6 @@ class ModelEvaluator():
             (self.results['f1']['Full']['best'],
              self.results['f1']['Cross-validated']['best']))
 
-    def get_folds(
-            self,
-            features,
-            labels):
-        """
-        Get the fold numbers for cross-validation.
-
-        Parameters
-        ----------
-        features : ndarray
-            Values of the input features.
-
-        labels : ndarray
-            Values of the input labels.
-
-        Returns
-        -------
-        ndarray
-            Fold numbers.
-        """
-
-        # Clamp the number of splits
-        clamped_n_splits = min(self.splits, sum(labels))
-
-        # Initialize the stratified k-fold cross-validator
-        cross_validator = RepeatedStratifiedKFold(
-            n_splits=5 if clamped_n_splits == 1 else clamped_n_splits,
-            n_repeats=self.repeats, random_state=1)
-
-        # Get the stratification splits
-        splits = tuple(cross_validator.split(features, labels))
-
-        # Divide the splits into chunks (for each repeat)
-        chunks = [
-            splits[index:index+self.splits] for index in range(
-                0, clamped_n_splits*self.repeats, clamped_n_splits)]
-
-        # Initialize the fold numbers
-        folds = zeros((len(labels), self.repeats))
-
-        # Loop over the chunks
-        for column, chunk in enumerate(chunks):
-
-            # Loop over the chunk splits
-            for number, (_, validation_index) in enumerate(chunk):
-
-                # Enter the fold number for the validation set repetition
-                folds[validation_index, column] = (
-                    int(number) if self.splits != 1 else 1)
-
-        return folds
-
     def run(
             self,
             model):
@@ -224,12 +148,14 @@ class ModelEvaluator():
             # Get the holdout data
             features = model.dataset.holdout_set['feature_values']
             labels = model.dataset.holdout_set['label_values']
+            folds = model.dataset.holdout_set['folds']
 
         else:
 
             # Get the training data
             features = model.dataset.feature_values
             labels = model.dataset.label_values
+            folds = model.dataset.folds
 
         # Log a message about the full data prediction
         get_logger().info(
@@ -242,13 +168,10 @@ class ModelEvaluator():
         get_logger().info(
             "Performing %s-fold cross-validation with %s repeat(s) to yield "
             "out-of-folds predictions for '%s' ...",
-            self.splits, self.repeats, model.label)
+            len(unique(folds)), folds.shape[1], model.label)
 
         # Initialize the array for the out-of-folds predictions
         cv_prediction = zeros((len(labels),))
-
-        # Get the fold numbers
-        folds = self.get_folds(features, labels)
 
         # Get the repeated cross-validation returns
         cv_returns = (map(compute_fold_labels, (
@@ -280,16 +203,7 @@ class ModelEvaluator():
             Dictionary with the mappings between argument names and values.
         """
 
-        validation_map = {
-            'splits': (
-                partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')
-                ),
-            'repeats': (
-                partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')
-                )
-            }
+        validation_map = {}
 
         # Loop over the dictionary items
         for key, value in inputs.items():

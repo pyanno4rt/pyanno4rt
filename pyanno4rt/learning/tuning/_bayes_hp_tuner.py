@@ -9,8 +9,9 @@ from statistics import mean
 from copy import deepcopy
 from functools import partial
 from hyperopt import fmin, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
-from numpy import where, zeros
-from sklearn.model_selection import RepeatedStratifiedKFold
+from numpy import unique, where
+from warnings import filterwarnings
+filterwarnings(action='ignore')
 
 # %% Internal package import
 
@@ -45,12 +46,6 @@ class BayesHPTuner():
     score : {'AUC', 'Brier score', 'Logloss'}, default='AUC'
         Scoring function for the hyperparameter set evaluation.
 
-    splits : int, default=5
-        Number of splits for cross-validation.
-
-    repeats : int, default=1
-        Number of repeats for cross-validation.
-
     Attributes
     ----------
     space : object of class \
@@ -69,12 +64,6 @@ class BayesHPTuner():
     score : {'AUC', 'Brier score', 'Logloss'}
         See 'Parameters'.
 
-    splits : int
-        See 'Parameters'.
-
-    repeats : int
-        See 'Parameters'.
-
     _step : int
         Step counter.
     """
@@ -83,9 +72,7 @@ class BayesHPTuner():
             self,
             space,
             evaluations=25,
-            score='AUC',
-            splits=5,
-            repeats=1):
+            score='AUC'):
 
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
@@ -97,8 +84,6 @@ class BayesHPTuner():
         self.space = space
         self.evaluations = evaluations
         self.score = score
-        self.splits = splits
-        self.repeats = repeats
 
         # Initialize the step counter
         self._step = None
@@ -144,7 +129,8 @@ class BayesHPTuner():
             self,
             model,
             features,
-            labels):
+            labels,
+            folds):
         """
         Search the hyperparameter tune space.
 
@@ -159,6 +145,9 @@ class BayesHPTuner():
 
         labels : ndarray
             Values of the input labels.
+
+        folds : ndarray
+            Fold numbers for cross-validation.
 
         Returns
         -------
@@ -258,7 +247,8 @@ class BayesHPTuner():
         # Log a message about the hyperparameter tuning
         get_logger().info(
             "Performing Bayesian hyperparameter search with %s-fold "
-            "cross-validation and %s repeat(s) ...", self.splits, self.repeats)
+            "cross-validation and %s repeat(s) ...",
+            len(unique(folds)), folds.shape[1])
 
         # Initialize the step variable
         self._step = 0
@@ -268,9 +258,6 @@ class BayesHPTuner():
 
         # Get the score function
         scorer = maps.LOSSES[self.score]
-
-        # Get the tune folds
-        folds = self.get_folds(features, labels)
 
         # Generate a trials object for the evaluation history
         bayes_trials = Trials()
@@ -293,58 +280,6 @@ class BayesHPTuner():
             round(min(filter(None, bayes_trials.losses())), 4))
 
         return hyperparameters
-
-    def get_folds(
-            self,
-            features,
-            labels):
-        """
-        Get the fold numbers for cross-validation.
-
-        Parameters
-        ----------
-        features : ndarray
-            Values of the input features.
-
-        labels : ndarray
-            Values of the input labels.
-
-        Returns
-        -------
-        ndarray
-            Fold numbers.
-        """
-
-        # Clamp the number of splits
-        clamped_n_splits = min(self.splits, sum(labels))
-
-        # Initialize the stratified k-fold cross-validator
-        cross_validator = RepeatedStratifiedKFold(
-            n_splits=5 if clamped_n_splits == 1 else clamped_n_splits,
-            n_repeats=self.repeats, random_state=3)
-
-        # Get the stratification splits
-        splits = tuple(cross_validator.split(features, labels))
-
-        # Divide the splits into chunks (for each repeat)
-        chunks = [
-            splits[index:index+self.splits] for index in range(
-                0, clamped_n_splits*self.repeats, clamped_n_splits)]
-
-        # Initialize the fold numbers
-        folds = zeros((len(labels), self.repeats))
-
-        # Loop over the chunks
-        for column, chunk in enumerate(chunks):
-
-            # Loop over the chunk splits
-            for number, (_, validation_index) in enumerate(chunk):
-
-                # Enter the fold number for the validation set repetition
-                folds[validation_index, column] = (
-                    int(number) if self.splits != 1 else 1)
-
-        return folds
 
     def validate(
             self,
@@ -370,14 +305,6 @@ class BayesHPTuner():
             'score': (
                 partial(validate_type, options=str),
                 partial(validate_item_in_set, options=(*maps.LOSSES,))
-                ),
-            'splits': (
-                partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')
-                ),
-            'repeats': (
-                partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')
                 )
             }
 

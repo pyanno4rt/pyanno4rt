@@ -192,8 +192,9 @@ class DVHGraphCompareWidget(QWidget):
                 number_of_fractions=self.baseline.configuration.number_of_fractions)
             dosimetrics.evaluate_segments(
                 self.baseline.patient_handler.segmentation,
-                self.baseline.datahub.optimization['optimized_dose']
-                - self.reference.datahub.optimization['optimized_dose'])
+                self.baseline.plan_handler.components,
+                self.baseline.fluence_optimizer.optimized_dose
+                - self.reference.fluence_optimizer.optimized_dose)
             quantities = dosimetrics.quantities
 
         # Loop over the items

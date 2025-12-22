@@ -19,16 +19,24 @@ class DoseGradient(DosiomicFeature):
     """Dose gradient feature class."""
 
     @staticmethod
-    def value(*args):
+    def value(
+            axis,
+            dose,
+            *args):
         """
         Compute the dose gradient.
 
         Parameters
         ----------
+        axis : {'x', 'y', 'z'}
+            Direction of the gradient.
+
+        dose : ndarray
+            Dose array.
+
         *args : tuple
             Optional (non-keyworded) parameters. args[0] should be the dose \
-            cube, args[1] the resolution, args[2] the binary segment mask, \
-            and args[3] the axis label, e.g. 'x'.
+            cube, args[1] the resolution, and args[2] the binary segment mask.
 
         Returns
         -------
@@ -43,7 +51,7 @@ class DoseGradient(DosiomicFeature):
             'z': [args[1][2], 2]}
 
         # Extract the arguments
-        resolution, grad_axis = axis_to_args[args[3]]
+        resolution, grad_axis = axis_to_args[axis]
 
         # Compute the gradient
         grad = gradient(args[0], resolution, axis=grad_axis)*args[2]
@@ -52,6 +60,7 @@ class DoseGradient(DosiomicFeature):
 
     @staticmethod
     def compute(
+            axis,
             dose,
             *args):
         """
@@ -59,13 +68,15 @@ class DoseGradient(DosiomicFeature):
 
         Parameters
         ----------
+        axis : {'x', 'y', 'z'}
+            Direction of the gradient.
+
         dose : ndarray
             Dose array.
 
         *args : tuple
             Optional (non-keyworded) parameters. args[0] should be the dose \
-            cube, args[1] the resolution, args[2] the binary segment mask, \
-            and args[3] the axis label, e.g. 'x'.
+            cube, args[1] the resolution, and args[2] the binary segment mask.
 
         Returns
         -------
@@ -78,15 +89,16 @@ class DoseGradient(DosiomicFeature):
 
             # Perform the jitting
             DoseGradient.value_function = jit(
-                DoseGradient.value, static_argnums=3)
+                DoseGradient.value, static_argnums=0)
 
             # Set 'value_is_jitted' to True
             DoseGradient.value_is_jitted = True
 
-        return DoseGradient.value_function(*args)
+        return DoseGradient.value_function(axis, dose, *args)
 
     @staticmethod
     def differentiate(
+            axis,
             dose,
             *args):
         """
@@ -94,13 +106,15 @@ class DoseGradient(DosiomicFeature):
 
         Parameters
         ----------
+        axis : {'x', 'y', 'z'}
+            Direction of the gradient.
+
         dose : ndarray
             Dose array.
 
         *args : tuple
             Optional (non-keyworded) parameters. args[0] should be the dose \
-            cube, args[1] the resolution, args[2] the binary segment mask, \
-            and args[3] the axis label, e.g. 'x'.
+            cube, args[1] the resolution, and args[2] the binary segment mask.
 
         Returns
         -------
@@ -113,9 +127,9 @@ class DoseGradient(DosiomicFeature):
 
             # Perform the jitting
             DoseGradient.gradient_function = jit(grad(
-                DoseGradient.value, argnums=0), static_argnums=3)
+                DoseGradient.value, argnums=2), static_argnums=0)
 
             # Set 'gradient_is_jitted' to True
             DoseGradient.gradient_is_jitted = True
 
-        return DoseGradient.gradient_function(*args).reshape(-1)
+        return DoseGradient.gradient_function(axis, dose, *args).reshape(-1)

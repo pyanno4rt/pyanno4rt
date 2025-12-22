@@ -30,24 +30,12 @@ class ModelInspector():
     pi_permutations : int, default=20
         Number of permutations for permutation importance.
 
-    pi_splits : int, default=5
-        Number of splits for multi-run permutation importance.
-
-    pi_repeats : int, default=1
-        Number of repeats for multi-run permutation importance.
-
     Attributes
     ----------
     pi_score : {'AUC', 'Brier score', 'Logloss'}
         See 'Parameters'.
 
     pi_permutations : int
-        See 'Parameters'.
-
-    pi_splits : int
-        See 'Parameters'.
-
-    pi_repeats : int
         See 'Parameters'.
 
     results : dict
@@ -57,9 +45,7 @@ class ModelInspector():
     def __init__(
             self,
             pi_score='AUC',
-            pi_permutations=20,
-            pi_splits=5,
-            pi_repeats=1):
+            pi_permutations=20):
 
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
@@ -70,8 +56,6 @@ class ModelInspector():
         # Get the input attributes
         self.pi_score = pi_score
         self.pi_permutations = pi_permutations
-        self.pi_splits = pi_splits
-        self.pi_repeats = pi_repeats
 
         # Initialize the result dictionary
         self.results = {}
@@ -126,8 +110,7 @@ class ModelInspector():
 
         # Compute the permutation importances
         self.results['permutation_importances'] = permutation_importances(
-            model, self.pi_score, self.pi_permutations, self.pi_splits,
-            self.pi_repeats)
+            model, self.pi_score, self.pi_permutations)
 
     def validate(
             self,
@@ -147,14 +130,6 @@ class ModelInspector():
                 partial(validate_item_in_set, options=(*maps.LOSSES,))
                 ),
             'pi_permutations': (
-                partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')
-                ),
-            'pi_splits': (
-                partial(validate_type, options=int),
-                partial(validate_item, reference=1, sign='>=')
-                ),
-            'pi_repeats': (
                 partial(validate_type, options=int),
                 partial(validate_item, reference=1, sign='>=')
                 )

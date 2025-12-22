@@ -10,8 +10,8 @@ from os.path import abspath, splitext
 from copy import deepcopy
 from functools import partial
 from itertools import compress, tee
-from numpy import arange, array, logical_and, seterr, vstack, where
-from sklearn.model_selection import train_test_split
+from numpy import arange, array, logical_and, seterr, vstack, where, zeros
+from sklearn.model_selection import RepeatedStratifiedKFold, train_test_split
 
 # %% Internal package import
 
@@ -52,11 +52,14 @@ class TabularDataset():
 
         - :class:`~pyanno4rt.learning.features._columns.StaticFeature`
 
-        .. note:: This list acts as a filter on the raw dataset, i.e., after \
-            loading the external file, only columns included will be retained.
-
     holdout : int, default=None
-        Size of the holdout set.
+        Size of the holdout set (absolute).
+
+    splits : int, default=5
+        Number of splits for cross-validation.
+
+    repeats : int, default=1
+        Number of repeats for cross-validation.
 
     Attributes
     ----------
@@ -70,6 +73,12 @@ class TabularDataset():
         See 'Parameters'.
 
     holdout : int
+        See 'Parameters'.
+
+    splits : int
+        See 'Parameters'.
+
+    repeats : int
         See 'Parameters'.
 
     dataframe : object of class :class:`~pandas.core.frame.DataFrame`
@@ -102,6 +111,9 @@ class TabularDataset():
     time_variable_values : ndarray
         Time variable values.
 
+    folds : ndarray
+        Fold numbers for cross-validation.
+
     feature_map : dict
         Dictionary with mappings between features and calculation functions.
 
@@ -117,7 +129,9 @@ class TabularDataset():
             self,
             path,
             columns=None,
-            holdout=None):
+            holdout=None,
+            splits=5,
+            repeats=1):
 
         # Check if a path has been provided
         if path is not None:
@@ -138,6 +152,8 @@ class TabularDataset():
         self.path = path
         self.columns = columns
         self.holdout = holdout
+        self.splits = splits
+        self.repeats = repeats
 
         # Initialize the data attributes
         self.dataframe = None
@@ -150,6 +166,7 @@ class TabularDataset():
         self.label_viewpoint = None
         self.time_variable_name = None
         self.time_variable_values = None
+        self.folds = None
 
         # Initialize the feature map
         self.feature_map = None
@@ -214,14 +231,8 @@ class TabularDataset():
         # Load the dataset
         self.dataframe = handler().load(self.path)
 
-        # Check if column information has been provided
-        if self.columns is not None:
-
-            # Slice the dataset
-            self.dataframe = self.dataframe[[
-                item.column for item in self.columns]]
-
-        else:
+        # Check if no column information has been provided
+        if self.columns is None:
 
             # Log a message about inferring the column information
             get_logger().warning(
@@ -230,6 +241,13 @@ class TabularDataset():
 
             # Infer the column information
             self.columns = self.infer_columns()
+
+        # Map the column names to the index position in the dataframe
+        order = {name: i for i, name in enumerate(self.dataframe.columns)}
+
+        # Sort the column objects by their order in the dataframe
+        self.columns = sorted(
+            self.columns, key=lambda x: order.get(x.column, float('inf')))
 
     def save(
             self,
@@ -292,6 +310,9 @@ class TabularDataset():
 
         # Binarize the label values
         self._binarize()
+
+        # Get the folds
+        self._get_folds()
 
         # Check if a holdout set should be created
         if self.holdout is not None:
@@ -410,6 +431,42 @@ class TabularDataset():
             (self.label_values >= label_bounds[0])
             & (self.label_values <= label_bounds[1]), 1, 0)
 
+    def _get_folds(self):
+        """Get the fold numbers for cross-validation."""
+
+        # Clamp the number of splits
+        clamped_n_splits = min(self.splits, sum(self.label_values))
+
+        # Initialize the stratified k-fold cross-validator
+        cross_validator = RepeatedStratifiedKFold(
+            n_splits=5 if clamped_n_splits == 1 else clamped_n_splits,
+            n_repeats=self.repeats, random_state=123)
+
+        # Get the stratification splits
+        splits = tuple(cross_validator.split(
+            self.feature_values, self.label_values))
+
+        # Divide the splits into chunks (for each repeat)
+        chunks = [
+            splits[index:index+self.splits] for index in range(
+                0, clamped_n_splits*self.repeats, clamped_n_splits)]
+
+        # Initialize the fold numbers
+        folds = zeros((len(self.label_values), self.repeats))
+
+        # Loop over the chunks
+        for column, chunk in enumerate(chunks):
+
+            # Loop over the chunk splits
+            for number, (_, validation_index) in enumerate(chunk):
+
+                # Enter the fold number for the validation set repetition
+                folds[validation_index, column] = (
+                    int(number) if self.splits != 1 else 1)
+
+        # Store the fold numbers
+        self.folds = folds
+
     def _create_holdout(self):
         """Create the holdout dataset."""
 
@@ -430,7 +487,8 @@ class TabularDataset():
             'dataframe': self.dataframe.iloc[holdout_indices],
             'feature_values': self.feature_values[holdout_indices],
             'label_values': self.label_values[holdout_indices],
-            'time_variable_values': self.time_variable_values[holdout_indices]
+            'time_variable_values': self.time_variable_values[holdout_indices],
+            'folds': self.folds[holdout_indices]
             }
 
         # Reduce the training data
@@ -438,6 +496,7 @@ class TabularDataset():
         self.feature_values = self.feature_values[train_indices]
         self.label_values = self.label_values[train_indices]
         self.time_variable_values = self.time_variable_values[train_indices]
+        self.folds = self.folds[train_indices]
 
     def _build_map(self):
         """Build the feature map."""
@@ -509,6 +568,14 @@ class TabularDataset():
             'holdout': (
                 partial(validate_type, options=(type(None), int)),
                 partial(validate_item, reference=0, sign='>')
+                ),
+            'splits': (
+                partial(validate_type, options=int),
+                partial(validate_item, reference=1, sign='>=')
+                ),
+            'repeats': (
+                partial(validate_type, options=int),
+                partial(validate_item, reference=1, sign='>=')
                 )
             }
 
