@@ -7,7 +7,7 @@
 from time import time
 
 from functools import reduce
-from numpy import union1d
+from numpy import load, save, union1d
 from scipy.ndimage import zoom
 
 # %% Internal package import
@@ -537,6 +537,62 @@ class FluenceOptimizer():
 
             # Reset the feature history
             feature_calculator.feature_history = []
+
+    def load_fluence(
+            self,
+            path):
+        """
+        Load the fluence array from a path.
+
+        Parameters
+        ----------
+        path : str
+            Path for loading the fluence array.
+        """
+
+        self.optimized_fluence = load(path)
+
+    def save_fluence(
+            self,
+            path):
+        """
+        Save the fluence to a binary file.
+
+        Parameters
+        ----------
+        path : str
+            Path for storing the optimized fluence array.
+        """
+
+        save(f'{path}/optimized_fluence.npy', self.optimized_fluence)
+
+    def load_dose(
+            self,
+            path):
+        """
+        Load the dose array from a path.
+
+        Parameters
+        ----------
+        path : str
+            Path for loading the dose array.
+        """
+
+        self.optimized_dose = load(path)
+
+    def save_dose(
+            self,
+            path):
+        """
+        Save the dose array to a binary file.
+
+        Parameters
+        ----------
+        path : str
+            Path for storing the optimized dose array.
+        """
+
+        save(f'{path}/optimized_dose.npy', self.optimized_dose)
 
     def log_outcome(self):
         """Log the outcome model-based component results."""

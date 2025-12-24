@@ -2,6 +2,10 @@
 
 # Author: Tim Ortkamp
 
+# %% External package import
+
+from copy import deepcopy
+
 # %% Internal package import
 
 # Functional classes
@@ -154,7 +158,7 @@ class TreatmentPlan():
     def configure(self):
         """Configure the treatment plan."""
 
-        with self.context():
+        with self._context():
 
             # Validate the configuration parameters
             self.configuration.validate(vars(self.configuration))
@@ -202,7 +206,7 @@ class TreatmentPlan():
     def model(self):
         """Model the treatment plan outcome."""
 
-        with self.context():
+        with self._context():
 
             # Check if the plan has not been configured yet
             if None in (
@@ -246,7 +250,7 @@ class TreatmentPlan():
     def optimize(self):
         """Optimize the treatment plan."""
 
-        with self.context():
+        with self._context():
 
             # Check if the plan has not been configured yet
             if None in (
@@ -306,7 +310,7 @@ class TreatmentPlan():
     def evaluate(self):
         """Evaluate the treatment plan."""
 
-        with self.context():
+        with self._context():
 
             # Check if the plan has not been optimized yet
             if (self.fluence_optimizer is None
@@ -360,7 +364,7 @@ class TreatmentPlan():
             The object used as a parent window for the visualizer.
         """
 
-        with self.context():
+        with self._context():
 
             # Initialize the visualizer
             self.visualizer = Visualizer(treatment_plan=self, parent=parent)
@@ -496,7 +500,7 @@ class TreatmentPlan():
 
         # Take a snapshot
         snapshot(
-            self, path, include_patient_data, include_dose_matrix,
+            deepcopy(self), path, include_patient_data, include_dose_matrix,
             include_model_data, include_optimum)
 
     @staticmethod
@@ -526,7 +530,45 @@ class TreatmentPlan():
 
         return copycat(TreatmentPlan, path, ignore_optimum)
 
-    def context(self):
+    def __deepcopy__(
+            self,
+            memo):
+        """
+        Return a deep copy of the object.
+
+        Parameters
+        ----------
+        memo : dict
+            Dictionary of objects already copied.
+
+        Returns
+        -------
+        object of class :class:`~pyanno4rt.base._treatment_plan.TreatmentPlan`
+            The object used to represent the (pickable) treatment plan.
+        """
+
+        # Create a new instance
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+
+        # Loop over the instance attributes
+        for key, value in self.__dict__.items():
+
+            # Check if the visualizer attribute is considered
+            if key == 'visualizer':
+
+                # Skip the non-picklable attribute
+                setattr(result, key, None)
+
+            else:
+
+                # Pickle the attribute
+                setattr(result, key, deepcopy(value, memo))
+
+        return result
+
+    def _context(self):
         """Set the context manager variables."""
 
         return set_logger_name(f'pyanno4rt - {self.configuration.label}')

@@ -299,9 +299,6 @@ class TabularDataset():
     def generate(self):
         """Generate the data attributes."""
 
-        # Load the dataset
-        self.load()
-
         # Decompose the dataset
         self._decompose()
 

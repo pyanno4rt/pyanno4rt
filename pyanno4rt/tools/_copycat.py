@@ -5,14 +5,10 @@
 # %% External package import
 
 from glob import glob
-from os import listdir, walk
+from os.path import abspath
 
 from json import load
 from numpy import load as npload
-
-# %% Internal package import
-
-from pyanno4rt.tools import apply
 
 # %% Function definition
 
@@ -38,31 +34,13 @@ def copycat(base_class, path, ignore_optimum=False):
         The object used to represent the treatment plan.
     """
 
-    # def update_model_paths(inputs):
-    #     """Update the model folder and data path for a component."""
+    # Get the copycat folder path
+    copy_path = abspath(path)
 
-    #     # Get the model path and the component
-    #     path, component = inputs
+    # Open a file stream for the input parameters
+    with open(f'{copy_path}/input.json', 'r', encoding='utf-8') as file:
 
-    #     # Update the model path
-    #     component.model_parameters.model_folder_path = path
-
-    #     # Reset the data path
-    #     component.model_parameters.data_path = None
-
-    #     # Loop over the model path files
-    #     for filename in listdir(path):
-
-    #         # Check if the data file exists
-    #         if 'model_data' in filename:
-
-    #             # Update the data path
-    #             component.model_parameters.data_path = f'{path}/{filename}'
-
-    # Open a file stream
-    with open(f'{path}/input.json', 'r', encoding='utf-8') as file:
-
-        # Load the input parameter dictionaries
+        # Load the parameter dictionaries
         inputs = load(file)
 
     # Search for the stored data
@@ -92,18 +70,31 @@ def copycat(base_class, path, ignore_optimum=False):
         # Set the maximum number of iterations to zero
         inputs['optimization']['maximum_iterations'] = 0
 
+    # Get the folder/model links
+    model_components = (
+        (f'{path}/{component.model.label}', component)
+        for component in inputs['optimization']['components']
+        if 'Outcome' in next(iter(component)))
+
+    #
+    for path, component in model_components:
+
+        # Update the model path
+        component.model.path = path
+
+        #
+        component.model.load()
+
+        #
+        snap_model_data = glob(path+'/dataset*')
+
+        #
+        if len(snap_model_data) == 1:
+
+            #
+            component.model.dataset.path = snap_model_data[0]
+
     # Initialize the treatment plan instance
     treatment_plan = base_class(**inputs)
-
-    # # Get the folder/model links
-    # links = (
-    #     (f'{path}/{folder_name}', next(
-    #         component for component in treatment_plan.optimization.components
-    #         if (hasattr(component, 'model_parameters')
-    #             and component.model_parameters.model_label == folder_name)))
-    #     for folder_name in tuple(next(walk(path))[1]))
-
-    # # Add the model folder and data paths
-    # apply(update_model_paths, links)
 
     return treatment_plan

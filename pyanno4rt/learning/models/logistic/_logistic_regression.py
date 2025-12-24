@@ -237,6 +237,9 @@ class LogisticRegression():
         # Log a message about loading the dataset
         get_logger().info("Loading dataset for '%s' ...", self.label)
 
+        # Load the dataset
+        self.dataset.load()
+
         # Generate the data
         self.dataset.generate()
 
@@ -573,9 +576,14 @@ class LogisticRegression():
         # Log a message about the model file reading
         get_logger().info("Reading '%s' model from file ...", self.label)
 
-        return (
-            load(open(self.path+'/predictor.sav', 'rb')),
-            load(open(self.path+'/preprocessor.sav', 'rb')))
+        #
+        self.preprocessor = load(open(self.path+'/preprocessor.sav', 'rb'))
+
+        #
+        self.predictor = load(open(self.path+'/predictor.sav', 'rb'))
+
+        #
+        self.hyperparameters = self.predictor.get_params()
 
     def save(
             self,
