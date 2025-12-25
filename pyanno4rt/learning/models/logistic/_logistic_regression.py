@@ -9,6 +9,7 @@ from pickle import dump, load
 
 from copy import deepcopy
 from functools import partial
+from glob import glob
 from numpy import ones
 from sklearn.linear_model import LogisticRegression as skLogReg
 
@@ -38,8 +39,7 @@ class LogisticRegression():
         Label for the learning model.
 
     dataset : object of class \
-        :class:`~pyanno4rt.learning.datasets._tabular_dataset.TabularDataset`,
-        default=None
+        :class:`~pyanno4rt.learning.datasets._tabular_dataset.TabularDataset`
         The object used to represent the dataset.
 
     preprocessor : None or object of class \
@@ -64,7 +64,7 @@ class LogisticRegression():
         default=None
         The object used to represent the model evaluator.
 
-    path : None or str, default=None
+    model_path : None or str, default=None
         Path to an external model folder.
 
     Attributes
@@ -94,7 +94,7 @@ class LogisticRegression():
         :class:`~pyanno4rt.learning.evaluation._model_evaluator.ModelEvaluator`
         See 'Parameters'.
 
-    path : None or str
+    model_path : None or str
         See 'Parameters'.
 
     hyperparameters : dict
@@ -113,13 +113,13 @@ class LogisticRegression():
             tuner=None,
             inspector=None,
             evaluator=None,
-            path=None):
+            model_path=None):
 
         # Check if a path has been provided
-        if path is not None:
+        if model_path is not None:
 
             # Convert the path into an absolute value
-            path = abspath(path)
+            model_path = abspath(model_path)
 
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
@@ -134,7 +134,7 @@ class LogisticRegression():
         self.tuner = tuner
         self.inspector = inspector
         self.evaluator = evaluator
-        self.path = path
+        self.model_path = model_path
 
         # Initialize the prediction model attributes
         self.feature_calculator = None
@@ -193,12 +193,9 @@ class LogisticRegression():
             The object used to represent the model.
         """
 
-        # Check if a dataset dictionary has been passed
-        if dictionary['dataset'] is not None:
-
-            # Deserialize the dataset
-            dictionary['dataset'] = TabularDataset.from_dict(
-                dictionary['dataset'])
+        # Deserialize the dataset
+        dictionary['dataset'] = TabularDataset.from_dict(
+            dictionary['dataset'])
 
         # Check if a preprocessor dictionary has been passed
         if dictionary['preprocessor'] is not None:
@@ -561,28 +558,32 @@ class LogisticRegression():
         return feature_gradient, preprocessing_gradient, predictor_gradient
 
     def load(self):
-        """
-        Load an external logistic regression model.
+        """Load an external logistic regression model."""
 
-        Returns
-        -------
-        object of class :class:`~sklearn.linear_model.LogisticRegression`
-            The object used to represent the prediction model.
+        # Log a message about loading the model
+        get_logger().info("Loading '%s' model from file ...", self.label)
 
-        object of class :class:`~pyanno4rt.learning.preprocessing._tabular_preprocessor.TabularPreprocessor`
-            The object used to represent the preprocessor.
-        """
+        # Check if a preprocessor has been found
+        if len(glob(self.model_path+'/preprocessor.sav')) == 1:
 
-        # Log a message about the model file reading
-        get_logger().info("Reading '%s' model from file ...", self.label)
+            # Open a file stream for the preprocessor
+            with open(self.model_path+'/preprocessor.sav', 'rb') as file:
 
-        #
-        self.preprocessor = load(open(self.path+'/preprocessor.sav', 'rb'))
+                # Load the preprocessor
+                self.preprocessor = load(file)
 
-        #
-        self.predictor = load(open(self.path+'/predictor.sav', 'rb'))
+        else:
 
-        #
+            # Set the preprocessor to None
+            self.preprocessor = None
+
+        # Open a file stream for the predictor
+        with open(self.model_path+'/predictor.sav', 'rb') as file:
+
+            # Load the predictor
+            self.predictor = load(file)
+
+        # Get the hyperparameters
         self.hyperparameters = self.predictor.get_params()
 
     def save(
@@ -597,17 +598,20 @@ class LogisticRegression():
             Path for storing the logistic regression model.
         """
 
+        # Check if a preprocessor object exists
+        if self.preprocessor is not None:
+
+            # Open a file stream for the preprocessor
+            with open(path+'/preprocessor.sav', 'wb') as file:
+
+                # Dump the preprocessor
+                dump(self.preprocessor, file)
+
         # Open a file stream for the predictor
         with open(path+'/predictor.sav', 'wb') as file:
 
             # Dump the predictor
             dump(self.predictor, file)
-
-        # Open a file stream for the preprocessor
-        with open(path+'/preprocessor.sav', 'wb') as file:
-
-            # Dump the preprocessor
-            dump(self.preprocessor, file)
 
     def validate(
             self,
@@ -626,7 +630,7 @@ class LogisticRegression():
                 partial(validate_type, options=str),
                 ),
             'dataset': (
-                partial(validate_type, options=(type(None), TabularDataset)),
+                partial(validate_type, options=TabularDataset),
                 ),
             'preprocessor': (
                 partial(validate_type, options=(
@@ -644,11 +648,13 @@ class LogisticRegression():
                 partial(validate_type, options=(
                     type(None), ModelEvaluator)),
                 ),
-            'path': (
+            'model_path': (
                 partial(validate_type, options={
                     True: str,
                     False: (type(None), str)},
-                    condition=inputs['dataset'] is None),
+                    condition=(
+                        inputs['dataset'] is None or
+                        inputs['dataset'].data_path is None)),
                 partial(validate_path)
                 )
             }

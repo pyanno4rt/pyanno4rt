@@ -106,21 +106,29 @@ class DataModelHandler():
         # Loop over the models
         for model in self.models:
 
-            # Log a message about fitting the model
-            get_logger().info("Fitting model '%s' ...", model.label)
+            # Check if no model path has been provided
+            if model.model_path is None:
 
-            # Get the features and labels
-            features, labels = (
-                model.dataset.feature_values, model.dataset.label_values)
+                # Log a message about fitting the model
+                get_logger().info("Fitting model '%s' ...", model.label)
 
-            # Fit the preprocessor
-            model.fit_preprocessor(features, labels)
+                # Get the features and labels
+                features, labels = (
+                    model.dataset.feature_values, model.dataset.label_values)
 
-            # Tune the hyperparameters
-            model.tune_hyperparameters(features, labels)
+                # Fit the preprocessor
+                model.fit_preprocessor(features, labels)
 
-            # Fit the model
-            model.fit_predictor(features, labels)
+                # Tune the hyperparameters
+                model.tune_hyperparameters(features, labels)
+
+                # Fit the model
+                model.fit_predictor(features, labels)
+
+            else:
+
+                # Load the model
+                model.load()
 
         # Loop over the machine learning components
         for component in get_machine_learning_components(

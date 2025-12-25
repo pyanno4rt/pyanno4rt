@@ -13,7 +13,7 @@ from numpy import load as npload
 # %% Function definition
 
 
-def copycat(base_class, path, ignore_optimum=False):
+def copycat(base_class, path, ignore_fluence=False):
     """
     Create a copycat from a treatment plan snapshot.
 
@@ -23,10 +23,10 @@ def copycat(base_class, path, ignore_optimum=False):
         The base class from which to create an instance.
 
     path : str
-        Path to the snapshot (folder).
+        Path to the snapshot.
 
-    ignore_optimum : bool
-        Indicator for ignoring the optimal fluence file (if available).
+    ignore_fluence : bool
+        Indicator for ignoring the optimized fluence file (if available).
 
     Returns
     -------
@@ -34,7 +34,7 @@ def copycat(base_class, path, ignore_optimum=False):
         The object used to represent the treatment plan.
     """
 
-    # Get the copycat folder path
+    # Get the snapshot path
     copy_path = abspath(path)
 
     # Open a file stream for the input parameters
@@ -44,9 +44,9 @@ def copycat(base_class, path, ignore_optimum=False):
         inputs = load(file)
 
     # Search for the stored data
-    snap_patient_data = glob(path+'/patient_data*')
-    snap_dose_matrix = glob(path+'/dose_influence_matrix.*')
-    snap_optimized_fluence = glob(path+'/optimized_fluence.npy')
+    snap_patient_data = glob(copy_path+'/patient_data*')
+    snap_dose_matrix = glob(copy_path+'/dose_influence_matrix.*')
+    snap_optimized_fluence = glob(copy_path+'/optimized_fluence.np*')
 
     # Check if patient data has been found
     if len(snap_patient_data) == 1:
@@ -60,8 +60,8 @@ def copycat(base_class, path, ignore_optimum=False):
         # Update the dose matrix path
         inputs['configuration']['dose_matrix_path'] = snap_dose_matrix[0]
 
-    # Check if an optimized fluence has been found and should not be ignored
-    if len(snap_optimized_fluence) == 1 and not ignore_optimum:
+    # Check if relevant optimized fluence data has been found
+    if len(snap_optimized_fluence) == 1 and not ignore_fluence:
 
         # Update the initial fluence vector
         inputs['optimization']['initial_fluence'] = list(npload(
@@ -70,29 +70,27 @@ def copycat(base_class, path, ignore_optimum=False):
         # Set the maximum number of iterations to zero
         inputs['optimization']['maximum_iterations'] = 0
 
-    # Get the folder/model links
-    model_components = (
-        (f'{path}/{component.model.label}', component)
-        for component in inputs['optimization']['components']
-        if 'Outcome' in next(iter(component)))
+    # Loop over the model-based components
+    for name, parameters in {
+            name: parameters
+            for component in inputs['optimization']['components']
+            for name, parameters in component.items()
+            if 'Outcome' in name}.items():
 
-    #
-    for path, component in model_components:
+        # Get the model path
+        model_path = f'{copy_path}/{parameters["model"]["label"]}'
 
         # Update the model path
-        component.model.path = path
+        parameters['model']['model_path'] = model_path
 
-        #
-        component.model.load()
+        # Search for the stored dataset
+        snap_model_data = glob(model_path+'/dataset.*')
 
-        #
-        snap_model_data = glob(path+'/dataset*')
-
-        #
+        # Check if a dataset has been found
         if len(snap_model_data) == 1:
 
-            #
-            component.model.dataset.path = snap_model_data[0]
+            # Update the dataset path
+            parameters['model']['dataset']['data_path'] = snap_model_data[0]
 
     # Initialize the treatment plan instance
     treatment_plan = base_class(**inputs)

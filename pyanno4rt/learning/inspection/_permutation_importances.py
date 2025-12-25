@@ -112,7 +112,7 @@ def permutation_importances(model, score='AUC', permutations=20):
     # Log a message about computing the cross-validated permutation importances
     get_logger().info(
         "Computing cross-validated permutation importances for '%s' with %s "
-        "permutations for %s splits and %s repeats ...",
+        "permutations for %s splits and %s repeat(s) ...",
         model.label, permutations, len(unique(folds)), folds.shape[1])
 
     # Compute the cross-validated permutation importances

@@ -5,7 +5,7 @@
 # %% External package import
 
 from os import mkdir
-from os.path import abspath, exists, splitext
+from os.path import exists, splitext
 
 from json import dump
 
@@ -41,8 +41,8 @@ def snapshot(
         Indicator for the storage of the optimized fluence array.
     """
 
-    # Get the snapshot path
-    snap_path = abspath(f'{path}/{instance.configuration.label}')
+    # Set the snapshot path
+    snap_path = f'{path}/{instance.configuration.label}'
 
     # Check if the path does not yet exist
     if not exists(snap_path):
@@ -67,7 +67,7 @@ def snapshot(
         # Get the file extension
         _, extension = splitext(instance.configuration.imaging_path)
 
-        # Get the file path
+        # Set the file path
         path = f'{snap_path}/patient_data{extension}'
 
         # Save the patient data
@@ -82,7 +82,7 @@ def snapshot(
         # Get the file extension
         _, extension = splitext(instance.configuration.dose_matrix_path)
 
-        # Get the file path
+        # Set the file path
         path = f'{snap_path}/dose_influence_matrix{extension}'
 
         # Save the dose-influence matrix
@@ -97,7 +97,7 @@ def snapshot(
         # Loop over the machine learning models
         for model in instance.data_model_handler.models:
 
-            # Get the model path
+            # Set the model path
             path = f'{snap_path}/{model.label}'
 
             # Check if the path does not yet exist
@@ -109,20 +109,33 @@ def snapshot(
             # Save the model
             model.save(path)
 
+            # Update the model path
+            model.inputs['model_path'] = path
+
             # Check if the model data should be included
             if include_model_data:
 
                 # Get the file extension
                 _, extension = splitext(model.dataset.path)
 
-                # Get the file path
-                data_path = f'{path}/dataset{extension}'
+                # Set the file path
+                path = f'{path}/dataset{extension}'
 
                 # Save the dataset
-                model.dataset.save(data_path)
+                model.dataset.save(path)
 
                 # Update the model data path
-                model.dataset.inputs['path'] = data_path
+                model.dataset.inputs['data_path'] = path
+
+            else:
+
+                # Set the data path to None
+                model.dataset.inputs['data_path'] = None
+
+                # Set the data-dependent model objects to None
+                model.inputs['tuner'] = None
+                model.inputs['inspector'] = None
+                model.inputs['evaluator'] = None
 
     # Check if the optimized fluence array should be included
     if include_fluence and instance.state >= 3:

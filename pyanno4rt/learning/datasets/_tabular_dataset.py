@@ -38,7 +38,7 @@ class TabularDataset():
 
     Parameters
     ----------
-    path : str
+    data_path : None or str
         Path to the dataset.
 
     columns : None or list
@@ -66,7 +66,7 @@ class TabularDataset():
     _sources : None or dict
         Dictionary with information on the external file sources and handlers.
 
-    path : str
+    data_path : None or str
         See 'Parameters'.
 
     columns : None or list
@@ -119,6 +119,31 @@ class TabularDataset():
 
     holdout_set : dict
         Dictionary with the holdout data.
+
+    Notes
+    -----
+    Tabular datasets can be generated in three ways:
+
+        1. By providing both a path to the dataset and column information, \
+            the class performs a full decomposition and postprocessing of the \
+            features and label, as well as building the feature map based on \
+            the column information provided. This is the preferred way if you \
+            need to fit a model internally and require an exact mapping of \
+            features to (re)calculation functions.
+
+        2. By providing only a path to the dataset, the column information \
+            will be inferred (meaning that the first p-1 columns in the \
+            dataset are considered as features which will be categorized as \
+            "static", and the p-th column in the dataset is assumed to be \
+            the label). After that, it's the same as in 1, but column \
+            information will likely be insufficient for effectively embedding \
+            an outcome model into plan optimization.
+
+        3. By providing only column information, a light decomposition that \
+            only extracts feature and label names takes place, without any \
+            post-processing except for building the feature map. This works \
+            on the assumption that there is no model fitting, like when \
+            loading a pre-trained external classifier.
     """
 
     # Map the path extensions to the handlers
@@ -127,17 +152,17 @@ class TabularDataset():
 
     def __init__(
             self,
-            path,
-            columns=None,
+            data_path,
+            columns,
             holdout=None,
             splits=5,
             repeats=1):
 
-        # Check if a path has been provided
-        if path is not None:
+        # Check if a dataset path has been provided
+        if data_path is not None:
 
             # Convert the path into an absolute value
-            path = abspath(path)
+            data_path = abspath(data_path)
 
         # Get the input arguments
         self.inputs = filter_dict(vars(), remove_keys=('self',))
@@ -149,7 +174,7 @@ class TabularDataset():
         get_logger().info("Initializing tabular dataset ...")
 
         # Get the instance attributes
-        self.path = path
+        self.data_path = data_path
         self.columns = columns
         self.holdout = holdout
         self.splits = splits
@@ -222,32 +247,35 @@ class TabularDataset():
     def load(self):
         """Load the dataset."""
 
-        # Get the file string and handler
-        source, handler = self._sources[splitext(self.path)[1]]
+        # Check if a data path has been provided
+        if self.data_path is not None:
 
-        # Log a message about loading the dataset
-        get_logger().info("Importing dataset from %s ...", source)
+            # Get the file string and handler
+            source, handler = self._sources[splitext(self.data_path)[1]]
 
-        # Load the dataset
-        self.dataframe = handler().load(self.path)
+            # Log a message about loading the dataset
+            get_logger().info("Importing dataset from %s ...", source)
 
-        # Check if no column information has been provided
-        if self.columns is None:
+            # Load the dataset
+            self.dataframe = handler().load(self.data_path)
 
-            # Log a message about inferring the column information
-            get_logger().warning(
-                "User has not provided column information, inferring list of "
-                "objects from dataset ...")
+            # Check if no column information has been provided
+            if self.columns is None:
 
-            # Infer the column information
-            self.columns = self.infer_columns()
+                # Log a message about inferring the column information
+                get_logger().warning(
+                    "User has not provided column information, inferring list "
+                    "of objects from dataset ...")
 
-        # Map the column names to the index position in the dataframe
-        order = {name: i for i, name in enumerate(self.dataframe.columns)}
+                # Infer the column information
+                self.columns = self.infer_columns()
 
-        # Sort the column objects by their order in the dataframe
-        self.columns = sorted(
-            self.columns, key=lambda x: order.get(x.column, float('inf')))
+            # Map the column names to the index position in the dataframe
+            order = {name: i for i, name in enumerate(self.dataframe.columns)}
+
+            # Sort the column objects by their order in the dataframe
+            self.columns = sorted(
+                self.columns, key=lambda x: order.get(x.column, float('inf')))
 
     def save(
             self,
@@ -302,20 +330,23 @@ class TabularDataset():
         # Decompose the dataset
         self._decompose()
 
-        # Modulate the dataset
-        self._modulate()
+        # Check if a dataframe is available
+        if self.dataframe is not None:
 
-        # Binarize the label values
-        self._binarize()
+            # Modulate the dataset
+            self._modulate()
 
-        # Get the folds
-        self._get_folds()
+            # Binarize the label values
+            self._binarize()
 
-        # Check if a holdout set should be created
-        if self.holdout is not None:
+            # Get the folds
+            self._get_folds()
 
-            # Create the holdout data
-            self._create_holdout()
+            # Check if a holdout set should be created
+            if self.holdout is not None:
+
+                # Create the holdout data
+                self._create_holdout()
 
         # Build the feature map
         self._build_map()
@@ -336,11 +367,6 @@ class TabularDataset():
         self.feature_names, self.feature_scales = zip(*[
             (feature.column, feature.scale) for feature in features])
 
-        # Set the feature values
-        self.feature_values = self.dataframe.drop(
-            self.dataframe.columns.difference(self.feature_names),
-            axis=1).values
-
         # Get the label object
         label = next(iter(
             column for column in self.columns if column.category == 'label'))
@@ -349,15 +375,23 @@ class TabularDataset():
         self.label_name, self.label_viewpoint, self.label_bounds = (
             label.column, label.viewpoint, label.bounds)
 
-        # Set the label values
-        self.label_values = self.dataframe[self.label_name].values
-
         # Set the time variable name
         self.time_variable_name = label.time_variable
 
-        # Set the time variable values
-        self.time_variable_values = self.dataframe[
-            filter(None, [self.time_variable_name])].values
+        # Check if a dataframe is available
+        if self.dataframe is not None:
+
+            # Set the feature values
+            self.feature_values = self.dataframe.drop(
+                self.dataframe.columns.difference(self.feature_names),
+                axis=1).values
+
+            # Set the label values
+            self.label_values = self.dataframe[self.label_name].values
+
+            # Set the time variable values
+            self.time_variable_values = self.dataframe[
+                filter(None, [self.time_variable_name])].values
 
     def _modulate(self):
         """Modulate the data information."""
@@ -468,7 +502,7 @@ class TabularDataset():
         """Create the holdout dataset."""
 
         # Clamp the holdout size
-        self.holdout = min(len(self.dataframe)-1, self.holdout)
+        self.holdout = min(len(self.dataframe)-self.splits, self.holdout)
 
         # Log a message about creating the holdout dataset
         get_logger().info(
@@ -553,18 +587,24 @@ class TabularDataset():
         """
 
         validation_map = {
-            'path': (
-                partial(validate_type, options=str),
+            'data_path': (
+                partial(validate_type, options={
+                    True: str,
+                    False: (type(None), str)},
+                    condition=inputs['columns'] is None),
                 partial(validate_file, options=('.csv',))
                 ),
             'columns': (
-                partial(validate_type, options=(type(None), list)),
+                partial(validate_type, options={
+                    True: list,
+                    False: (type(None), list)},
+                    condition=inputs['data_path'] is None),
                 partial(validate_subtype, options=(*COLUMNS.values(),)),
                 partial(validate_length, reference=2, sign='>=')
                 ),
             'holdout': (
                 partial(validate_type, options=(type(None), int)),
-                partial(validate_item, reference=0, sign='>')
+                partial(validate_item, reference=inputs['splits'], sign='>=')
                 ),
             'splits': (
                 partial(validate_type, options=int),
@@ -575,6 +615,12 @@ class TabularDataset():
                 partial(validate_item, reference=1, sign='>=')
                 )
             }
+
+        # Check if no data path has been provided
+        if inputs['data_path'] is None:
+
+            # Reduce the validation map
+            validation_map['data_path'] = (validation_map['data_path'][0],)
 
         # Check if no column information has been provided
         if inputs['columns'] is None:

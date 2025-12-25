@@ -421,7 +421,7 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             importances = {
                 model.label: model.inspector.results['permutation_importances']
                 for model in self.plan.data_model_handler.models
-                if model is not None and model.inspector is not None}
+                if model.inspector is not None}
 
             #
             if len(importances) > 0:
