@@ -32,6 +32,9 @@ class ModelInspector():
 
     Attributes
     ----------
+    arguments : dict
+        Dictionary with the model input arguments (for serialization).
+
     pi_score : {'AUC', 'Brier score', 'Logloss'}
         See 'Parameters'.
 
@@ -48,10 +51,10 @@ class ModelInspector():
             pi_permutations=20):
 
         # Get the input arguments
-        self.inputs = filter_dict(vars(), remove_keys=('self',))
+        self.arguments = filter_dict(vars(), remove_keys=('self',))
 
         # Check the input arguments
-        self.validate(self.inputs)
+        self.validate(self.arguments)
 
         # Get the input attributes
         self.pi_score = pi_score
@@ -64,7 +67,7 @@ class ModelInspector():
         """Serialize the model inspector into a dictionary."""
 
         # Get the parameter dictionary
-        dictionary = deepcopy(self.inputs)
+        dictionary = deepcopy(self.arguments)
 
         return dictionary
 

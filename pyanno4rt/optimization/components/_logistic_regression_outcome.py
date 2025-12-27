@@ -129,7 +129,7 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.optimization.components.logistic._logistic_regression_outcome.LogisticRegressionOutcome`
+            :class:`~pyanno4rt.optimization.components._logistic_regression_outcome.LogisticRegressionOutcome`
             The object used to represent the logistic regression outcome \
             component.
         """

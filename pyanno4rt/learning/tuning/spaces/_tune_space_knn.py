@@ -62,7 +62,7 @@ class TuneSpaceKNN():
             p=None):
 
         # Get the input arguments
-        inputs = filter_dict(vars(), remove_keys=('self',))
+        arguments = filter_dict(vars(), remove_keys=('self',))
 
         # Set the default argument values
         defaults = {
@@ -72,15 +72,15 @@ class TuneSpaceKNN():
             'p': [1, 2, 3]}
 
         # Update the input arguments with the defaults, if applicable
-        inputs = {
+        arguments = {
             key: value if value is not None else defaults[key]
-            for key, value in inputs.items()}
+            for key, value in arguments.items()}
 
         # Validate the input arguments
-        self.validate(inputs)
+        self.validate(arguments)
 
         # Loop over the input arguments
-        for item in inputs.items():
+        for item in arguments.items():
 
             # Set the attribute
             setattr(self, *item)

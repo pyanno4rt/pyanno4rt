@@ -29,6 +29,9 @@ class TabularPreprocessor():
 
     Attributes
     ----------
+    arguments : dict
+        Dictionary with the model input arguments (for serialization).
+
     steps : list
         Preprocessing steps.
     """
@@ -38,10 +41,10 @@ class TabularPreprocessor():
             steps):
 
         # Get the input arguments
-        self.inputs = filter_dict(vars(), remove_keys=('self',))
+        self.arguments = filter_dict(vars(), remove_keys=('self',))
 
         # Check the input arguments
-        self.validate(self.inputs)
+        self.validate(self.arguments)
 
         # Get the preprocessing steps
         self.steps = [maps.TRANSFORMERS[label]() for label in steps]
@@ -50,7 +53,7 @@ class TabularPreprocessor():
         """Serialize the preprocessor into a dictionary."""
 
         # Get the parameter dictionary
-        dictionary = deepcopy(self.inputs)
+        dictionary = deepcopy(self.arguments)
 
         return dictionary|{'name': 'Tabular'}
 

@@ -8,7 +8,7 @@ from copy import deepcopy
 
 # %% Internal package import
 
-from pyanno4rt.logging import get_logger
+from pyanno4rt.learning.models.svm import SupportVectorMachine
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import (
     filter_dict, inverse_salu, inverse_sigmoid, salu, sigmoid)
@@ -32,9 +32,9 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
     outcome_type : {'NTCP', 'TCP'}
         Type of the outcome variable.
 
-    model_parameters : object of class \
-        :class:`~pyanno4rt.learning._model_parameters.ModelParameters`
-        The object used to represent the learning model parameters.
+    model : object of class \
+        :class:`~pyanno4rt.learning.models.svm._support_vector_machine.SupportVectorMachine`
+        The object used to represent the support vector machine outcome model.
 
     component_type : {'constraint', 'objective'}, default='objective'
         Type of the component.
@@ -59,42 +59,22 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
     identifier : None or str, default=None
         Additional string for naming the component.
 
-    display : bool, default=True
-        Indicator for the display of the component.
-
     Attributes
     ----------
     arguments : dict
         Dictionary with the component input arguments (for serialization).
 
-    gradient : None or callable
-        Model gradient for the fitted kernel type.
-
-    multiplier : float
-        Multiplicative parameter of the Platt scaling function.
-
-    summand : float
-        Additive parameter of the Platt scaling function.
-
-    data_model_handler : object of class \
-        :class:`~pyanno4rt.learning._data_model_handler.DataModelHandler`
-        The object used to handle the dataset, the feature map generation and \
-        the feature (re-)calculation.
-
-    model : object of class \
-        :class:`~pyanno4rt.learning.svm._support_vector_machine.SupportVectorMachineModel`
-        The object used to preprocess, tune, train, inspect and evaluate the \
-        support vector machine model.
-
-    parameter_value : list
-        Primal/dual support vector machine model coefficients.
+    Notes
+    -----
+    See :class:`~pyanno4rt.optimization.components._machine_learning_component.MachineLearningComponent`\
+    for details on the inherited attributes.
     """
 
     def __init__(
             self,
             segment,
             outcome_type,
-            model_parameters,
+            model,
             component_type='objective',
             embedding='active',
             weight=1.0,
@@ -111,7 +91,7 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
             component_type=component_type,
             parameter_name=('w/alpha',),
             parameter_category=('coefficient',),
-            model_parameters=model_parameters,
+            model=model,
             embedding=embedding,
             weight=weight,
             rank=rank,
@@ -123,18 +103,14 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
         self.arguments = filter_dict(
             locals(), remove_keys=('self', '__class__'))
 
-        # Initialize the model gradient function
-        self.gradient = None
-
     def to_dict(self):
         """Serialize the component into a dictionary."""
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
 
-        # Serialize the model parameters
-        dictionary['model_parameters'] = (
-            dictionary['model_parameters'].to_dict())
+        # Serialize the model
+        dictionary['model'] = dictionary['model'].to_dict()
 
         return {self.name: dictionary}
 
@@ -154,81 +130,34 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
         -------
         object of class \
             :class:`~pyanno4rt.optimization.components._support_vector_machine_outcome.SupportVectorMachineOutcome`
-            The object used to handle the component parameters.
+            The object used to represent the support vecot machine outcome \
+            component.
         """
 
-        # Deserialize the model parameters
-        dictionary['model_parameters'] = ModelParameters.from_dict(
-            dictionary['model_parameters'])
+        # Deserialize the model
+        dictionary['model'] = SupportVectorMachine.from_dict(
+            dictionary['model'])
 
         return cls(**dictionary)
 
-    def add_model(self):
-        """Add the support vector machine model to the component."""
-
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the model addition
-        get_logger().info(
-            "Adding support vector machine model for '%s' ...", self.name)
-
-        # Initialize the data model handler
-        self.data_model_handler = DataModelHandler(
-            model_label=self.model_parameters.model_label,
-            model_folder_path=self.model_parameters.model_folder_path,
-            data_path=self.model_parameters.data_path,
-            data_columns=self.model_parameters.data_columns,
-            tune_splits=self.model_parameters.tune_splits,
-            tune_repeats=self.model_parameters.tune_repeats,
-            oof_splits=self.model_parameters.oof_splits,
-            oof_repeats=self.model_parameters.oof_repeats,
-            write_features=self.model_parameters.write_features)
-
-        # Integrate the model-related classes
-        self.data_model_handler.integrate()
-
-        # Initialize the support vector machine model
-        self.model = SupportVectorMachineModel(
-            model_label=self.model_parameters.model_label,
-            model_folder_path=self.model_parameters.model_folder_path,
-            dataset=hub.datasets[self.model_parameters.model_label],
-            preprocessing_steps=self.model_parameters.preprocessing,
-            tune_space=self.model_parameters.tune_space,
-            tune_evaluations=self.model_parameters.tune_evaluations,
-            tune_score=self.model_parameters.tune_score,
-            inspect_model=self.model_parameters.inspect,
-            evaluate_model=self.model_parameters.evaluate,
-            display_options=self.model_parameters.display_options)
+    def update_from_model(self):
+        """Update the component from the outcome model."""
 
         # Check if the linear kernel has been fitted
-        if self.model.prediction_model.kernel == 'linear':
+        if self.model.predictor.kernel == 'linear':
 
-            # Get the primal coefficients
-            self.parameter_value = (
-                self.model.prediction_model.coef_[0].tolist())
+            # Store the primal support vector machine coefficients
+            self.parameter_value = self.model.predictor.coef_[0].tolist()
 
         else:
 
-            # Get the dual coefficients
-            self.parameter_value = (
-                self.model.prediction_model.dual_coef_[0].tolist())
+            # Store the dual support vector machine coefficients
+            self.parameter_value = self.model.predictor.dual_coef_[0].tolist()
 
-        # Map the kernel types to the model gradient functions
-        gradient_map = {
-            'linear': linear_gradient, 'poly': poly_gradient,
-            'rbf': rbf_gradient, 'sigmoid': sigmoid_gradient}
-
-        # Get the model gradient function
-        self.gradient = gradient_map[self.model.prediction_model.kernel]
-
-        # Get the Platt scaling parameters
-        self.multiplier, self.summand = (
-            -self.model.prediction_model.probA_,
-            -self.model.prediction_model.probB_)
-
-        # Convert the bounds
-        self.bounds = sorted(self.reverse(bound) for bound in self.bounds)
+        # Update the bounds
+        self.bounds = sorted(
+            self.reverse(bound) for bound in self.convert_bounds(
+                self.arguments['bounds'], self.embedding))
 
     def translate(
             self,
@@ -247,25 +176,23 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
             Outcome value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the transformation should be applied
         if self.transform:
 
             # Return the transformed outcome value
             return sigmoid(
-                inverse_salu(value, self.multiplier[0], self.summand[0], sign),
-                self.multiplier[0], self.summand[0])
+                inverse_salu(
+                    value, self.model.probA, self.model.probB, self.sign),
+                self.model.probA, self.model.probB)
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of outcome values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single outcome value
-        return sign*value
+        return self.sign*value
 
     def reverse(
             self,
@@ -284,30 +211,26 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
             Function value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the transformation should be applied
         if self.transform:
 
             # Return the transformed function value
             return salu(
-                inverse_sigmoid(value, self.multiplier[0], self.summand[0]),
-                self.multiplier[0], self.summand[0], sign)
+                inverse_sigmoid(value, self.model.probA, self.model.probB),
+                self.model.probA, self.model.probB, self.sign)
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of function values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single function value
-        return sign*value
+        return self.sign*value
 
     def compute_value(
             self,
-            dose,
-            segment):
+            dose):
         """
         Compute the function value.
 
@@ -316,9 +239,6 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
         dose : tuple
             Dose vectors.
 
-        segment : tuple
-            Segment names.
-
         Returns
         -------
         float
@@ -326,15 +246,13 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
         """
 
         # Compute the feature vector
-        raw_features = self.data_model_handler.feature_calculator.featurize(
-            dose, segment)
+        raw_features = self.model.featurize(dose, self.segment)
 
         # Preprocess the feature vector
-        preprocessed_features = self.model.preprocess(raw_features)
+        preprocessed_features, _ = self.model.preprocess(raw_features)
 
         # Get the outcome prediction
-        prediction = self.model.predict(
-            preprocessed_features, self.model.prediction_model)
+        prediction = self.model.predict(preprocessed_features)
 
         # Clip the prediction for numerical stability
         prediction = max(1e-6, min(prediction, 1-1e-6))
@@ -343,8 +261,7 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
 
     def compute_gradient(
             self,
-            dose,
-            segment):
+            dose):
         """
         Compute the gradient vector.
 
@@ -353,54 +270,35 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
         dose : tuple
             Dose vectors.
 
-        segment : tuple
-            Segment names.
-
         Returns
         -------
         ndarray
             Gradient vector.
         """
 
-        # Get the feature calculator
-        feature_calculator = self.data_model_handler.feature_calculator
-
         # Compute the feature vector
-        raw_features = feature_calculator.featurize(dose, segment)
+        raw_features = self.model.featurize(dose, self.segment)
 
         # Preprocess the feature vector
-        preprocessed_features = self.model.preprocess(raw_features)
+        preprocessed_features, _ = self.model.preprocess(raw_features)
 
         # Get the outcome prediction
-        prediction = self.model.predict(
-            preprocessed_features, self.model.prediction_model)
+        prediction = self.model.predict(preprocessed_features)
 
         # Clip the prediction for numerical stability
         prediction = max(1e-6, min(prediction, 1-1e-6))
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
+        # Get the model gradients
+        feature_gradient, preprocessing_gradient, predictor_gradient = (
+            self.model.gradientize(dose, self.segment))
 
         # Check if the transformation should be applied
-        if self.transform and sign*prediction > sign*0.5:
+        if self.transform and self.sign*prediction > self.sign*0.5:
 
-            # Get the transformed model gradient
-            model_gradient = (
-                sign*0.25*self.multiplier*self.gradient(
-                    self.model.prediction_model, preprocessed_features)
-                / (prediction - prediction**2))
+            # Get the transformed predictor gradient
+            predictor_gradient = (
+                0.25*predictor_gradient/(prediction - prediction**2))
 
-        else:
-
-            # Get the model gradient
-            model_gradient = sign*self.gradient(
-                self.model.prediction_model, preprocessed_features)
-
-        # Compute the preprocessing pipeline gradient
-        preprocessing_gradient = (
-            self.model.preprocessor.gradientize(raw_features))
-
-        # Compute the feature gradient
-        feature_gradient = feature_calculator.gradientize(dose, segment)
-
-        return (model_gradient * preprocessing_gradient) @ feature_gradient
+        return (
+            (self.sign*predictor_gradient * preprocessing_gradient)
+            @ feature_gradient)

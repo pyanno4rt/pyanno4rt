@@ -57,6 +57,11 @@ class MinimumDVH(ConventionalComponent):
     ----------
     arguments : dict
         Dictionary with the component input arguments (for serialization).
+
+    Notes
+    -----
+    See :class:`~pyanno4rt.optimization.components._conventional_component.ConventionalComponent`\
+    for details on the inherited attributes.
     """
 
     def __init__(

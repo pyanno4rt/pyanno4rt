@@ -110,7 +110,7 @@ def snapshot(
             model.save(path)
 
             # Update the model path
-            model.inputs['model_path'] = path
+            model.arguments['model_path'] = path
 
             # Check if the model data should be included
             if include_model_data:
@@ -125,17 +125,17 @@ def snapshot(
                 model.dataset.save(path)
 
                 # Update the model data path
-                model.dataset.inputs['data_path'] = path
+                model.dataset.arguments['data_path'] = path
 
             else:
 
                 # Set the data path to None
-                model.dataset.inputs['data_path'] = None
+                model.dataset.arguments['data_path'] = None
 
                 # Set the data-dependent model objects to None
-                model.inputs['tuner'] = None
-                model.inputs['inspector'] = None
-                model.inputs['evaluator'] = None
+                model.arguments['tuner'] = None
+                model.arguments['inspector'] = None
+                model.arguments['evaluator'] = None
 
     # Check if the optimized fluence array should be included
     if include_fluence and instance.state >= 3:

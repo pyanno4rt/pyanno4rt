@@ -1,4 +1,4 @@
-"""Logistic regression model."""
+"""Support vector machine model."""
 
 # Author: Tim Ortkamp
 
@@ -11,7 +11,7 @@ from copy import deepcopy
 from functools import partial
 from glob import glob
 from numpy import ones
-from sklearn.linear_model import LogisticRegression as skLogReg
+from sklearn.svm import SVC
 
 # %% Internal package import
 
@@ -19,6 +19,8 @@ from pyanno4rt.learning.datasets import TabularDataset
 from pyanno4rt.learning.evaluation import ModelEvaluator
 from pyanno4rt.learning.inspection import ModelInspector
 from pyanno4rt.learning._maps import TUNERS
+from pyanno4rt.learning.models.svm import (
+    linear_gradient, poly_gradient, rbf_gradient, sigmoid_gradient)
 from pyanno4rt.learning.preprocessing import TabularPreprocessor
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import filter_dict
@@ -27,11 +29,11 @@ from pyanno4rt.validation import validate_path, validate_type
 # %% Class definition
 
 
-class LogisticRegression():
+class SupportVectorMachine():
     """
-    Logistic regression model class.
+    Support vector machine model class.
 
-    This class implements methods to handle logistic regression models.
+    This class implements methods to handle support vector machine models.
 
     Parameters
     ----------
@@ -103,9 +105,17 @@ class LogisticRegression():
     hyperparameters : dict
         Dictionary with the model hyperparameters.
 
-    predictor : object of class \
-        :class:`~sklearn.linear_model.LogisticRegression`
+    predictor : object of class :class:`~sklearn.svm.SVC`
         The object used to represent the prediction model.
+
+    probA : float
+        Multiplicative parameter of the Platt scaling function.
+
+    probB : float
+        Additive parameter of the Platt scaling function.
+
+    gradient : None or callable
+        Gradient function for the fitted kernel type.
 
     _reload_data : bool
         Indicator for updating the dataset.
@@ -157,22 +167,24 @@ class LogisticRegression():
         # Initialize the prediction model attributes
         self.feature_calculator = None
         self.hyperparameters = {
-            'penalty': 'l2',
-            'solver': 'lbfgs',
-            'l1_ratio': None,
             'C': 1.0,
-            'dual': False,
-            'tol': 0.0001,
-            'fit_intercept': True,
-            'intercept_scaling': 1,
+            'kernel': 'rbf',
+            'degree': 3,
+            'gamma': 'scale',
+            'coef0': 0.0,
+            'shrinking': True,
+            'probability': True,
+            'tol': 0.001,
+            'cache_size': 200,
             'class_weight': None,
-            'random_state': 10,
-            'max_iter': 10**6,
-            'verbose': 0,
-            'warm_start': False,
-            'n_jobs': -1
-            }
-        self.predictor = skLogReg(**self.hyperparameters)
+            'verbose': False,
+            'max_iter': -1,
+            'decision_function_shape': 'ovr',
+            'break_ties': False,
+            'random_state': 11}
+        self.predictor = SVC(**self.hyperparameters)
+        self.probA, self.probB = None, None
+        self.gradient = None
 
         # Initialize the refreshing indicators
         self._reload_data = True
@@ -214,7 +226,7 @@ class LogisticRegression():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.models.logistic._logistic_regression.LogisticRegression`
+            :class:`~pyanno4rt.learning.models.svm._support_vector_machine.SupportVectorMachine`
             The object used to represent the model.
         """
 
@@ -387,26 +399,14 @@ class LogisticRegression():
             Proposal for the tunable hyperparameters.
         """
 
-        # Check if the proposal has a regularization subdictionary
-        if 'regularization' in proposal:
-
-            # Get the unpacked regularization parameters
-            regularization = {**proposal['regularization']}
-
-        else:
-
-            # Get the regularization parameters directly
-            regularization = {
-                key: proposal[key] for key in (
-                    'penalty', 'solver', 'l1_ratio', 'C')
-                if key in proposal}
-
         # Build the hyperparameter dictionary
         self.hyperparameters = self.hyperparameters | {
-            **regularization,
-            'tol': proposal.get('tol', 0.0001),
-            'class_weight': proposal.get('class_weight'),
-            'n_jobs': -1 if regularization.get('solver') != 'liblinear' else 1}
+            'C': proposal.get('C', 1.0),
+            'kernel': proposal.get('kernel', 'rbf'),
+            'degree': proposal.get('degree', 3),
+            'gamma': proposal.get('gamma', 'scale'),
+            'tol': proposal.get('tol', 0.001),
+            'class_weight': proposal.get('class_weight')}
 
     def get_grid_hp(
             self,
@@ -453,6 +453,18 @@ class LogisticRegression():
 
         # Fit the predictor
         self.predictor.fit(features, labels)
+
+        # Get the Platt scaling parameters
+        self.probA, self.probB = (
+            -self.predictor.probA_[0], -self.predictor.probB_[0])
+
+        # Map the kernel types to the gradient functions
+        gradient_map = {
+            'linear': linear_gradient, 'poly': poly_gradient,
+            'rbf': rbf_gradient, 'sigmoid': sigmoid_gradient}
+
+        # Get the gradient function
+        self.gradient = gradient_map[self.predictor.kernel]
 
     def predict(
             self,
@@ -578,12 +590,14 @@ class LogisticRegression():
             preprocessing_gradient = ones((len(features),))
 
         # Derive the predictor gradient
-        predictor_gradient = (prediction-prediction**2)*self.predictor.coef_[0]
+        predictor_gradient = (
+            self.probA*prediction*(1-prediction)
+            * self.gradient(self.predictor, preprocessed_features))
 
         return feature_gradient, preprocessing_gradient, predictor_gradient
 
     def load(self):
-        """Load an external logistic regression model."""
+        """Load an external support vector machine model."""
 
         # Log a message about loading the model
         get_logger().info("Loading '%s' model from file ...", self.label)
@@ -610,6 +624,18 @@ class LogisticRegression():
 
         # Get the hyperparameters
         self.hyperparameters = self.predictor.get_params()
+
+        # Get the Platt scaling parameters
+        self.probA, self.probB = (
+            -self.predictor.probA_[0], -self.predictor.probB_[0])
+
+        # Map the kernel types to the gradient functions
+        gradient_map = {
+            'linear': linear_gradient, 'poly': poly_gradient,
+            'rbf': rbf_gradient, 'sigmoid': sigmoid_gradient}
+
+        # Get the gradient function
+        self.gradient = gradient_map[self.predictor.kernel]
 
     def save(
             self,

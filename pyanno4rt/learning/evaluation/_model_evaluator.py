@@ -24,6 +24,9 @@ class ModelEvaluator():
 
     Attributes
     ----------
+    arguments : dict
+        Dictionary with the model input arguments (for serialization).
+
     results : dict
         Dictionary with the model evaluation results.
     """
@@ -31,10 +34,10 @@ class ModelEvaluator():
     def __init__(self):
 
         # Get the input arguments
-        self.inputs = filter_dict(vars(), remove_keys=('self',))
+        self.arguments = filter_dict(vars(), remove_keys=('self',))
 
         # Check the input arguments
-        self.validate(self.inputs)
+        self.validate(self.arguments)
 
         # Log a message about the initialization of the model evaluator
         get_logger().info("Initializing model evaluator ...")
@@ -46,7 +49,7 @@ class ModelEvaluator():
         """Serialize the model evaluator into a dictionary."""
 
         # Get the parameter dictionary
-        dictionary = deepcopy(self.inputs)
+        dictionary = deepcopy(self.arguments)
 
         return dictionary
 

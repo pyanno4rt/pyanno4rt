@@ -48,6 +48,9 @@ class BayesHPTuner():
 
     Attributes
     ----------
+    arguments : dict
+        Dictionary with the model input arguments (for serialization).
+
     space : object of class \
         :class:`~pyanno4rt.learning.tuning.spaces._tune_space_rf.TuneSpaceRF`\
         :class:`~pyanno4rt.learning.tuning.spaces._tune_space_lr.TuneSpaceLR`\
@@ -75,10 +78,10 @@ class BayesHPTuner():
             score='AUC'):
 
         # Get the input arguments
-        self.inputs = filter_dict(vars(), remove_keys=('self',))
+        self.arguments = filter_dict(vars(), remove_keys=('self',))
 
         # Check the input arguments
-        self.validate(self.inputs)
+        self.validate(self.arguments)
 
         # Get the instance attributes
         self.space = space
@@ -92,7 +95,7 @@ class BayesHPTuner():
         """Serialize the Bayesian hyperparameter tuner into a dictionary."""
 
         # Get the parameter dictionary
-        dictionary = deepcopy(self.inputs)
+        dictionary = deepcopy(self.arguments)
 
         # Serialize the tune space
         dictionary['space'] = self.space.to_dict()

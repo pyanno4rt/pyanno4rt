@@ -66,6 +66,9 @@ class TabularDataset():
     _sources : None or dict
         Dictionary with information on the external file sources and handlers.
 
+    arguments : dict
+        Dictionary with the model input arguments (for serialization).
+
     data_path : None or str
         See 'Parameters'.
 
@@ -165,10 +168,10 @@ class TabularDataset():
             data_path = abspath(data_path)
 
         # Get the input arguments
-        self.inputs = filter_dict(vars(), remove_keys=('self',))
+        self.arguments = filter_dict(vars(), remove_keys=('self',))
 
         # Check the input arguments
-        self.validate(self.inputs)
+        self.validate(self.arguments)
 
         # Log a message about the initialization of the class
         get_logger().info("Initializing tabular dataset ...")
@@ -203,7 +206,7 @@ class TabularDataset():
         """Serialize the dataset into a dictionary."""
 
         # Get the parameter dictionary
-        dictionary = deepcopy(self.inputs)
+        dictionary = deepcopy(self.arguments)
 
         # Check if column information is available
         if dictionary['columns'] is not None:

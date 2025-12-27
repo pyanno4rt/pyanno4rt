@@ -86,25 +86,31 @@ class DataModelHandler():
         """Load the datasets for the models."""
 
         # Loop over the models
-        for model in self.models:
+        for model in (model for model in self.models if model._reload_data):
 
             # Load the model data
             model.load_data()
+
+            # Update the refreshing indicator
+            model._reload_data = False
 
     def set_calculators(self):
         """Set the feature calculators for the models."""
 
         # Loop over the models
-        for model in self.models:
+        for model in (model for model in self.models if model._reset_calc):
 
             # Add the feature calculator
             model.add_calculator(FeatureCalculator(self.handlers))
+
+            # Update the refreshing indicator
+            model._reset_calc = False
 
     def fit_models(self):
         """Fit the models."""
 
         # Loop over the models
-        for model in self.models:
+        for model in (model for model in self.models if model._refit):
 
             # Check if no model path has been provided
             if model.model_path is None:
@@ -130,6 +136,9 @@ class DataModelHandler():
                 # Load the model
                 model.load()
 
+            # Update the refreshing indicator
+            model._refit = False
+
         # Loop over the machine learning components
         for component in get_machine_learning_components(
                 self.handlers['plan_handler'].components):
@@ -141,19 +150,25 @@ class DataModelHandler():
         """Inspect the models."""
 
         # Loop over the models
-        for model in self.models:
+        for model in (model for model in self.models if model._reinspect):
 
             # Inspect the model
             model.inspect()
+
+            # Update the refreshing indicator
+            model._reinspect = False
 
     def evaluate_models(self):
         """Evaluate the models."""
 
         # Loop over the models
-        for model in self.models:
+        for model in (model for model in self.models if model._reevaluate):
 
             # Evaluate the model
             model.evaluate()
+
+            # Update the refreshing indicator
+            model._reevaluate = False
 
     def validate(
             self,
