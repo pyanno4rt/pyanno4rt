@@ -5,13 +5,10 @@
 # %% External package import
 
 from copy import deepcopy
-from numpy import exp, log, pi, size
-from numpy import sum as nsum
-from scipy.special import logsumexp
 
 # %% Internal package import
 
-from pyanno4rt.logging import get_logger
+from pyanno4rt.learning.models.naive_bayes import NaiveBayes
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict
 
@@ -22,8 +19,8 @@ class NaiveBayesOutcome(MachineLearningComponent):
     """
     Naive Bayes outcome component class.
 
-    This class provides methods to compute the value and the gradient of the \
-    naive Bayes outcome component, as well as to add the naive Bayes model.
+    This class provides methods to handle a naive Bayes outcome model-based \
+    component.
 
     Parameters
     ----------
@@ -33,9 +30,9 @@ class NaiveBayesOutcome(MachineLearningComponent):
     outcome_type : {'NTCP', 'TCP'}
         Type of the outcome variable.
 
-    model_parameters : object of class \
-        :class:`~pyanno4rt.learning._model_parameters.ModelParameters`
-        The object used to represent the learning model parameters.
+    model : object of class \
+        :class:`~pyanno4rt.learning.models.naive_bayes._naive_bayes.NaiveBayes`
+        The object used to represent the naive Bayes outcome model.
 
     component_type : {'constraint', 'objective'}, default='objective'
         Type of the component.
@@ -65,25 +62,17 @@ class NaiveBayesOutcome(MachineLearningComponent):
     arguments : dict
         Dictionary with the component input arguments (for serialization).
 
-    data_model_handler : object of class \
-        :class:`~pyanno4rt.learning._data_model_handler.DataModelHandler`
-        The object used to handle the dataset, the feature map generation and \
-        the feature (re-)calculation.
-
-    model : object of class \
-        :class:`~pyanno4rt.learning.naive_bayes._naive_bayes.NaiveBayesModel`
-        The object used to preprocess, tune, train, inspect and evaluate the \
-        naive Bayes model.
-
-    parameter_value : list
-        Naive Bayes model parameters.
+    Notes
+    -----
+    See :class:`~pyanno4rt.optimization.components._machine_learning_component.MachineLearningComponent`\
+    for details on the inherited attributes.
     """
 
     def __init__(
             self,
             segment,
             outcome_type,
-            model_parameters,
+            model,
             component_type='objective',
             embedding='active',
             weight=1.0,
@@ -100,7 +89,7 @@ class NaiveBayesOutcome(MachineLearningComponent):
             component_type=component_type,
             parameter_name=(),
             parameter_category=(),
-            model_parameters=model_parameters,
+            model=model,
             embedding=embedding,
             weight=weight,
             rank=rank,
@@ -118,9 +107,8 @@ class NaiveBayesOutcome(MachineLearningComponent):
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
 
-        # Serialize the model parameters
-        dictionary['model_parameters'] = (
-            dictionary['model_parameters'].to_dict())
+        # Serialize the model
+        dictionary['model'] = dictionary['model'].to_dict()
 
         return {self.name: dictionary}
 
@@ -140,57 +128,21 @@ class NaiveBayesOutcome(MachineLearningComponent):
         -------
         object of class \
             :class:`~pyanno4rt.optimization.components._naive_bayes_outcome.NaiveBayesOutcome`
-            The object used to handle the component parameters.
+            The object used to represent the naive Bayes outcome component.
         """
 
-        # Deserialize the model parameters
-        dictionary['model_parameters'] = ModelParameters.from_dict(
-            dictionary['model_parameters'])
+        # Deserialize the model
+        dictionary['model'] = NaiveBayes.from_dict(dictionary['model'])
 
         return cls(**dictionary)
 
-    def add_model(self):
-        """Add the naive Bayes model to the component."""
+    def update_from_model(self):
+        """Update the component from the outcome model."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the model addition
-        get_logger().info("Adding naive Bayes model for '%s' ...", self.name)
-
-        # Initialize the data model handler
-        self.data_model_handler = DataModelHandler(
-            model_label=self.model_parameters.model_label,
-            model_folder_path=self.model_parameters.model_folder_path,
-            data_path=self.model_parameters.data_path,
-            data_columns=self.model_parameters.data_columns,
-            tune_splits=self.model_parameters.tune_splits,
-            tune_repeats=self.model_parameters.tune_repeats,
-            oof_splits=self.model_parameters.oof_splits,
-            oof_repeats=self.model_parameters.oof_repeats,
-            write_features=self.model_parameters.write_features)
-
-        # Integrate the model-related classes
-        self.data_model_handler.integrate()
-
-        # Initialize the naive Bayes model
-        self.model = NaiveBayesModel(
-            model_label=self.model_parameters.model_label,
-            model_folder_path=self.model_parameters.model_folder_path,
-            dataset=hub.datasets[self.model_parameters.model_label],
-            preprocessing_steps=self.model_parameters.preprocessing,
-            tune_space=self.model_parameters.tune_space,
-            tune_evaluations=self.model_parameters.tune_evaluations,
-            tune_score=self.model_parameters.tune_score,
-            inspect_model=self.model_parameters.inspect,
-            evaluate_model=self.model_parameters.evaluate,
-            display_options=self.model_parameters.display_options)
-
-        # Get the naive Bayes model parameters
-        self.parameter_value = []
-
-        # Convert the bounds
-        self.bounds = sorted(self.reverse(bound) for bound in self.bounds)
+        # Update the bounds
+        self.bounds = sorted(
+            self.reverse(bound) for bound in self.convert_bounds(
+                self.arguments['bounds'], self.embedding))
 
     def translate(
             self,
@@ -209,17 +161,14 @@ class NaiveBayesOutcome(MachineLearningComponent):
             Outcome value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of outcome values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single outcome value
-        return sign*value
+        return self.sign*value
 
     def reverse(
             self,
@@ -238,17 +187,14 @@ class NaiveBayesOutcome(MachineLearningComponent):
             Function value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of function values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single function value
-        return sign*value
+        return self.sign*value
 
     def compute_value(
             self,
@@ -268,15 +214,13 @@ class NaiveBayesOutcome(MachineLearningComponent):
         """
 
         # Compute the feature vector
-        raw_features = self.data_model_handler.feature_calculator.featurize(
-            dose, self.segment)
+        raw_features = self.model.featurize(dose, self.segment)
 
         # Preprocess the feature vector
-        preprocessed_features = self.model.preprocess(raw_features)
+        preprocessed_features, _ = self.model.preprocess(raw_features)
 
         # Get the outcome prediction
-        prediction = self.model.predict(
-            preprocessed_features, self.model.prediction_model)
+        prediction = self.model.predict(preprocessed_features)
 
         # Clip the prediction for numerical stability
         prediction = max(1e-6, min(prediction, 1-1e-6))
@@ -300,69 +244,22 @@ class NaiveBayesOutcome(MachineLearningComponent):
             Gradient vector.
         """
 
-        def calculate_model_gradient(features):
-            """Calculate the naive Bayes model gradient."""
-
-            # Get the number of classes
-            number_of_classes = size(self.model.prediction_model.classes_)
-
-            # Get the fitted mean and variance parameters
-            means = self.model.prediction_model.theta_
-            variances = self.model.prediction_model.var_
-
-            # Calculate the joint log likelihood value for all classes
-            joint_log_likelihood = [
-                log(self.model.prediction_model.class_prior_[i])
-                - 0.5*nsum(log(2*pi*variances[i, :]))
-                - 0.5*nsum(
-                    ((preprocessed_features - means[i, :])**2)
-                    / (variances[i, :]), 1)
-                for i in range(number_of_classes)]
-
-            # Calculate the joint log likelihood gradient for all classes
-            joint_log_likelihood_gradient = [
-                (-1*(features-means[i, :]) / variances[i, :])
-                for i in range(number_of_classes)]
-
-            # Calculate the log evidence gradient
-            log_evidence_gradient = (
-                nsum(
-                    joint_log_likelihood_gradient[i]
-                    * exp(joint_log_likelihood[i])
-                    for i in range(number_of_classes))
-                / nsum(
-                    exp(joint_log_likelihood[i])
-                    for i in range(number_of_classes)))
-
-            # Calculate the probability prediction from the model
-            prediction = exp(
-                joint_log_likelihood[1][0] - logsumexp(joint_log_likelihood))
-
-            # Calculate the input feature gradient
-            gradient = prediction * (
-                joint_log_likelihood_gradient[1] - log_evidence_gradient)
-
-            return gradient.reshape(-1)
-
-        # Get the feature calculator
-        feature_calculator = self.data_model_handler.feature_calculator
-
         # Compute the feature vector
-        raw_features = feature_calculator.featurize(dose, self.segment)
+        raw_features = self.model.featurize(dose, self.segment)
 
         # Preprocess the feature vector
-        preprocessed_features = self.model.preprocess(raw_features)
+        preprocessed_features, _ = self.model.preprocess(raw_features)
 
-        # Compute the model gradient
-        model_gradient = (
-            (-1)**(self.outcome_type == 'TCP')
-            *calculate_model_gradient(preprocessed_features))
+        # Get the outcome prediction
+        prediction = self.model.predict(preprocessed_features)
 
-        # Compute the preprocessing pipeline gradient
-        preprocessing_gradient = (
-            self.model.preprocessor.gradientize(raw_features))
+        # Clip the prediction for numerical stability
+        prediction = max(1e-6, min(prediction, 1-1e-6))
 
-        # Compute the feature gradient
-        feature_gradient = feature_calculator.gradientize(dose, self.segment)
+        # Get the model gradients
+        feature_gradient, preprocessing_gradient, predictor_gradient = (
+            self.model.gradientize(dose, self.segment))
 
-        return (model_gradient * preprocessing_gradient) @ feature_gradient
+        return (
+            (self.sign*predictor_gradient * preprocessing_gradient)
+            @ feature_gradient)

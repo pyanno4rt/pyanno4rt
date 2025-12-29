@@ -53,7 +53,7 @@ class TuneSpaceNB():
 
         # Set the default argument values
         defaults = {
-            'priors': [None] + [[i/10, 1-i/10] for i in range(1, 10)],
+            'priors': [None] + [[i/100, 1-i/100] for i in range(1, 100)],
             'var_smoothing': [1e-12, 1]}
 
         # Update the input arguments with the defaults, if applicable

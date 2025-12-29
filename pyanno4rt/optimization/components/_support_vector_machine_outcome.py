@@ -20,9 +20,8 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
     """
     Support vector machine outcome component class.
 
-    This class provides methods to compute the value and the gradient of the \
-    support vector machine outcome component, as well as to add the support \
-    vector machine model.
+    This class provides methods to handle a support vector machine outcome \
+    model-based component.
 
     Parameters
     ----------

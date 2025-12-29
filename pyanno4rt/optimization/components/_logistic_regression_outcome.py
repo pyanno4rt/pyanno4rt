@@ -20,9 +20,8 @@ class LogisticRegressionOutcome(MachineLearningComponent):
     """
     Logistic regression outcome component class.
 
-    This class provides methods to compute the value and the gradient of the \
-    logistic regression outcome component, as well as to add the logistic \
-    regression model.
+    This class provides methods to handle a logistic regression outcome \
+    model-based component.
 
     Parameters
     ----------

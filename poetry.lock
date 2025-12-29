@@ -7151,13 +7151,13 @@ tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
 name = "superqt"
-version = "0.7.6"
+version = "0.7.7"
 description = "Missing widgets and components for PyQt/PySide"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "superqt-0.7.6-py3-none-any.whl", hash = "sha256:6961833acd67df62b12918ded9945c5e7b17d75452c0159a121d799d65e2f0c2"},
-    {file = "superqt-0.7.6.tar.gz", hash = "sha256:822fdba71dc391929c9d3db839f78ca2a861e2f2876926f969a288dfb2a9787e"},
+    {file = "superqt-0.7.7-py3-none-any.whl", hash = "sha256:23f5e88a8b58f5dca8f6763d17380425a95cda6ca217b24440e8f822412ddb75"},
+    {file = "superqt-0.7.7.tar.gz", hash = "sha256:09945c56cc9e2d1fc46196da3e8a39e855eb8303563a12893fcb992299d35f1d"},
 ]
 
 [package.dependencies]
