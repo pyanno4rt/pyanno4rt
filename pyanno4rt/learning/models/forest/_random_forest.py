@@ -1,4 +1,4 @@
-"""Naive Bayes model."""
+"""Random forest model."""
 
 # Author: Tim Ortkamp
 
@@ -10,11 +10,8 @@ from pickle import dump, load
 from copy import deepcopy
 from functools import partial
 from glob import glob
-from math import pi
-from numpy import exp, log, ones, size
-from numpy import sum as nsum
-from scipy.special import logsumexp
-from sklearn.naive_bayes import GaussianNB
+from numpy import ones
+from sklearn.ensemble import RandomForestClassifier
 
 # %% Internal package import
 
@@ -30,11 +27,11 @@ from pyanno4rt.validation import validate_path, validate_type
 # %% Class definition
 
 
-class NaiveBayes():
+class RandomForest():
     """
-    Naive Bayes model class.
+    Random forest model class.
 
-    This class implements methods to handle naive Bayes models.
+    This class implements methods to handle random forest models.
 
     Parameters
     ----------
@@ -106,7 +103,8 @@ class NaiveBayes():
     hyperparameters : dict
         Dictionary with the model hyperparameters.
 
-    predictor : object of class :class:`~sklearn.naive_bayes.GaussianNB`
+    predictor : object of class \
+        :class:`~sklearn.ensemble.RandomForestClassifier`
         The object used to represent the prediction model.
 
     _reload_data : bool
@@ -159,9 +157,26 @@ class NaiveBayes():
         # Initialize the prediction model attributes
         self.feature_calculator = None
         self.hyperparameters = {
-            'priors': None,
-            'var_smoothing': 1e-9}
-        self.predictor = GaussianNB(**self.hyperparameters)
+            'n_estimators': 100,
+            'criterion': 'gini',
+            'max_depth': None,
+            'min_samples_split': 2,
+            'min_samples_leaf': 1,
+            'min_weight_fraction_leaf': 0.0,
+            'max_features': 'sqrt',
+            'max_leaf_nodes': None,
+            'min_impurity_decrease': 0.0,
+            'bootstrap': True,
+            'oob_score': False,
+            'n_jobs': -1,
+            'random_state': 12,
+            'verbose': 0,
+            'warm_start': False,
+            'class_weight': None,
+            'ccp_alpha': 0.0,
+            'max_samples': None,
+            'monotonic_cst': None}
+        self.predictor = RandomForestClassifier(**self.hyperparameters)
 
         # Initialize the refreshing indicators
         self._reload_data = True
@@ -203,7 +218,7 @@ class NaiveBayes():
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.models.naive_bayes._naive_bayes.NaiveBayes`
+            :class:`~pyanno4rt.learning.models.forest._random_forest.RandomForest`
             The object used to represent the model.
         """
 
@@ -376,8 +391,17 @@ class NaiveBayes():
 
         # Build the hyperparameter dictionary
         self.hyperparameters = self.hyperparameters | {
-            'priors': proposal.get('priors'),
-            'var_smoothing': proposal.get('var_smoothing', 1e-9)}
+            'n_estimators': proposal.get('n_estimators', 100),
+            'criterion': proposal.get('criterion', 'gini'),
+            'max_depth': proposal.get('max_depth'),
+            'min_samples_split': proposal.get('min_samples_split', 2),
+            'min_samples_leaf': proposal.get('min_samples_leaf', 1),
+            'min_weight_fraction_leaf': proposal.get(
+                'min_weight_fraction_leaf', 0.0),
+            'max_features': proposal.get('max_features', 'sqrt'),
+            'bootstrap': proposal.get('bootstrap', True),
+            'class_weight': proposal.get('class_weight'),
+            'ccp_alpha': proposal.get('ccp_alpha', 0.0)}
 
     def get_grid_hp(
             self,
@@ -525,55 +549,8 @@ class NaiveBayes():
             Predictor gradient w.r.t the preprocessed features.
         """
 
-        def calculate_model_gradient(features):
-            """Calculate the naive Bayes model gradient."""
-
-            # Get the number of classes
-            number_of_classes = size(self.predictor.classes_)
-
-            # Get the fitted mean and variance parameters
-            means = self.predictor.theta_
-            variances = self.predictor.var_
-
-            # Calculate the joint log likelihood value for all classes
-            joint_log_likelihood = [
-                log(self.predictor.class_prior_[i])
-                - 0.5*nsum(log(2*pi*variances[i, :]))
-                - 0.5*nsum(
-                    ((preprocessed_features - means[i, :])**2)
-                    / (variances[i, :]), 1)
-                for i in range(number_of_classes)]
-
-            # Calculate the joint log likelihood gradient for all classes
-            joint_log_likelihood_gradient = [
-                (-1*(features-means[i, :]) / variances[i, :])
-                for i in range(number_of_classes)]
-
-            # Calculate the log evidence gradient
-            log_evidence_gradient = (
-                nsum(
-                    joint_log_likelihood_gradient[i]
-                    * exp(joint_log_likelihood[i])
-                    for i in range(number_of_classes))
-                / nsum(
-                    exp(joint_log_likelihood[i])
-                    for i in range(number_of_classes)))
-
-            # Calculate the probability prediction from the model
-            prediction = exp(
-                joint_log_likelihood[1][0] - logsumexp(joint_log_likelihood))
-
-            # Calculate the input feature gradient
-            gradient = prediction * (
-                joint_log_likelihood_gradient[1] - log_evidence_gradient)
-
-            return gradient.reshape(-1)
-
         # Get the feature vector
         features = self.featurize(dose, segment)
-
-        # Preprocess the features
-        preprocessed_features, _ = self.preprocess(features)
 
         # Derive the feature gradient
         feature_gradient = self.feature_calculator.gradientize(dose, segment)
@@ -590,7 +567,7 @@ class NaiveBayes():
             preprocessing_gradient = ones((len(features),))
 
         # Derive the predictor gradient
-        predictor_gradient = calculate_model_gradient(preprocessed_features)
+        predictor_gradient = ones((len(features),))
 
         return feature_gradient, preprocessing_gradient, predictor_gradient
 

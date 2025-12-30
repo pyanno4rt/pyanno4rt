@@ -8,7 +8,7 @@ from copy import deepcopy
 
 # %% Internal package import
 
-from pyanno4rt.logging import get_logger
+from pyanno4rt.learning.models import DecisionTree
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict
 
@@ -19,8 +19,8 @@ class DecisionTreeOutcome(MachineLearningComponent):
     """
     Decision tree outcome component class.
 
-    This class provides methods to compute the value and the gradient of the \
-    decision tree outcome component, as well as to add the decision tree model.
+    This class provides methods to handle a decision tree outcome model-based \
+    component.
 
     Parameters
     ----------
@@ -30,9 +30,9 @@ class DecisionTreeOutcome(MachineLearningComponent):
     outcome_type : {'NTCP', 'TCP'}
         Type of the outcome variable.
 
-    model_parameters : object of class \
-        :class:`~pyanno4rt.learning._model_parameters.ModelParameters`
-        The object used to represent the learning model parameters.
+    model : object of class \
+        :class:`~pyanno4rt.learning.models.tree._decision_tree.DecisionTree`
+        The object used to represent the decision tree outcome model.
 
     component_type : {'constraint', 'objective'}, default='objective'
         Type of the component.
@@ -62,25 +62,17 @@ class DecisionTreeOutcome(MachineLearningComponent):
     arguments : dict
         Dictionary with the component input arguments (for serialization).
 
-    data_model_handler : object of class \
-        :class:`~pyanno4rt.learning._data_model_handler.DataModelHandler`
-        The object used to handle the dataset, the feature map generation and \
-        the feature (re-)calculation.
-
-    model : object of class \
-        :class:`~pyanno4rt.learning.tree._decision_tree.DecisionTreeModel`
-        The object used to preprocess, tune, train, inspect and evaluate the \
-        decision tree model.
-
-    parameter_value : list
-        Decision tree model parameters.
+    Notes
+    -----
+    See :class:`~pyanno4rt.optimization.components._machine_learning_component.MachineLearningComponent`\
+    for details on the inherited attributes.
     """
 
     def __init__(
             self,
             segment,
             outcome_type,
-            model_parameters,
+            model,
             component_type='objective',
             embedding='active',
             weight=1.0,
@@ -97,7 +89,7 @@ class DecisionTreeOutcome(MachineLearningComponent):
             component_type=component_type,
             parameter_name=(),
             parameter_category=(),
-            model_parameters=model_parameters,
+            model=model,
             embedding=embedding,
             weight=weight,
             rank=rank,
@@ -115,9 +107,8 @@ class DecisionTreeOutcome(MachineLearningComponent):
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
 
-        # Serialize the model parameters
-        dictionary['model_parameters'] = (
-            dictionary['model_parameters'].to_dict())
+        # Serialize the model
+        dictionary['model'] = dictionary['model'].to_dict()
 
         return {self.name: dictionary}
 
@@ -137,57 +128,21 @@ class DecisionTreeOutcome(MachineLearningComponent):
         -------
         object of class \
             :class:`~pyanno4rt.optimization.components._decision_tree_outcome.DecisionTreeOutcome`
-            The object used to handle the component parameters.
+            The object used to represent the naive Bayes outcome component.
         """
 
-        # Deserialize the model parameters
-        dictionary['model_parameters'] = ModelParameters.from_dict(
-            dictionary['model_parameters'])
+        # Deserialize the model
+        dictionary['model'] = DecisionTree.from_dict(dictionary['model'])
 
         return cls(**dictionary)
 
-    def add_model(self):
-        """Add the decision tree model to the component."""
+    def update_from_model(self):
+        """Update the component from the outcome model."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the model addition
-        get_logger().info("Adding decision tree model for '%s' ...", self.name)
-
-        # Initialize the data model handler
-        self.data_model_handler = DataModelHandler(
-            model_label=self.model_parameters.model_label,
-            model_folder_path=self.model_parameters.model_folder_path,
-            data_path=self.model_parameters.data_path,
-            data_columns=self.model_parameters.data_columns,
-            tune_splits=self.model_parameters.tune_splits,
-            tune_repeats=self.model_parameters.tune_repeats,
-            oof_splits=self.model_parameters.oof_splits,
-            oof_repeats=self.model_parameters.oof_repeats,
-            write_features=self.model_parameters.write_features)
-
-        # Integrate the model-related classes
-        self.data_model_handler.integrate()
-
-        # Initialize the decision tree model
-        self.model = DecisionTreeModel(
-            model_label=self.model_parameters.model_label,
-            model_folder_path=self.model_parameters.model_folder_path,
-            dataset=hub.datasets[self.model_parameters.model_label],
-            preprocessing_steps=self.model_parameters.preprocessing,
-            tune_space=self.model_parameters.tune_space,
-            tune_evaluations=self.model_parameters.tune_evaluations,
-            tune_score=self.model_parameters.tune_score,
-            inspect_model=self.model_parameters.inspect,
-            evaluate_model=self.model_parameters.evaluate,
-            display_options=self.model_parameters.display_options)
-
-        # Get the decision tree model parameters
-        self.parameter_value = []
-
-        # Convert the bounds
-        self.bounds = sorted(self.reverse(bound) for bound in self.bounds)
+        # Update the bounds
+        self.bounds = sorted(
+            self.reverse(bound) for bound in self.convert_bounds(
+                self.arguments['bounds'], self.embedding))
 
     def translate(
             self,
@@ -206,17 +161,14 @@ class DecisionTreeOutcome(MachineLearningComponent):
             Outcome value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of outcome values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single outcome value
-        return sign*value
+        return self.sign*value
 
     def reverse(
             self,
@@ -235,17 +187,14 @@ class DecisionTreeOutcome(MachineLearningComponent):
             Function value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of function values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single function value
-        return sign*value
+        return self.sign*value
 
     def compute_value(
             self,
@@ -265,15 +214,13 @@ class DecisionTreeOutcome(MachineLearningComponent):
         """
 
         # Compute the feature vector
-        raw_features = self.data_model_handler.feature_calculator.featurize(
-            dose, self.segment)
+        raw_features = self.model.featurize(dose, self.segment)
 
         # Preprocess the feature vector
-        preprocessed_features = self.model.preprocess(raw_features)
+        preprocessed_features, _ = self.model.preprocess(raw_features)
 
         # Get the outcome prediction
-        prediction = self.model.predict(
-            preprocessed_features, self.model.optimization_model)
+        prediction = self.model.predict(preprocessed_features)
 
         # Clip the prediction for numerical stability
         prediction = max(1e-6, min(prediction, 1-1e-6))
@@ -297,25 +244,10 @@ class DecisionTreeOutcome(MachineLearningComponent):
             Gradient vector.
         """
 
-        # Get the feature calculator
-        feature_calculator = self.data_model_handler.feature_calculator
+        # Get the model gradients
+        feature_gradient, preprocessing_gradient, predictor_gradient = (
+            self.model.gradientize(dose, self.segment))
 
-        # Compute the feature vector
-        raw_features = feature_calculator.featurize(dose, self.segment)
-
-        # Preprocess the feature vector
-        preprocessed_features = self.model.preprocess(raw_features)
-
-        # Compute the model gradient
-        model_gradient = (
-            (-1)**(self.outcome_type == 'TCP')
-            *self.model.optimization_model.gradientize(preprocessed_features))
-
-        # Compute the preprocessing pipeline gradient
-        preprocessing_gradient = (
-            self.model.preprocessor.gradientize(raw_features))
-
-        # Compute the feature gradient
-        feature_gradient = feature_calculator.gradientize(dose, self.segment)
-
-        return (model_gradient * preprocessing_gradient) @ feature_gradient
+        return (
+            (self.sign*predictor_gradient * preprocessing_gradient)
+            @ feature_gradient)

@@ -76,7 +76,7 @@
 <ul> 
 	<li> 7 internal ML model classes (decision tree, k-nearest neighbors, logistic regression, naive Bayes, neural network, random forest, support vector machine) with customizable modules for dataset loading, preprocessing, hyperparameter tuning, inspection & evaluation </li>
 	<li> 24-type dosiomic & radiomic feature catalogue </li>
-	<li> External model loading from local configuration folders </li>
+	<li> External model loading from local folders </li>
 </ul>
 
 <h3>Plan evaluation tools</h3>
@@ -198,7 +198,7 @@ Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.2** for develop
 To cite *pyanno4rt*, either use the link in the right sidebar of the Github landing page labeled "Cite this repository" or copy the short-form bib-style paragraph below:
 
 ```tex
-@software{pyanno4rt2024,
+@software{pyanno4rt2026,
   title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
   author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},
   version = {1.0.0},

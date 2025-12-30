@@ -231,8 +231,7 @@ class SupportVectorMachine():
         """
 
         # Deserialize the dataset
-        dictionary['dataset'] = TabularDataset.from_dict(
-            dictionary['dataset'])
+        dictionary['dataset'] = TabularDataset.from_dict(dictionary['dataset'])
 
         # Check if a preprocessor dictionary has been passed
         if dictionary['preprocessor'] is not None:
@@ -291,8 +290,7 @@ class SupportVectorMachine():
         """
 
         # Log a message about adding the feature calculator
-        get_logger().info(
-            "Adding feature calculator for '%s' ...", self.label)
+        get_logger().info("Adding feature calculator for '%s' ...", self.label)
 
         # Initialize the feature calculator
         self.feature_calculator = calculator
@@ -597,7 +595,7 @@ class SupportVectorMachine():
         return feature_gradient, preprocessing_gradient, predictor_gradient
 
     def load(self):
-        """Load an external support vector machine model."""
+        """Load an external model."""
 
         # Log a message about loading the model
         get_logger().info("Loading '%s' model from file ...", self.label)
@@ -646,7 +644,7 @@ class SupportVectorMachine():
         Parameters
         ----------
         path : str
-            Path for storing the logistic regression model.
+            Path for storing the model.
         """
 
         # Check if a preprocessor object exists
@@ -688,16 +686,13 @@ class SupportVectorMachine():
                     type(None), TabularPreprocessor)),
                 ),
             'tuner': (
-                partial(validate_type, options=(
-                    type(None), *TUNERS.values())),
+                partial(validate_type, options=(type(None), *TUNERS.values())),
                 ),
             'inspector': (
-                partial(validate_type, options=(
-                    type(None), ModelInspector)),
+                partial(validate_type, options=(type(None), ModelInspector)),
                 ),
             'evaluator': (
-                partial(validate_type, options=(
-                    type(None), ModelEvaluator)),
+                partial(validate_type, options=(type(None), ModelEvaluator)),
                 ),
             'model_path': (
                 partial(validate_type, options={

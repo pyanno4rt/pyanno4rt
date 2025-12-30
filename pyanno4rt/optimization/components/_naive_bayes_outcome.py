@@ -8,7 +8,7 @@ from copy import deepcopy
 
 # %% Internal package import
 
-from pyanno4rt.learning.models.naive_bayes import NaiveBayes
+from pyanno4rt.learning.models import NaiveBayes
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import filter_dict
 
@@ -243,18 +243,6 @@ class NaiveBayesOutcome(MachineLearningComponent):
         ndarray
             Gradient vector.
         """
-
-        # Compute the feature vector
-        raw_features = self.model.featurize(dose, self.segment)
-
-        # Preprocess the feature vector
-        preprocessed_features, _ = self.model.preprocess(raw_features)
-
-        # Get the outcome prediction
-        prediction = self.model.predict(preprocessed_features)
-
-        # Clip the prediction for numerical stability
-        prediction = max(1e-6, min(prediction, 1-1e-6))
 
         # Get the model gradients
         feature_gradient, preprocessing_gradient, predictor_gradient = (

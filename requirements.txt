@@ -1520,9 +1520,9 @@ tensorflow==2.20.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:c25edad45e8cb9e76366f7a8c835279f9169028d610f3b52ce92d332a1b05438 \
     --hash=sha256:dd71a7e7c3270239f4185915e8f2c5d39608c5e18973d6e1d101b153993841eb \
     --hash=sha256:e5f169f8f5130ab255bbe854c5f0ae152e93d3d1ac44f42cb1866003b81a5357
-termcolor==3.2.0 ; python_version >= "3.10" and python_version < "4.0" \
-    --hash=sha256:610e6456feec42c4bcd28934a8c87a06c3fa28b01561d46aa09a9881b8622c58 \
-    --hash=sha256:a10343879eba4da819353c55cb8049b0933890c2ebf9ad5d3ecd2bb32ea96ea6
+termcolor==3.3.0 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:348871ca648ec6a9a983a13ab626c0acce02f515b9e1983332b17af7979521c5 \
+    --hash=sha256:cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5
 threadpoolctl==3.6.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb \
     --hash=sha256:8ab8b4aa3491d812b623328249fab5302a68d2d71745c8a4c719a2fcaba9f44e

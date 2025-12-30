@@ -10,7 +10,8 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.learning.models import (
-    LogisticRegression, NaiveBayes, SupportVectorMachine)
+    DecisionTree, KNearestNeighbors, LogisticRegression, NaiveBayes,
+    RandomForest, SupportVectorMachine)
 from pyanno4rt.tools import filter_dict, wrap
 from pyanno4rt.validation import (
     validate_item, validate_item_in_set, validate_length, validate_subtype,
@@ -402,7 +403,8 @@ class MachineLearningComponent(metaclass=ABCMeta):
                 ),
             'model': (
                 partial(validate_type, options=(
-                    LogisticRegression, NaiveBayes, SupportVectorMachine)),
+                    DecisionTree, KNearestNeighbors, LogisticRegression,
+                    NaiveBayes, RandomForest, SupportVectorMachine)),
                 ),
             'embedding': (
                 partial(validate_type, options=str),

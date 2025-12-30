@@ -8,7 +8,7 @@ from copy import deepcopy
 
 # %% Internal package import
 
-from pyanno4rt.learning.models.svm import SupportVectorMachine
+from pyanno4rt.learning.models import SupportVectorMachine
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import (
     filter_dict, inverse_salu, inverse_sigmoid, salu, sigmoid)

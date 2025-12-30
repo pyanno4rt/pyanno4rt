@@ -116,7 +116,7 @@ class TuneSpaceRF():
             'min_samples_split': [0.0, 1.0],
             'min_samples_leaf': [0.0, 0.5],
             'min_weight_fraction_leaf': [0.0, 0.5],
-            'max_features': [0],
+            'max_features': ['sqrt'],
             'bootstrap': [False, True],
             'class_weight': [None, 'balanced'],
             'ccp_alpha': [0.0, 1.0]}
@@ -243,8 +243,7 @@ class TuneSpaceRF():
                 ),
             'max_features': (
                 partial(validate_type, options=list),
-                partial(validate_subtype, options=int),
-                partial(validate_item, reference=0, sign='>=')
+                partial(validate_subtype, options=(int, str)),
                 ),
             'bootstrap': (
                 partial(validate_type, options=list),
