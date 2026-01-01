@@ -81,7 +81,7 @@ class RandomForestOutcome(MachineLearningComponent):
             transform=False,
             identifier=None):
 
-        # Call the superclass constructor to initialize and check attributes
+        # Call the superclass constructor
         super().__init__(
             name='Random Forest Outcome',
             segment=segment,

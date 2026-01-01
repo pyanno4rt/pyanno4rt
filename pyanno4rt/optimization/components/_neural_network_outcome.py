@@ -5,12 +5,10 @@
 # %% External package import
 
 from copy import deepcopy
-from numpy import array
-from tensorflow import cast, clip_by_value, float64, GradientTape
 
 # %% Internal package import
 
-from pyanno4rt.logging import get_logger
+from pyanno4rt.learning.models import FeedForwardNet
 from pyanno4rt.optimization.components import MachineLearningComponent
 from pyanno4rt.tools import (
     filter_dict, inverse_salu, inverse_sigmoid, salu, sigmoid)
@@ -22,9 +20,8 @@ class NeuralNetworkOutcome(MachineLearningComponent):
     """
     Neural network outcome component class.
 
-    This class provides methods to compute the value and the gradient of the \
-    neural network outcome component, as well as to add the neural network \
-    model.
+    This class provides methods to handle a neural network outcome \
+    model-based component.
 
     Parameters
     ----------
@@ -34,9 +31,9 @@ class NeuralNetworkOutcome(MachineLearningComponent):
     outcome_type : {'NTCP', 'TCP'}
         Type of the outcome variable.
 
-    model_parameters : object of class \
-        :class:`~pyanno4rt.learning._model_parameters.ModelParameters`
-        The object used to represent the learning model parameters.
+    model : object of class \
+        :class:`~pyanno4rt.learning.models.neural_network._feed_forward_net.FeedForwardNet`
+        The object used to represent the neural network outcome model.
 
     component_type : {'constraint', 'objective'}, default='objective'
         Type of the component.
@@ -66,25 +63,17 @@ class NeuralNetworkOutcome(MachineLearningComponent):
     arguments : dict
         Dictionary with the component input arguments (for serialization).
 
-    data_model_handler : object of class \
-        :class:`~pyanno4rt.learning._data_model_handler.DataModelHandler`
-        The object used to handle the dataset, the feature map generation and \
-        the feature (re-)calculation.
-
-    model : object of class \
-        :class:`~pyanno4rt.learning.neural_network._neural_network.NeuralNetworkModel`
-        The object used to preprocess, tune, train, inspect and evaluate the \
-        neural network model.
-
-    parameter_value : list
-        Neural network model parameters.
+    Notes
+    -----
+    See :class:`~pyanno4rt.optimization.components._machine_learning_component.MachineLearningComponent`\
+    for details on the inherited attributes.
     """
 
     def __init__(
             self,
             segment,
             outcome_type,
-            model_parameters,
+            model,
             component_type='objective',
             embedding='active',
             weight=1.0,
@@ -93,7 +82,7 @@ class NeuralNetworkOutcome(MachineLearningComponent):
             transform=False,
             identifier=None):
 
-        # Call the superclass constructor to initialize and check attributes
+        # Call the superclass constructor
         super().__init__(
             name='Neural Network Outcome',
             segment=segment,
@@ -101,7 +90,7 @@ class NeuralNetworkOutcome(MachineLearningComponent):
             component_type=component_type,
             parameter_name=('(weight, bias)',),
             parameter_category=('parameter',),
-            model_parameters=model_parameters,
+            model=model,
             embedding=embedding,
             weight=weight,
             rank=rank,
@@ -119,9 +108,8 @@ class NeuralNetworkOutcome(MachineLearningComponent):
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
 
-        # Serialize the model parameters
-        dictionary['model_parameters'] = (
-            dictionary['model_parameters'].to_dict())
+        # Serialize the model
+        dictionary['model'] = dictionary['model'].to_dict()
 
         return {self.name: dictionary}
 
@@ -141,67 +129,30 @@ class NeuralNetworkOutcome(MachineLearningComponent):
         -------
         object of class \
             :class:`~pyanno4rt.optimization.components._neural_network_outcome.NeuralNetworkOutcome`
-            The object used to handle the component parameters.
+            The object used to represent the neural network outcome component.
         """
 
-        # Deserialize the model parameters
-        dictionary['model_parameters'] = ModelParameters.from_dict(
-            dictionary['model_parameters'])
+        # Deserialize the model
+        dictionary['model'] = FeedForwardNet.from_dict(dictionary['model'])
 
         return cls(**dictionary)
 
-    def add_model(self):
-        """Add the neural network model to the component."""
+    def update_from_model(self):
+        """Update the component from the outcome model."""
 
-        # Initialize the datahub
-        hub = Datahub()
-
-        # Log a message about the model addition
-        get_logger().info(
-            "Adding %s neural network model for '%s' ...",
-            self.model_parameters.architecture, self.name)
-
-        # Initialize the data model handler
-        self.data_model_handler = DataModelHandler(
-            model_label=self.model_parameters.model_label,
-            model_folder_path=self.model_parameters.model_folder_path,
-            data_path=self.model_parameters.data_path,
-            data_columns=self.model_parameters.data_columns,
-            tune_splits=self.model_parameters.tune_splits,
-            tune_repeats=self.model_parameters.tune_repeats,
-            oof_splits=self.model_parameters.oof_splits,
-            oof_repeats=self.model_parameters.oof_repeats,
-            write_features=self.model_parameters.write_features)
-
-        # Integrate the model-related classes
-        self.data_model_handler.integrate()
-
-        # Initialize the neural network model
-        self.model = NeuralNetworkModel(
-            model_label=self.model_parameters.model_label,
-            model_folder_path=self.model_parameters.model_folder_path,
-            dataset=hub.datasets[self.model_parameters.model_label],
-            preprocessing_steps=self.model_parameters.preprocessing,
-            architecture=self.model_parameters.architecture,
-            max_hidden_layers=self.model_parameters.max_hidden_layers,
-            tune_space=self.model_parameters.tune_space,
-            tune_evaluations=self.model_parameters.tune_evaluations,
-            tune_score=self.model_parameters.tune_score,
-            inspect_model=self.model_parameters.inspect,
-            evaluate_model=self.model_parameters.evaluate,
-            display_options=self.model_parameters.display_options)
-
-        # Get the neural network model parameters
+        # Store the model coefficients
         self.parameter_value = list(
             weight for weights in (
                 layer.flatten().astype(float)
                 if len(layer.shape) == 2
                 else layer.astype(float)
-                for layer in self.model.prediction_model.get_weights())
+                for layer in self.model.predictor.get_weights())
             for weight in weights)
 
-        # Convert the bounds
-        self.bounds = sorted(self.reverse(bound) for bound in self.bounds)
+        # Update the bounds
+        self.bounds = sorted(
+            self.reverse(bound) for bound in self.convert_bounds(
+                self.arguments['bounds'], self.embedding))
 
     def translate(
             self,
@@ -220,23 +171,20 @@ class NeuralNetworkOutcome(MachineLearningComponent):
             Outcome value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the transformation should be applied
         if self.transform:
 
             # Return the transformed outcome value
-            return sigmoid(inverse_salu(value, sign))
+            return sigmoid(inverse_salu(value, self.sign))
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of outcome values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single outcome value
-        return sign*value
+        return self.sign*value
 
     def reverse(
             self,
@@ -255,23 +203,20 @@ class NeuralNetworkOutcome(MachineLearningComponent):
             Function value.
         """
 
-        # Get the sign
-        sign = (-1)**(self.outcome_type == 'TCP')
-
         # Check if the transformation should be applied
         if self.transform:
 
             # Return the transformed function value
-            return salu(inverse_sigmoid(value), sign)
+            return salu(inverse_sigmoid(value), self.sign)
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
 
             # Return a list of function values
-            return [sign*val for val in value]
+            return [self.sign*val for val in value]
 
         # Return a single function value
-        return sign*value
+        return self.sign*value
 
     def compute_value(
             self,
@@ -291,16 +236,13 @@ class NeuralNetworkOutcome(MachineLearningComponent):
         """
 
         # Compute the feature vector
-        raw_features = self.data_model_handler.feature_calculator.featurize(
-            dose, self.segment)
+        raw_features = self.model.featurize(dose, self.segment)
 
-        # Preprocess and cast the feature vector
-        preprocessed_features = cast(
-            self.model.preprocess(raw_features), float64)
+        # Preprocess the feature vector
+        preprocessed_features, _ = self.model.preprocess(raw_features)
 
         # Get the outcome prediction
-        prediction = self.model.predict(
-            preprocessed_features, self.model.prediction_model)
+        prediction = self.model.predict(preprocessed_features)
 
         # Clip the prediction for numerical stability
         prediction = max(1e-6, min(prediction, 1-1e-6))
@@ -324,51 +266,29 @@ class NeuralNetworkOutcome(MachineLearningComponent):
             Gradient vector.
         """
 
-        # Get the feature calculator
-        feature_calculator = self.data_model_handler.feature_calculator
-
         # Compute the feature vector
-        raw_features = feature_calculator.featurize(dose, self.segment)
+        raw_features = self.model.featurize(dose, self.segment)
 
-        # Preprocess and cast the feature vector
-        preprocessed_features = cast(
-            self.model.preprocess(raw_features), float64)
+        # Preprocess the feature vector
+        preprocessed_features, _ = self.model.preprocess(raw_features)
 
-        # Open a gradient tape stream
-        with GradientTape() as tape:
+        # Get the outcome prediction
+        prediction = self.model.predict(preprocessed_features)
 
-            # Watch the gradient operations on the preprocessed features
-            tape.watch(preprocessed_features)
+        # Clip the prediction for numerical stability
+        prediction = max(1e-6, min(prediction, 1-1e-6))
 
-            # Get the outcome prediction
-            prediction = self.model.prediction_model(preprocessed_features)
+        # Get the model gradients
+        feature_gradient, preprocessing_gradient, predictor_gradient = (
+            self.model.gradientize(dose, self.segment))
 
-            # Clip the prediction for numerical stability
-            prediction = clip_by_value(prediction, 1e-6, 1-1e-6)
+        # Check if the transformation should be applied
+        if self.transform and self.sign*prediction > self.sign*0.5:
 
-            # Get the sign
-            sign = (-1)**(self.outcome_type == 'TCP')
+            # Get the transformed predictor gradient
+            predictor_gradient = (
+                0.25*predictor_gradient/(prediction - prediction**2))
 
-            # Check if the transformation should be applied
-            if self.transform and sign*prediction > sign*0.5:
-
-                # Get the transformed model gradient
-                model_gradient = sign*0.25*array(
-                    tape.gradient(prediction, preprocessed_features)
-                    ).reshape(-1) / (prediction - prediction**2)
-
-            else:
-
-                # Get the standard model gradient
-                model_gradient = sign*array(
-                    tape.gradient(prediction, preprocessed_features)
-                    ).reshape(-1)
-
-        # Compute the preprocessing pipeline gradient
-        preprocessing_gradient = (
-            self.model.preprocessor.gradientize(raw_features))
-
-        # Compute the feature gradient
-        feature_gradient = feature_calculator.gradientize(dose, self.segment)
-
-        return (model_gradient * preprocessing_gradient) @ feature_gradient
+        return (
+            (self.sign*predictor_gradient * preprocessing_gradient)
+            @ feature_gradient)

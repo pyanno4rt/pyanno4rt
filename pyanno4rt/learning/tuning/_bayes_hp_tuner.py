@@ -28,6 +28,8 @@ class BayesHPTuner():
     """
     Bayesian hyperparameter tuning class.
 
+    This class implements methods to perform Bayesian hyperparameter tuning.
+
     Parameters
     ----------
     space : object of class \
@@ -140,7 +142,13 @@ class BayesHPTuner():
         Parameters
         ----------
         model : object of class \
-            :class:`~pyanno4rt.learning.models.logistic._logistic_regression.LogisticRegression`
+            :class:`~pyanno4rt.learning._models.forest._random_forest.RandomForest`\
+            :class:`~pyanno4rt.learning._models.logistic._logistic_regression.LogisticRegression`\
+            :class:`~pyanno4rt.learning._models.naive_bayes._naive_bayes.NaiveBayes`\
+            :class:`~pyanno4rt.learning._models.neighbors._k_nearest_neighbors.KNearestNeighbors`\
+            :class:`~pyanno4rt.learning._models.neural_network._feed_forward_net.FeedForwardNet`\
+            :class:`~pyanno4rt.learning._models.svm._support_vector_machine.SupportVectorMachine`\
+            :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
             The object used to represent the tunable model.
 
         features : ndarray
@@ -219,7 +227,7 @@ class BayesHPTuner():
                         return {'status': STATUS_FAIL}
 
             # Update the hyperparameter set
-            model.get_bayes_hp(proposal)
+            model._get_bayes_hp(proposal)
 
             # Compute the objective function value (score) across all folds
             repeat_scores = (mean(map(compute_fold_score, (

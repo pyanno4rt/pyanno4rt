@@ -81,7 +81,7 @@ class NaiveBayesOutcome(MachineLearningComponent):
             transform=False,
             identifier=None):
 
-        # Call the superclass constructor to initialize and check attributes
+        # Call the superclass constructor
         super().__init__(
             name='Naive Bayes Outcome',
             segment=segment,

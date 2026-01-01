@@ -10,8 +10,8 @@ from functools import partial
 # %% Internal package import
 
 from pyanno4rt.learning.models import (
-    DecisionTree, KNearestNeighbors, LogisticRegression, NaiveBayes,
-    RandomForest, SupportVectorMachine)
+    DecisionTree, FeedForwardNet, KNearestNeighbors, LogisticRegression,
+    NaiveBayes, RandomForest, SupportVectorMachine)
 from pyanno4rt.tools import filter_dict, wrap
 from pyanno4rt.validation import (
     validate_item, validate_item_in_set, validate_length, validate_subtype,
@@ -49,7 +49,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
         :class:`~pyanno4rt.learning._models.logistic._logistic_regression.LogisticRegression`\
         :class:`~pyanno4rt.learning._models.naive_bayes._naive_bayes.NaiveBayes`\
         :class:`~pyanno4rt.learning._models.neighbors._k_nearest_neighbors.KNearestNeighbors`\
-        :class:`~pyanno4rt.learning._models.network._neural_network.NeuralNetwork`\
+        :class:`~pyanno4rt.learning._models.neural_network._feed_forward_net.FeedForwardNet`\
         :class:`~pyanno4rt.learning._models.svm._support_vector_machine.SupportVectorMachine`\
         :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
         The object used to represent the outcome model.
@@ -102,7 +102,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
         :class:`~pyanno4rt.learning._models.logistic._logistic_regression.LogisticRegression`\
         :class:`~pyanno4rt.learning._models.naive_bayes._naive_bayes.NaiveBayes`\
         :class:`~pyanno4rt.learning._models.neighbors._k_nearest_neighbors.KNearestNeighbors`\
-        :class:`~pyanno4rt.learning._models.network._neural_network.NeuralNetwork`\
+        :class:`~pyanno4rt.learning._models.neural_network._feed_forward_net.FeedForwardNet`\
         :class:`~pyanno4rt.learning._models.svm._support_vector_machine.SupportVectorMachine`\
         :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
         See 'Parameters'.
@@ -403,8 +403,9 @@ class MachineLearningComponent(metaclass=ABCMeta):
                 ),
             'model': (
                 partial(validate_type, options=(
-                    DecisionTree, KNearestNeighbors, LogisticRegression,
-                    NaiveBayes, RandomForest, SupportVectorMachine)),
+                    DecisionTree, FeedForwardNet, KNearestNeighbors,
+                    LogisticRegression, NaiveBayes, RandomForest,
+                    SupportVectorMachine)),
                 ),
             'embedding': (
                 partial(validate_type, options=str),

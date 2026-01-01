@@ -81,7 +81,7 @@ class DecisionTreeOutcome(MachineLearningComponent):
             transform=False,
             identifier=None):
 
-        # Call the superclass constructor to initialize and check attributes
+        # Call the superclass constructor
         super().__init__(
             name='Decision Tree Outcome',
             segment=segment,

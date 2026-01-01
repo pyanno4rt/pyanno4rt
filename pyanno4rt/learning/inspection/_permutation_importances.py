@@ -6,11 +6,16 @@
 
 from numpy import unique, vstack, where
 from sklearn.inspection import permutation_importance
+from tensorflow.keras.utils import disable_interactive_logging
 
 # %% Internal package import
 
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.logging import get_logger
+
+# %% Configuration
+
+disable_interactive_logging()
 
 # %% Function definition
 
@@ -26,7 +31,7 @@ def permutation_importances(model, score='AUC', permutations=20):
         :class:`~pyanno4rt.learning._models.logistic._logistic_regression.LogisticRegression`\
         :class:`~pyanno4rt.learning._models.naive_bayes._naive_bayes.NaiveBayes`\
         :class:`~pyanno4rt.learning._models.neighbors._k_nearest_neighbors.KNearestNeighbors`\
-        :class:`~pyanno4rt.learning._models.network._neural_network.NeuralNetwork`\
+        :class:`~pyanno4rt.learning._models.neural_network._feed_forward_net.FeedForwardNet`\
         :class:`~pyanno4rt.learning._models.svm._support_vector_machine.SupportVectorMachine`\
         :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
         The object used to represent the outcome model.

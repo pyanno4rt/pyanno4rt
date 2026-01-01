@@ -40,23 +40,23 @@ class TuneSpaceNN():
     hidden_dropout_rate : None or list, default=None
         Options for the hidden layer dropout rates.
 
-    batch_size : None or list, default=None
-        Options for the batch size.
-
     learning_rate : None or list, default=None
         Range for the learning rate.
 
     optimizer : None or list, default=None
-        Options ('Adam', 'Ftrl', 'SGD') for the network optimization algorithm.
+        Options ('adam', 'ftrl', 'sgd') for the network optimization algorithm.
 
     loss : None or list, default=None
-        Options ('BCE', 'FocalBCE', 'KLD') for the network optimization loss \
-        function.
+        Options ('binary_crossentropy', 'binary_focal_crossentropy', \
+        'kl_divergence') for the network optimization loss function.
 
     .. note:: If arguments are passed as None, default values will be applied.
 
     Attributes
     ----------
+    max_hidden_layers : int
+        See 'Parameters'.
+
     hidden_neuron_number : None or list
         See 'Parameters'.
 
@@ -64,9 +64,6 @@ class TuneSpaceNN():
         See 'Parameters'.
 
     hidden_dropout_rate : None or list
-        See 'Parameters'.
-
-    batch_size : None or list
         See 'Parameters'.
 
     learning_rate : None or list
@@ -85,7 +82,6 @@ class TuneSpaceNN():
             hidden_neuron_number=None,
             hidden_activation=None,
             hidden_dropout_rate=None,
-            batch_size=None,
             learning_rate=None,
             optimizer=None,
             loss=None):
@@ -100,7 +96,6 @@ class TuneSpaceNN():
                 'elu', 'gelu', 'leaky_relu', 'linear', 'relu', 'softmax',
                 'softplus', 'swish'],
             'hidden_dropout_rate': [0.0, 0.1, 0.25, 0.5, 0.75],
-            'batch_size': [4, 8, 16, 32],
             'learning_rate': [1e-5, 1e-2],
             'optimizer': list(maps.NETWORK_OPTIMIZERS),
             'loss': list(maps.NETWORK_LOSSES)}
@@ -175,7 +170,6 @@ class TuneSpaceNN():
                              self.hidden_dropout_rate)
                          for m in range(n+1)]}
                     for n in range(self.max_hidden_layers)]),
-            'batch_size': choice('batch_size', self.batch_size),
             'learning_rate': uniform(
                 'learning_rate', self.learning_rate[0], self.learning_rate[1]),
             'optimizer': choice('optimizer', self.optimizer),
@@ -215,11 +209,6 @@ class TuneSpaceNN():
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_item, reference=0, sign='>=')
-                ),
-            'batch_size': (
-                partial(validate_type, options=list),
-                partial(validate_subtype, options=int),
-                partial(validate_item, reference=0, sign='>')
                 ),
             'learning_rate': (
                 partial(validate_type, options=list),

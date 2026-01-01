@@ -63,14 +63,14 @@ LOSSES = {
     'Logloss': log_loss}
 
 NETWORK_LOSSES = {
-    'BCE': BinaryCrossentropy,
-    'FocalBCE': BinaryFocalCrossentropy,
-    'KLD': KLDivergence}
+    'binary_crossentropy': BinaryCrossentropy,
+    'binary_focal_crossentropy': BinaryFocalCrossentropy,
+    'kl_divergence': KLDivergence}
 
 NETWORK_OPTIMIZERS = {
-    'Adam': Adam,
-    'Ftrl': Ftrl,
-    'SGD': SGD}
+    'adam': Adam,
+    'ftrl': Ftrl,
+    'sgd': SGD}
 
 TUNERS = {
     'Bayes': BayesHPTuner,

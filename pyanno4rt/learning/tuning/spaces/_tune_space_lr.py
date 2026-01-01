@@ -6,6 +6,7 @@
 
 from functools import partial
 from hyperopt.hp import choice, uniform
+from itertools import product
 
 # %% Internal package import
 
@@ -151,6 +152,19 @@ class TuneSpaceLR():
             'tol': choice('tol', self.tol),
             'class_weight': choice('class_weight', self.class_weight)
             }
+
+    def to_grid(self):
+        """
+        Get the search grid.
+
+        Returns
+        -------
+        list
+            Search grid.
+        """
+
+        # Get the search grid
+        return list(product(self.C, self.penalty, self.tol, self.class_weight))
 
     def validate(
             self,
