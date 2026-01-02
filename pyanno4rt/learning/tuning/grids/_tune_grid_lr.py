@@ -1,28 +1,27 @@
-"""Logistic regression tune space."""
+"""Logistic regression tune grid."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
 from functools import partial
-from hyperopt.hp import choice, uniform
+from itertools import chain, product
 
 # %% Internal package import
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_item, validate_item_in_set, validate_length, validate_subtype,
-    validate_type)
+    validate_item, validate_item_in_set, validate_subtype, validate_type)
 
 # %% Class definition
 
 
-class TuneSpaceLR():
+class TuneGridLR():
     """
-    Logistic regression tune space class.
+    Logistic regression tune grid class.
 
     This class provides methods to set, validate and serialize a \
-    hyperparameter tune space for a logistic regression model.
+    hyperparameter tune grid for a logistic regression model.
 
     Parameters
     ----------
@@ -31,7 +30,7 @@ class TuneSpaceLR():
         function.
 
     C : None or list, default=None
-        Range for the inverse of the regularization strength.
+        Options for the inverse of the regularization strength.
 
     tol : None or list, default=None
         Options for the stopping criteria tolerance.
@@ -69,7 +68,7 @@ class TuneSpaceLR():
         # Set the defaults
         defaults = {
             'penalty': ['l1', 'l2', 'elasticnet'],
-            'C': [0.001, 100],
+            'C': [0.001, 0.01, 0.1, 1, 10, 100],
             'tol': [1e-3, 1e-4, 1e-5],
             'class_weight': [None, 'balanced']
             }
@@ -89,7 +88,7 @@ class TuneSpaceLR():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """Serialize the tune grid into a dictionary."""
 
         return vars(self)|{'name': 'Logistic Regression'}
 
@@ -98,59 +97,57 @@ class TuneSpaceLR():
             cls,
             dictionary):
         """
-        Deserialize the tune space from a dictionary.
+        Deserialize the tune grid from a dictionary.
 
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune grid parameters.
 
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_lr.TuneSpaceLR`
-            The object used to handle the tune space parameters.
+            :class:`~pyanno4rt.learning.tuning.grids._tune_grid_lr.TuneGridLR`
+            The object used to handle the tune grid parameters.
         """
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_list(self):
         """
-        Get the hyperopt search space.
+        Get the grid search proposals.
 
         Returns
         -------
-        dict
-            Dictionary with the hyperopt search intervals.
+        list
+            Grid search proposals.
         """
 
-        return {
-            'regularization': choice(
-                'regularization', [
-                    {'penalty': None,
-                     'solver': choice(
-                         'solver_None',
-                         ['lbfgs', 'newton-cg', 'newton-cholesky', 'sag'])},
-                    *[{'penalty': norm,
-                       'solver': choice(
-                           f'solver_{norm}',
-                           ['liblinear', 'saga'] if norm == 'l1'
-                           else [
-                               'lbfgs', 'liblinear', 'newton-cg',
-                               'newton-cholesky', 'sag', 'saga']),
-                       'C': uniform(f'C_{norm}', self.C[0], self.C[1])
-                       }
-                      if norm != 'elasticnet' else
-                      {'penalty': 'elasticnet',
-                       'l1_ratio': 0.5,
-                       'solver': choice(f'solver_{norm}', ['saga']),
-                       'C': uniform(f'C_{norm}', self.C[0], self.C[1])
-                       }
-                      for norm in self.penalty]
-                    ]),
-            'tol': choice('tol', self.tol),
-            'class_weight': choice('class_weight', self.class_weight)
-            }
+        # Set the parameter keys
+        keys = ('penalty', 'l1_ratio', 'solver', 'C', 'tol', 'class_weight')
+
+        # Set the parameter values
+        values = list(
+            chain(*[
+                product(
+                    [norm], [0.0], ['liblinear', 'saga'], self.C, self.tol,
+                    self.class_weight)
+                if norm == 'l1' else
+                product(
+                    [norm], [0.0],
+                    ['lbfgs', 'liblinear', 'newton-cg', 'newton-cholesky',
+                     'sag', 'saga'], self.C, self.tol, self.class_weight)
+                if norm == 'l2' else
+                product(
+                    [norm], [0.5], ['saga'], self.C, self.tol,
+                    self.class_weight)
+                for norm in self.penalty],
+            product(
+                [None], [0.0],
+                ['lbfgs', 'newton-cg', 'newton-cholesky', 'sag'],
+                [1], self.tol, self.class_weight)))
+
+        return [dict(zip(keys, value)) for value in values]
 
     def validate(
             self,
@@ -173,7 +170,6 @@ class TuneSpaceLR():
                 ),
             'C': (
                 partial(validate_type, options=list),
-                partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_item, reference=0, sign='>')
                 ),

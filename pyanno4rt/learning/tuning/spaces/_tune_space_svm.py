@@ -22,7 +22,7 @@ class TuneSpaceSVM():
     Support vector machine tune space class.
 
     This class provides methods to set, validate and serialize a \
-    hyperparameter tune space for the support vector machine model.
+    hyperparameter tune space for a support vector machine model.
 
     Parameters
     ----------
@@ -30,14 +30,13 @@ class TuneSpaceSVM():
         Range for the inverse proportional of the regularization strength.
 
     kernel : None or list, default=None
-        Options for the kernel type.
+        Options ('linear', 'poly', 'rbf', 'sigmoid') for the kernel type.
 
     degree : None or list, default=None
-        Options ('linear', 'poly', 'rbf', 'sigmoid') for the degree of the \
-        polynomial kernel function.
+        Options for the degree of the polynomial kernel function.
 
     gamma : None or list, default=None
-        Range for the kernel coefficient in 'rbf', 'poly' and 'sigmoid'.
+        Range for the kernel coefficient in 'poly', 'rbf' and 'sigmoid'.
 
     tol : None or list, default=None
         Options for the stopping criteria tolerance.
@@ -49,22 +48,22 @@ class TuneSpaceSVM():
 
     Attributes
     ----------
-    C : None or list
+    C : list
         See 'Parameters'.
 
-    kernel : None or list
+    kernel : list
         See 'Parameters'.
 
-    degree : None or list
+    degree : list
         See 'Parameters'.
 
-    gamma : None or list
+    gamma : list
         See 'Parameters'.
 
-    tol : None or list
+    tol : list
         See 'Parameters'.
 
-    class_weight : None or list
+    class_weight : list
         See 'Parameters'.
     """
 
@@ -80,16 +79,17 @@ class TuneSpaceSVM():
         # Get the input arguments
         arguments = filter_dict(vars(), remove_keys=('self',))
 
-        # Set the default argument values
+        # Set the defaults
         defaults = {
-            'C': [2**-5, 2**10],
+            'C': [0.1, 10],
             'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
-            'degree': [3, 4, 5, 6],
-            'gamma': [0.01, 100],
-            'tol': [1e-4, 1e-5, 1e-6],
-            'class_weight': [None, 'balanced']}
+            'degree': [2, 3, 4],
+            'gamma': [0.001, 1],
+            'tol': [1e-3, 1e-4, 1e-5],
+            'class_weight': [None, 'balanced']
+            }
 
-        # Update the input arguments with the defaults, if applicable
+        # Update the input arguments
         arguments = {
             key: value if value is not None else defaults[key]
             for key, value in arguments.items()}

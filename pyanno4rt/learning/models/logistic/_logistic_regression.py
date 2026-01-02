@@ -73,7 +73,7 @@ class LogisticRegression(MachineLearningModel):
     hyperparameters = {
         'penalty': 'l2',
         'solver': 'lbfgs',
-        'l1_ratio': None,
+        'l1_ratio': 0.0,
         'C': 1.0,
         'dual': False,
         'tol': 0.0001,
@@ -154,6 +154,16 @@ class LogisticRegression(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
+        # Build the hyperparameter dictionary
+        self.hyperparameters = self.hyperparameters | {
+            'penalty': proposal.get('penalty', 'l2'),
+            'l1_ratio': proposal.get('l1_ratio', 0.0),
+            'solver': proposal.get('solver', 'lbfgs'),
+            'C': proposal.get('C', 1.0),
+            'tol': proposal.get('tol', 0.0001),
+            'class_weight': proposal.get('class_weight'),
+            'n_jobs': -1 if proposal.get('solver') != 'liblinear' else 1}
+
     def _get_random_hp(
             self,
             proposal):
@@ -165,6 +175,16 @@ class LogisticRegression(MachineLearningModel):
         proposal : dict
             Proposal for the tunable hyperparameters.
         """
+
+        # Build the hyperparameter dictionary
+        self.hyperparameters = self.hyperparameters | {
+            'penalty': proposal.get('penalty', 'l2'),
+            'l1_ratio': proposal.get('l1_ratio', 0.0),
+            'solver': proposal.get('solver', 'lbfgs'),
+            'C': proposal.get('C', 1.0),
+            'tol': proposal.get('tol', 0.0001),
+            'class_weight': proposal.get('class_weight'),
+            'n_jobs': -1 if proposal.get('solver') != 'liblinear' else 1}
 
     def fit_predictor(
             self,

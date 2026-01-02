@@ -1,27 +1,26 @@
-"""Naive Bayes tune space."""
+"""Naive Bayes tune grid."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
 from functools import partial
-from hyperopt.hp import choice, uniform
+from itertools import product
 
 # %% Internal package import
 
 from pyanno4rt.tools import filter_dict
-from pyanno4rt.validation import (
-    validate_item, validate_length, validate_subtype, validate_type)
+from pyanno4rt.validation import validate_item, validate_subtype, validate_type
 
 # %% Class definition
 
 
-class TuneSpaceNB():
+class TuneGridNB():
     """
-    Naive Bayes tune space class.
+    Naive Bayes tune grid class.
 
     This class provides methods to set, validate and serialize a \
-    hyperparameter tune space for a naive Bayes model.
+    hyperparameter tune grid for a naive Bayes model.
 
     Parameters
     ----------
@@ -29,7 +28,7 @@ class TuneSpaceNB():
         Options for the prior probabilities of the classes.
 
     var_smoothing : None or list, default=None
-        Range for the portion of the largest variance of all features added \
+        Options for the portion of the largest variance of all features added \
         to variances for calculation stability.
 
     .. note:: If arguments are passed as None, default values will be applied.
@@ -54,7 +53,7 @@ class TuneSpaceNB():
         # Set the defaults
         defaults = {
             'priors': [None] + [[i/10, 1-i/10] for i in range(1, 10)],
-            'var_smoothing': [1e-9, 1]
+            'var_smoothing': [10**i for i in range(-9, 0)]
             }
 
         # Update the input arguments
@@ -72,7 +71,7 @@ class TuneSpaceNB():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """Serialize the tune grid into a dictionary."""
 
         return vars(self)|{'name': 'Naive Bayes'}
 
@@ -81,37 +80,39 @@ class TuneSpaceNB():
             cls,
             dictionary):
         """
-        Deserialize the tune space from a dictionary.
+        Deserialize the tune grid from a dictionary.
 
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune grid parameters.
 
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nb.TuneSpaceNB`
-            The object used to handle the tune space parameters.
+            :class:`~pyanno4rt.learning.tuning.grids._tune_grid_nb.TuneGridNB`
+            The object used to handle the tune grid parameters.
         """
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_list(self):
         """
-        Get the hyperopt search space.
+        Get the grid search proposals.
 
         Returns
         -------
-        dict
-            Dictionary with the hyperopt search intervals.
+        list
+            Grid search proposals.
         """
 
-        return {
-            'priors': choice('priors', self.priors),
-            'var_smoothing': uniform(
-                'var_smoothing', self.var_smoothing[0], self.var_smoothing[1])
-            }
+        # Set the parameter keys
+        keys = ('priors', 'var_smoothing')
+
+        # Set the parameter values
+        values = list(product(self.priors, self.var_smoothing))
+
+        return [dict(zip(keys, value)) for value in values]
 
     def validate(
             self,
@@ -133,7 +134,6 @@ class TuneSpaceNB():
                 ),
             'var_smoothing': (
                 partial(validate_type, options=list),
-                partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_item, reference=0, sign='>')
                 )

@@ -22,7 +22,7 @@ class TuneSpaceRF():
     Random forest tune space class.
 
     This class provides methods to set, validate and serialize a \
-    hyperparameter tune space for the random forest.
+    hyperparameter tune space for a random forest model.
 
     Parameters
     ----------
@@ -61,34 +61,34 @@ class TuneSpaceRF():
 
     Attributes
     ----------
-    n_estimators : None or list
+    n_estimators : list
         See 'Parameters'.
 
-    criterion : None or list
+    criterion : list
         See 'Parameters'.
 
-    max_depth : None or list
+    max_depth : list
         See 'Parameters'.
 
-    min_samples_split : None or list
+    min_samples_split : list
         See 'Parameters'.
 
-    min_samples_leaf : None or list
+    min_samples_leaf : list
         See 'Parameters'.
 
-    min_weight_fraction_leaf : None or list
+    min_weight_fraction_leaf : list
         See 'Parameters'.
 
-    max_features : None or list
+    max_features : list
         See 'Parameters'.
 
-    bootstrap : None or list
+    bootstrap : list
         See 'Parameters'.
 
-    class_weight : None or list
+    class_weight : list
         See 'Parameters'.
 
-    ccp_alpha : None or list
+    ccp_alpha : list
         See 'Parameters'.
     """
 
@@ -108,20 +108,21 @@ class TuneSpaceRF():
         # Get the input arguments
         arguments = filter_dict(vars(), remove_keys=('self',))
 
-        # Set the default argument values
+        # Set the defaults
         defaults = {
-            'n_estimators': [100],
-            'criterion': ['gini', 'entropy'],
+            'n_estimators': [100, 200, 500],
+            'criterion': ['gini'],
             'max_depth': [5],
-            'min_samples_split': [0.0, 1.0],
-            'min_samples_leaf': [0.0, 0.5],
-            'min_weight_fraction_leaf': [0.0, 0.5],
+            'min_samples_split': [0.0, 0.1],
+            'min_samples_leaf': [0.0, 0.1],
+            'min_weight_fraction_leaf': [0.0, 0.1],
             'max_features': ['sqrt'],
             'bootstrap': [False, True],
             'class_weight': [None, 'balanced'],
-            'ccp_alpha': [0.0, 1.0]}
+            'ccp_alpha': [0.0, 0.1]
+            }
 
-        # Update the input arguments with the defaults, if applicable
+        # Update the input arguments
         arguments = {
             key: value if value is not None else defaults[key]
             for key, value in arguments.items()}
@@ -171,7 +172,6 @@ class TuneSpaceRF():
             Dictionary with the hyperopt search intervals.
         """
 
-        # Get the hyperopt search space
         return {
             'n_estimators': choice('n_estimators', self.n_estimators),
             'criterion': choice('criterion', self.criterion),

@@ -1,37 +1,41 @@
-"""Logistic regression tune space."""
+"""Support vector machine tune grid."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
 from functools import partial
-from hyperopt.hp import choice, uniform
+from itertools import chain, product
 
 # %% Internal package import
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_item, validate_item_in_set, validate_length, validate_subtype,
-    validate_type)
+    validate_item, validate_item_in_set, validate_subtype, validate_type)
 
 # %% Class definition
 
 
-class TuneSpaceLR():
+class TuneGridSVM():
     """
-    Logistic regression tune space class.
+    Support vector machine tune grid class.
 
     This class provides methods to set, validate and serialize a \
-    hyperparameter tune space for a logistic regression model.
+    hyperparameter tune grid for a support vector machine model.
 
     Parameters
     ----------
-    penalty : None or list, default=None
-        Options ('l1', 'l2', 'elasticnet') for the norm of the penalty \
-        function.
-
     C : None or list, default=None
-        Range for the inverse of the regularization strength.
+        Options for the inverse proportional of the regularization strength.
+
+    kernel : None or list, default=None
+        Options ('linear', 'poly', 'rbf', 'sigmoid') for the kernel type.
+
+    degree : None or list, default=None
+        Options for the degree of the polynomial kernel function.
+
+    gamma : None or list, default=None
+        Options for the kernel coefficient in 'poly', 'rbf' and 'sigmoid'.
 
     tol : None or list, default=None
         Options for the stopping criteria tolerance.
@@ -43,10 +47,16 @@ class TuneSpaceLR():
 
     Attributes
     ----------
-    penalty : list
+    C : list
         See 'Parameters'.
 
-    C : list
+    kernel : list
+        See 'Parameters'.
+
+    degree : list
+        See 'Parameters'.
+
+    gamma : list
         See 'Parameters'.
 
     tol : list
@@ -58,8 +68,10 @@ class TuneSpaceLR():
 
     def __init__(
             self,
-            penalty=None,
             C=None,
+            kernel=None,
+            degree=None,
+            gamma=None,
             tol=None,
             class_weight=None):
 
@@ -68,8 +80,10 @@ class TuneSpaceLR():
 
         # Set the defaults
         defaults = {
-            'penalty': ['l1', 'l2', 'elasticnet'],
-            'C': [0.001, 100],
+            'C': [0.1, 1, 10],
+            'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+            'degree': [2, 3, 4],
+            'gamma': [0.001, 0.01, 0.1, 1],
             'tol': [1e-3, 1e-4, 1e-5],
             'class_weight': [None, 'balanced']
             }
@@ -89,68 +103,55 @@ class TuneSpaceLR():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """Serialize the tune grid into a dictionary."""
 
-        return vars(self)|{'name': 'Logistic Regression'}
+        return vars(self)|{'name': 'Support Vector Machine'}
 
     @classmethod
     def from_dict(
             cls,
             dictionary):
         """
-        Deserialize the tune space from a dictionary.
+        Deserialize the tune grid from a dictionary.
 
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune grid parameters.
 
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_lr.TuneSpaceLR`
-            The object used to handle the tune space parameters.
+            :class:`~pyanno4rt.learning.tuning.grids._tune_grid_svm.TuneGridSVM`
+            The object used to handle the tune grid parameters.
         """
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_list(self):
         """
-        Get the hyperopt search space.
+        Get the grid search proposals.
 
         Returns
         -------
-        dict
-            Dictionary with the hyperopt search intervals.
+        list
+            Grid search proposals.
         """
 
-        return {
-            'regularization': choice(
-                'regularization', [
-                    {'penalty': None,
-                     'solver': choice(
-                         'solver_None',
-                         ['lbfgs', 'newton-cg', 'newton-cholesky', 'sag'])},
-                    *[{'penalty': norm,
-                       'solver': choice(
-                           f'solver_{norm}',
-                           ['liblinear', 'saga'] if norm == 'l1'
-                           else [
-                               'lbfgs', 'liblinear', 'newton-cg',
-                               'newton-cholesky', 'sag', 'saga']),
-                       'C': uniform(f'C_{norm}', self.C[0], self.C[1])
-                       }
-                      if norm != 'elasticnet' else
-                      {'penalty': 'elasticnet',
-                       'l1_ratio': 0.5,
-                       'solver': choice(f'solver_{norm}', ['saga']),
-                       'C': uniform(f'C_{norm}', self.C[0], self.C[1])
-                       }
-                      for norm in self.penalty]
-                    ]),
-            'tol': choice('tol', self.tol),
-            'class_weight': choice('class_weight', self.class_weight)
-            }
+        # Set the parameter keys
+        keys = ('C', 'kernel', 'degree', 'gamma', 'tol', 'class_weight')
+
+        # Set the parameter values
+        values = list(chain(
+            product(self.C, ['linear'], [3], [1], self.tol, self.class_weight),
+            product(
+                self.C, ['polynomial'], self.degree, self.gamma, self.tol,
+                self.class_weight),
+            product(
+                self.C, ['rbf', 'sigmoid'], [3], self.gamma, self.tol,
+                self.class_weight)))
+
+        return [dict(zip(keys, value)) for value in values]
 
     def validate(
             self,
@@ -166,14 +167,23 @@ class TuneSpaceLR():
 
         # Get the validation map
         validation_map = {
-            'penalty': (
-                partial(validate_type, options=list),
-                partial(validate_item_in_set, options=(
-                    'l1', 'l2', 'elasticnet'))
-                ),
             'C': (
                 partial(validate_type, options=list),
-                partial(validate_length, reference=2, sign='=='),
+                partial(validate_subtype, options=(int, float)),
+                partial(validate_item, reference=0, sign='>')
+                ),
+            'kernel': (
+                partial(validate_type, options=list),
+                partial(validate_item_in_set, options=(
+                    'linear', 'rbf', 'poly', 'sigmoid'))
+                ),
+            'degree': (
+                partial(validate_type, options=list),
+                partial(validate_subtype, options=int),
+                partial(validate_item, reference=0, sign='>')
+                ),
+            'gamma': (
+                partial(validate_type, options=list),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_item, reference=0, sign='>')
                 ),

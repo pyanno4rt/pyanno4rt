@@ -20,8 +20,10 @@ from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
 from pyanno4rt.learning.losses import auc_loss, brier_loss, log_loss
 from pyanno4rt.learning.preprocessing import StandardScaler, Whitening
 from pyanno4rt.learning.tuning import (
-    BayesHPTuner, GridHPTuner, RandomHPTuner, TuneSpaceDT, TuneSpaceKNN,
-    TuneSpaceLR, TuneSpaceNB, TuneSpaceNN, TuneSpaceRF, TuneSpaceSVM)
+    BayesHPTuner, GridHPTuner, RandomHPTuner, TuneGridDT, TuneGridKNN,
+    TuneGridLR, TuneGridNB, TuneGridNN, TuneGridRF, TuneGridSVM, TuneSpaceDT,
+    TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB, TuneSpaceNN, TuneSpaceRF,
+    TuneSpaceSVM)
 
 # %% Map definitions
 
@@ -76,6 +78,15 @@ TUNERS = {
     'Bayes': BayesHPTuner,
     'Grid': GridHPTuner,
     'Random': RandomHPTuner}
+
+TUNE_GRIDS = {
+    'Decision Tree': TuneGridDT,
+    'K-Nearest Neighbors': TuneGridKNN,
+    'Logistic Regression': TuneGridLR,
+    'Naive Bayes': TuneGridNB,
+    'Neural Network': TuneGridNN,
+    'Random Forest': TuneGridRF,
+    'Support Vector Machine': TuneGridSVM}
 
 TUNE_SPACES = {
     'Decision Tree': TuneSpaceDT,

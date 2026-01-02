@@ -8,7 +8,6 @@ from statistics import mean
 
 from copy import deepcopy
 from functools import partial
-from hyperopt import fmin, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
 from numpy import unique, where
 from warnings import filterwarnings
 filterwarnings(action='ignore')
@@ -31,15 +30,15 @@ class GridHPTuner():
 
     Parameters
     ----------
-    space : object of class \
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_rf.TuneSpaceRF`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_lr.TuneSpaceLR`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nb.TuneSpaceNB`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_knn.TuneSpaceKNN`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nn.TuneSpaceNN`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_svm.TuneSpaceSVM`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_dt.TuneSpaceDT`
-        The object used to represent the hyperparameter search space.
+    grid : object of class \
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_rf.TuneGridRF`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_lr.TuneGridLR`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_nb.TuneGridNB`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_knn.TuneGridKNN`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_nn.TuneGridNN`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_svm.TuneGridSVM`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_dt.TuneGridDT`
+        The object used to represent the hyperparameter search grid.
 
     score : {'AUC', 'Brier score', 'Logloss'}, default='AUC'
         Scoring function for the hyperparameter set evaluation.
@@ -49,14 +48,14 @@ class GridHPTuner():
     arguments : dict
         Dictionary with the model input arguments (for serialization).
 
-    space : object of class \
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_rf.TuneSpaceRF`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_lr.TuneSpaceLR`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nb.TuneSpaceNB`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_knn.TuneSpaceKNN`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nn.TuneSpaceNN`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_svm.TuneSpaceSVM`\
-        :class:`~pyanno4rt.learning.tuning.spaces._tune_space_dt.TuneSpaceDT`
+    grid : object of class \
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_rf.TuneGridRF`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_lr.TuneGridLR`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_nb.TuneGridNB`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_knn.TuneGridKNN`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_nn.TuneGridNN`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_svm.TuneGridSVM`\
+        :class:`~pyanno4rt.learning.tuning.grids._tune_grid_dt.TuneGridDT`
         See 'Parameters'.
 
     score : {'AUC', 'Brier score', 'Logloss'}
@@ -68,7 +67,7 @@ class GridHPTuner():
 
     def __init__(
             self,
-            space,
+            grid,
             score='AUC'):
 
         # Get the input arguments
@@ -78,7 +77,7 @@ class GridHPTuner():
         self.validate(self.arguments)
 
         # Get the instance attributes
-        self.space = space
+        self.grid = grid
         self.score = score
 
         # Initialize the step counter
@@ -90,8 +89,8 @@ class GridHPTuner():
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
 
-        # Serialize the tune space
-        dictionary['space'] = self.space.to_dict()
+        # Serialize the tune grid
+        dictionary['grid'] = self.grid.to_dict()
 
         return dictionary|{'name': 'Grid'}
 
@@ -115,9 +114,9 @@ class GridHPTuner():
         """
 
         # Deserialize the tune space
-        dictionary['space'] = (
-            maps.TUNE_SPACES[dictionary['space'].pop('name')].from_dict(
-                dictionary['space']))
+        dictionary['grid'] = (
+            maps.TUNE_GRIDS[dictionary['grid'].pop('name')].from_dict(
+                dictionary['grid']))
 
         return cls(**dictionary)
 
@@ -128,7 +127,7 @@ class GridHPTuner():
             labels,
             folds):
         """
-        Search the hyperparameter tune space.
+        Search the hyperparameter tune grid.
 
         Parameters
         ----------
@@ -162,8 +161,7 @@ class GridHPTuner():
 
             get_logger().info(
                 "Tuning hyperparameters (%s/%s) - best loss: %s ...",
-                step, len(grid),
-                round(min(1), 4))
+                step, number_of_evaluations, round(min(1, 2), 4))
 
         def objective(proposal):
             """Compute the objective function for a hyperparameter set."""
@@ -220,8 +218,7 @@ class GridHPTuner():
 
             return {
                 'loss': mean(repeat_scores),
-                'params': model.hyperparameters,
-                'status': STATUS_OK}
+                'params': model.hyperparameters}
 
         # Log a message about the hyperparameter tuning
         get_logger().info(
@@ -233,19 +230,21 @@ class GridHPTuner():
         self._step = 0
 
         # Get the search grid
-        grid = self.space.to_grid()
+        grid = self.grid.to_grid()
+
+        # Get the number of evaluations
+        number_of_evaluations = len(grid)
 
         # Get the score function
         scorer = maps.LOSSES[self.score]
 
         # Run the hyperparameter tuning algorithm
-        hyperparameters = []
+        hyperparameters = [objective(proposal) for proposal in grid]
 
         # Log a message about the tuning completion
         get_logger().info(
             "Completed hyperparameter tuning (%s/%s) - best loss: %s ... ",
-            self._step, len(grid),
-            round(min(1), 4))
+            self._step, number_of_evaluations, round(min(1, 2), 4))
 
         return hyperparameters
 
@@ -263,8 +262,8 @@ class GridHPTuner():
 
         # Get the validation map
         validation_map = {
-            'space': (
-                partial(validate_type, options=(*maps.TUNE_SPACES.values(),)),
+            'grid': (
+                partial(validate_type, options=(*maps.TUNE_GRIDS.values(),)),
                 ),
             'score': (
                 partial(validate_type, options=str),

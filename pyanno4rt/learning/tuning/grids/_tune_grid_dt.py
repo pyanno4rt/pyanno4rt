@@ -1,28 +1,27 @@
-"""Decision tree tune space."""
+"""Decision tree tune grid."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
 from functools import partial
-from hyperopt.hp import choice, uniform
+from itertools import product
 
 # %% Internal package import
 
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_item, validate_item_in_set, validate_length, validate_subtype,
-    validate_type)
+    validate_item, validate_item_in_set, validate_subtype, validate_type)
 
 # %% Class definition
 
 
-class TuneSpaceDT():
+class TuneGridDT():
     """
-    Decision tree tune space class.
+    Decision tree tune grid class.
 
     This class provides methods to set, validate and serialize a \
-    hyperparameter tune space for a decision tree model.
+    hyperparameter tune grid for a decision tree model.
 
     Parameters
     ----------
@@ -36,13 +35,13 @@ class TuneSpaceDT():
         Options for the maximum tree depth.
 
     min_samples_split : None or list, default=None
-        Range for the minimum relative number of node splitting samples.
+        Options for the minimum relative number of node splitting samples.
 
     min_samples_leaf : None or list, default=None
-        Range for the minimum relative number of leaf samples.
+        Options for the minimum relative number of leaf samples.
 
     min_weight_fraction_leaf : None or list, default=None
-        Range for the minimum weighted fraction of the sum of weights \
+        Options for the minimum weighted fraction of the sum of weights \
         required at each node.
 
     max_features : None or list, default=None
@@ -52,7 +51,8 @@ class TuneSpaceDT():
         Options (None, 'balanced') for the weights associated with the classes.
 
     ccp_alpha : None or list, default=None
-        Range for the complexity parameter for minimal cost-complexity pruning.
+        Options for the complexity parameter for minimal cost-complexity \
+        pruning.
 
     .. note:: If arguments are passed as None, default values will be applied.
 
@@ -106,12 +106,12 @@ class TuneSpaceDT():
             'criterion': ['gini'],
             'splitter': ['best'],
             'max_depth': [5],
-            'min_samples_split': [0.0, 0.1],
-            'min_samples_leaf': [0.0, 0.1],
-            'min_weight_fraction_leaf': [0.0, 0.1],
+            'min_samples_split': [0.0, 0.01, 0.1],
+            'min_samples_leaf': [0.0, 0.01, 0.1],
+            'min_weight_fraction_leaf': [0.0, 0.01, 0.1],
             'max_features': ['sqrt'],
             'class_weight': [None, 'balanced'],
-            'ccp_alpha': [0.0, 0.1]
+            'ccp_alpha': [0.0, 0.01, 0.1]
             }
 
         # Update the input arguments
@@ -129,7 +129,7 @@ class TuneSpaceDT():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """Serialize the tune grid into a dictionary."""
 
         return vars(self)|{'name': 'Decision Tree'}
 
@@ -138,50 +138,46 @@ class TuneSpaceDT():
             cls,
             dictionary):
         """
-        Deserialize the tune space from a dictionary.
+        Deserialize the tune grid from a dictionary.
 
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune grid parameters.
 
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_dt.TuneSpaceDT`
-            The object used to handle the tune space parameters.
+            :class:`~pyanno4rt.learning.tuning.grids._tune_grid_dt.TuneGridDT`
+            The object used to handle the tune grid parameters.
         """
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_list(self):
         """
-        Get the hyperopt search space.
+        Get the grid search proposals.
 
         Returns
         -------
-        dict
-            Dictionary with the hyperopt search intervals.
+        list
+            Grid search proposals.
         """
 
-        return {
-            'criterion': choice('criterion', self.criterion),
-            'splitter': choice('splitter', self.splitter),
-            'max_depth': choice('max_depth', self.max_depth),
-            'min_samples_split': uniform(
-                'min_samples_split', self.min_samples_split[0],
-                self.min_samples_split[1]),
-            'min_samples_leaf': uniform(
-                'min_samples_leaf', self.min_samples_leaf[0],
-                self.min_samples_leaf[1]),
-            'min_weight_fraction_leaf': uniform(
-                'min_weight_fraction_leaf', self.min_weight_fraction_leaf[0],
-                self.min_weight_fraction_leaf[1]),
-            'max_features': choice('max_features', self.max_features),
-            'class_weight': choice('class_weight', self.class_weight),
-            'ccp_alpha': uniform(
-                'ccp_alpha', self.ccp_alpha[0], self.ccp_alpha[1])
-            }
+        # Set the parameter keys
+        keys = (
+            'criterion', 'splitter', 'max_depth', 'min_samples_split',
+            'min_samples_leaf', 'min_weight_fraction_leaf', 'max_features',
+            'class_weight', 'ccp_alpha')
+
+        # Set the parameter values
+        values = list(product(
+            self.criterion, self.splitter, self.max_depth,
+            self.min_samples_split, self.min_samples_leaf,
+            self.min_weight_fraction_leaf, self.max_features,
+            self.class_weight, self.ccp_alpha))
+
+        return [dict(zip(keys, value)) for value in values]
 
     def validate(
             self,
@@ -213,21 +209,18 @@ class TuneSpaceDT():
                 ),
             'min_samples_split': (
                 partial(validate_type, options=list),
-                partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=float),
                 partial(validate_item, reference=0, sign='>='),
                 partial(validate_item, reference=1, sign='<=')
                 ),
             'min_samples_leaf': (
                 partial(validate_type, options=list),
-                partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=float),
                 partial(validate_item, reference=0, sign='>='),
                 partial(validate_item, reference=1, sign='<=')
                 ),
             'min_weight_fraction_leaf': (
                 partial(validate_type, options=list),
-                partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=float),
                 partial(validate_item, reference=0, sign='>='),
                 partial(validate_item, reference=1, sign='<=')
@@ -242,7 +235,6 @@ class TuneSpaceDT():
                 ),
             'ccp_alpha': (
                 partial(validate_type, options=list),
-                partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=float),
                 partial(validate_item, reference=0, sign='>='),
                 partial(validate_item, reference=1, sign='<=')

@@ -1,29 +1,28 @@
-"""Neural network tune space."""
+"""Neural network tune grid."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
 from functools import partial
-from hyperopt.hp import choice, uniform
+from itertools import chain, product
 
 # %% Internal package import
 
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
-    validate_item, validate_item_in_set, validate_length, validate_subtype,
-    validate_type)
+    validate_item, validate_item_in_set, validate_subtype, validate_type)
 
 # %% Class definition
 
 
-class TuneSpaceNN():
+class TuneGridNN():
     """
-    Neural network tune space class.
+    Neural network tune grid class.
 
     This class provides methods to set, validate and serialize a \
-    hyperparameter tune space for a neural network model.
+    hyperparameter tune grid for a neural network model.
 
     Parameters
     ----------
@@ -41,7 +40,7 @@ class TuneSpaceNN():
         Options for the hidden layer dropout rate.
 
     learning_rate : None or list, default=None
-        Range for the learning rate.
+        Options for the learning rate.
 
     optimizer : None or list, default=None
         Options ('adam', 'ftrl', 'sgd') for the network optimizer.
@@ -114,7 +113,7 @@ class TuneSpaceNN():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """Serialize the tune grid into a dictionary."""
 
         return vars(self)|{'name': 'Neural Network'}
 
@@ -123,56 +122,49 @@ class TuneSpaceNN():
             cls,
             dictionary):
         """
-        Deserialize the tune space from a dictionary.
+        Deserialize the tune grid from a dictionary.
 
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune grid parameters.
 
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_nn.TuneSpaceNN`
-            The object used to handle the tune space parameters.
+            :class:`~pyanno4rt.learning.tuning.grids._tune_grid_nn.TuneGridNN`
+            The object used to handle the tune grid parameters.
         """
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_list(self):
         """
-        Get the hyperopt search space.
+        Get the grid search proposals.
 
         Returns
         -------
-        dict
-            Dictionary with the hyperopt search intervals.
+        list
+            Grid search proposals.
         """
 
-        return {
-            'hidden_layers': choice(
-                'hidden_layers', [
-                    {'hidden_layer_number': n+1,
-                     'hidden_neuron_number': [
-                         choice(
-                             f'{n+1}L{m+1}_neuron_number',
-                             self.hidden_neuron_number)
-                         for m in range(n+1)],
-                     'hidden_activation': [
-                         choice(
-                             f'{n+1}L{m+1}_activation', self.hidden_activation)
-                         for m in range(n+1)],
-                     'hidden_dropout_rate': [
-                         choice(
-                             f'{n+1}L{m+1}_hidden_dropout',
-                             self.hidden_dropout_rate)
-                         for m in range(n+1)]}
-                    for n in range(self.max_hidden_layers)]),
-            'learning_rate': uniform(
-                'learning_rate', self.learning_rate[0], self.learning_rate[1]),
-            'optimizer': choice('optimizer', self.optimizer),
-            'loss': choice('loss', self.loss)
-            }
+        # Set the parameter keys
+        keys = (
+            'hidden_neuron_number', 'hidden_activation', 'hidden_dropout',
+            'learning_rate', 'optimizer', 'loss')
+
+        # Set the parameter values
+        values = list(chain(*[product(
+            [list(item) for item in product(
+                self.hidden_neuron_number, repeat=m+1)],
+            [list(item) for item in product(
+                self.hidden_activation, repeat=m+1)],
+            [list(item) for item in product(
+                self.hidden_dropout_rate, repeat=m+1)],
+            self.learning_rate, self.optimizer, self.loss)
+            for m in range(self.max_hidden_layers)]))
+
+        return [dict(zip(keys, value)) for value in values]
 
     def validate(
             self,
@@ -210,7 +202,6 @@ class TuneSpaceNN():
                 ),
             'learning_rate': (
                 partial(validate_type, options=list),
-                partial(validate_length, reference=2, sign='=='),
                 partial(validate_subtype, options=(int, float)),
                 partial(validate_item, reference=0, sign='>')
                 ),

@@ -13,6 +13,9 @@ from ._bayes_hp_tuner import BayesHPTuner
 from ._grid_hp_tuner import GridHPTuner
 from ._random_hp_tuner import RandomHPTuner
 
+from .grids import (
+    TuneGridDT, TuneGridKNN, TuneGridLR, TuneGridNB, TuneGridNN, TuneGridRF,
+    TuneGridSVM)
 from .spaces import (
     TuneSpaceDT, TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB, TuneSpaceNN,
     TuneSpaceRF, TuneSpaceSVM)
@@ -21,6 +24,13 @@ __all__ = [
     'BayesHPTuner',
     'GridHPTuner',
     'RandomHPTuner',
+    'TuneGridDT',
+    'TuneGridKNN',
+    'TuneGridLR',
+    'TuneGridNB',
+    'TuneGridNN',
+    'TuneGridRF',
+    'TuneGridSVM',
     'TuneSpaceDT',
     'TuneSpaceKNN',
     'TuneSpaceLR',

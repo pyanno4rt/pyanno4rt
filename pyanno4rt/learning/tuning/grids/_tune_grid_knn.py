@@ -1,11 +1,11 @@
-"""K-nearest neighbors tune space."""
+"""K-nearest neighbors tune grid."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
 from functools import partial
-from hyperopt.hp import choice
+from itertools import product
 
 # %% Internal package import
 
@@ -16,12 +16,12 @@ from pyanno4rt.validation import (
 # %% Class definition
 
 
-class TuneSpaceKNN():
+class TuneGridKNN():
     """
-    K-nearest neighbors tune space class.
+    K-nearest neighbors tune grid class.
 
     This class provides methods to set, validate and serialize a \
-    hyperparameter tune space for a k-nearest neighbors model.
+    hyperparameter tune grid for a k-nearest neighbors model.
 
     Parameters
     ----------
@@ -64,15 +64,15 @@ class TuneSpaceKNN():
         # Get the input arguments
         arguments = filter_dict(vars(), remove_keys=('self',))
 
-        # Set the defaults
+        # Set the default argument values
         defaults = {
-            'n_neighbors': list(range(1, 21)),
+            'n_neighbors': [1, 3, 5, 11, 21],
             'weights': ['uniform', 'distance'],
-            'leaf_size': list(range(10, 51)),
+            'leaf_size': [10, 20, 50],
             'p': [1, 2, 3]
             }
 
-        # Update the input arguments
+        # Update the input arguments with the defaults, if applicable
         arguments = {
             key: value if value is not None else defaults[key]
             for key, value in arguments.items()}
@@ -87,7 +87,7 @@ class TuneSpaceKNN():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """Serialize the tune grid into a dictionary."""
 
         return vars(self)|{'name': 'K-Nearest Neighbors'}
 
@@ -96,38 +96,40 @@ class TuneSpaceKNN():
             cls,
             dictionary):
         """
-        Deserialize the tune space from a dictionary.
+        Deserialize the tune grid from a dictionary.
 
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune grid parameters.
 
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tuning.spaces._tune_space_knn.TuneSpaceKNN`
-            The object used to handle the tune space parameters.
+            :class:`~pyanno4rt.learning.tuning.grids._tune_grid_knn.TuneGridKNN`
+            The object used to handle the tune grid parameters.
         """
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_list(self):
         """
-        Get the hyperopt search space.
+        Get the grid search proposals.
 
         Returns
         -------
-        dict
-            Dictionary with the hyperopt search intervals.
+        list
+            Grid search proposals.
         """
 
-        return {
-            'n_neighbors': choice('n_neighbors', self.n_neighbors),
-            'weights': choice('weights', self.weights),
-            'leaf_size': choice('leaf_size', self.leaf_size),
-            'p': choice('p', self.p)
-            }
+        # Set the parameter keys
+        keys = ('n_neighbors', 'weights', 'leaf_size', 'p')
+
+        # Set the parameter values
+        values = list(product(
+            self.n_neighbors, self.weights, self.leaf_size, self.p))
+
+        return [dict(zip(keys, value)) for value in values]
 
     def validate(
             self,
