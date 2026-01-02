@@ -5,6 +5,8 @@
 # %% External package import
 
 from pickle import dump, load
+from warnings import filterwarnings
+
 from sklearn.svm import SVC
 
 # %% Internal package import
@@ -12,6 +14,10 @@ from sklearn.svm import SVC
 from pyanno4rt.learning.models import MachineLearningModel
 from pyanno4rt.learning.models.svm import (
     linear_gradient, poly_gradient, rbf_gradient, sigmoid_gradient)
+
+# %% Set package options
+
+filterwarnings(action='ignore')
 
 # %% Class definition
 
@@ -124,11 +130,11 @@ class SupportVectorMachine(MachineLearningModel):
         self.multiplier, self.summand = None, None
         self.gradient = None
 
-    def _get_bayes_hp(
+    def _get_space_hp(
             self,
             proposal):
         """
-        Get the hyperparameters from a Bayesian search proposal.
+        Get the hyperparameters from a search space proposal.
 
         Parameters
         ----------
@@ -157,17 +163,7 @@ class SupportVectorMachine(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
-    def _get_random_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a random search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
+        self._get_space_hp(proposal)
 
     def fit_predictor(
             self,

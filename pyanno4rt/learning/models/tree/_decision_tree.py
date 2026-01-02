@@ -5,6 +5,7 @@
 # %% External package import
 
 from pickle import dump, load
+from warnings import filterwarnings
 
 from numpy import ones
 from sklearn.tree import DecisionTreeClassifier
@@ -12,6 +13,10 @@ from sklearn.tree import DecisionTreeClassifier
 # %% Internal package import
 
 from pyanno4rt.learning.models import MachineLearningModel
+
+# %% Set package options
+
+filterwarnings(action='ignore')
 
 # %% Class definition
 
@@ -109,11 +114,11 @@ class DecisionTree(MachineLearningModel):
             evaluator=evaluator,
             model_path=model_path)
 
-    def _get_bayes_hp(
+    def _get_space_hp(
             self,
             proposal):
         """
-        Get the hyperparameters from a Bayesian search proposal.
+        Get the hyperparameters from a search space proposal.
 
         Parameters
         ----------
@@ -146,17 +151,7 @@ class DecisionTree(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
-    def _get_random_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a random search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
+        self._get_space_hp(proposal)
 
     def fit_predictor(
             self,
@@ -223,7 +218,7 @@ class DecisionTree(MachineLearningModel):
             Predictor gradient w.r.t the preprocessed features.
         """
 
-        return ones((len(preprocessed_features),))
+        return ones(preprocessed_features.shape[1])
 
     def _load_predictor(self):
         """Load the predictor."""

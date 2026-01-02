@@ -129,17 +129,16 @@ class TuneSpaceSVM():
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_space(self):
         """
-        Get the hyperopt search space.
+        Get the search space.
 
         Returns
         -------
         dict
-            Dictionary with the hyperopt search intervals.
+            Dictionary with the search intervals.
         """
 
-        # Get the hyperopt search space
         return {
             'C': uniform('C', self.C[0], self.C[1]),
             'kernel': choice('kernel', self.kernel),

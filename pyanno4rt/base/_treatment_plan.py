@@ -547,9 +547,13 @@ class TreatmentPlan():
             The object used to represent the (pickable) treatment plan.
         """
 
-        # Create a new instance
+        # Get the instance class
         cls = self.__class__
+
+        # Create a new instance
         result = cls.__new__(cls)
+
+        # Store the instance
         memo[id(self)] = result
 
         # Loop over the instance attributes

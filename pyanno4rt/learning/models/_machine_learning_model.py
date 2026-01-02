@@ -365,16 +365,16 @@ class MachineLearningModel(ABC):
                 proposal = self.tuner.search(
                     deepcopy(self), features, labels, self.dataset.folds)
 
-                # Check if a Bayesian hyperparameter tuner has been provided
-                if isinstance(self.tuner, TUNERS['Bayes']):
+                # Check if a space hyperparameter tuner has been provided
+                if isinstance(self.tuner, (TUNERS['Bayes'], TUNERS['Random'])):
 
                     # Log a message about fetching the hyperparameters
                     get_logger().info(
-                        "Fetching model hyperparameter set from Bayesian "
-                        "search proposal ...")
+                        "Fetching model hyperparameter set from search space "
+                        "proposal ...")
 
                     # Get the full hyperparameter set
-                    self._get_bayes_hp(proposal)
+                    self._get_space_hp(proposal)
 
                 # Check if a grid hyperparameter tuner has been provided
                 elif isinstance(self.tuner, TUNERS['Grid']):
@@ -387,23 +387,12 @@ class MachineLearningModel(ABC):
                     # Get the full hyperparameter set
                     self._get_grid_hp(proposal)
 
-                # Check if a random hyperparameter tuner has been provided
-                elif isinstance(self.tuner, TUNERS['Random']):
-
-                    # Log a message about fetching the hyperparameters
-                    get_logger().info(
-                        "Fetching model hyperparameter set from random search "
-                        "proposal ...")
-
-                    # Get the full hyperparameter set
-                    self._get_random_hp(proposal)
-
     @abstractmethod
-    def _get_bayes_hp(
+    def _get_space_hp(
             self,
             proposal):
         """
-        Get the hyperparameters from a Bayesian search proposal.
+        Get the hyperparameters from a search space proposal.
 
         Parameters
         ----------
@@ -417,19 +406,6 @@ class MachineLearningModel(ABC):
             proposal):
         """
         Get the hyperparameters from a grid search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
-
-    @abstractmethod
-    def _get_random_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a random search proposal.
 
         Parameters
         ----------
@@ -602,7 +578,7 @@ class MachineLearningModel(ABC):
 
             return self.preprocessor.gradientize(features)
 
-        return ones((len(features),))
+        return ones(features.shape[1])
 
     @abstractmethod
     def _predictor_gradient(

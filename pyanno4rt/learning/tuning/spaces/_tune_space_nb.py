@@ -97,14 +97,14 @@ class TuneSpaceNB():
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_space(self):
         """
-        Get the hyperopt search space.
+        Get the search space.
 
         Returns
         -------
         dict
-            Dictionary with the hyperopt search intervals.
+            Dictionary with the search intervals.
         """
 
         return {

@@ -5,13 +5,12 @@
 # %% External package import
 
 from statistics import mean
+from warnings import filterwarnings
 
 from copy import deepcopy
 from functools import partial
 from hyperopt import fmin, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
 from numpy import unique, where
-from warnings import filterwarnings
-filterwarnings(action='ignore')
 
 # %% Internal package import
 
@@ -20,6 +19,10 @@ from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
     validate_item, validate_item_in_set, validate_type)
+
+# %% Set package options
+
+filterwarnings(action='ignore')
 
 # %% Class definition
 
@@ -166,12 +169,12 @@ class BayesHPTuner():
             Dictionary with the values of the tuned hyperparameters.
         """
 
-        def log_trial(step, trials):
+        def log_trial(trials):
             """Log the result of a trial."""
 
             get_logger().info(
                 "Tuning hyperparameters (%s/%s) - best loss: %s ...",
-                step, self.evaluations,
+                self._step, self.evaluations,
                 round(min(filter(None, trials.losses())), 4))
 
         def objective(proposal, trials, space):
@@ -218,7 +221,7 @@ class BayesHPTuner():
                     if proposal == space_eval(space, values):
 
                         # Log a message about the tuning status
-                        log_trial(self._step, trials)
+                        log_trial(trials)
 
                         # Increment the step variable
                         self._step += 1
@@ -227,7 +230,7 @@ class BayesHPTuner():
                         return {'status': STATUS_FAIL}
 
             # Update the hyperparameter set
-            model._get_bayes_hp(proposal)
+            model._get_space_hp(proposal)
 
             # Compute the objective function value (score) across all folds
             repeat_scores = (mean(map(compute_fold_score, (
@@ -245,7 +248,7 @@ class BayesHPTuner():
             if self._step > 0:
 
                 # Log a message about the tuning status
-                log_trial(self._step, trials)
+                log_trial(trials)
 
             # Increment the step variable
             self._step += 1
@@ -264,8 +267,8 @@ class BayesHPTuner():
         # Initialize the step variable
         self._step = 0
 
-        # Get the hyperopt search space
-        hp_space = self.space.to_hyperopt()
+        # Get the search space
+        hp_space = self.space.to_space()
 
         # Get the score function
         scorer = maps.LOSSES[self.score]

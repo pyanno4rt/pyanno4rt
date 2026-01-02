@@ -106,8 +106,8 @@ class TuneSpaceDT():
             'criterion': ['gini'],
             'splitter': ['best'],
             'max_depth': [5],
-            'min_samples_split': [0.0, 0.1],
-            'min_samples_leaf': [0.0, 0.1],
+            'min_samples_split': [0.01, 0.1],
+            'min_samples_leaf': [0.01, 0.1],
             'min_weight_fraction_leaf': [0.0, 0.1],
             'max_features': ['sqrt'],
             'class_weight': [None, 'balanced'],
@@ -154,14 +154,14 @@ class TuneSpaceDT():
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_space(self):
         """
-        Get the hyperopt search space.
+        Get the search space.
 
         Returns
         -------
         dict
-            Dictionary with the hyperopt search intervals.
+            Dictionary with the search intervals.
         """
 
         return {

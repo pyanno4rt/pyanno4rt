@@ -30,7 +30,7 @@ class TuneSpaceRF():
         Options for the number of trees in the forest.
 
     criterion : None or list, default=None
-        Options ('gini', 'entropy') for the split quality measure.
+        Options ('entropy', 'gini', 'log_loss') for the split quality measure.
 
     max_depth : None or list, default=None
         Options for the maximum tree depth.
@@ -113,8 +113,8 @@ class TuneSpaceRF():
             'n_estimators': [100, 200, 500],
             'criterion': ['gini'],
             'max_depth': [5],
-            'min_samples_split': [0.0, 0.1],
-            'min_samples_leaf': [0.0, 0.1],
+            'min_samples_split': [0.01, 0.1],
+            'min_samples_leaf': [0.01, 0.1],
             'min_weight_fraction_leaf': [0.0, 0.1],
             'max_features': ['sqrt'],
             'bootstrap': [False, True],
@@ -162,14 +162,14 @@ class TuneSpaceRF():
 
         return cls(**dictionary)
 
-    def to_hyperopt(self):
+    def to_space(self):
         """
-        Get the hyperopt search space.
+        Get the search space.
 
         Returns
         -------
         dict
-            Dictionary with the hyperopt search intervals.
+            Dictionary with the search intervals.
         """
 
         return {
@@ -213,7 +213,8 @@ class TuneSpaceRF():
                 ),
             'criterion': (
                 partial(validate_type, options=list),
-                partial(validate_item_in_set, options=('entropy', 'gini'))
+                partial(validate_item_in_set, options=(
+                    'entropy', 'gini', 'log_loss'))
                 ),
             'max_depth': (
                 partial(validate_type, options=list),

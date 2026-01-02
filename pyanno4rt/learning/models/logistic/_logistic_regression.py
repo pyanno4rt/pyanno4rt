@@ -4,12 +4,18 @@
 
 # %% External package import
 
+from warnings import filterwarnings
+
 from pickle import dump, load
 from sklearn.linear_model import LogisticRegression as skLogReg
 
 # %% Internal package import
 
 from pyanno4rt.learning.models import MachineLearningModel
+
+# %% Set package options
+
+filterwarnings(action='ignore')
 
 # %% Class definition
 
@@ -109,11 +115,11 @@ class LogisticRegression(MachineLearningModel):
             evaluator=evaluator,
             model_path=model_path)
 
-    def _get_bayes_hp(
+    def _get_space_hp(
             self,
             proposal):
         """
-        Get the hyperparameters from a Bayesian search proposal.
+        Get the hyperparameters from a search space proposal.
 
         Parameters
         ----------

@@ -4,6 +4,8 @@
 
 # %% External package import
 
+from warnings import filterwarnings
+
 from numpy import array
 from tensorflow import cast, clip_by_value, float64, GradientTape
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
@@ -16,6 +18,10 @@ from pyanno4rt.learning._maps import NETWORK_LOSSES, NETWORK_OPTIMIZERS
 from pyanno4rt.learning.models.neural_network import build_fnn, build_icnn
 from pyanno4rt.logging import get_logger
 from pyanno4rt.validation import validate_item_in_set, validate_type
+
+# %% Set package options
+
+filterwarnings(action='ignore')
 
 # %% Class definition
 
@@ -93,13 +99,13 @@ class FeedForwardNet(MachineLearningModel):
         'hidden_dropout_rate': [0.0],
         'output_activation': 'sigmoid',
         'batch_size': 16,
-        'epochs': 1000,
+        'epochs': 100,
         'learning_rate': 1e-3,
         'optimizer': 'adam',
         'loss': 'binary_crossentropy',
-        'ReduceLROnPlateau_factor': 0.5,
-        'ReduceLROnPlateau_patience': 10,
-        'EarlyStopping_patience': 20}
+        'ReduceLROnPlateau_factor': 0.1,
+        'ReduceLROnPlateau_patience': 5,
+        'EarlyStopping_patience': 10}
 
     # Initialize the predictor
     predictor = None
@@ -186,11 +192,11 @@ class FeedForwardNet(MachineLearningModel):
         # Make the predictor
         self._make_predictor()
 
-    def _get_bayes_hp(
+    def _get_space_hp(
             self,
             proposal):
         """
-        Get the hyperparameters from a Bayesian search proposal.
+        Get the hyperparameters from a search space proposal.
 
         Parameters
         ----------
@@ -230,17 +236,15 @@ class FeedForwardNet(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
-    def _get_random_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a random search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
+        # Build the hyperparameter dictionary
+        self.hyperparameters = self.hyperparameters | {
+            'hidden_layer_number': proposal.get('hidden_layer_number', 1),
+            'hidden_neuron_number': proposal.get('hidden_neuron_number', [32]),
+            'hidden_activation': proposal.get('hidden_activation', ['relu']),
+            'hidden_dropout': proposal.get('hidden_dropout', [0.0]),
+            'learning_rate': proposal.get('learning_rate', 1e-3),
+            'optimizer': proposal.get('optimizer', 'adam'),
+            'loss': proposal.get('loss', 'binary_crossentropy')}
 
     def fit_predictor(
             self,
@@ -369,13 +373,13 @@ class FeedForwardNet(MachineLearningModel):
                 if hasattr(layer, 'rate')],
             'output_activation': 'sigmoid',
             'batch_size': 16,
-            'epochs': 1000,
+            'epochs': 100,
             'learning_rate': self.predictor.optimizer.learning_rate.numpy(),
             'optimizer': self.predictor.optimizer.name,
             'loss': self.predictor.loss.name,
-            'ReduceLROnPlateau_factor': 0.5,
-            'ReduceLROnPlateau_patience': 10,
-            'EarlyStopping_patience': 20}
+            'ReduceLROnPlateau_factor': 0.1,
+            'ReduceLROnPlateau_patience': 5,
+            'EarlyStopping_patience': 10}
 
     def _save_predictor(
             self,

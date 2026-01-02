@@ -5,12 +5,12 @@
 # %% External package import
 
 from statistics import mean
+from warnings import filterwarnings
 
 from copy import deepcopy
 from functools import partial
+from math import inf
 from numpy import unique, where
-from warnings import filterwarnings
-filterwarnings(action='ignore')
 
 # %% Internal package import
 
@@ -18,6 +18,10 @@ import pyanno4rt.learning._maps as maps
 from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import validate_item_in_set, validate_type
+
+# %% Set package options
+
+filterwarnings(action='ignore')
 
 # %% Class definition
 
@@ -63,6 +67,9 @@ class GridHPTuner():
 
     _step : int
         Step counter.
+
+    _current_best_loss : float
+        Current best value of the loss function.
     """
 
     def __init__(
@@ -83,8 +90,11 @@ class GridHPTuner():
         # Initialize the step counter
         self._step = None
 
+        # Initialize the current best loss
+        self._current_best_loss = None
+
     def to_dict(self):
-        """Serialize the grid search hyperparameter tuner into a dictionary."""
+        """Serialize the hyperparameter tuner into a dictionary."""
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
@@ -99,7 +109,7 @@ class GridHPTuner():
             cls,
             dictionary):
         """
-        Deserialize the grid search hyperparameter tuner from a dictionary.
+        Deserialize the hyperparameter tuner from a dictionary.
 
         Parameters
         ----------
@@ -113,7 +123,7 @@ class GridHPTuner():
             The object used to represent the tuner.
         """
 
-        # Deserialize the tune space
+        # Deserialize the tune grid
         dictionary['grid'] = (
             maps.TUNE_GRIDS[dictionary['grid'].pop('name')].from_dict(
                 dictionary['grid']))
@@ -156,12 +166,13 @@ class GridHPTuner():
             Dictionary with the values of the tuned hyperparameters.
         """
 
-        def log_trial(step):
+        def log_trial():
             """Log the result of a trial."""
 
             get_logger().info(
                 "Tuning hyperparameters (%s/%s) - best loss: %s ...",
-                step, number_of_evaluations, round(min(1, 2), 4))
+                self._step, number_of_evaluations,
+                round(self._current_best_loss, 4))
 
         def objective(proposal):
             """Compute the objective function for a hyperparameter set."""
@@ -207,17 +218,23 @@ class GridHPTuner():
                        where(folds[:, index] == 1)),))))
                 for index in range(folds.shape[1]))
 
+            # Get the loss
+            loss = mean(repeat_scores)
+
+            # Update the current best loss
+            self._current_best_loss = min(self._current_best_loss, loss)
+
             # Check if the first evaluation step has been passed
             if self._step > 0:
 
                 # Log a message about the tuning status
-                log_trial(self._step)
+                log_trial()
 
             # Increment the step variable
             self._step += 1
 
             return {
-                'loss': mean(repeat_scores),
+                'loss': loss,
                 'params': model.hyperparameters}
 
         # Log a message about the hyperparameter tuning
@@ -229,6 +246,9 @@ class GridHPTuner():
         # Initialize the step variable
         self._step = 0
 
+        # Initialize the current best loss
+        self._current_best_loss = inf
+
         # Get the search grid
         grid = self.grid.to_grid()
 
@@ -238,13 +258,15 @@ class GridHPTuner():
         # Get the score function
         scorer = maps.LOSSES[self.score]
 
-        # Run the hyperparameter tuning algorithm
-        hyperparameters = [objective(proposal) for proposal in grid]
+        # Get the best loss and hyperparameters
+        loss, hyperparameters = min(
+            (objective(proposal) for proposal in grid),
+            key=lambda x: x['loss']).values()
 
         # Log a message about the tuning completion
         get_logger().info(
             "Completed hyperparameter tuning (%s/%s) - best loss: %s ... ",
-            self._step, number_of_evaluations, round(min(1, 2), 4))
+            self._step, number_of_evaluations, round(loss, 4))
 
         return hyperparameters
 

@@ -37,19 +37,19 @@ class DataModelHandler():
 
         Currently available:
 
-        - :class:`~pyanno4rt.learning.models._tree._decision_tree.DecisionTree`
-
-        - :class:`~pyanno4rt.learning.models._neighbors._k_nearest_neighbors.KNearestNeighbors`
+        - :class:`~pyanno4rt.learning.models._forest._random_forest.RandomForest`
 
         - :class:`~pyanno4rt.learning.models._logistic._logistic_regression.LogisticRegression`
 
         - :class:`~pyanno4rt.learning.models._naive_bayes._naive_bayes.NaiveBayes`
 
-        - :class:`~pyanno4rt.learning.models._neural_network._neural_network.NeuralNetwork`
+        - :class:`~pyanno4rt.learning.models._neighbors._k_nearest_neighbors.KNearestNeighbors`
 
-        - :class:`~pyanno4rt.learning.models._forest._random_forest.RandomForest`
+        - :class:`~pyanno4rt.learning.models._neural_network._feed_forward_net.FeedForwardNet`
 
         - :class:`~pyanno4rt.learning.models._svm._support_vector_machine.SupportVectorMachine`
+
+        - :class:`~pyanno4rt.learning.models._tree._decision_tree.DecisionTree`
 
     outcomes : dict
         Dictionary with the outcome results.
@@ -129,7 +129,7 @@ class DataModelHandler():
                 model.tune_hyperparameters(features, labels)
 
                 # Fit the model
-                model.fit_predictor(features, labels)
+                model.fit_predictor(*model.preprocess(features, labels))
 
             else:
 

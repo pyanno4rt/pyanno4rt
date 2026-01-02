@@ -128,7 +128,7 @@ class TuneGridSVM():
 
         return cls(**dictionary)
 
-    def to_list(self):
+    def to_grid(self):
         """
         Get the grid search proposals.
 
@@ -145,7 +145,7 @@ class TuneGridSVM():
         values = list(chain(
             product(self.C, ['linear'], [3], [1], self.tol, self.class_weight),
             product(
-                self.C, ['polynomial'], self.degree, self.gamma, self.tol,
+                self.C, ['poly'], self.degree, self.gamma, self.tol,
                 self.class_weight),
             product(
                 self.C, ['rbf', 'sigmoid'], [3], self.gamma, self.tol,

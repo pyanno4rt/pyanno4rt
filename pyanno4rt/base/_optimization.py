@@ -33,37 +33,23 @@ class Optimization():
 
         Currently available:
 
-        - \
-            :class:`~pyanno4rt.optimization.components._decision_tree_outcome.DecisionTreeOutcome`
-        - \
-            :class:`~pyanno4rt.optimization.components._dose_uniformity.DoseUniformity`
-        - \
-            :class:`~pyanno4rt.optimization.components._equivalent_uniform_dose.EquivalentUniformDose`
-        - \
-            :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_outcome.KNeighborsOutcome`
-        - \
-            :class:`~pyanno4rt.optimization.components._logistic_regression_outcome.LogisticRegressionOutcome`
-        - \
-            :class:`~pyanno4rt.optimization.components._lq_poisson_tcp.LQPoissonTCP`
-        - \
-            :class:`~pyanno4rt.optimization.components._lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
+        - :class:`~pyanno4rt.optimization.components._decision_tree_outcome.DecisionTreeOutcome`
+        - :class:`~pyanno4rt.optimization.components._dose_uniformity.DoseUniformity`
+        - :class:`~pyanno4rt.optimization.components._equivalent_uniform_dose.EquivalentUniformDose`
+        - :class:`~pyanno4rt.optimization.components._k_nearest_neighbors_outcome.KNeighborsOutcome`
+        - :class:`~pyanno4rt.optimization.components._logistic_regression_outcome.LogisticRegressionOutcome`
+        - :class:`~pyanno4rt.optimization.components._lq_poisson_tcp.LQPoissonTCP`
+        - :class:`~pyanno4rt.optimization.components._lyman_kutcher_burman_ntcp.LymanKutcherBurmanNTCP`
         - :class:`~pyanno4rt.optimization.components._maximum_dvh.MaximumDVH`
         - :class:`~pyanno4rt.optimization.components._mean_dose.MeanDose`
         - :class:`~pyanno4rt.optimization.components._minimum_dvh.MinimumDVH`
-        - \
-            :class:`~pyanno4rt.optimization.components._naive_bayes_outcome.NaiveBayesOutcome`
-        - \
-            :class:`~pyanno4rt.optimization.components._neural_network_outcome.NeuralNetworkOutcome`
-        - \
-            :class:`~pyanno4rt.optimization.components._random_forest_outcome.RandomForestOutcome`
-        - \
-            :class:`~pyanno4rt.optimization.components._squared_deviation.SquaredDeviation`
-        - \
-            :class:`~pyanno4rt.optimization.components._squared_overdosing.SquaredOverdosing`
-        - \
-            :class:`~pyanno4rt.optimization.components._squared_underdosing.SquaredUnderdosing`
-        - \
-            :class:`~pyanno4rt.optimization.components._support_vector_machine_outcome.SupportVectorMachineOutcome`
+        - :class:`~pyanno4rt.optimization.components._naive_bayes_outcome.NaiveBayesOutcome`
+        - :class:`~pyanno4rt.optimization.components._neural_network_outcome.NeuralNetworkOutcome`
+        - :class:`~pyanno4rt.optimization.components._random_forest_outcome.RandomForestOutcome`
+        - :class:`~pyanno4rt.optimization.components._squared_deviation.SquaredDeviation`
+        - :class:`~pyanno4rt.optimization.components._squared_overdosing.SquaredOverdosing`
+        - :class:`~pyanno4rt.optimization.components._squared_underdosing.SquaredUnderdosing`
+        - :class:`~pyanno4rt.optimization.components._support_vector_machine_outcome.SupportVectorMachineOutcome`
 
     method : {'lexicographic', 'pareto', 'weighted-sum'}, \
         default='weighted-sum'

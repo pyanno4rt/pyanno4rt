@@ -106,8 +106,8 @@ class TuneGridDT():
             'criterion': ['gini'],
             'splitter': ['best'],
             'max_depth': [5],
-            'min_samples_split': [0.0, 0.01, 0.1],
-            'min_samples_leaf': [0.0, 0.01, 0.1],
+            'min_samples_split': [0.01, 0.01, 0.1],
+            'min_samples_leaf': [0.01, 0.01, 0.1],
             'min_weight_fraction_leaf': [0.0, 0.01, 0.1],
             'max_features': ['sqrt'],
             'class_weight': [None, 'balanced'],
@@ -154,7 +154,7 @@ class TuneGridDT():
 
         return cls(**dictionary)
 
-    def to_list(self):
+    def to_grid(self):
         """
         Get the grid search proposals.
 

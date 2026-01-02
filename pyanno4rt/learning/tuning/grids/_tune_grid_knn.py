@@ -112,7 +112,7 @@ class TuneGridKNN():
 
         return cls(**dictionary)
 
-    def to_list(self):
+    def to_grid(self):
         """
         Get the grid search proposals.
 

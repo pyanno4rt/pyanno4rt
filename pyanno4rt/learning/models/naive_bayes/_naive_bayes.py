@@ -5,6 +5,7 @@
 # %% External package import
 
 from pickle import dump, load
+from warnings import filterwarnings
 
 from math import pi
 from numpy import exp, log, size
@@ -15,6 +16,10 @@ from sklearn.naive_bayes import GaussianNB
 # %% Internal package import
 
 from pyanno4rt.learning.models import MachineLearningModel
+
+# %% Set package options
+
+filterwarnings(action='ignore')
 
 # %% Class definition
 
@@ -101,11 +106,11 @@ class NaiveBayes(MachineLearningModel):
             evaluator=evaluator,
             model_path=model_path)
 
-    def _get_bayes_hp(
+    def _get_space_hp(
             self,
             proposal):
         """
-        Get the hyperparameters from a Bayesian search proposal.
+        Get the hyperparameters from a search space proposal.
 
         Parameters
         ----------
@@ -130,17 +135,7 @@ class NaiveBayes(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
-    def _get_random_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a random search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
+        self._get_space_hp(proposal)
 
     def fit_predictor(
             self,

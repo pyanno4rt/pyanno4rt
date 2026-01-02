@@ -138,7 +138,7 @@ class TuneGridNN():
 
         return cls(**dictionary)
 
-    def to_list(self):
+    def to_grid(self):
         """
         Get the grid search proposals.
 
@@ -150,11 +150,12 @@ class TuneGridNN():
 
         # Set the parameter keys
         keys = (
-            'hidden_neuron_number', 'hidden_activation', 'hidden_dropout',
-            'learning_rate', 'optimizer', 'loss')
+            'hidden_layer_number', 'hidden_neuron_number', 'hidden_activation',
+            'hidden_dropout', 'learning_rate', 'optimizer', 'loss')
 
         # Set the parameter values
         values = list(chain(*[product(
+            [m+1],
             [list(item) for item in product(
                 self.hidden_neuron_number, repeat=m+1)],
             [list(item) for item in product(
