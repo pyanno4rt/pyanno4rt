@@ -115,11 +115,11 @@ class LogisticRegression(MachineLearningModel):
             evaluator=evaluator,
             model_path=model_path)
 
-    def _get_space_hp(
+    def update_hyperparameters(
             self,
             proposal):
         """
-        Get the hyperparameters from a search space proposal.
+        Update the hyperparameters from a search proposal.
 
         Parameters
         ----------
@@ -127,69 +127,16 @@ class LogisticRegression(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
-        # Check if the proposal has a regularization subdictionary
-        if 'regularization' in proposal:
+        # Get the regularization subdictionary, if applicable
+        regularization = proposal.pop('regularization', {})
 
-            # Get the unpacked regularization parameters
-            regularization = {**proposal['regularization']}
+        # Update the proposal
+        proposal |= regularization
 
-        else:
-
-            # Get the regularization parameters directly
-            regularization = {
-                key: proposal[key] for key in (
-                    'penalty', 'solver', 'l1_ratio', 'C')
-                if key in proposal}
-
-        # Build the hyperparameter dictionary
-        self.hyperparameters = self.hyperparameters | {
-            **regularization,
-            'tol': proposal.get('tol', 0.0001),
-            'class_weight': proposal.get('class_weight'),
-            'n_jobs': -1 if regularization.get('solver') != 'liblinear' else 1}
-
-    def _get_grid_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a grid search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
-
-        # Build the hyperparameter dictionary
-        self.hyperparameters = self.hyperparameters | {
-            'penalty': proposal.get('penalty', 'l2'),
-            'l1_ratio': proposal.get('l1_ratio', 0.0),
-            'solver': proposal.get('solver', 'lbfgs'),
-            'C': proposal.get('C', 1.0),
-            'tol': proposal.get('tol', 0.0001),
-            'class_weight': proposal.get('class_weight'),
-            'n_jobs': -1 if proposal.get('solver') != 'liblinear' else 1}
-
-    def _get_random_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a random search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
-
-        # Build the hyperparameter dictionary
-        self.hyperparameters = self.hyperparameters | {
-            'penalty': proposal.get('penalty', 'l2'),
-            'l1_ratio': proposal.get('l1_ratio', 0.0),
-            'solver': proposal.get('solver', 'lbfgs'),
-            'C': proposal.get('C', 1.0),
-            'tol': proposal.get('tol', 0.0001),
-            'class_weight': proposal.get('class_weight'),
+        # Update the hyperparameters
+        self.hyperparameters |= {
+            **{key: proposal[key]
+               for key in proposal.keys() & self.hyperparameters.keys()},
             'n_jobs': -1 if proposal.get('solver') != 'liblinear' else 1}
 
     def fit_predictor(

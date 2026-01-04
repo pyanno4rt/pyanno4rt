@@ -106,11 +106,11 @@ class NaiveBayes(MachineLearningModel):
             evaluator=evaluator,
             model_path=model_path)
 
-    def _get_space_hp(
+    def update_hyperparameters(
             self,
             proposal):
         """
-        Get the hyperparameters from a search space proposal.
+        Update the hyperparameters from a search proposal.
 
         Parameters
         ----------
@@ -118,24 +118,10 @@ class NaiveBayes(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
-        # Build the hyperparameter dictionary
-        self.hyperparameters = self.hyperparameters | {
-            'priors': proposal.get('priors'),
-            'var_smoothing': proposal.get('var_smoothing', 1e-9)}
-
-    def _get_grid_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a grid search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
-
-        self._get_space_hp(proposal)
+        # Update the hyperparameters
+        self.hyperparameters |= {
+            key: proposal[key]
+            for key in proposal.keys() & self.hyperparameters.keys()}
 
     def fit_predictor(
             self,

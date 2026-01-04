@@ -101,9 +101,17 @@ class Configuration():
             min_log_level='info',
             number_of_fractions=30):
 
-        # Convert the paths into absolute values
-        imaging_path = abspath(imaging_path)
-        dose_matrix_path = abspath(dose_matrix_path)
+        # Check if an imaging path has been provided
+        if imaging_path is not None:
+
+            # Convert into an absolute path
+            imaging_path = abspath(imaging_path)
+
+        # Check if a dose-influence matrix path has been provided
+        if dose_matrix_path is not None:
+
+            # Convert into an absolute path
+            dose_matrix_path = abspath(dose_matrix_path)
 
         # Validate the input arguments
         self.validate(filter_dict(vars(), remove_keys=('self',)))

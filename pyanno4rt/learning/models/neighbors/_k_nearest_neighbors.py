@@ -110,11 +110,11 @@ class KNearestNeighbors(MachineLearningModel):
             evaluator=evaluator,
             model_path=model_path)
 
-    def _get_space_hp(
+    def update_hyperparameters(
             self,
             proposal):
         """
-        Get the hyperparameters from a search space proposal.
+        Update the hyperparameters from a search proposal.
 
         Parameters
         ----------
@@ -122,26 +122,10 @@ class KNearestNeighbors(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
-        # Build the hyperparameter dictionary
-        self.hyperparameters = self.hyperparameters | {
-            'n_neighbors': proposal.get('n_neighbors', 5),
-            'weights': proposal.get('weights', 'uniform'),
-            'leaf_size': proposal.get('leaf_size', 30),
-            'p': proposal.get('p', 2)}
-
-    def _get_grid_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a grid search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
-
-        self._get_space_hp(proposal)
+        # Update the hyperparameters
+        self.hyperparameters |= {
+            key: proposal[key]
+            for key in proposal.keys() & self.hyperparameters.keys()}
 
     def fit_predictor(
             self,

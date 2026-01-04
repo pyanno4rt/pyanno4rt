@@ -121,11 +121,11 @@ class RandomForest(MachineLearningModel):
             evaluator=evaluator,
             model_path=model_path)
 
-    def _get_space_hp(
+    def update_hyperparameters(
             self,
             proposal):
         """
-        Get the hyperparameters from a search space proposal.
+        Update the hyperparameters from a search proposal.
 
         Parameters
         ----------
@@ -133,33 +133,10 @@ class RandomForest(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
-        # Build the hyperparameter dictionary
-        self.hyperparameters = self.hyperparameters | {
-            'n_estimators': proposal.get('n_estimators', 100),
-            'criterion': proposal.get('criterion', 'gini'),
-            'max_depth': proposal.get('max_depth'),
-            'min_samples_split': proposal.get('min_samples_split', 2),
-            'min_samples_leaf': proposal.get('min_samples_leaf', 1),
-            'min_weight_fraction_leaf': proposal.get(
-                'min_weight_fraction_leaf', 0.0),
-            'max_features': proposal.get('max_features', 'sqrt'),
-            'bootstrap': proposal.get('bootstrap', True),
-            'class_weight': proposal.get('class_weight'),
-            'ccp_alpha': proposal.get('ccp_alpha', 0.0)}
-
-    def _get_grid_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a grid search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
-
-        self._get_space_hp(proposal)
+        # Update the hyperparameters
+        self.hyperparameters |= {
+            key: proposal[key]
+            for key in proposal.keys() & self.hyperparameters.keys()}
 
     def fit_predictor(
             self,

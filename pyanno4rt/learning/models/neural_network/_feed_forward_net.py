@@ -192,11 +192,11 @@ class FeedForwardNet(MachineLearningModel):
         # Make the predictor
         self._make_predictor()
 
-    def _get_space_hp(
+    def update_hyperparameters(
             self,
             proposal):
         """
-        Get the hyperparameters from a search space proposal.
+        Update the hyperparameters from a search proposal.
 
         Parameters
         ----------
@@ -204,47 +204,16 @@ class FeedForwardNet(MachineLearningModel):
             Proposal for the tunable hyperparameters.
         """
 
-        # Check if the proposal has a hidden layer subdictionary
-        if 'hidden_layers' in proposal:
+        # Get the hidden layer subdictionary, if applicable
+        hidden_layers = proposal.pop('hidden_layers', {})
 
-            # Get the unpacked hidden layer parameters
-            hidden_layers = {**proposal['hidden_layers']}
+        # Update the proposal
+        proposal |= hidden_layers
 
-        else:
-
-            # Get the hidden layer parameters directly
-            hidden_layers = {key: proposal[key] for key in (
-                'hidden_layer_number', 'hidden_neuron_number',
-                'hidden_activation', 'hidden_dropout_rate')}
-
-        # Build the hyperparameter dictionary
-        self.hyperparameters = self.hyperparameters | {
-            **hidden_layers,
-            'learning_rate': proposal.get('learning_rate', 1e-3),
-            'optimizer': proposal.get('optimizer', 'adam'),
-            'loss': proposal.get('loss', 'binary_crossentropy')}
-
-    def _get_grid_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a grid search proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
-
-        # Build the hyperparameter dictionary
-        self.hyperparameters = self.hyperparameters | {
-            'hidden_layer_number': proposal.get('hidden_layer_number', 1),
-            'hidden_neuron_number': proposal.get('hidden_neuron_number', [32]),
-            'hidden_activation': proposal.get('hidden_activation', ['relu']),
-            'hidden_dropout': proposal.get('hidden_dropout', [0.0]),
-            'learning_rate': proposal.get('learning_rate', 1e-3),
-            'optimizer': proposal.get('optimizer', 'adam'),
-            'loss': proposal.get('loss', 'binary_crossentropy')}
+        # Update the hyperparameters
+        self.hyperparameters |= {
+            key: proposal[key]
+            for key in proposal.keys() & self.hyperparameters.keys()}
 
     def fit_predictor(
             self,

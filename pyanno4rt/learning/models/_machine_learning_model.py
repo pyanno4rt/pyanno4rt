@@ -365,47 +365,19 @@ class MachineLearningModel(ABC):
                 proposal = self.tuner.search(
                     deepcopy(self), features, labels, self.dataset.folds)
 
-                # Check if a space hyperparameter tuner has been provided
-                if isinstance(self.tuner, (TUNERS['Bayes'], TUNERS['Random'])):
+                # Log a message about fetching the hyperparameters
+                get_logger().info(
+                    "Fetching model hyperparameters from search proposal ... ")
 
-                    # Log a message about fetching the hyperparameters
-                    get_logger().info(
-                        "Fetching model hyperparameter set from search space "
-                        "proposal ...")
-
-                    # Get the full hyperparameter set
-                    self._get_space_hp(proposal)
-
-                # Check if a grid hyperparameter tuner has been provided
-                elif isinstance(self.tuner, TUNERS['Grid']):
-
-                    # Log a message about fetching the hyperparameters
-                    get_logger().info(
-                        "Fetching model hyperparameter set from grid search "
-                        "proposal ...")
-
-                    # Get the full hyperparameter set
-                    self._get_grid_hp(proposal)
+                # Get the full hyperparameter set
+                self.update_hyperparameters(proposal)
 
     @abstractmethod
-    def _get_space_hp(
+    def update_hyperparameters(
             self,
             proposal):
         """
-        Get the hyperparameters from a search space proposal.
-
-        Parameters
-        ----------
-        proposal : dict
-            Proposal for the tunable hyperparameters.
-        """
-
-    @abstractmethod
-    def _get_grid_hp(
-            self,
-            proposal):
-        """
-        Get the hyperparameters from a grid search proposal.
+        Update the hyperparameters from a search proposal.
 
         Parameters
         ----------

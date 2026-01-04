@@ -471,7 +471,8 @@ class TreatmentPlan():
             include_patient_data=False,
             include_dose_matrix=False,
             include_model_data=False,
-            include_optimum=False):
+            include_optimum=False,
+            anonymize=False):
         """
         Save a treatment plan.
 
@@ -493,6 +494,9 @@ class TreatmentPlan():
         include_optimum : bool, default=False
             Indicator for the storage of the optimized fluence array.
 
+        anonymize : bool, default=False
+            Indicator for the anonymization of the file paths.
+
         Notes
         -----
         See :func:`~pyanno4rt.tools._snapshot.snapshot` for details.
@@ -501,7 +505,7 @@ class TreatmentPlan():
         # Take a snapshot
         snapshot(
             deepcopy(self), path, include_patient_data, include_dose_matrix,
-            include_model_data, include_optimum)
+            include_model_data, include_optimum, anonymize)
 
     @staticmethod
     def load(

@@ -230,7 +230,7 @@ class BayesHPTuner():
                         return {'status': STATUS_FAIL}
 
             # Update the hyperparameter set
-            model._get_space_hp(proposal)
+            model.update_hyperparameters(proposal)
 
             # Compute the objective function value (score) across all folds
             repeat_scores = (mean(map(compute_fold_score, (

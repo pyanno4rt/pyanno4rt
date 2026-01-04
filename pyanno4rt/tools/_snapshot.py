@@ -14,7 +14,7 @@ from json import dump
 
 def snapshot(
         instance, path, include_patient_data=False, include_dose_matrix=False,
-        include_model_data=False, include_fluence=False):
+        include_model_data=False, include_fluence=False, anonymize=False):
     """
     Take a snapshot of a treatment plan.
 
@@ -39,6 +39,9 @@ def snapshot(
 
     include_fluence : bool, default=False
         Indicator for the storage of the optimized fluence array.
+
+    anonymize : bool, default=False
+        Indicator for the anonymization of the file paths.
     """
 
     # Set the snapshot path
@@ -60,6 +63,13 @@ def snapshot(
 
         # Print the stream value to the file
         print(stream_value, file=file)
+
+    # Check if the imaging and dose matrix data paths should be anonymized
+    if anonymize:
+
+        # Set the patient data paths to None
+        instance.configuration.imaging_path = None
+        instance.configuration.dose_matrix_path = None
 
     # Check if the patient data should be included
     if include_patient_data and instance.state >= 1:
@@ -112,6 +122,12 @@ def snapshot(
             # Update the model path
             model.arguments['model_path'] = path
 
+            # Check if the model data path should be anonymized
+            if anonymize:
+
+                # Set the data path to None
+                model.dataset.arguments['data_path'] = None
+
             # Check if the model data should be included
             if include_model_data:
 
@@ -126,16 +142,6 @@ def snapshot(
 
                 # Update the model data path
                 model.dataset.arguments['data_path'] = path
-
-            else:
-
-                # Set the data path to None
-                model.dataset.arguments['data_path'] = None
-
-                # Set the data-dependent model objects to None
-                model.arguments['tuner'] = None
-                model.arguments['inspector'] = None
-                model.arguments['evaluator'] = None
 
     # Check if the optimized fluence array should be included
     if include_fluence and instance.state >= 3:

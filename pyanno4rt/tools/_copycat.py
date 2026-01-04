@@ -92,6 +92,16 @@ def copycat(base_class, path, ignore_fluence=False):
             # Update the dataset path
             parameters['model']['dataset']['data_path'] = snap_model_data[0]
 
+    # Check if the imaging or dose matrix data path is missing
+    if None in (
+            inputs['configuration']['imaging_path'],
+            inputs['configuration']['dose_matrix_path']):
+
+        # Raise an error to indicate missing paths
+        raise ValueError(
+            "Please specify the configuration data paths (imaging, "
+            "dose-influence matrix) in the 'input.json' file!")
+
     # Initialize the treatment plan instance
     treatment_plan = base_class(**inputs)
 
