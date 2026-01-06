@@ -75,26 +75,6 @@ class LogisticRegression(MachineLearningModel):
     for details on the inherited attributes.
     """
 
-    # Initialize the hyperparameters
-    hyperparameters = {
-        'penalty': 'l2',
-        'solver': 'lbfgs',
-        'l1_ratio': 0.0,
-        'C': 1.0,
-        'dual': False,
-        'tol': 0.0001,
-        'fit_intercept': True,
-        'intercept_scaling': 1,
-        'class_weight': None,
-        'random_state': 10,
-        'max_iter': 10**6,
-        'verbose': 0,
-        'warm_start': False,
-        'n_jobs': -1}
-
-    # Initialize the predictor
-    predictor = skLogReg(**hyperparameters)
-
     def __init__(
             self,
             label,
@@ -114,6 +94,26 @@ class LogisticRegression(MachineLearningModel):
             inspector=inspector,
             evaluator=evaluator,
             model_path=model_path)
+
+        # Initialize the hyperparameters
+        self.hyperparameters = {
+            'penalty': 'l2',
+            'solver': 'lbfgs',
+            'l1_ratio': 0.0,
+            'C': 1.0,
+            'dual': False,
+            'tol': 0.0001,
+            'fit_intercept': True,
+            'intercept_scaling': 1,
+            'class_weight': None,
+            'random_state': 10,
+            'max_iter': 10**6,
+            'verbose': 0,
+            'warm_start': False,
+            'n_jobs': -1}
+
+        # Initialize the predictor
+        self.predictor = skLogReg(**self.hyperparameters)
 
     def update_hyperparameters(
             self,

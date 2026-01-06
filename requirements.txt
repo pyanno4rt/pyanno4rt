@@ -19,9 +19,9 @@ bayesian-optimization==1.4.0 ; python_version >= "3.10" and python_version < "4.
 celluloid==0.2.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:568b1512c4a97483759e9436c3f3e5dc5566da350179aa1872992ec8d82706e1 \
     --hash=sha256:5cebd41276d9658f7667a2f1f565f566763a6110273b4af35c958b1407a9f277
-certifi==2025.11.12 ; python_version >= "3.10" and python_version < "4.0" \
-    --hash=sha256:97de8790030bbd5c2d96b7ec782fc2f7820ef8dba6db909ccf95449f2d062d4b \
-    --hash=sha256:d8ab5478f2ecd78af242878415affce761ca6bc54a22a27e026d7c25357c3316
+certifi==2026.1.4 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c \
+    --hash=sha256:ac726dd470482006e014ad384921ed6438c457018f4b3d204aea4281258b2120
 cffi==2.0.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:00bdf7acc5f795150faa6957054fbbca2439db2f775ce831222b66f192f03beb \
     --hash=sha256:07b271772c100085dd28b74fa0cd81c8fb1a3ba18b21e03d7c27f3436a10606b \

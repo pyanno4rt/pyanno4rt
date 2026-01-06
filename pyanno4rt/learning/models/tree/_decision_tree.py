@@ -75,25 +75,6 @@ class DecisionTree(MachineLearningModel):
     for details on the inherited attributes.
     """
 
-    # Initialize the hyperparameters
-    hyperparameters = {
-        'criterion': 'gini',
-        'splitter': 'best',
-        'max_depth': None,
-        'min_samples_split': 2,
-        'min_samples_leaf': 1,
-        'min_weight_fraction_leaf': 0.0,
-        'max_features': None,
-        'random_state': 13,
-        'max_leaf_nodes': None,
-        'min_impurity_decrease': 0.0,
-        'class_weight': None,
-        'ccp_alpha': 0.0,
-        'monotonic_cst': None}
-
-    # Initialize the predictor
-    predictor = DecisionTreeClassifier(**hyperparameters)
-
     def __init__(
             self,
             label,
@@ -113,6 +94,25 @@ class DecisionTree(MachineLearningModel):
             inspector=inspector,
             evaluator=evaluator,
             model_path=model_path)
+
+        # Initialize the hyperparameters
+        self.hyperparameters = {
+            'criterion': 'gini',
+            'splitter': 'best',
+            'max_depth': None,
+            'min_samples_split': 2,
+            'min_samples_leaf': 1,
+            'min_weight_fraction_leaf': 0.0,
+            'max_features': None,
+            'random_state': 13,
+            'max_leaf_nodes': None,
+            'min_impurity_decrease': 0.0,
+            'class_weight': None,
+            'ccp_alpha': 0.0,
+            'monotonic_cst': None}
+
+        # Initialize the predictor
+        self.predictor = DecisionTreeClassifier(**self.hyperparameters)
 
     def update_hyperparameters(
             self,

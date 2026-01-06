@@ -7,7 +7,7 @@
 from warnings import filterwarnings
 
 from numpy import array
-from tensorflow import cast, clip_by_value, float64, GradientTape
+from tensorflow import cast, clip_by_value, float64, GradientTape, transpose
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.models import load_model
 
@@ -76,39 +76,20 @@ class FeedForwardNet(MachineLearningModel):
 
     Attributes
     ----------
+    architecture : {'FNN', 'ICNN'}
+        See 'Parameters'.
+
     hyperparameters : dict
         Dictionary with the model hyperparameters.
 
     predictor : None or object of class :class:`~tensorflow.keras.Model`
         The object used to represent the prediction model.
 
-    architecture : {'FNN', 'ICNN'}
-        See 'Parameters'.
-
     Notes
     -----
     See :class:`~pyanno4rt.learning.models._machine_learning_model.MachineLearningModel`\
     for details on the inherited attributes.
     """
-
-    # Initialize the hyperparameters
-    hyperparameters = {
-        'hidden_layer_number': 1,
-        'hidden_neuron_number': [32],
-        'hidden_activation': ['relu'],
-        'hidden_dropout_rate': [0.0],
-        'output_activation': 'sigmoid',
-        'batch_size': 16,
-        'epochs': 100,
-        'learning_rate': 1e-3,
-        'optimizer': 'adam',
-        'loss': 'binary_crossentropy',
-        'ReduceLROnPlateau_factor': 0.1,
-        'ReduceLROnPlateau_patience': 5,
-        'EarlyStopping_patience': 10}
-
-    # Initialize the predictor
-    predictor = None
 
     def __init__(
             self,
@@ -141,8 +122,36 @@ class FeedForwardNet(MachineLearningModel):
         # Extend the input arguments
         self.arguments |= {'architecture': architecture}
 
-    def _make_predictor(self):
-        """Make the predictor."""
+        # Initialize the hyperparameters
+        self.hyperparameters = {
+            'hidden_layer_number': 1,
+            'hidden_neuron_number': [32],
+            'hidden_activation': ['relu'],
+            'hidden_dropout_rate': [0.0],
+            'output_activation': 'sigmoid',
+            'batch_size': 16,
+            'epochs': 100,
+            'learning_rate': 1e-3,
+            'optimizer': 'adam',
+            'loss': 'binary_crossentropy',
+            'ReduceLROnPlateau_factor': 0.1,
+            'ReduceLROnPlateau_patience': 5,
+            'EarlyStopping_patience': 10}
+
+        # Initialize the predictor
+        self.predictor = None
+
+    def _make_predictor(
+            self,
+            number_of_inputs):
+        """
+        Make the predictor.
+
+        Parameters
+        ----------
+        number_of_inputs : int
+            Number of input channels.
+        """
 
         # Check if label values are available
         if self.dataset.label_values is not None:
@@ -162,14 +171,14 @@ class FeedForwardNet(MachineLearningModel):
 
             # Build the FNN
             self.predictor = build_fnn(
-                len(self.dataset.feature_names), 1, bias, self.hyperparameters)
+                number_of_inputs, 1, bias, self.hyperparameters)
 
         # Else, check if the input-convex architecture should be used
         elif self.architecture == 'ICNN':
 
             # Build the ICNN
             self.predictor = build_icnn(
-                len(self.dataset.feature_names), 1, bias, self.hyperparameters)
+                number_of_inputs, 1, bias, self.hyperparameters)
 
         # Compile the predictor
         self.predictor.compile(
@@ -177,20 +186,30 @@ class FeedForwardNet(MachineLearningModel):
                 learning_rate=self.hyperparameters['learning_rate']),
             loss=NETWORK_LOSSES[self.hyperparameters['loss']]())
 
-    def load_data(self):
-        """Load the dataset."""
+    def fit_preprocessor(
+            self,
+            features,
+            labels=None):
+        """
+        Fit the preprocessor.
 
-        # Log a message about loading the dataset
-        get_logger().info("Loading dataset for '%s' ...", self.label)
+        Parameters
+        ----------
+        features : ndarray
+            Values of the input features.
 
-        # Load the dataset
-        self.dataset.load()
+        labels : ndarray, default=None
+            Values of the input labels.
+        """
 
-        # Generate the data
-        self.dataset.generate()
+        # Check if a preprocessor has been provided
+        if self.preprocessor is not None:
+
+            # Fit the preprocessor and transform the data
+            self.preprocessor.fit(features, labels)
 
         # Make the predictor
-        self._make_predictor()
+        self._make_predictor(self.preprocess(features)[0].shape[1])
 
     def update_hyperparameters(
             self,
@@ -313,9 +332,11 @@ class FeedForwardNet(MachineLearningModel):
             # Clip the prediction for numerical stability
             prediction = clip_by_value(prediction, 1e-6, 1-1e-6)
 
-            return (
-                (prediction-prediction**2)*array(tape.gradient(
-                    prediction, preprocessed_features)).reshape(-1))
+            # Get the tape gradient
+            tape_gradient = (prediction-prediction**2)*array(tape.gradient(
+                prediction, preprocessed_features)).reshape(-1)
+
+            return transpose(tape_gradient).numpy().flatten().astype(float)
 
     def _load_predictor(self):
         """Load the predictor."""

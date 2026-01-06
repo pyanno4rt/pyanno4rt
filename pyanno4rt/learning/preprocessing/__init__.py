@@ -11,9 +11,16 @@ data cleaning, reduction, (re-)sampling and scaling.
 
 from ._tabular_preprocessor import TabularPreprocessor
 
-from .scalers import StandardScaler, Whitening
+from .cleaning import (
+    IsolationForest, LocalOutlierFactor, MinimumCovarianceDeterminant)
+from .reduction import PrincipalComponentAnalysis
+from .transformation import StandardScaler, Whitening
 
 __all__ = [
     'TabularPreprocessor',
+    'IsolationForest',
+    'LocalOutlierFactor',
+    'MinimumCovarianceDeterminant',
+    'PrincipalComponentAnalysis',
     'StandardScaler',
     'Whitening']

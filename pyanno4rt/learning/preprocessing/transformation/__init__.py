@@ -1,9 +1,9 @@
 """
-Scalers module.
+Transformation module.
 
 ==================================================================
 
-The module aims to provide methods and classes for data scaling.
+The module aims to provide methods and classes for data transformation.
 """
 
 # Author: Tim Ortkamp

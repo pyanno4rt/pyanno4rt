@@ -18,7 +18,9 @@ from pyanno4rt.learning.features import (
     SegmentEigenvalues, SegmentSphericity, SegmentVolume)
 from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
 from pyanno4rt.learning.losses import auc_loss, brier_loss, log_loss
-from pyanno4rt.learning.preprocessing import StandardScaler, Whitening
+from pyanno4rt.learning.preprocessing import (
+    IsolationForest, LocalOutlierFactor, MinimumCovarianceDeterminant,
+    PrincipalComponentAnalysis, StandardScaler, Whitening)
 from pyanno4rt.learning.tuning import (
     BayesHPTuner, GridHPTuner, RandomHPTuner, TuneGridDT, TuneGridKNN,
     TuneGridLR, TuneGridNB, TuneGridNN, TuneGridRF, TuneGridSVM, TuneSpaceDT,
@@ -74,6 +76,14 @@ NETWORK_OPTIMIZERS = {
     'ftrl': Ftrl,
     'sgd': SGD}
 
+PREPROCESS_STEPS = {
+    'IsolationForest': IsolationForest,
+    'LOF': LocalOutlierFactor,
+    'MCD': MinimumCovarianceDeterminant,
+    'PCA': PrincipalComponentAnalysis,
+    'StandardScaler': StandardScaler,
+    'Whitening': Whitening}
+
 TUNERS = {
     'Bayes': BayesHPTuner,
     'Grid': GridHPTuner,
@@ -96,7 +106,3 @@ TUNE_SPACES = {
     'Neural Network': TuneSpaceNN,
     'Random Forest': TuneSpaceRF,
     'Support Vector Machine': TuneSpaceSVM}
-
-TRANSFORMERS = {
-    'StandardScaler': StandardScaler,
-    'Whitening': Whitening}

@@ -244,6 +244,9 @@ class TreatmentPlan():
                 # Evaluate the models
                 self.data_model_handler.evaluate_models()
 
+                # Reduce the preprocessor for optimization
+                self.data_model_handler.reduce_preprocessors()
+
                 # Set the state
                 self.state = 2
 

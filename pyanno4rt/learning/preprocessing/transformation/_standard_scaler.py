@@ -1,20 +1,20 @@
-"""Standard scaling transformer."""
+"""Standard scaling."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
-from numpy import array, mean, ones, std, zeros
+from numpy import array, diag, mean, ones, std, zeros
 
 # %% Class definition
 
 
 class StandardScaler():
     """
-    Standard scaling transformer class.
+    Standard scaling class.
 
-    This class provides methods to fit, transform and gradientize the input \
-    features by their z-score.
+    This class provides methods to fit a standard scaler, transform and \
+    gradientize the input features.
 
     Parameters
     ----------
@@ -26,6 +26,9 @@ class StandardScaler():
 
     Attributes
     ----------
+    _classifier : str
+        String indicating the preprocessing class.
+
     center : bool
         See 'Parameters'.
 
@@ -38,6 +41,9 @@ class StandardScaler():
     deviations : ndarray
         Standard deviations of the features (if scale is false, set to ones).
     """
+
+    # Initialize the algorithm classifier
+    _classifier = 'scaling'
 
     def __init__(
             self,
@@ -55,17 +61,14 @@ class StandardScaler():
     def fit(
             self,
             features,
-            labels):
+            _):
         """
-        Fit the standard scaling transformer.
+        Fit the standard scaler.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
-
-        labels : None or ndarray
-            Values of the input labels.
+            Feature values.
         """
 
         # Check if the features should be centered
@@ -95,48 +98,73 @@ class StandardScaler():
     def transform(
             self,
             features,
-            labels):
+            labels=None):
         """
-        Transform the input features/labels.
+        Transform the features and labels.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
-        labels : None or ndarray
-            Values of the input labels.
+        labels : None or ndarray, default=None
+            Label values.
 
         Returns
         -------
         ndarray
-            Transformed values of the input features.
+            Transformed feature values.
 
         None or ndarray
-            Transformed values of the input labels.
+            (Transformed) label values.
         """
 
         return array(
            [(features[:, index]-self.means[index])/self.deviations[index]
             for index in range(features.shape[1])]).T, labels
 
-    def compute_gradient(
+    def fit_transform(
             self,
-            features):
+            features,
+            labels=None):
         """
-        Compute the standard scaling transformer gradient w.r.t the input \
-        features.
+        Fit and transform the features and labels.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
+
+        labels : None or ndarray, default=None
+            Label values.
 
         Returns
         -------
         ndarray
-            Value of the standard scaling transformer gradient.
+            Transformed feature values.
+
+        None or ndarray
+            (Transformed) label values.
         """
 
-        return array(
-            [1/self.deviations[index] for index in range(features.shape[1])])
+        return self.fit(features, labels).transform(features, labels)
+
+    def compute_gradient(
+            self,
+            features):
+        """
+        Compute the input gradient.
+
+        Parameters
+        ----------
+        features : ndarray
+            Input feature values.
+
+        Returns
+        -------
+        ndarray
+            Input gradient.
+        """
+
+        return diag(array(
+            [1/self.deviations[index] for index in range(features.shape[1])]))

@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from functools import partial
 from glob import glob
-from numpy import ones
+from numpy import eye
 
 # %% Internal package import
 
@@ -157,16 +157,6 @@ class MachineLearningModel(ABC):
         self._reinspect = True
         self._reevaluate = True
 
-    @property
-    @abstractmethod
-    def hyperparameters(self):
-        """Child classes must implement a hyperparameter dictionary."""
-
-    @property
-    @abstractmethod
-    def predictor(self):
-        """Child classes must implement a predictor object."""
-
     def to_dict(self):
         """Serialize the model into a dictionary."""
 
@@ -303,6 +293,15 @@ class MachineLearningModel(ABC):
 
             # Fit the preprocessor and transform the data
             self.preprocessor.fit(features, labels)
+
+    def reduce_preprocessor(self):
+        """Reduce the preprocessing pipeline."""
+
+        # Check if a preprocessor has been provided
+        if self.preprocessor is not None:
+
+            # Reduce the preprocessor
+            self.preprocessor.reduce_steps()
 
     def preprocess(
             self,
@@ -550,7 +549,7 @@ class MachineLearningModel(ABC):
 
             return self.preprocessor.gradientize(features)
 
-        return ones(features.shape[1])
+        return eye(features.shape[1])
 
     @abstractmethod
     def _predictor_gradient(

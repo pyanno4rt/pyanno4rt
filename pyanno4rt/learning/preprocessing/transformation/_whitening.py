@@ -1,4 +1,4 @@
-"""Whitening transformer."""
+"""Whitening."""
 
 # Author: Tim Ortkamp
 
@@ -12,10 +12,10 @@ from numpy.linalg import eig
 
 class Whitening():
     """
-    Whitening transformer class.
+    Whitening class.
 
-    This class provides methods to fit, transform and gradientize the input \
-    features by their whitening matrix.
+    This class provides methods to fit a whitening matrix, transform and \
+    gradientize the input features.
 
     Parameters
     ----------
@@ -27,6 +27,9 @@ class Whitening():
 
     Attributes
     ----------
+    _classifier : str
+        String indicating the preprocessing class.
+
     method : {'pca', 'zca'}
         See 'Parameters'.
 
@@ -36,6 +39,9 @@ class Whitening():
     matrix : ndarray
         Whitening matrix.
     """
+
+    # Initialize the algorithm classifier
+    _classifier = 'scaling'
 
     def __init__(
             self,
@@ -51,17 +57,14 @@ class Whitening():
     def fit(
             self,
             features,
-            labels):
+            _):
         """
-        Fit the whitening transformer.
+        Fit the whitening matrix.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
-
-        labels : None or ndarray
-            Values of the input labels.
+            Feature values.
         """
 
         def compute_zca_matrix(inverse_diagonal, eigenvectors):
@@ -105,44 +108,65 @@ class Whitening():
     def transform(
             self,
             features,
-            labels):
+            labels=None):
         """
-        Transform the input features/labels.
+        Transform the features and labels.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
-        labels : None or ndarray
-            Values of the input labels.
+        labels : None or ndarray, default=None
+            Label values.
 
         Returns
         -------
         ndarray
-            Transformed values of the input features.
+            Transformed feature values.
 
         None or ndarray
-            Transformed values of the input labels.
+            (Transformed) label values.
         """
 
         return (features-self.means) @ self.matrix.T, labels
 
-    def compute_gradient(
+    def fit_transform(
             self,
-            features):
+            features,
+            labels=None):
         """
-        Compute the whitening transformer gradient w.r.t the input features.
+        Fit and transform the features and labels.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
+
+        labels : None or ndarray, default=None
+            Label values.
 
         Returns
         -------
         ndarray
-            Value of the whitening transformer gradient.
+            Transformed feature values.
+
+        None or ndarray
+            (Transformed) label values.
         """
 
-        return self.matrix.mean(axis=1)
+        return self.fit(features, labels).transform(features, labels)
+
+    def compute_gradient(
+            self,
+            _):
+        """
+        Compute the input gradient.
+
+        Returns
+        -------
+        ndarray
+            Input gradient.
+        """
+
+        return diag(self.matrix.mean(axis=1))

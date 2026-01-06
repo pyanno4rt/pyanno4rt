@@ -164,6 +164,9 @@ class ModelEvaluator():
         get_logger().info(
             "Yielding full data predictions for '%s' ...", model.label)
 
+        # Reduce the preprocessor
+        model.reduce_preprocessor()
+
         # Get the full data prediction
         full_prediction = model.predict(model.preprocess(features, labels)[0])
 

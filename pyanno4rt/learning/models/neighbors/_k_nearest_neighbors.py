@@ -76,20 +76,6 @@ class KNearestNeighbors(MachineLearningModel):
     for details on the inherited attributes.
     """
 
-    # Initialize the hyperparameters
-    hyperparameters = {
-        'n_neighbors': 5,
-        'weights': 'uniform',
-        'algorithm': 'auto',
-        'leaf_size': 30,
-        'p': 2,
-        'metric': 'minkowski',
-        'metric_params': None,
-        'n_jobs': -1}
-
-    # Initialize the predictor
-    predictor = KNeighborsClassifier(**hyperparameters)
-
     def __init__(
             self,
             label,
@@ -109,6 +95,20 @@ class KNearestNeighbors(MachineLearningModel):
             inspector=inspector,
             evaluator=evaluator,
             model_path=model_path)
+
+        # Initialize the hyperparameters
+        self.hyperparameters = {
+            'n_neighbors': 5,
+            'weights': 'uniform',
+            'algorithm': 'auto',
+            'leaf_size': 30,
+            'p': 2,
+            'metric': 'minkowski',
+            'metric_params': None,
+            'n_jobs': -1}
+
+        # Initialize the predictor
+        self.predictor = KNeighborsClassifier(**self.hyperparameters)
 
     def update_hyperparameters(
             self,
@@ -192,7 +192,7 @@ class KNearestNeighbors(MachineLearningModel):
             Predictor gradient w.r.t the preprocessed features.
         """
 
-        return ones((len(preprocessed_features),))
+        return ones(preprocessed_features.shape[1])
 
     def _load_predictor(self):
         """Load the predictor."""

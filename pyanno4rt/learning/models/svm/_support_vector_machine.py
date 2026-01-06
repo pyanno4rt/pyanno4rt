@@ -85,27 +85,6 @@ class SupportVectorMachine(MachineLearningModel):
     for details on the inherited attributes.
     """
 
-    # Initialize the hyperparameters
-    hyperparameters = {
-        'C': 1.0,
-        'kernel': 'rbf',
-        'degree': 3,
-        'gamma': 'scale',
-        'coef0': 0.0,
-        'shrinking': True,
-        'probability': True,
-        'tol': 0.001,
-        'cache_size': 200,
-        'class_weight': None,
-        'verbose': False,
-        'max_iter': -1,
-        'decision_function_shape': 'ovr',
-        'break_ties': False,
-        'random_state': 11}
-
-    # Initialize the predictor
-    predictor = SVC(**hyperparameters)
-
     def __init__(
             self,
             label,
@@ -125,6 +104,27 @@ class SupportVectorMachine(MachineLearningModel):
             inspector=inspector,
             evaluator=evaluator,
             model_path=model_path)
+
+        # Initialize the hyperparameters
+        self.hyperparameters = {
+            'C': 1.0,
+            'kernel': 'rbf',
+            'degree': 3,
+            'gamma': 'scale',
+            'coef0': 0.0,
+            'shrinking': True,
+            'probability': True,
+            'tol': 0.001,
+            'cache_size': 200,
+            'class_weight': None,
+            'verbose': False,
+            'max_iter': -1,
+            'decision_function_shape': 'ovr',
+            'break_ties': False,
+            'random_state': 11}
+
+        # Initialize the predictor
+        self.predictor = SVC(**self.hyperparameters)
 
         # Initialize the prediction model attributes
         self.multiplier, self.summand = None, None

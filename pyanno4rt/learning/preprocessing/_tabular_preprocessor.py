@@ -5,8 +5,8 @@
 # %% External package import
 
 from copy import deepcopy
-from functools import partial
-from numpy import prod, vstack
+from functools import partial, reduce
+from numpy import matmul
 
 # %% Internal package import
 
@@ -47,7 +47,7 @@ class TabularPreprocessor():
         self.validate(self.arguments)
 
         # Get the preprocessing steps
-        self.steps = [maps.TRANSFORMERS[label]() for label in steps]
+        self.steps = [maps.PREPROCESS_STEPS[label]() for label in steps]
 
     def to_dict(self):
         """Serialize the preprocessor into a dictionary."""
@@ -187,10 +187,23 @@ class TabularPreprocessor():
             Value of the preprocessing gradient.
         """
 
-        return prod(vstack(tuple(
+        # Get the step-wise gradients
+        gradients = tuple(
             step.compute_gradient(features) for step in self.steps
             if hasattr(step, 'compute_gradient') and callable(
-                    step.compute_gradient))), axis=0)
+                    step.compute_gradient))
+
+        return reduce(matmul, gradients)
+
+    def reduce_steps(self):
+        """Reduce the preprocessing steps."""
+
+        # Define the irrelevant classifiers
+        out_classes = ('outlier_removal',)
+
+        # Reduce the preprocessing steps
+        self.steps = [
+            step for step in self.steps if step._classifier not in out_classes]
 
     def validate(
             self,
@@ -208,7 +221,8 @@ class TabularPreprocessor():
             'steps': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=str),
-                partial(validate_item_in_set, options=(*maps.TRANSFORMERS,))
+                partial(validate_item_in_set, options=(
+                    *maps.PREPROCESS_STEPS,))
                 )
             }
 

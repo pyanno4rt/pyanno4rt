@@ -56,7 +56,7 @@ pypop7 = ">=0.0.82"
 
 [tool.poetry.group.dev.dependencies]
 pyqtwebengine-qt5 = "5.15.2"
-ipython = ">=8.37.0"
+ipython = ">=8.38.0"
 spyder = ">=6.1.2"
 spyder-kernels = ">=3.1.2"
 jupyter = ">=1.1.1"

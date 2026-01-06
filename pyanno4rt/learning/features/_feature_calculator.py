@@ -472,7 +472,7 @@ class FeatureCalculator():
         # Compute the gradients from the mapping
         gradients = map(compute_gradient, self.feature_map)
 
-        return vstack(tuple(gradients))
+        return vstack(tuple(gradients)).T
 
     def history_to_dict(self):
         """Convert the feature history to a dictionary."""

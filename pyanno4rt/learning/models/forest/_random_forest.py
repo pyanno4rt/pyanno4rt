@@ -76,31 +76,6 @@ class RandomForest(MachineLearningModel):
     for details on the inherited attributes.
     """
 
-    # Initialize the hyperparameters
-    hyperparameters = {
-        'n_estimators': 100,
-        'criterion': 'gini',
-        'max_depth': None,
-        'min_samples_split': 2,
-        'min_samples_leaf': 1,
-        'min_weight_fraction_leaf': 0.0,
-        'max_features': 'sqrt',
-        'max_leaf_nodes': None,
-        'min_impurity_decrease': 0.0,
-        'bootstrap': True,
-        'oob_score': False,
-        'n_jobs': -1,
-        'random_state': 12,
-        'verbose': 0,
-        'warm_start': False,
-        'class_weight': None,
-        'ccp_alpha': 0.0,
-        'max_samples': None,
-        'monotonic_cst': None}
-
-    # Initialize the predictor
-    predictor = RandomForestClassifier(**hyperparameters)
-
     def __init__(
             self,
             label,
@@ -120,6 +95,31 @@ class RandomForest(MachineLearningModel):
             inspector=inspector,
             evaluator=evaluator,
             model_path=model_path)
+
+        # Initialize the hyperparameters
+        self.hyperparameters = {
+            'n_estimators': 100,
+            'criterion': 'gini',
+            'max_depth': None,
+            'min_samples_split': 2,
+            'min_samples_leaf': 1,
+            'min_weight_fraction_leaf': 0.0,
+            'max_features': 'sqrt',
+            'max_leaf_nodes': None,
+            'min_impurity_decrease': 0.0,
+            'bootstrap': True,
+            'oob_score': False,
+            'n_jobs': -1,
+            'random_state': 12,
+            'verbose': 0,
+            'warm_start': False,
+            'class_weight': None,
+            'ccp_alpha': 0.0,
+            'max_samples': None,
+            'monotonic_cst': None}
+
+        # Initialize the predictor
+        self.predictor = RandomForestClassifier(**self.hyperparameters)
 
     def update_hyperparameters(
             self,

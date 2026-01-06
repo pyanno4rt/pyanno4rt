@@ -122,6 +122,16 @@ class DataModelHandler():
                 features, labels = (
                     model.dataset.feature_values, model.dataset.label_values)
 
+                # Check if a preprocessor has been provided
+                if model.preprocessor is not None:
+
+                    # Log a message about the preprocessing pipeline
+                    get_logger().info(
+                        "Building preprocessing pipeline 'Input -> %s -> "
+                        "Output' for model %s",
+                        ' → '.join(model.preprocessor.arguments['steps']),
+                        model.label)
+
                 # Fit the preprocessor
                 model.fit_preprocessor(features, labels)
 
@@ -169,6 +179,15 @@ class DataModelHandler():
 
             # Update the refreshing indicator
             model._reevaluate = False
+
+    def reduce_preprocessors(self):
+        """Reduce the model preprocessors."""
+
+        # Loop over the models
+        for model in (model for model in self.models):
+
+            # Reduce the preprocessor
+            model.reduce_preprocessor()
 
     def validate(
             self,

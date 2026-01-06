@@ -249,5 +249,6 @@ class DecisionTreeOutcome(MachineLearningComponent):
             self.model.gradientize(dose, self.segment))
 
         return (
-            (self.sign*predictor_gradient * preprocessing_gradient)
-            @ feature_gradient)
+            feature_gradient
+            @ preprocessing_gradient
+            @ (self.sign*predictor_gradient))

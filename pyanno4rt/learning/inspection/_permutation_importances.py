@@ -4,7 +4,7 @@
 
 # %% External package import
 
-from numpy import unique, vstack, where
+from numpy import atleast_1d, nan_to_num, unique, vstack, where
 from sklearn.inspection import permutation_importance
 from tensorflow.keras.utils import disable_interactive_logging
 
@@ -59,25 +59,26 @@ def permutation_importances(model, score='AUC', permutations=20):
         # Fit the preprocessor on the training split
         model.fit_preprocessor(split[0], split[1])
 
-        # Transform both splits
-        split = [
-            *model.preprocess(split[0], split[1]),
-            *model.preprocess(split[2], split[3])]
-
         # Fit the predictor on the training split
-        model.fit_predictor(split[0], split[1])
+        model.fit_predictor(*model.preprocess(split[0], split[1]))
+
+        # Wrap the model
+        wrapper_model = ModelWrapper(model)
 
         # Compute the permutation importance for the validation split
         importance = permutation_importance(
-            model.predictor, split[2], split[3], scoring=score_model,
+            wrapper_model, split[2], split[3], scoring=score_model,
             n_repeats=permutations, random_state=43)
 
-        return importance['importances'].T
+        return nan_to_num(importance['importances'].T)
 
-    def score_model(model, features, true_labels):
+    def score_model(wrapper, features, true_labels):
         """Score a model's prediction."""
 
-        return scorer(true_labels, model.predict(features))
+        # Transform the labels
+        _, true_labels = wrapper.model.preprocess(features, true_labels)
+
+        return scorer(true_labels, atleast_1d(wrapper.predict(features)))
 
     # Log a message about computing the full data permutation importance
     get_logger().info(
@@ -102,17 +103,13 @@ def permutation_importances(model, score='AUC', permutations=20):
     # Map the score labels to the score functions
     scorer = maps.LOSSES[score]
 
-    # Check if a preprocessor has been provided
-    if model.preprocessor is not None:
-
-        # Fit the preprocessor
-        model.fit_preprocessor(features, labels)
+    # Wrap the model
+    wrapped_model = ModelWrapper(model)
 
     # Compute the full data permutation importances
     full_importances = permutation_importance(
-        model.predictor, *model.preprocess(features, labels),
-        scoring=score_model, n_repeats=permutations, random_state=42)[
-            'importances'].T
+        wrapped_model, features, labels, scoring=score_model,
+        n_repeats=permutations, random_state=42)['importances'].T
 
     # Log a message about computing the cross-validated permutation importances
     get_logger().info(
@@ -134,3 +131,55 @@ def permutation_importances(model, score='AUC', permutations=20):
         'Cross-validated': vstack(list(cv_importances)),
         'feature_names': model.dataset.feature_names,
         'score': score}
+
+
+class ModelWrapper():
+    """
+    A wrapper class to run permutation importance with preprocessing.
+
+    Parameters
+    ----------
+    model : object of class \
+        :class:`~pyanno4rt.learning._models.forest._random_forest.RandomForest`\
+        :class:`~pyanno4rt.learning._models.logistic._logistic_regression.LogisticRegression`\
+        :class:`~pyanno4rt.learning._models.naive_bayes._naive_bayes.NaiveBayes`\
+        :class:`~pyanno4rt.learning._models.neighbors._k_nearest_neighbors.KNearestNeighbors`\
+        :class:`~pyanno4rt.learning._models.neural_network._feed_forward_net.FeedForwardNet`\
+        :class:`~pyanno4rt.learning._models.svm._support_vector_machine.SupportVectorMachine`\
+        :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
+        The object used to represent the outcome model.
+    """
+
+    def __init__(self, model):
+
+        # Get the model
+        self.model = model
+
+        # Set the fitting indicator
+        self._is_fitted = True
+
+    def fit(
+            self,
+            _,
+            __):
+        """
+        Dummy fit required by permutation importance."""
+
+        return self
+
+    def predict(
+            self,
+            features):
+        """
+        Predict the label values.
+
+        Parameters
+        ----------
+        features : ndarray
+            Feature values.
+        """
+
+        # Transform the features
+        preprocessed_features, _ = self.model.preprocess(features, None)
+
+        return self.model.predict(preprocessed_features)

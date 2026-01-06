@@ -285,5 +285,6 @@ class LogisticRegressionOutcome(MachineLearningComponent):
                 0.25*predictor_gradient/(prediction - prediction**2))
 
         return (
-            (self.sign*predictor_gradient * preprocessing_gradient)
-            @ feature_gradient)
+            feature_gradient
+            @ preprocessing_gradient
+            @ (self.sign*predictor_gradient))

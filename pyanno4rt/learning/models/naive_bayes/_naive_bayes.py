@@ -78,14 +78,6 @@ class NaiveBayes(MachineLearningModel):
     for details on the inherited attributes.
     """
 
-    # Initialize the hyperparameters
-    hyperparameters = {
-        'priors': None,
-        'var_smoothing': 1e-9}
-
-    # Initialize the predictor
-    predictor = GaussianNB(**hyperparameters)
-
     def __init__(
             self,
             label,
@@ -105,6 +97,14 @@ class NaiveBayes(MachineLearningModel):
             inspector=inspector,
             evaluator=evaluator,
             model_path=model_path)
+
+        # Initialize the hyperparameters
+        self.hyperparameters = {
+            'priors': None,
+            'var_smoothing': 1e-9}
+
+        # Initialize the predictor
+        self.predictor = GaussianNB(**self.hyperparameters)
 
     def update_hyperparameters(
             self,
