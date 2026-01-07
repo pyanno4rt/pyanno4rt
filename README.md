@@ -41,7 +41,7 @@
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Streamlined configuration and handling of treatment plans</h3></summary>
+<summary><b>Streamlined configuration and handling of treatment plans</b></summary>
 
 * Class-based plan generation
 * Automatic input checks to preserve the integrity
@@ -50,7 +50,7 @@
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Multi-criteria inverse planning and optimization</h3></summary>
+<summary><b>Multi-criteria inverse planning and optimization</b></summary>
 
 * Physical & RBE-weighted dose-fluence projections
 * Classical & data-driven fluence initialization strategies
@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Data-driven outcome modeling</h3></summary>
+<summary><b>Data-driven outcome modeling</b></summary>
 
 * 7 machine learning models with customizable building blocks for dataset handling, preprocessing, hyperparameter tuning, inspection & evaluation
     - Decision tree
@@ -97,14 +97,14 @@
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Plan validation and quality analytics</h3></summary>
+<summary><b>Plan validation and quality analytics</b></summary>
 
 * Cumulative & differential DVHs
 * Dosimetrics & clinical quality measures
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Graphical user interface</h3></summary>
+<summary><b>Graphical user interface</b></summary>
 
 * Feature-rich PyQt5 desktop application
     - Treatment plan editor
