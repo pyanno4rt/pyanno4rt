@@ -32,7 +32,7 @@
 # Highlight Features :telescope:
 
 <details>
-<summary>Data interoperability for patient/outcome data and dose-influence matrices</summary>
+<summary><h3>Data interoperability for patient/outcome data and dose-influence matrices</h3></summary>
 
 * CSV files (.csv)
 * DICOM files (.dcm)
