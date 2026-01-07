@@ -40,21 +40,17 @@
 * Python files (.npy, .npz)
 </details>
 
-### Data interoperability for patient/outcome data and dose-influence matrices
-
-* CSV files (.csv)
-* DICOM files (.dcm)
-* MATLAB files (.mat)
-* Python files (.npy, .npz)
-
-### Streamlined configuration and handling of treatment plans
+<details>
+<summary><h3 style="display: inline-block;">Streamlined configuration and handling of treatment plans</h3></summary>
 
 * Class-based plan generation
 * Automatic input checks to preserve the integrity
 * Dedicated logging channels
 * Snapshot/copycat functionality for storage/retrieval
+</details>
 
-### Multi-criteria inverse planning and optimization
+<details>
+<summary><h3 style="display: inline-block;">Multi-criteria inverse planning and optimization</h3></summary>
 
 * Physical & RBE-weighted dose-fluence projections
 * Classical & data-driven fluence initialization strategies
@@ -72,8 +68,10 @@
     - Multi-objective algorithms provided by [pymoo](https://pypi.org/project/pymoo/)
     - Population-based algorithms provided by [pypop7](https://pypi.org/project/pypop7/)
     - Local algorithms provided by [scipy](https://pypi.org/project/scipy/)
+</details>
 
-### Data-driven outcome modeling
+<details>
+<summary><h3 style="display: inline-block;">Data-driven outcome modeling</h3></summary>
 
 * 7 machine learning models with customizable building blocks for dataset handling, preprocessing, hyperparameter tuning, inspection & evaluation
     - Decision tree
@@ -96,19 +94,24 @@
     - KPIs: Log loss, Brier score, precision, recall, ...
 * 24-type dosiomic & radiomic feature catalogue for input (re)calculation
 * Model serialization and external loading from local snapshots
+</details>
 
-### Plan validation and quality analytics
+<details>
+<summary><h3 style="display: inline-block;">Plan validation and quality analytics</h3></summary>
 
 * Cumulative & differential DVHs
 * Dosimetrics & clinical quality measures
+</details>
 
-### Graphical user interface
+<details>
+<summary><h3 style="display: inline-block;">Graphical user interface</h3></summary>
 
 * Feature-rich PyQt5 desktop application
     - Treatment plan editor
     - Workflow controls & plan comparison
     - CT/Dose preview
 * (Standalone) PyQt5/Matplotlib visualizer suite
+</details>
 
 # Installation :computer:
 
