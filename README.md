@@ -32,7 +32,7 @@
 # Highlight Features :telescope:
 
 <details>
-<summary><b>Data interoperability for patient/outcome data and dose-influence matrices</b></summary>
+<summary><b>📤 Data interoperability for patient/outcome data and dose-influence matrices</b></summary>
 
 * CSV files (.csv)
 * DICOM files (.dcm)
@@ -41,7 +41,7 @@
 </details>
 
 <details>
-<summary><b>Streamlined configuration and handling of treatment plans</b></summary>
+<summary><b>🛠️ Streamlined configuration and handling of treatment plans</b></summary>
 
 * Class-based plan generation
 * Automatic input checks to preserve the integrity
@@ -50,7 +50,7 @@
 </details>
 
 <details>
-<summary><b>Multi-criteria inverse planning and optimization</b></summary>
+<summary><b>🎯 Multi-criteria inverse planning and optimization</b></summary>
 
 * Physical & RBE-weighted dose-fluence projections
 * Classical & data-driven fluence initialization strategies
@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary><b>Data-driven outcome modeling</b></summary>
+<summary><b>🧠 Data-driven outcome modeling</b></summary>
 
 * 7 machine learning models with customizable building blocks for dataset handling, preprocessing, hyperparameter tuning, inspection & evaluation
     - Decision tree
@@ -97,14 +97,14 @@
 </details>
 
 <details>
-<summary><b>Plan validation and quality analytics</b></summary>
+<summary><b>🛡️ Plan validation and quality analytics</b></summary>
 
 * Cumulative & differential DVHs
 * Dosimetrics & clinical quality measures
 </details>
 
 <details>
-<summary><b>Graphical user interface</b></summary>
+<summary><b>🖼️ Graphical user interface</b></summary>
 
 * Feature-rich PyQt5 desktop application
     - Treatment plan editor
@@ -115,13 +115,25 @@
 
 # Installation :computer:
 
-### Python distribution
+<details>
+<summary><b>Python distribution</b></summary>
 
 You can install the latest distribution via:
 
 ```bash
 pip install pyanno4rt
 ```
+</details>
+
+<details>
+<summary><b>Source code</b></summary>
+
+You can check the latest source code via:
+
+```bash
+git clone https://github.com/pyanno4rt/pyanno4rt.git
+```
+</details>
 
 ### Source code
 
