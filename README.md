@@ -33,6 +33,7 @@
 
 <details>
 <summary><b>📤 Data interoperability for patient/outcome data and dose-influence matrices</b></summary>
+<br>
 
 * CSV files (.csv)
 * DICOM files (.dcm)
@@ -42,6 +43,7 @@
 
 <details>
 <summary><b>🛠️ Streamlined configuration and handling of treatment plans</b></summary>
+<br>
 
 * Class-based plan generation
 * Automatic input checks to preserve the integrity
@@ -51,6 +53,7 @@
 
 <details>
 <summary><b>🎯 Multi-criteria inverse planning and optimization</b></summary>
+<br>
 
 * Physical & RBE-weighted dose-fluence projections
 * Classical & data-driven fluence initialization strategies
@@ -72,6 +75,7 @@
 
 <details>
 <summary><b>🧠 Data-driven outcome modeling</b></summary>
+<br>
 
 * 7 machine learning models with customizable building blocks for dataset handling, preprocessing, hyperparameter tuning, inspection & evaluation
     - Decision tree
@@ -98,6 +102,7 @@
 
 <details>
 <summary><b>🛡️ Plan validation and quality analytics</b></summary>
+<br>
 
 * Cumulative & differential DVHs
 * Dosimetrics & clinical quality measures
@@ -105,6 +110,7 @@
 
 <details>
 <summary><b>🖼️ Graphical user interface</b></summary>
+<br>
 
 * Feature-rich PyQt5 desktop application
     - Treatment plan editor
@@ -115,25 +121,13 @@
 
 # Installation :computer:
 
-<details>
-<summary><b>Python distribution</b></summary>
+### Python distribution
 
 You can install the latest distribution via:
 
 ```bash
 pip install pyanno4rt
 ```
-</details>
-
-<details>
-<summary><b>Source code</b></summary>
-
-You can check the latest source code via:
-
-```bash
-git clone https://github.com/pyanno4rt/pyanno4rt.git
-```
-</details>
 
 ### Source code
 
