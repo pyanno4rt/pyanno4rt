@@ -15,4 +15,5 @@
 \
 \
 ><sub><sup>1</sup>D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". *GigaScience* 3.1 (2014).
+\
 ><sup>2</sup>S. Breedveld, B. Heijmen. "Data for TROTS - The Radiotherapy Optimisation Test Set". *Data in Brief* (2017).</sub>
