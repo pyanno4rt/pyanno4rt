@@ -90,9 +90,10 @@ class Optimization():
 
             - 'mumps': multifrontal massively parallel sparse direct solver
 
-        - solver='pyanno4rt': {'CMAES'}
+        - solver='pyanno4rt': {'CMAES', 'LRCMAES'}
 
             - 'CMAES': covariance matrix adaptation evolution strategy
+            - 'LRCMAES': low-rank covariance matrix adaptation evolution strategy
 
         - solver='pymoo' : {'NSGA3'}
 

@@ -24,25 +24,29 @@
 # Highlight Features :telescope:
 
 <details>
-<summary><h3 style="display: inline-block;">Data interoperability for patient/outcome data and dose-influence matrices</h3></summary>
+<summary><b>📤 Data interoperability for patient/outcome data and dose-influence matrices</b></summary>
+<br>
 
-* CSV files (.csv)
-* DICOM files (.dcm)
-* MATLAB files (.mat)
-* Python files (.npy, .npz)
+* Patient data: DICOM (.dcm), MATLAB (.mat) or Python files (.npy)
+* Outcome data: CSV files (.csv)
+* Dose-influence matrices: MATLAB (.mat) or Python files (.npy, .npz)
+<br>
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Streamlined configuration and handling of treatment plans</h3></summary>
+<summary><b>🛠️ Streamlined configuration and handling of treatment plans</b></summary>
+<br>
 
 * Class-based plan generation
-* Automatic input checks to preserve the integrity
+* Automatic input validation to preserve the integrity
 * Dedicated logging channels
-* Snapshot/copycat functionality for storage/retrieval
+* Load/save functionality to foster reproducibility
+<br>
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Multi-criteria inverse planning and optimization</h3></summary>
+<summary><b>🎯 Multi-criteria inverse planning and optimization</b></summary>
+<br>
 
 * Physical & RBE-weighted dose-fluence projections
 * Classical & data-driven fluence initialization strategies
@@ -53,17 +57,19 @@
     - Lexicographic method
     - Pareto method
     - Weighted-sum method
-* 17-type dose-volume & outcome prediction model-based optimization component catalogue
+* 17-type dose-volume & outcome model-based optimization component catalogue
 * Local & global solvers
     - Interior-point algorithms provided by [ipyopt](https://pypi.org/project/ipyopt/)
     - Internal custom algorithms provided by [pyanno4rt](https://github.com/pyanno4rt/pyanno4rt)
     - Multi-objective algorithms provided by [pymoo](https://pypi.org/project/pymoo/)
     - Population-based algorithms provided by [pypop7](https://pypi.org/project/pypop7/)
     - Local algorithms provided by [scipy](https://pypi.org/project/scipy/)
+<br>
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Data-driven outcome modeling</h3></summary>
+<summary><b>🧠 Data-driven outcome modeling</b></summary>
+<br>
 
 * 7 machine learning models with customizable building blocks for dataset handling, preprocessing, hyperparameter tuning, inspection & evaluation
     - Decision tree
@@ -73,9 +79,14 @@
     - (Feed-forward) neural network
     - Random forest
     - Support vector machine
-* 6-type data preprocessing step catalogue
+* Tabular dataset handler
+    - Data loading, decomposition and engineering
+    - Fold assignment for holdout or (repeated) stratified cross-validation
+    - Holdout test set partitioning
+    - Automatic or user-defined feature-to-function mapping
+* Tabular preprocessor with 6-type preprocessing step catalogue
 * Hyperparameter optimization strategies
-    - SMBO
+    - Bayesian SMBO
     - Grid search 
     - Randomized search
 * Model interpretation & XAI
@@ -86,21 +97,26 @@
     - KPIs: Log loss, Brier score, precision, recall, ...
 * 24-type dosiomic & radiomic feature catalogue for input (re)calculation
 * Model serialization and external loading from local snapshots
+<br>
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Plan validation and quality analytics</h3></summary>
+<summary><b>🛡️ Plan validation and quality analytics</b></summary>
+<br>
 
 * Cumulative & differential DVHs
 * Dosimetrics & clinical quality measures
+<br>
 </details>
 
 <details>
-<summary><h3 style="display: inline-block;">Graphical user interface</h3></summary>
+<summary><b>🖼️ Graphical user interface</b></summary>
+<br>
 
 * Feature-rich PyQt5 desktop application
     - Treatment plan editor
     - Workflow controls & plan comparison
     - CT/Dose preview
 * (Standalone) PyQt5/Matplotlib visualizer suite
+<br>
 </details>

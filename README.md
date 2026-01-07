@@ -35,10 +35,9 @@
 <summary><b>📤 Data interoperability for patient/outcome data and dose-influence matrices</b></summary>
 <br>
 
-* CSV files (.csv)
-* DICOM files (.dcm)
-* MATLAB files (.mat)
-* Python files (.npy, .npz)
+* Patient data: DICOM (.dcm), MATLAB (.mat) or Python files (.npy)
+* Outcome data: CSV files (.csv)
+* Dose-influence matrices: MATLAB (.mat) or Python files (.npy, .npz)
 <br>
 </details>
 
@@ -47,9 +46,9 @@
 <br>
 
 * Class-based plan generation
-* Automatic input checks to preserve the integrity
+* Automatic input validation to preserve the integrity
 * Dedicated logging channels
-* Snapshot/copycat functionality for storage/retrieval
+* Load/save functionality to foster reproducibility
 <br>
 </details>
 
@@ -66,7 +65,7 @@
     - Lexicographic method
     - Pareto method
     - Weighted-sum method
-* 17-type dose-volume & outcome prediction model-based optimization component catalogue
+* 17-type dose-volume & outcome model-based optimization component catalogue
 * Local & global solvers
     - Interior-point algorithms provided by [ipyopt](https://pypi.org/project/ipyopt/)
     - Internal custom algorithms provided by [pyanno4rt](https://github.com/pyanno4rt/pyanno4rt)
@@ -88,9 +87,14 @@
     - (Feed-forward) neural network
     - Random forest
     - Support vector machine
-* 6-type data preprocessing step catalogue
+* Tabular dataset handler
+    - Data loading, decomposition and engineering
+    - Fold assignment for holdout or (repeated) stratified cross-validation
+    - Holdout test set partitioning
+    - Automatic or user-defined feature-to-function mapping
+* Tabular preprocessor with 6-type preprocessing step catalogue
 * Hyperparameter optimization strategies
-    - SMBO
+    - Bayesian SMBO
     - Grid search 
     - Randomized search
 * Model interpretation & XAI
