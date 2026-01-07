@@ -39,6 +39,7 @@
 * DICOM files (.dcm)
 * MATLAB files (.mat)
 * Python files (.npy, .npz)
+<br>
 </details>
 
 <details>
@@ -49,6 +50,7 @@
 * Automatic input checks to preserve the integrity
 * Dedicated logging channels
 * Snapshot/copycat functionality for storage/retrieval
+<br>
 </details>
 
 <details>
@@ -71,6 +73,7 @@
     - Multi-objective algorithms provided by [pymoo](https://pypi.org/project/pymoo/)
     - Population-based algorithms provided by [pypop7](https://pypi.org/project/pypop7/)
     - Local algorithms provided by [scipy](https://pypi.org/project/scipy/)
+<br>
 </details>
 
 <details>
@@ -98,6 +101,7 @@
     - KPIs: Log loss, Brier score, precision, recall, ...
 * 24-type dosiomic & radiomic feature catalogue for input (re)calculation
 * Model serialization and external loading from local snapshots
+<br>
 </details>
 
 <details>
@@ -106,6 +110,7 @@
 
 * Cumulative & differential DVHs
 * Dosimetrics & clinical quality measures
+<br>
 </details>
 
 <details>
@@ -117,6 +122,7 @@
     - Workflow controls & plan comparison
     - CT/Dose preview
 * (Standalone) PyQt5/Matplotlib visualizer suite
+<br>
 </details>
 
 # Installation :computer:
