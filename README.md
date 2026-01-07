@@ -109,7 +109,7 @@
 </details>
 
 <details>
-<summary><b>🛡️ Plan validation and quality analytics</b></summary>
+<summary><b>✅ Plan validation and quality analytics</b></summary>
 <br>
 
 * Cumulative & differential DVHs
