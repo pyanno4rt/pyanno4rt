@@ -17,7 +17,9 @@ from pyanno4rt.learning.features import (
     SegmentEccentricity, SegmentEigenmax, SegmentEigenmid, SegmentEigenmin,
     SegmentEigenvalues, SegmentSphericity, SegmentVolume)
 from pyanno4rt.learning.features import DynamicFeature, Label, StaticFeature
-from pyanno4rt.learning.losses import auc_loss, brier_loss, log_loss
+from pyanno4rt.learning.losses import (
+    auc_loss, brier_loss, dice_loss, focal_loss, hinge_loss,
+    kl_divergence_loss, log_loss)
 from pyanno4rt.learning.preprocessing import (
     IsolationForest, LocalOutlierFactor, MinimumCovarianceDeterminant,
     PrincipalComponentAnalysis, StandardScaler, Whitening)
@@ -63,8 +65,12 @@ FEATURES = {
 
 LOSSES = {
     'AUC': auc_loss,
-    'Brier score': brier_loss,
-    'Logloss': log_loss}
+    'Brier': brier_loss,
+    'Dice': dice_loss,
+    'Focal BCE': focal_loss,
+    'Hinge': hinge_loss,
+    'KLD': kl_divergence_loss,
+    'BCE': log_loss}
 
 NETWORK_LOSSES = {
     'binary_crossentropy': BinaryCrossentropy,

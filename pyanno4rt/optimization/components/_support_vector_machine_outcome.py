@@ -181,8 +181,9 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
             # Return the transformed outcome value
             return sigmoid(
                 inverse_salu(
-                    value, self.model.probA, self.model.probB, self.sign),
-                self.model.probA, self.model.probB)
+                    value, self.model.multiplier, self.model.summand,
+                    self.sign),
+                self.model.multiplier, self.model.summand)
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):
@@ -215,8 +216,9 @@ class SupportVectorMachineOutcome(MachineLearningComponent):
 
             # Return the transformed function value
             return salu(
-                inverse_sigmoid(value, self.model.probA, self.model.probB),
-                self.model.probA, self.model.probB, self.sign)
+                inverse_sigmoid(
+                    value, self.model.multiplier, self.model.summand),
+                self.model.multiplier, self.model.summand, self.sign)
 
         # Check if the value is an iterable
         if isinstance(value, (tuple, list)):

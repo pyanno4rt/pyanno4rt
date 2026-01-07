@@ -16,7 +16,6 @@ from tensorflow.keras.models import load_model
 from pyanno4rt.learning.models import MachineLearningModel
 from pyanno4rt.learning._maps import NETWORK_LOSSES, NETWORK_OPTIMIZERS
 from pyanno4rt.learning.models.neural_network import build_fnn, build_icnn
-from pyanno4rt.logging import get_logger
 from pyanno4rt.validation import validate_item_in_set, validate_type
 
 # %% Set package options

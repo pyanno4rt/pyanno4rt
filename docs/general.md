@@ -7,7 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/pyanno4rt/pyanno4rt/badge.svg)](https://coveralls.io/github/pyanno4rt/pyanno4rt)
 ![GitHub Repo stars](https://img.shields.io/github/stars/pyanno4rt/pyanno4rt)
 ![GitHub forks](https://img.shields.io/github/forks/pyanno4rt/pyanno4rt)
-[![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases) 
+[![GitHub Downloads](https://img.shields.io/github/downloads/pyanno4rt/pyanno4rt/total)](https://github.com/pyanno4rt/pyanno4rt/releases)
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=pyanno4rt.pyanno4rt)
 [![GitHub Release](https://img.shields.io/github/v/release/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/releases)
 [![GitHub Discussions](https://img.shields.io/github/discussions/pyanno4rt/pyanno4rt)](https://github.com/pyanno4rt/pyanno4rt/discussions)
@@ -17,78 +17,78 @@
 
 ---
 
-# General
+# General :earth_americas:
 
-*pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning.
+*pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-criteria (un)constrained optimization problems in radiotherapy treatment planning.
 
 # Highlight Features :telescope:
 
-<h3>Import of patient data and dose influence matrices from different sources</h3>
-<ul>
-	<li> DICOM files (.dcm) </li>
-	<li> MATLAB files (.mat) </li>
-	<li> Python files (.npy, .npz) </li>
-</ul>
+### Data interoperability for patient/outcome data and dose-influence matrices
 
-<h3>Easy configuration and management of treatment plans</h3>
-<ul>
-	<li> Class-based plan generation </li>
-	<li> Automatic input checks to preserve the integrity </li>
-	<li> Dedicated logging channels </li>
-	<li> Snapshot/copycat functionality for storage/retrieval </li>
-</ul>
+* CSV files (.csv)
+* DICOM files (.dcm)
+* MATLAB files (.mat)
+* Python files (.npy, .npz)
 
-<h3>Multi-objective treatment plan optimization</h3>
-<ul>
-	<li> Physical & RBE-weighted dose-fluence projections </li>
-	<li> Classical & data-driven fluence initialization strategies
-		<ul>
-			<li> Data medoid initialization </li>
-			<li> Tumor coverage initialization </li>
-			<li> Warm start initialization </li>
-		</ul>
-	</li>
-	<li> Scalarization & multi-objective optimization methods
-		<ul> 
-			<li> Lexicographic method </li> 
-			<li> Pareto method </li> 
-			<li> Weighted-sum method
-		</ul>
-	</li>
-	<li> 17-type dose-volume & outcome prediction model-based optimization component catalogue
-	</li>
-	<li> Local & global solvers
-		<ul>
-			<li> Interior-point algorithms provided by <a href="https://pypi.org/project/ipyopt/">ipyopt</a> </li>
-			<li> Internal custom algorithms provided by <a href="https://github.com/pyanno4rt/pyanno4rt">pyanno4rt</a> </li>
-			<li> Multi-objective algorithms provided by <a href="https://pypi.org/project/pymoo/">pymoo</a> </li>
-			<li> Population-based algorithms provided by <a href="https://pypi.org/project/pypop7/">pypop7</a> </li>
-			<li> Local algorithms provided by <a href="https://pypi.org/project/scipy/">scipy</a> </li>
-		</ul>
-	</li>
-</ul>
+### Streamlined configuration and handling of treatment plans
 
-<h3>Data-driven outcome prediction model handling</h3>
-<ul> 
-	<li> 7 internal ML model classes (decision tree, k-nearest neighbors, logistic regression, naive Bayes, neural network, random forest, support vector machine) with customizable modules for dataset loading, preprocessing, hyperparameter tuning, inspection & evaluation </li>
-	<li> 24-type dosiomic & radiomic feature catalogue </li>
-	<li> External model loading from local configuration folders </li>
-</ul>
+* Class-based plan generation
+* Automatic input checks to preserve the integrity
+* Dedicated logging channels
+* Snapshot/copycat functionality for storage/retrieval
 
-<h3>Plan evaluation tools</h3>
-<ul>
-	<li> Cumulative & differential DVHs </li>
-	<li> Dose statistics & clinical quality measures </li>
-</ul>
+### Multi-criteria inverse planning and optimization
 
-<h3>Graphical user interface</h3>
-<ul>
-	<li> Easy-to-use & powerful PyQt5 main window
-		<ul>
-			<li> Treatment plan editor </li>
-			<li> Workflow controls & plan comparison </li>
-			<li> CT/Dose preview </li>
-		</ul>
-	</li>
-	<li> (Standalone) PyQt5/Matplotlib visualization window </li>
-</ul>
+* Physical & RBE-weighted dose-fluence projections
+* Classical & data-driven fluence initialization strategies
+	- Data medoid initialization
+	- Tumor coverage initialization
+	- Warm-start initialization
+* Scalarization & multi-criteria optimization methods
+	- Lexicographic method
+	- Pareto method
+	- Weighted-sum method
+* 17-type dose-volume & outcome prediction model-based optimization component catalogue
+* Local & global solvers
+	- Interior-point algorithms provided by [ipyopt](https://pypi.org/project/ipyopt/)
+	- Internal custom algorithms provided by [pyanno4rt](https://github.com/pyanno4rt/pyanno4rt)
+	- Multi-objective algorithms provided by [pymoo](https://pypi.org/project/pymoo/)
+	- Population-based algorithms provided by [pypop7](https://pypi.org/project/pypop7/)
+	- Local algorithms provided by [scipy](https://pypi.org/project/scipy/)
+
+### Data-driven outcome modeling
+
+* 7 machine learning models with customizable building blocks for dataset handling, preprocessing, hyperparameter tuning, inspection & evaluation
+	- Decision tree
+	- K-nearest neighbors
+	- Logistic regression
+	- Naive Bayes
+	- (Feed-forward) neural network
+	- Random forest
+	- Support vector machine
+* 6-type data preprocessing step catalogue
+* Hyperparameter optimization strategies
+	- SMBO
+	- Grid search 
+	- Randomized search
+* Model interpretation & XAI
+	- Permutation importance
+	- SHAP
+* Model evaluation & validation
+	- Curves: AUC-PR, AUC-ROC, F1
+	- KPIs: Log loss, Brier score, precision, recall, ...
+* 24-type dosiomic & radiomic feature catalogue for input (re)calculation
+* Model serialization and external loading from local snapshots
+
+### Plan validation and quality analytics
+
+* Cumulative & differential DVHs
+* Dosimetrics & clinical quality measures
+
+### Graphical user interface
+
+* Feature-rich PyQt5 desktop application
+	- Treatment plan editor
+	- Workflow controls & plan comparison
+	- CT/Dose preview
+* (Standalone) PyQt5/Matplotlib visualizer suite

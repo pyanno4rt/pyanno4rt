@@ -5,9 +5,9 @@
 # %% External package import
 
 from sklearn.metrics import (
-    accuracy_score, brier_score_loss, cohen_kappa_score, f1_score,
-    hamming_loss, jaccard_score, matthews_corrcoef, precision_score,
-    recall_score, roc_auc_score)
+    average_precision_score, balanced_accuracy_score, brier_score_loss,
+    cohen_kappa_score, f1_score, hamming_loss, jaccard_score,
+    matthews_corrcoef, precision_score, recall_score, roc_auc_score)
 from tensorflow.keras.losses import binary_crossentropy
 
 # %% Internal package import
@@ -45,9 +45,9 @@ def kpi(true_labels, predicted_labels, thresholds=(0.5, 0.5)):
     scores = {
         source: {
             kpi: None for kpi in (
-                'Logloss', 'Brier score', 'Subset accuracy', 'Cohen Kappa',
+                'Log loss', 'Brier score', 'Balanced accuracy', 'Cohen Kappa',
                 'Hamming loss', 'Jaccard score', 'Precision', 'Recall',
-                'F1 score', 'MCC', 'AUC')
+                'F1', 'MCC', 'AUC-PR', 'AUC-ROC')
             }
         for source in ('Full', 'Cross-validated')}
 
@@ -61,7 +61,7 @@ def kpi(true_labels, predicted_labels, thresholds=(0.5, 0.5)):
     for index, source in enumerate(scores):
 
         # Compute the log loss
-        scores[source]['Logloss'] = binary_crossentropy(
+        scores[source]['Log loss'] = binary_crossentropy(
             true_labels, predicted_labels[index]).numpy().mean()
 
         # Compute the Brier score
@@ -69,7 +69,7 @@ def kpi(true_labels, predicted_labels, thresholds=(0.5, 0.5)):
             true_labels, predicted_labels[index])
 
         # Compute the (subset) accuracy
-        scores[source]['Subset accuracy'] = accuracy_score(
+        scores[source]['Balanced accuracy'] = balanced_accuracy_score(
             true_labels, binarized[index])
 
         # Compute Cohen's Kappa
@@ -92,14 +92,18 @@ def kpi(true_labels, predicted_labels, thresholds=(0.5, 0.5)):
         scores[source]['Recall'] = recall_score(true_labels, binarized[index])
 
         # Compute the F1 score
-        scores[source]['F1 score'] = f1_score(true_labels, binarized[index])
+        scores[source]['F1'] = f1_score(true_labels, binarized[index])
 
         # Compute the Matthews correlation
         scores[source]['MCC'] = matthews_corrcoef(
             true_labels, binarized[index])
 
-        # Compute the AUC score
-        scores[source]['AUC'] = roc_auc_score(
+        # Compute the AUC-PR score
+        scores[source]['AUC-PR'] = average_precision_score(
+            true_labels, predicted_labels[index])
+
+        # Compute the AUC-ROC score
+        scores[source]['AUC-ROC'] = roc_auc_score(
             true_labels, predicted_labels[index])
 
     return scores

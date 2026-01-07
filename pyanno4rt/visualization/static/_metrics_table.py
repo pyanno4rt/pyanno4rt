@@ -40,17 +40,18 @@ class MetricsTable():
 
             # Map the up- and downarrows to the metrics
             arrows = {
-                'Logloss': r'$\downarrow$',
+                'Log loss': r'$\downarrow$',
                 'Brier score': r'$\downarrow$',
-                'Subset accuracy': r'$\uparrow$',
+                'Balanced accuracy': r'$\uparrow$',
                 'Cohen Kappa': r'$\uparrow$',
                 'Hamming loss': r'$\downarrow$',
                 'Jaccard score': r'$\uparrow$',
                 'Precision': r'$\uparrow$',
                 'Recall': r'$\uparrow$',
-                'F1 score': r'$\uparrow$',
+                'F1': r'$\uparrow$',
                 'MCC': r'$\uparrow$',
-                'AUC': r'$\uparrow$'}
+                'AUC-PR': r'$\uparrow$',
+                'AUC-ROC': r'$\uparrow$'}
 
             # Modify the column names
             dataframe.columns = [

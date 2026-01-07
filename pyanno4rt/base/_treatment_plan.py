@@ -5,6 +5,7 @@
 # %% External package import
 
 from copy import deepcopy
+from warnings import filterwarnings
 
 # %% Internal package import
 
@@ -33,6 +34,12 @@ from pyanno4rt.visualization import Visualizer
 # Supporting functions
 from pyanno4rt.tools import copycat, get_machine_learning_components, snapshot
 from pyanno4rt.validation import validate_type
+
+# %% Set package options
+
+# Suppress pkg_resources deprecation warnings
+filterwarnings("ignore", category=UserWarning, module="pkg_resources")
+filterwarnings("ignore", category=DeprecationWarning, module="pkg_resources")
 
 # %% Class definition
 

@@ -1,16 +1,17 @@
-# Development
+# Development :rocket:
 
-<h3>Important links</h3>
-<ul>
-	<li> <a href="https://github.com/pyanno4rt/pyanno4rt">Github Repo</a> </li>
-	<li> <a href="https://pypi.org/project/pyanno4rt/">PyPI</a> </li>
-	<li> <a href="https://coveralls.io/github/pyanno4rt/pyanno4rt">Coveralls</a> </li>
-	<li> <a href="https://github.com/pyanno4rt/pyanno4rt/issues">Issue tracker</a> </li>
-</ul>
+### Important links
 
-<h3>Contributing</h3>
+* [Github](https://github.com/pyanno4rt/pyanno4rt)
+* [PyPI](https://pypi.org/project/pyanno4rt/)
+* [Coveralls](https://coveralls.io/github/pyanno4rt/pyanno4rt)
+* [Issue tracker](https://github.com/pyanno4rt/pyanno4rt/issues)
 
-*pyanno4rt* is open for contributors of all experience levels. Please refer to our [contribution guidelines](https://github.com/pyanno4rt/pyanno4rt/blob/master/CONTRIBUTING.md) or get in contact with us (see [Help and Support](https://pyanno4rt.readthedocs.io/en/latest/help_support.html)) to discuss the format of your contribution.
+### Contributing
 
-> Note: the [docs](https://github.com/pyanno4rt/pyanno4rt/tree/master/docs) folder includes example files with CT/segmentation data, photon dose-influence matrix and a synthetic outcome dataset for the C-shape benchmark case from the AAPM TG-119, which can be used for development. You will find more realistic patient data e.g. in the CORT<sup>1</sup> or the TROTS<sup>2</sup> dataset.<br><br>
-><sub><sup>1</sup>D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". <i>GigaScience</i> 3.1 (2014).<br><sup>2</sup>S. Breedveld, B. Heijmen. "Data for TROTS - The Radiotherapy Optimisation Test Set". <i>Data in Brief</i> (2017).</sub>
+*pyanno4rt* is open for contributors of all experience levels. Please refer to our [contribution guidelines](CONTRIBUTING.md) or get in contact with us (see [Help and Support](#help-and-support)) to discuss the format of your contribution.
+
+> Note: the [docs](https://github.com/pyanno4rt/pyanno4rt/tree/develop/docs) folder includes example files with CT/segmentation data, photon dose-influence matrix and a synthetic outcome dataset for the C-shape benchmark case from the AAPM TG-119, which can be used for development. You will find more realistic patient data e.g. in the CORT^1^ or the TROTS^2^ dataset.
+\
+><sub>^1^D. Craft, M. Bangert, T. Long, et al. "Shared Data for Intensity Modulated Radiation Therapy (IMRT) Optimization Research: The CORT Dataset". *GigaScience* 3.1 (2014).
+>^2^S. Breedveld, B. Heijmen. "Data for TROTS - The Radiotherapy Optimisation Test Set". *Data in Brief* (2017).</sub>

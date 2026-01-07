@@ -5,7 +5,6 @@
 # %% External package import
 
 from statistics import mean
-from warnings import filterwarnings
 
 from copy import deepcopy
 from functools import partial
@@ -19,10 +18,6 @@ from pyanno4rt.logging import get_logger
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
     validate_item, validate_item_in_set, validate_type)
-
-# %% Set package options
-
-filterwarnings(action='ignore')
 
 # %% Class definition
 

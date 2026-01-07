@@ -1,6 +1,6 @@
-# Installation
+# Installation :computer:
 
-<h3>Python distribution</h3>
+### Python distribution
 
 You can install the latest distribution via:
 
@@ -8,7 +8,7 @@ You can install the latest distribution via:
 pip install pyanno4rt
 ```
 
-<h3>Source code</h3>
+### Source code
 
 You can check the latest source code via:
 
@@ -16,23 +16,23 @@ You can check the latest source code via:
 git clone https://github.com/pyanno4rt/pyanno4rt.git
 ```
 
-<h3>Usage</h3>
+### Usage
 
 *pyanno4rt* has two main classes which provide a code-based and a UI-based interface:
 
-<h6>Base class import for CLI/IDE</h6>
+###### Base class import for CLI/IDE
 
 ```python
 from pyanno4rt.base import TreatmentPlan
 ```
 
-<h6>GUI import</h6>
+###### GUI import
 
 ```python
 from pyanno4rt.gui import GraphicalUserInterface
 ```
 
-<h3>Dependencies</h3>
+### Dependencies
 
 | Name                           | Version                               |
 | -----------------------------: | :------------------------------------ |
@@ -58,4 +58,5 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 
-Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.2** for development.<br><br>
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.2** for development.
+\
