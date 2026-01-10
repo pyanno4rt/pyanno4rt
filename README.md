@@ -98,11 +98,11 @@
     - Grid search 
     - Randomized search
 * Model interpretation & XAI
+    - Feature sensitivity
     - Permutation importance
-    - SHAP
 * Model evaluation & validation
     - Curves: AUC-PR, AUC-ROC, F1
-    - KPIs: Log loss, Brier score, precision, recall, ...
+    - KPIs: log loss, Brier score, precision, recall, ...
 * 24-type dosiomic & radiomic feature catalogue for input (re)calculation
 * Model serialization and external loading from local snapshots
 <br>
@@ -167,18 +167,18 @@ from pyanno4rt.gui import GraphicalUserInterface
 
 | Name                           | Version                               |
 | -----------------------------: | :------------------------------------ |
-| `python`                       | <font size="3"> >=3.10, <4.0 </font>  |
-| `numpy`                        | <font size="3"> >=2.2.6 </font>       |
+| `python`                       | <font size="3"> >=3.11, <4.0 </font>  |
+| `numpy`                        | <font size="3"> >=2.3.5 </font>       |
 | `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
 | `absl-py`                      | <font size="3"> >=2.3.1 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
-| `scikit-image`                 | <font size="3"> >=0.25.2 </font>      |
+| `scikit-image`                 | <font size="3"> >=0.26.0 </font>      |
 | `h5py`                         | <font size="3"> >=3.15.1 </font>      |
 | `pandas`                       | <font size="3"> >=2.3.3 </font>       |
-| `jax`                          | <font size="3"> >=0.6.2 </font>       |
-| `jaxlib`                       | <font size="3"> >=0.6.2 </font>       |
+| `jax`                          | <font size="3"> >=0.8.2 </font>       |
+| `jaxlib`                       | <font size="3"> >=0.8.2 </font>       |
 | `numba`                        | <font size="3"> >=0.63.1 </font>      |
-| `scikit-learn`                 | <font size="3"> >=1.7.2 </font>       |
+| `scikit-learn`                 | <font size="3"> >=1.8.0 </font>       |
 | `tensorflow`                   | <font size="3"> >=2.20.0 </font>      |
 | `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
 | `pymoo`                        | <font size="3"> >=0.6.1.6 </font>     |

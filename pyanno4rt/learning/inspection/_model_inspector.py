@@ -10,7 +10,8 @@ from functools import partial
 # %% Internal package import
 
 import pyanno4rt.learning._maps as maps
-from pyanno4rt.learning.inspection import permutation_importances
+from pyanno4rt.learning.inspection import (
+    feature_sensitivities, permutation_importances)
 from pyanno4rt.tools import filter_dict
 from pyanno4rt.validation import (
     validate_item, validate_item_in_set, validate_type)
@@ -110,6 +111,9 @@ class ModelInspector():
             :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
             The object used to represent the outcome model.
         """
+
+        # Compute the feature sensitivities
+        self.results['feature_sensitivities'] = feature_sensitivities(model)
 
         # Compute the permutation importances
         self.results['permutation_importances'] = permutation_importances(

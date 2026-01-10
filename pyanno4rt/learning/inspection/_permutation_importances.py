@@ -1,4 +1,4 @@
-"""Permutation importance computation."""
+"""Permutation importance."""
 
 # Author: Tim Ortkamp
 

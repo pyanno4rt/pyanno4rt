@@ -90,11 +90,11 @@
     - Grid search 
     - Randomized search
 * Model interpretation & XAI
+    - Feature sensitivity
     - Permutation importance
-    - SHAP
 * Model evaluation & validation
     - Curves: AUC-PR, AUC-ROC, F1
-    - KPIs: Log loss, Brier score, precision, recall, ...
+    - KPIs: log loss, Brier score, precision, recall, ...
 * 24-type dosiomic & radiomic feature catalogue for input (re)calculation
 * Model serialization and external loading from local snapshots
 <br>

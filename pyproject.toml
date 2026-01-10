@@ -14,7 +14,6 @@ classifiers = [
   "Intended Audience :: Education",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -32,18 +31,18 @@ classifiers = [
 include = "pyanno4rt"
 
 [tool.poetry.dependencies]
-python = ">=3.10, <4.0"
-numpy = ">=2.2.6"
+python = ">=3.11, <4.0"
+numpy = ">=2.3.5"
 ipyopt = ">=0.12.10"
 absl-py = ">=2.3.1"
 pydicom = ">=3.0.1"
-scikit-image = ">=0.25.2"
+scikit-image = ">=0.26.0"
 h5py = ">=3.15.1"
 pandas = ">=2.3.3"
-jax = ">=0.6.2"
-jaxlib = ">=0.6.2"
+jax = ">=0.8.2"
+jaxlib = ">=0.8.2"
 numba = ">=0.63.1"
-scikit-learn = ">=1.7.2"
+scikit-learn = ">=1.8.0"
 tensorflow = ">=2.20.0"
 hyperopt = ">=0.2.7"
 pymoo = ">=0.6.1.6"
@@ -56,11 +55,11 @@ pypop7 = ">=0.0.82"
 
 [tool.poetry.group.dev.dependencies]
 pyqtwebengine-qt5 = "5.15.2"
-ipython = ">=8.38.0"
+ipython = ">=9.9.0"
 spyder = ">=6.1.2"
 spyder-kernels = ">=3.1.2"
 jupyter = ">=1.1.1"
-sphinx = ">=8.1.3"
+sphinx = ">=8.2.3"
 sphinx-rtd-theme = ">=3.0.2"
 sphinx-autoapi = "3.6.0"
 myst-nb = ">=1.3.0"
