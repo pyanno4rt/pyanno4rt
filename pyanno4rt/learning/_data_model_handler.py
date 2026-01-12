@@ -86,31 +86,31 @@ class DataModelHandler():
         """Load the datasets for the models."""
 
         # Loop over the models
-        for model in (model for model in self.models if model._reload_data):
+        for model in (model for model in self.models if model.reload_data):
 
             # Load the model data
             model.load_data()
 
             # Update the refreshing indicator
-            model._reload_data = False
+            model.reload_data = False
 
     def set_calculators(self):
         """Set the feature calculators for the models."""
 
         # Loop over the models
-        for model in (model for model in self.models if model._reset_calc):
+        for model in (model for model in self.models if model.reset_calc):
 
             # Add the feature calculator
             model.add_calculator(FeatureCalculator(self.handlers))
 
             # Update the refreshing indicator
-            model._reset_calc = False
+            model.reset_calc = False
 
     def fit_models(self):
         """Fit the models."""
 
         # Loop over the models
-        for model in (model for model in self.models if model._refit):
+        for model in (model for model in self.models if model.refit):
 
             # Check if no model path has been provided
             if model.model_path is None:
@@ -147,7 +147,7 @@ class DataModelHandler():
                 model.load()
 
             # Update the refreshing indicator
-            model._refit = False
+            model.refit = False
 
         # Loop over the machine learning components
         for component in get_machine_learning_components(
@@ -160,28 +160,36 @@ class DataModelHandler():
         """Inspect the models."""
 
         # Loop over the models
-        for model in (model for model in self.models if model._reinspect):
+        for model in (model for model in self.models if model.reinspect):
 
             # Inspect the model
             model.inspect()
 
             # Update the refreshing indicator
-            model._reinspect = False
+            model.reinspect = False
 
     def evaluate_models(self):
         """Evaluate the models."""
 
         # Loop over the models
-        for model in (model for model in self.models if model._reevaluate):
+        for model in (model for model in self.models if model.reevaluate):
 
             # Evaluate the model
             model.evaluate()
 
             # Update the refreshing indicator
-            model._reevaluate = False
+            model.reevaluate = False
 
     def reduce_preprocessors(self):
-        """Reduce the model preprocessors."""
+        """
+        Reduce the model preprocessors.
+
+        Notes
+        -----
+        This method removes all steps from each model's preprocessing \
+        pipeline which should not be neglected for plan optimization, e.g. \
+        outlier removal algorithms.
+        """
 
         # Loop over the models
         for model in (model for model in self.models):

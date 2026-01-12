@@ -11,6 +11,7 @@ from copy import deepcopy
 from functools import partial
 from itertools import compress, tee
 from numpy import arange, array, logical_and, seterr, vstack, where, zeros
+from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import RepeatedStratifiedKFold, train_test_split
 
 # %% Internal package import
@@ -52,22 +53,25 @@ class TabularDataset():
 
         - :class:`~pyanno4rt.learning.features._columns.StaticFeature`
 
-    holdout : int, default=None
-        Size of the holdout set (absolute).
+    holdout : None, float or int, default=None
+        Size of the holdout set. If 0 < holdout < 1, represents the \
+        proportion of the holdout dataset. If int, represents the absolute \
+        number of samples.
 
     splits : int, default=5
-        Number of splits for cross-validation.
+        Number of splits for cross-validation. If splits = 1, a single \
+        train-validation split (80/20) is generated.
 
     repeats : int, default=1
-        Number of repeats for cross-validation.
+        Number of repeats for cross-validation (or train-validation).
 
     Attributes
     ----------
-    _sources : None or dict
+    _sources : dict
         Dictionary with information on the external file sources and handlers.
 
     arguments : dict
-        Dictionary with the model input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
     data_path : None or str
         See 'Parameters'.
@@ -75,7 +79,7 @@ class TabularDataset():
     columns : None or list
         See 'Parameters'.
 
-    holdout : int
+    holdout : None, float or int
         See 'Parameters'.
 
     splits : int
@@ -87,66 +91,63 @@ class TabularDataset():
     dataframe : object of class :class:`~pandas.core.frame.DataFrame`
         A pandas dataframe for the dataset.
 
-    feature_names : tuple
+    feature_names : None or tuple
         Feature names.
 
-    feature_values : ndarray
+    feature_values : None or ndarray
         Feature values.
 
-    feature_scales : tuple
+    feature_scales : None or tuple
         Feature scaling.
 
-    label_name : str
+    label_name : None or str
         Label name.
 
-    label_values : ndarray
+    label_values : None or ndarray
         Label values.
 
-    label_bounds : list
+    label_bounds : None or list
         Label bounds for binarization.
 
-    label_viewpoint : {'early', 'late', 'longitudinal', 'long-term'}
+    label_viewpoint : None or {'early', 'late', 'longitudinal', 'long-term'}
         Label viewpoint for temporal modulation.
 
     time_variable_name : None or str
         Time variable name for temporal modulation.
 
-    time_variable_values : ndarray
+    time_variable_values : None or ndarray
         Time variable values.
 
-    folds : ndarray
+    folds : None or ndarray
         Fold numbers for cross-validation.
 
-    feature_map : dict
+    feature_map : None or dict
         Dictionary with mappings between features and calculation functions.
 
-    holdout_set : dict
+    holdout_set : None or dict
         Dictionary with the holdout data.
 
     Notes
     -----
     Tabular datasets can be generated in three ways:
 
-        1. By providing both a path to the dataset and column information, \
-            the class performs a full decomposition and postprocessing of the \
-            features and label, as well as building the feature map based on \
-            the column information provided. This is the preferred way if you \
-            need to fit a model internally and require an exact mapping of \
-            features to (re)calculation functions.
+        1. By providing a data path along with column information, a full \
+            decomposition and postprocessing of the features and labels \
+            is performed, including a feature-to-function mapping. This is \
+            the preferred way for internal model fitting and embedding into \
+            the treatment plan optimization problem.
 
-        2. By providing only a path to the dataset, the column information \
-            will be inferred (meaning that the first p-1 columns in the \
-            dataset are considered as features which will be categorized as \
-            "static", and the p-th column in the dataset is assumed to be \
-            the label). After that, it's the same as in 1, but column \
-            information will likely be insufficient for effectively embedding \
-            an outcome model into plan optimization.
+        2. By providing only a data path, column information will be inferred \
+            (the first p-1 columns in the dataset are considered "static" \
+             features, and the p-th column the label). This is the preferred \
+            way for internal model fitting without embedding into the \
+            treatment plan optimization problem.
 
-        3. By providing only column information, a light decomposition that \
-            only extracts feature and label names takes place, without any \
-            post-processing except for building the feature map. This works \
-            on the assumption that there is no model fitting, like when \
-            loading a pre-trained external classifier.
+        3. By providing only column information, a light decomposition \
+            extracting feature and label names is performed, without any \
+            postprocessing except for the feature-to-function mapping. This \
+            is the preferred way for embedding a pre-trained external model \
+            into the treatment plan optimization problem.
     """
 
     # Map the path extensions to the handlers
@@ -236,7 +237,7 @@ class TabularDataset():
             The object used to represent the dataset.
         """
 
-        # Check if column dictionaries have been passed
+        # Check if column information is available
         if dictionary['columns'] is not None:
 
             # Deserialize the columns
@@ -267,18 +268,20 @@ class TabularDataset():
 
                 # Log a message about inferring the column information
                 get_logger().warning(
-                    "User has not provided column information, inferring list "
-                    "of objects from dataset ...")
+                    "User has not provided column information, inferring from "
+                    "dataset ...")
 
                 # Infer the column information
                 self.columns = self.infer_columns()
 
             # Map the column names to the index position in the dataframe
-            order = {name: i for i, name in enumerate(self.dataframe.columns)}
+            order = {
+                name: index
+                for index, name in enumerate(self.dataframe.columns)}
 
             # Sort the column objects by their order in the dataframe
             self.columns = sorted(
-                self.columns, key=lambda x: order.get(x.column, float('inf')))
+                self.columns, key=lambda x: order.get(x.column, inf))
 
     def save(
             self,
@@ -312,9 +315,10 @@ class TabularDataset():
 
         Notes
         -----
-        This function should later be "smart", i.e., infer the column \
-        information based on e.g. fuzzy similarity matching. \
-        Currently, assumptions are:
+        This function should later become "smart", i.e., infer the column \
+        information based on e.g. fuzzy similarity matching.
+
+        Current assumptions:
 
             1. All columns except the last one represent static features with \
                 the label included as the last column
@@ -322,10 +326,30 @@ class TabularDataset():
             2. Static values can be approximated by the column mean.
         """
 
-        return ([
-            COLUMNS['Static Feature'](column, self.dataframe[column].mean())
-            for column in self.dataframe.columns[:-1]]
-            + [COLUMNS['Label'](self.dataframe.columns[-1])])
+        # Get the features
+        features = self.dataframe.iloc[:, :-1]
+
+        # Get the label name
+        label_name = self.dataframe.columns[-1]
+
+        # Map each feature to an aggregation function
+        mapping = {
+            column: 'mean' if is_numeric_dtype(dtype)
+            else lambda x: x.mode().iat[0]
+            for column, dtype in features.dtypes.items()}
+
+        # Compute the static values
+        statics = features.agg(mapping)
+
+        # Initialize the column list by the feature objects
+        columns = [
+            COLUMNS['Static Feature'](column, value)
+            for column, value in statics.items()]
+
+        # Append the label object
+        columns.append(COLUMNS['Label'](label_name))
+
+        return columns
 
     def generate(self):
         """Generate the data attributes."""
@@ -355,7 +379,7 @@ class TabularDataset():
         self._build_map()
 
     def _decompose(self):
-        """Decompose the base tabular dataset."""
+        """Decompose the dataset."""
 
         # Log a message about the dataset decomposition
         get_logger().info(
@@ -397,10 +421,10 @@ class TabularDataset():
                 filter(None, [self.time_variable_name])].values
 
     def _modulate(self):
-        """Modulate the data information."""
+        """Modulate the dataset."""
 
-        def squeeze_labels(bounds, index_sets):
-            """Squeeze the labels per patient by the time bounds."""
+        def aggregate_labels(bounds, index_sets):
+            """Aggregate the labels per patient by the time bounds."""
 
             # Get a boolean mask indicating interior samples per patient
             interior_mask = tee((
@@ -422,7 +446,7 @@ class TabularDataset():
 
             return array(list(map(custom_round, interior_means)))
 
-        # Map the label viewpoints to the time bounds
+        # Map the label viewpoints to the time intervals (in months)
         viewpoints = {
             'early': ((0,), (6,)),
             'late': ((6,), (15,)),
@@ -437,15 +461,15 @@ class TabularDataset():
                 "Modulating dataset by feature '%s' for label viewpoint '%s' "
                 "...", self.time_variable_name, self.label_viewpoint)
 
-            # Get the mapping between patient features and sample indices
+            # Get the mapping between patients and samples
             patient_map = deduplicate(map(tuple, self.feature_values))
 
-            # Overwrite the feature values by the patient features
+            # Overwrite the feature values by the patient-wise features
             self.feature_values = array((*patient_map,))
 
-            # Overwrite the label values by the squeezed labels
+            # Overwrite the label values by the aggregated labels
             self.label_values = vstack(tuple(map(
-                partial(squeeze_labels, index_sets=patient_map.values()),
+                partial(aggregate_labels, index_sets=patient_map.values()),
                 zip(*viewpoints[self.label_viewpoint])))).T.reshape(-1)
 
     def _binarize(self):
@@ -466,7 +490,7 @@ class TabularDataset():
             & (self.label_values <= label_bounds[1]), 1, 0)
 
     def _get_folds(self):
-        """Get the fold numbers for cross-validation."""
+        """Get the fold numbers for cross-validation (or train-validation)."""
 
         # Clamp the number of splits
         clamped_n_splits = min(self.splits, sum(self.label_values))
@@ -504,16 +528,23 @@ class TabularDataset():
     def _create_holdout(self):
         """Create the holdout dataset."""
 
-        # Clamp the holdout size
-        self.holdout = min(len(self.dataframe)-self.splits, self.holdout)
+        # Get the requested holdout size
+        requested = (
+            self.holdout if isinstance(self.holdout, int)
+            else int(self.holdout*len(self.dataframe)))
+
+        # Get the clamped size of the holdout set
+        holdout = max(
+            min(len(self.dataframe)-self.splits, requested), 2, self.splits)
 
         # Log a message about creating the holdout dataset
         get_logger().info(
-            "Creating holdout dataset with %s samples ...", self.holdout)
+            "Creating holdout dataset with %s samples (requested: %s) ...",
+            holdout, requested)
 
         # Get the training and holdout indices
         train_indices, holdout_indices = train_test_split(
-            arange(len(self.dataframe)), test_size=self.holdout,
+            arange(len(self.dataframe)), test_size=holdout,
             stratify=self.dataframe[self.label_name], random_state=42)
 
         # Get the holdout set
@@ -563,7 +594,7 @@ class TabularDataset():
                 'value': feature.value,
                 'class': 'Statics'}
 
-        # Log a message about the feature map build
+        # Log a message about building the feature map
         get_logger().info("Building the feature map ...")
 
         # Create a boolean mapping to the internal functions
@@ -606,8 +637,7 @@ class TabularDataset():
                 partial(validate_length, reference=2, sign='>=')
                 ),
             'holdout': (
-                partial(validate_type, options=(type(None), int)),
-                partial(validate_item, reference=inputs['splits'], sign='>=')
+                partial(validate_type, options=(type(None), float, int)),
                 ),
             'splits': (
                 partial(validate_type, options=int),
@@ -661,3 +691,19 @@ class TabularDataset():
                     raise ValueError(
                         "The tabular dataset parameter 'columns' does not "
                         "include exactly one item of type 'Label'!")
+
+            # Check if the key is 'holdout'
+            if key == 'holdout':
+
+                # Check if the value is a float
+                if isinstance(value, float):
+
+                    # Check if the value is outside the range
+                    validate_item(key, value, 0, '>')
+                    validate_item(key, value, 1, '<')
+
+                # Else, check if the value is an integer
+                elif isinstance(value, int):
+
+                    # Check if the value is smaller than the number of splits
+                    validate_item(key, value, inputs['splits'], '>=')

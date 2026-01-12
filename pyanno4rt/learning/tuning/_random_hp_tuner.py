@@ -49,7 +49,8 @@ class RandomHPTuner():
     evaluations : int, default=25
         Number of evaluation steps (trials).
 
-    score : {'AUC', 'Brier score', 'Logloss'}, default='AUC'
+    score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}, \
+        default='AUC'
         Scoring function for the hyperparameter set evaluation.
 
     Attributes
@@ -70,7 +71,7 @@ class RandomHPTuner():
     evaluations : int
         See 'Parameters'.
 
-    score : {'AUC', 'Brier score', 'Logloss'}
+    score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}
         See 'Parameters'.
 
     _step : int

@@ -7,7 +7,7 @@
 from pickle import dump, load
 from warnings import filterwarnings
 
-from numpy import ones
+from numpy import zeros
 from sklearn.tree import DecisionTreeClassifier
 
 # %% Internal package import
@@ -196,7 +196,7 @@ class DecisionTree(MachineLearningModel):
             Predictor gradient w.r.t the preprocessed features.
         """
 
-        return ones(preprocessed_features.shape[1])
+        return zeros(preprocessed_features.shape[1])
 
     def _load_predictor(self):
         """Load the predictor."""

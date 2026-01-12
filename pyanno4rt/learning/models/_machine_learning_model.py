@@ -157,6 +157,46 @@ class MachineLearningModel(ABC):
         self._reinspect = True
         self._reevaluate = True
 
+    @property
+    def reload_data(self):
+        return self._reload_data
+
+    @reload_data.setter
+    def reload_data(self, value):
+        self._reload_data = value
+
+    @property
+    def reset_calc(self):
+        return self._reset_calc
+
+    @reset_calc.setter
+    def reset_calc(self, value):
+        self._reset_calc = value
+
+    @property
+    def refit(self):
+        return self._refit
+
+    @refit.setter
+    def refit(self, value):
+        self._refit = value
+
+    @property
+    def reinspect(self):
+        return self._reinspect
+
+    @reinspect.setter
+    def reinspect(self, value):
+        self._reinspect = value
+
+    @property
+    def reevaluate(self):
+        return self._reevaluate
+
+    @reevaluate.setter
+    def reevaluate(self, value):
+        self._reevaluate = value
+
     def to_dict(self):
         """Serialize the model into a dictionary."""
 

@@ -36,7 +36,8 @@ def permutation_importances(model, score='AUC', permutations=20):
         :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
         The object used to represent the outcome model.
 
-    score : {'AUC', 'Brier score', 'Logloss'}, default='AUC'
+    score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}, \
+        default='AUC'
         Permutation importance score.
 
     permutations : int, default=20

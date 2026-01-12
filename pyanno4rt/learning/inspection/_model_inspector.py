@@ -25,7 +25,8 @@ class ModelInspector():
 
     Parameters
     ----------
-    pi_score : {'AUC', 'Brier score', 'Logloss'}, default='AUC'
+    pi_score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}, \
+        default='AUC'
         Permutation importance score.
 
     pi_permutations : int, default=20
@@ -34,9 +35,9 @@ class ModelInspector():
     Attributes
     ----------
     arguments : dict
-        Dictionary with the model input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
-    pi_score : {'AUC', 'Brier score', 'Logloss'}
+    pi_score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}
         See 'Parameters'.
 
     pi_permutations : int

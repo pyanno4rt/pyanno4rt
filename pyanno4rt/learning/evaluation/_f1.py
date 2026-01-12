@@ -29,8 +29,8 @@ def f1(true_labels, predicted_labels):
     Returns
     -------
     scores : dict
-        Dictionary with the full data and out-of-folds F1 scores and the \
-        location of the best score.
+        Dictionary with the full data and out-of-folds F1 scores as well as \
+        the location of the best score.
     """
 
     # Log a message about the F1 computation
@@ -44,7 +44,7 @@ def f1(true_labels, predicted_labels):
     # Loop over the dictionary elements
     for index, source in enumerate(scores):
 
-        # Get the thresholds from the PR curve
+        # Get the thresholds from the ´PR curve
         _, _, thresholds = precision_recall_curve(
             true_labels, predicted_labels[index])
 

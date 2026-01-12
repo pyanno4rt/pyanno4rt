@@ -44,7 +44,8 @@ class GridHPTuner():
         :class:`~pyanno4rt.learning.tuning.grids._tune_grid_dt.TuneGridDT`
         The object used to represent the hyperparameter search grid.
 
-    score : {'AUC', 'Brier score', 'Logloss'}, default='AUC'
+    score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}, \
+        default='AUC'
         Scoring function for the hyperparameter set evaluation.
 
     Attributes
@@ -62,7 +63,7 @@ class GridHPTuner():
         :class:`~pyanno4rt.learning.tuning.grids._tune_grid_dt.TuneGridDT`
         See 'Parameters'.
 
-    score : {'AUC', 'Brier score', 'Logloss'}
+    score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}
         See 'Parameters'.
 
     _step : int

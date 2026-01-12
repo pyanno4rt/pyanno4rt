@@ -25,7 +25,7 @@ class ModelEvaluator():
     Attributes
     ----------
     arguments : dict
-        Dictionary with the model input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
     results : dict
         Dictionary with the model evaluation results.
@@ -39,7 +39,7 @@ class ModelEvaluator():
         # Check the input arguments
         self.validate(self.arguments)
 
-        # Log a message about the initialization of the model evaluator
+        # Log a message about the initialization of the class
         get_logger().info("Initializing model evaluator ...")
 
         # Initialize the results dictionary
@@ -90,10 +90,10 @@ class ModelEvaluator():
             Arrays with the predicted full data and out-of-folds labels.
         """
 
-        # Calculate the PR-AUC scores
+        # Calculate the AUC-PR scores
         self.results['auc_pr'] = auc_pr(true_labels, predicted_labels)
 
-        # Calculate the ROC-AUC scores
+        # Calculate the AUC-ROC scores
         self.results['auc_roc'] = auc_roc(true_labels, predicted_labels)
 
         # Calculate the F1 scores
@@ -160,12 +160,12 @@ class ModelEvaluator():
             labels = model.dataset.label_values
             folds = model.dataset.folds
 
+        # Reduce the preprocessor
+        model.reduce_preprocessor()
+
         # Log a message about the full data prediction
         get_logger().info(
             "Yielding full data predictions for '%s' ...", model.label)
-
-        # Reduce the preprocessor
-        model.reduce_preprocessor()
 
         # Get the full data prediction
         full_prediction = model.predict(model.preprocess(features, labels)[0])
