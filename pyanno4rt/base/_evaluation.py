@@ -71,7 +71,14 @@ class Evaluation():
         self.reference_doses = reference_doses
 
     def to_dict(self):
-        """Serialize the object into a dictionary."""
+        """
+        Serialize the evaluation handler into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the evaluation handler's arguments.
+        """
 
         return vars(self)
 
@@ -80,12 +87,12 @@ class Evaluation():
             cls,
             dictionary):
         """
-        Deserialize the object from a dictionary.
+        Deserialize the evaluation handler from a dictionary.
 
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the evaluation parameters.
+            Dictionary with the evaluation handler's arguments.
 
         Returns
         -------

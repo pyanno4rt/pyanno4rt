@@ -47,7 +47,7 @@ class NaiveBayes(MachineLearningModel):
     tuner : None or object of class \
         :class:`~pyanno4rt.learning.tuning._bayes_hp_tuner.BayesHPTuner`\
         :class:`~pyanno4rt.learning.tuning._grid_hp_tuner.GridHPTuner`\
-        :class:`~pyanno4rt.learning.tuning._random_hp_tuner.RandomHPTuner`,\
+        :class:`~pyanno4rt.learning.tuning._randomized_hp_tuner.RandomizedHPTuner`,\
         default=None
         The object used to represent the hyperparameter tuner.
 
@@ -133,10 +133,10 @@ class NaiveBayes(MachineLearningModel):
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray
-            Values of the input labels.
+            Label values.
         """
 
         # Initialize the predictor
@@ -154,12 +154,12 @@ class NaiveBayes(MachineLearningModel):
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         Returns
         -------
         float or ndarray
-            Value(s) of the predicted label(s).
+            Predicted label value(s).
         """
 
         # Check if the feature array has only a single row
@@ -180,7 +180,7 @@ class NaiveBayes(MachineLearningModel):
         Parameters
         ----------
         preprocessed_features : ndarray
-            Values of the preprocessed input features.
+            Preprocessed feature values.
 
         Returns
         -------
@@ -219,7 +219,7 @@ class NaiveBayes(MachineLearningModel):
                 exp(joint_log_likelihood[i])
                 for i in range(number_of_classes)))
 
-        # Calculate the probability prediction from the model
+        # Calculate the model prediction
         prediction = exp(
             joint_log_likelihood[1][0] - logsumexp(joint_log_likelihood))
 

@@ -66,7 +66,14 @@ class ModelInspector():
         self.results = {}
 
     def to_dict(self):
-        """Serialize the model inspector into a dictionary."""
+        """
+        Serialize the model inspector into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the model inspector's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
@@ -83,7 +90,7 @@ class ModelInspector():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the model inspector parameters.
+            Dictionary with the model inspector's arguments.
 
         Returns
         -------

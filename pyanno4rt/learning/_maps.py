@@ -24,7 +24,7 @@ from pyanno4rt.learning.preprocessing import (
     IsolationForest, LocalOutlierFactor, MinimumCovarianceDeterminant,
     PrincipalComponentAnalysis, StandardScaler, Whitening)
 from pyanno4rt.learning.tuning import (
-    BayesHPTuner, GridHPTuner, RandomHPTuner, TuneGridDT, TuneGridKNN,
+    BayesHPTuner, GridHPTuner, RandomizedHPTuner, TuneGridDT, TuneGridKNN,
     TuneGridLR, TuneGridNB, TuneGridNN, TuneGridRF, TuneGridSVM, TuneSpaceDT,
     TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB, TuneSpaceNN, TuneSpaceRF,
     TuneSpaceSVM)
@@ -93,7 +93,7 @@ PREPROCESS_STEPS = {
 TUNERS = {
     'Bayes': BayesHPTuner,
     'Grid': GridHPTuner,
-    'Random': RandomHPTuner}
+    'Randomized': RandomizedHPTuner}
 
 TUNE_GRIDS = {
     'Decision Tree': TuneGridDT,

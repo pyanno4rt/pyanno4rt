@@ -204,7 +204,14 @@ class TabularDataset():
         self.holdout_set = None
 
     def to_dict(self):
-        """Serialize the dataset into a dictionary."""
+        """
+        Serialize the dataset into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the dataset's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
@@ -216,7 +223,7 @@ class TabularDataset():
             dictionary['columns'] = [
                 item.to_dict() for item in dictionary['columns']]
 
-        return dictionary|{'name': 'Tabular'}
+        return dictionary
 
     @classmethod
     def from_dict(
@@ -228,7 +235,7 @@ class TabularDataset():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the dataset parameters.
+            Dictionary with the dataset's arguments.
 
         Returns
         -------
@@ -246,7 +253,7 @@ class TabularDataset():
                 for item in dictionary['columns']
                 for key, value in item.items()]
 
-        return cls(**filter_dict(dictionary, remove_keys=('name',)))
+        return cls(**dictionary)
 
     def load(self):
         """Load the dataset."""

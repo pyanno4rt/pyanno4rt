@@ -50,7 +50,7 @@ class BayesHPTuner():
     Attributes
     ----------
     arguments : dict
-        Dictionary with the model input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
     space : object of class \
         :class:`~pyanno4rt.learning.tuning.spaces._tune_space_rf.TuneSpaceRF`\
@@ -68,7 +68,7 @@ class BayesHPTuner():
     score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}
         See 'Parameters'.
 
-    _step : int
+    _step : None or int
         Step counter.
     """
 
@@ -93,7 +93,14 @@ class BayesHPTuner():
         self._step = None
 
     def to_dict(self):
-        """Serialize the Bayesian hyperparameter tuner into a dictionary."""
+        """
+        Serialize the Bayesian hyperparameter tuner into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the tuner's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
@@ -101,7 +108,7 @@ class BayesHPTuner():
         # Serialize the tune space
         dictionary['space'] = self.space.to_dict()
 
-        return dictionary|{'name': 'Bayes'}
+        return {'Bayes': dictionary}
 
     @classmethod
     def from_dict(
@@ -113,7 +120,7 @@ class BayesHPTuner():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tuner parameters.
+            Dictionary with the tuner's arguments.
 
         Returns
         -------
@@ -122,10 +129,11 @@ class BayesHPTuner():
             The object used to represent the tuner.
         """
 
+        # Get the key and value
+        key, value = next(iter(dictionary['space'].items()))
+
         # Deserialize the tune space
-        dictionary['space'] = (
-            maps.TUNE_SPACES[dictionary['space'].pop('name')].from_dict(
-                dictionary['space']))
+        dictionary['space'] = maps.TUNE_SPACES[key].from_dict(value)
 
         return cls(**dictionary)
 
@@ -151,10 +159,10 @@ class BayesHPTuner():
             The object used to represent the tunable model.
 
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray
-            Values of the input labels.
+            Label values.
 
         folds : ndarray
             Fold numbers for cross-validation.

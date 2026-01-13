@@ -1,4 +1,4 @@
-"""Brier score loss."""
+"""Brier loss."""
 
 # Author: Tim Ortkamp
 
@@ -11,7 +11,7 @@ from sklearn.metrics import brier_score_loss
 
 def brier_loss(true_labels, predicted_labels):
     """
-    Compute the Brier score loss.
+    Compute the Brier loss.
 
     Parameters
     ----------
@@ -24,7 +24,7 @@ def brier_loss(true_labels, predicted_labels):
     Returns
     -------
     float
-        Brier score loss value.
+        Brier loss value.
     """
 
     return brier_score_loss(true_labels, predicted_labels)

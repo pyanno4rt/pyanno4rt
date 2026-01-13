@@ -103,9 +103,16 @@ class TuneGridSVM():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune grid into a dictionary."""
+        """
+        Serialize the tune grid into a dictionary.
 
-        return vars(self)|{'name': 'Support Vector Machine'}
+        Returns
+        -------
+        dict
+            Dictionary with the tune grid's arguments.
+        """
+
+        return {'Support Vector Machine': vars(self)}
 
     @classmethod
     def from_dict(
@@ -117,7 +124,7 @@ class TuneGridSVM():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune grid parameters.
+            Dictionary with the tune grid's arguments.
 
         Returns
         -------

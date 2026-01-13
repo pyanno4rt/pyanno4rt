@@ -51,7 +51,7 @@ class GridHPTuner():
     Attributes
     ----------
     arguments : dict
-        Dictionary with the model input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
     grid : object of class \
         :class:`~pyanno4rt.learning.tuning.grids._tune_grid_rf.TuneGridRF`\
@@ -66,10 +66,10 @@ class GridHPTuner():
     score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}
         See 'Parameters'.
 
-    _step : int
+    _step : None or int
         Step counter.
 
-    _current_best_loss : float
+    _current_best_loss : None or float
         Current best value of the loss function.
     """
 
@@ -95,7 +95,14 @@ class GridHPTuner():
         self._current_best_loss = None
 
     def to_dict(self):
-        """Serialize the hyperparameter tuner into a dictionary."""
+        """
+        Serialize the hyperparameter tuner into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the tuner's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
@@ -103,7 +110,7 @@ class GridHPTuner():
         # Serialize the tune grid
         dictionary['grid'] = self.grid.to_dict()
 
-        return dictionary|{'name': 'Grid'}
+        return {'Grid': dictionary}
 
     @classmethod
     def from_dict(
@@ -115,7 +122,7 @@ class GridHPTuner():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tuner parameters.
+            Dictionary with the tuner's arguments.
 
         Returns
         -------
@@ -124,10 +131,11 @@ class GridHPTuner():
             The object used to represent the tuner.
         """
 
+        # Get the key and value
+        key, value = next(iter(dictionary['grid'].items()))
+
         # Deserialize the tune grid
-        dictionary['grid'] = (
-            maps.TUNE_GRIDS[dictionary['grid'].pop('name')].from_dict(
-                dictionary['grid']))
+        dictionary['grid'] = maps.TUNE_GRIDS[key].from_dict(value)
 
         return cls(**dictionary)
 
@@ -153,10 +161,10 @@ class GridHPTuner():
             The object used to represent the tunable model.
 
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray
-            Values of the input labels.
+            Label values.
 
         folds : ndarray
             Fold numbers for cross-validation.

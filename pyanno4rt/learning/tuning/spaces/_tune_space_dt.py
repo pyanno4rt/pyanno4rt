@@ -129,9 +129,16 @@ class TuneSpaceDT():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """
+        Serialize the tune space into a dictionary.
 
-        return vars(self)|{'name': 'Decision Tree'}
+        Returns
+        -------
+        dict
+            Dictionary with the tune space's arguments.
+        """
+
+        return {'Decision Tree': vars(self)}
 
     @classmethod
     def from_dict(
@@ -143,7 +150,7 @@ class TuneSpaceDT():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune space's arguments.
 
         Returns
         -------

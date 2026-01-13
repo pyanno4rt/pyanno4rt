@@ -29,10 +29,10 @@ class DynamicFeature():
     column : str
         Name of the feature.
 
-    segment : None or str
+    segment : str
         Segment associated with the feature.
 
-    function : None or str
+    function : str
         Name of the (re)calculation function.
 
     argument : None, int, float or str, default=None
@@ -46,10 +46,10 @@ class DynamicFeature():
     column : str
         See 'Parameters'.
 
-    segment : None or str
+    segment : str
         See 'Parameters'.
 
-    function : None or str
+    function : str
         See 'Parameters'.
 
     argument : None, int, float or str
@@ -84,7 +84,14 @@ class DynamicFeature():
         self.scale = scale
 
     def to_dict(self):
-        """Serialize the feature into a dictionary."""
+        """
+        Serialize the feature into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the feature's arguments.
+        """
 
         return {'Dynamic Feature': vars(self)}
 
@@ -98,7 +105,7 @@ class DynamicFeature():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the feature parameters.
+            Dictionary with the feature's arguments.
 
         Returns
         -------
@@ -121,7 +128,7 @@ class DynamicFeature():
             Dictionary with the mappings between argument names and values.
         """
 
-        # Get the validation functions for the function argument
+        # Get the validation functions for the 'function' argument
         argument_map = {
             'Dose Gradient': (
                 partial(validate_type, options=str),
@@ -149,7 +156,7 @@ class DynamicFeature():
                 partial(validate_item, reference=0, sign='>'),
                 partial(validate_item, reference=100, sign='<')
                 ),
-            'other': (
+            'none': (
                 partial(validate_type, options=type(None)),
                 )
             }
@@ -170,7 +177,7 @@ class DynamicFeature():
                 inputs['function'] if inputs['function'] in (
                     'Dx', 'Vx', 'Dose Gradient', 'Dose Moment',
                     'Dose Subvolume')
-                else 'other'
+                else 'none'
                 ],
             'scale': (
                 partial(validate_type, options=str),
@@ -201,7 +208,7 @@ class StaticFeature():
     column : str
         Name of the feature.
 
-    value : None, int, float or str
+    value : int, float or str
         Static feature value.
 
     scale : {'metric', 'nominal', 'ordinal'}, default='metric'
@@ -212,7 +219,7 @@ class StaticFeature():
     column : str
         See 'Parameters'.
 
-    value : None, int, float or str
+    value : int, float or str
         See 'Parameters'.
 
     scale : {'metric', 'nominal', 'ordinal'}
@@ -240,7 +247,14 @@ class StaticFeature():
         self.scale = scale
 
     def to_dict(self):
-        """Serialize the feature into a dictionary."""
+        """
+        Serialize the feature into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the feature's arguments.
+        """
 
         return {'Static Feature': vars(self)}
 
@@ -254,7 +268,7 @@ class StaticFeature():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the feature parameters.
+            Dictionary with the feature's arguments.
 
         Returns
         -------
@@ -362,7 +376,14 @@ class Label():
         self.bounds = list(bounds)
 
     def to_dict(self):
-        """Serialize the label into a dictionary."""
+        """
+        Serialize the label into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the label's arguments.
+        """
 
         return {'Label': vars(self)}
 
@@ -376,7 +397,7 @@ class Label():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the label parameters.
+            Dictionary with the label's arguments.
 
         Returns
         -------

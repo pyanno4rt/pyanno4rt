@@ -49,10 +49,6 @@ def feature_sensitivities(model):
 
         return preprocessing_gradient @ predictor_gradient
 
-    # Log a message about computing the feature sensitivities
-    get_logger().info(
-        "Computing feature sensitivities for '%s' ...", model.label)
-
     # Check if a holdout dataset is available
     if model.dataset.holdout_set is not None:
 
@@ -63,6 +59,10 @@ def feature_sensitivities(model):
 
         # Get the training feature values
         features = model.dataset.feature_values
+
+    # Log a message about computing the feature sensitivities
+    get_logger().info(
+        "Computing feature sensitivities for '%s' ...", model.label)
 
     # Calculate the feature sensitivities
     sensitivities = vstack([calculate(atleast_2d(row)) for row in features])

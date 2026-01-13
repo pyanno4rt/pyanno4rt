@@ -24,7 +24,7 @@ def auc_loss(true_labels, predicted_labels):
     Returns
     -------
     float
-        Brier score loss value.
+        AUC loss value.
     """
 
     return -roc_auc_score(true_labels, predicted_labels)

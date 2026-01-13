@@ -1,4 +1,4 @@
-"""Random search hyperparameter tuning."""
+"""Randomized search hyperparameter tuning."""
 
 # Author: Tim Ortkamp
 
@@ -28,11 +28,11 @@ filterwarnings(action='ignore')
 # %% Class definition
 
 
-class RandomHPTuner():
+class RandomizedHPTuner():
     """
-    Random search hyperparameter tuning class.
+    Randomized search hyperparameter tuning class.
 
-    This class implements methods to perform random hyperparameter tuning.
+    This class implements methods to perform randomized hyperparameter tuning.
 
     Parameters
     ----------
@@ -56,7 +56,7 @@ class RandomHPTuner():
     Attributes
     ----------
     arguments : dict
-        Dictionary with the model input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
     space : object of class \
         :class:`~pyanno4rt.learning.tuning.spaces._tune_space_rf.TuneSpaceRF`\
@@ -74,10 +74,10 @@ class RandomHPTuner():
     score : {'AUC', 'BCE', 'Brier', 'Dice', 'Focal BCE', 'KLD', 'Hinge'}
         See 'Parameters'.
 
-    _step : int
+    _step : None or int
         Step counter.
 
-    _current_best_loss : float
+    _current_best_loss : None or float
         Current best value of the loss function.
     """
 
@@ -105,7 +105,14 @@ class RandomHPTuner():
         self._current_best_loss = None
 
     def to_dict(self):
-        """Serialize the hyperparameter tuner into a dictionary."""
+        """
+        Serialize the hyperparameter tuner into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the tuner's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
@@ -113,7 +120,7 @@ class RandomHPTuner():
         # Serialize the tune space
         dictionary['space'] = self.space.to_dict()
 
-        return dictionary|{'name': 'Random'}
+        return {'Randomized': dictionary}
 
     @classmethod
     def from_dict(
@@ -125,19 +132,20 @@ class RandomHPTuner():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tuner parameters.
+            Dictionary with the tuner's arguments.
 
         Returns
         -------
         object of class \
-            :class:`~pyanno4rt.learning.tuning._random_hp_tuner.RandomHPTuner`
+            :class:`~pyanno4rt.learning.tuning._randomized_hp_tuner.RandomizedHPTuner`
             The object used to represent the tuner.
         """
 
+        # Get the key and value
+        key, value = next(iter(dictionary['space'].items()))
+
         # Deserialize the tune space
-        dictionary['space'] = (
-            maps.TUNE_SPACES[dictionary['space'].pop('name')].from_dict(
-                dictionary['space']))
+        dictionary['space'] = maps.TUNE_SPACES[key].from_dict(value)
 
         return cls(**dictionary)
 
@@ -163,10 +171,10 @@ class RandomHPTuner():
             The object used to represent the tunable model.
 
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray
-            Values of the input labels.
+            Label values.
 
         folds : ndarray
             Fold numbers for cross-validation.
@@ -250,7 +258,7 @@ class RandomHPTuner():
 
         # Log a message about the hyperparameter tuning
         get_logger().info(
-            "Performing random hyperparameter search with %s-fold "
+            "Performing randomized hyperparameter search with %s-fold "
             "cross-validation and %s repeat(s) ...",
             len(unique(folds)), folds.shape[1])
 

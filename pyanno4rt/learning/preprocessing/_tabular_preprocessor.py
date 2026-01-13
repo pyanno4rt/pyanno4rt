@@ -12,8 +12,7 @@ from numpy import matmul
 
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.tools import filter_dict
-from pyanno4rt.validation import (
-    validate_item_in_set, validate_subtype, validate_type)
+from pyanno4rt.validation import validate_subtype, validate_type
 
 # %% Class definition
 
@@ -24,21 +23,35 @@ class TabularPreprocessor():
 
     Parameters
     ----------
-    steps : list
-        Labels for the preprocessing algorithms.
+    pipeline : list
+        The objects used to represent the steps in the preprocessing pipeline.
+
+        Currently available:
+
+        - :class:`~pyanno4rt.learning.preprocessing.cleaning._isolation_forest.IsolationForest`
+
+        - :class:`~pyanno4rt.learning.preprocessing.cleaning._local_outlier_factor.LocalOutlierFactor`
+
+        - :class:`~pyanno4rt.learning.preprocessing.cleaning._minimum_covariance_determinant.MinimumCovarianceDeterminant`
+
+        - :class:`~pyanno4rt.learning.preprocessing.reduction._principal_component_analysis.PrincipalComponentAnalysis`
+
+        - :class:`~pyanno4rt.learning.preprocessing.cleaning._standard_scaler.StandardScaler`
+
+        - :class:`~pyanno4rt.learning.preprocessing.cleaning._whitening.Whitening`
 
     Attributes
     ----------
     arguments : dict
-        Dictionary with the model input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
-    steps : list
-        Preprocessing steps.
+    pipeline : list
+        See 'Parameters'.
     """
 
     def __init__(
             self,
-            steps):
+            pipeline):
 
         # Get the input arguments
         self.arguments = filter_dict(vars(), remove_keys=('self',))
@@ -46,16 +59,27 @@ class TabularPreprocessor():
         # Check the input arguments
         self.validate(self.arguments)
 
-        # Get the preprocessing steps
-        self.steps = [maps.PREPROCESS_STEPS[label]() for label in steps]
+        # Get the preprocessing pipeline
+        self.pipeline = pipeline
 
     def to_dict(self):
-        """Serialize the preprocessor into a dictionary."""
+        """
+        Serialize the preprocessor into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the preprocessor's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
 
-        return dictionary|{'name': 'Tabular'}
+        # Serialize the pipeline
+        dictionary['pipeline'] = [
+            item.to_dict() for item in dictionary['pipeline']]
+
+        return dictionary
 
     @classmethod
     def from_dict(
@@ -67,7 +91,7 @@ class TabularPreprocessor():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the preprocessor parameters.
+            Dictionary with the preprocessor's arguments.
 
         Returns
         -------
@@ -76,7 +100,13 @@ class TabularPreprocessor():
             The object used to represent the preprocessor.
         """
 
-        return cls(**filter_dict(dictionary, remove_keys=('name',)))
+        # Deserialize the pipeline
+        dictionary['pipeline'] = [
+            maps.PREPROCESS_STEPS[key].from_dict(value)
+            for item in dictionary['pipeline']
+            for key, value in item.items()]
+
+        return cls(**dictionary)
 
     def fit(
             self,
@@ -88,14 +118,14 @@ class TabularPreprocessor():
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray, default=None
-            Values of the input labels.
+            Label values.
         """
 
         # Loop over the preprocessing steps
-        for step in self.steps:
+        for step in self.pipeline:
 
             # Fit the algorithm
             step.fit(features, labels)
@@ -108,27 +138,27 @@ class TabularPreprocessor():
             features,
             labels=None):
         """
-        Transform the input features/labels.
+        Transform the features and labels.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray, default=None
-            Values of the input labels.
+            Label values.
 
         Returns
         -------
         ndarray
-            Transformed values of the input features.
+            Transformed feature values.
 
         None or ndarray
-            Transformed values of the input labels.
+            Transformed label values.
         """
 
         # Loop over the preprocessing steps
-        for step in self.steps:
+        for step in self.pipeline:
 
             # Transform the features and labels
             features, labels = step.transform(features, labels)
@@ -140,27 +170,27 @@ class TabularPreprocessor():
             features,
             labels=None):
         """
-        Fit the preprocessor and transform the input features/labels.
+        Fit the preprocessor and transform the features and labels.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray, default=None
-            Values of the input labels.
+            Label values.
 
         Returns
         -------
         ndarray
-            Transformed values of the input features.
+            Transformed feature values.
 
         None or ndarray
-            Transformed values of the input labels.
+            Transformed label values.
         """
 
         # Loop over the preprocessing steps
-        for step in self.steps:
+        for step in self.pipeline:
 
             # Fit the algorithm
             step.fit(features, labels)
@@ -174,24 +204,24 @@ class TabularPreprocessor():
             self,
             features):
         """
-        Compute the preprocessing gradient w.r.t the input features.
+        Calculate the preprocessing gradient w.r.t the features.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         Returns
         -------
         ndarray
-            Value of the preprocessing gradient.
+            Preprocessing gradient w.r.t the features.
         """
 
         # Get the step-wise gradients
         gradients = tuple(
-            step.compute_gradient(features) for step in self.steps
-            if hasattr(step, 'compute_gradient') and callable(
-                    step.compute_gradient))
+            step.compute_gradient(features) for step in self.pipeline
+            if hasattr(step, 'compute_gradient')
+            and callable(step.compute_gradient))
 
         return reduce(matmul, gradients)
 
@@ -202,8 +232,8 @@ class TabularPreprocessor():
         out_classes = ('outlier_removal',)
 
         # Reduce the preprocessing steps
-        self.steps = [
-            step for step in self.steps if step._classifier not in out_classes]
+        self.pipeline = [
+            step for step in self.pipeline if step.kind not in out_classes]
 
     def validate(
             self,
@@ -218,11 +248,10 @@ class TabularPreprocessor():
         """
 
         validation_map = {
-            'steps': (
+            'pipeline': (
                 partial(validate_type, options=list),
-                partial(validate_subtype, options=str),
-                partial(validate_item_in_set, options=(
-                    *maps.PREPROCESS_STEPS,))
+                partial(validate_subtype, options=(
+                    *maps.PREPROCESS_STEPS.values(),))
                 )
             }
 

@@ -96,7 +96,7 @@ class FeatureCalculator():
             functions.
 
         return_self : bool, default=False
-            Indicator for returning the feature calculator instance.
+            Indicator for returning the instance.
 
         verbose : bool, default=True
             Indicator for logging output messages.

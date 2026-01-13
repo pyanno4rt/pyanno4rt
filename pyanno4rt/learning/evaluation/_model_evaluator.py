@@ -46,7 +46,14 @@ class ModelEvaluator():
         self.results = {}
 
     def to_dict(self):
-        """Serialize the model evaluator into a dictionary."""
+        """
+        Serialize the model evaluator into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the model evaluator's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
@@ -63,7 +70,7 @@ class ModelEvaluator():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the model evaluator parameters.
+            Dictionary with the model evaluator's arguments.
 
         Returns
         -------

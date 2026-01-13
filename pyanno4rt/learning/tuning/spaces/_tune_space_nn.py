@@ -114,9 +114,16 @@ class TuneSpaceNN():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """
+        Serialize the tune space into a dictionary.
 
-        return vars(self)|{'name': 'Neural Network'}
+        Returns
+        -------
+        dict
+            Dictionary with the tune space's arguments.
+        """
+
+        return {'Neural Network': vars(self)}
 
     @classmethod
     def from_dict(
@@ -128,7 +135,7 @@ class TuneSpaceNN():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune space's arguments.
 
         Returns
         -------

@@ -126,7 +126,14 @@ class Configuration():
         self.number_of_fractions = number_of_fractions
 
     def to_dict(self):
-        """Serialize the object into a dictionary."""
+        """
+        Serialize the configuration handler into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the configuration handler's arguments.
+        """
 
         return vars(self)
 
@@ -135,12 +142,12 @@ class Configuration():
             cls,
             dictionary):
         """
-        Deserialize the object from a dictionary.
+        Deserialize the configuration handler from a dictionary.
 
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the configuration parameters.
+            Dictionary with the configuration handler's arguments.
 
         Returns
         -------

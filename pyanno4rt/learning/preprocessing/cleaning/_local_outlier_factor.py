@@ -4,7 +4,13 @@
 
 # %% External package import
 
+from functools import partial
 from sklearn.neighbors import LocalOutlierFactor as ScikitLOF
+
+# %% Internal package import
+
+from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import validate_item, validate_type
 
 # %% Class definition
 
@@ -13,13 +19,28 @@ class LocalOutlierFactor():
     """
     Local outlier factor (LOF) class.
 
-    This class provides methods to fit a LOF detector and transform the input \
-    features and labels.
+    This class provides methods to fit a LOF detector as well as transform \
+    input features and labels.
+
+    Parameters
+    ----------
+    n_neighbors : int, default=20
+        Number of neighbors.
+
+    p : float, default=2
+        Parameter for the Minkowski metric. For details, see \
+        :class:`~sklearn.neighbors.LocalOutlierFactor`.
 
     Attributes
     ----------
-    _classifier : str
-        String indicating the preprocessing class.
+    _name : str
+        Name of the preprocessing algorithm.
+
+    _kind : str
+        Type of preprocessing algorithm.
+
+    arguments : dict
+        Dictionary with the input arguments (for serialization).
 
     hyperparameters : dict
         Dictionary with the model hyperparameters.
@@ -28,18 +49,30 @@ class LocalOutlierFactor():
         The object used to represent the LOF detector.
     """
 
-    def __init__(self):
+    # Set the algorithm name
+    _name = 'LOF'
 
-        # Initialize the algorithm classifier
-        self._classifier = 'outlier_removal'
+    # Set the algorithm type
+    _kind = 'outlier_removal'
+
+    def __init__(
+            self,
+            n_neighbors=20,
+            p=2):
+
+        # Get the input arguments
+        self.arguments = filter_dict(vars(), remove_keys=('self',))
+
+        # Check the input arguments
+        self.validate(self.arguments)
 
         # Initialize the hyperparameters
         self.hyperparameters = {
-            'n_neighbors': 20,
+            'n_neighbors': n_neighbors,
             'algorithm': 'auto',
             'leaf_size': 30,
             'metric': 'minkowski',
-            'p': 2,
+            'p': p,
             'metric_params': None,
             'contamination': 'auto',
             'novelty': True,
@@ -47,6 +80,49 @@ class LocalOutlierFactor():
 
         # Initialize the LOF detector
         self.model = ScikitLOF(**self.hyperparameters)
+
+    @property
+    def name(self):
+        """Get the algorithm name."""
+        return self._name
+
+    @property
+    def kind(self):
+        """Get the algorithm type."""
+        return self._kind
+
+    def to_dict(self):
+        """
+        Serialize the LOF detector into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the detector's arguments.
+        """
+
+        return {self._name: self.arguments}
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the LOF detector from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the detector's arguments.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.preprocessing.cleaning._local_outlier_factor.LocalOutlierFactor`
+            The object used to represent the LOF detector.
+        """
+
+        return cls(**dictionary)
 
     def fit(
             self,
@@ -59,6 +135,12 @@ class LocalOutlierFactor():
         ----------
         features : ndarray
             Feature values.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.preprocessing.cleaning._local_outlier_factor.LocalOutlierFactor`
+            Reference to the instance (self).
         """
 
         # Fit the LOF detector
@@ -90,7 +172,7 @@ class LocalOutlierFactor():
             (Transformed) label values.
         """
 
-        # Get the inliers (= 1) and outliers (= -1)
+        # Get the inliers (=1) and outliers (=-1)
         predictions = self.model.predict(features)
 
         # Get the filter mask
@@ -132,3 +214,35 @@ class LocalOutlierFactor():
         """
 
         return self.fit(features, labels).transform(features, labels)
+
+    def validate(
+            self,
+            inputs):
+        """
+        Validate the input arguments.
+
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the mappings between argument names and values.
+        """
+
+        validation_map = {
+            'n_neighbors': (
+                partial(validate_type, options=int),
+                partial(validate_item, reference=1, sign='>=')
+                ),
+            'p': (
+                partial(validate_type, options=float),
+                partial(validate_item, reference=0, sign='>')
+                ),
+            }
+
+        # Loop over the dictionary items
+        for key, value in inputs.items():
+
+            # Loop over the validation functions
+            for function in validation_map[key]:
+
+                # Run the validation function
+                function(key, value)

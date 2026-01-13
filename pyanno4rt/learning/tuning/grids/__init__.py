@@ -4,7 +4,7 @@ Tune grids module.
 ==================================================================
 
 The module aims to provide methods and classes for setting up the search \
-grids for the grid-based hyperparameter tuning of the learning models.
+grids for the grid-based hyperparameter tuner.
 """
 
 # Author: Tim Ortkamp

@@ -61,7 +61,7 @@ class LogisticRegressionOutcome(MachineLearningComponent):
     Attributes
     ----------
     arguments : dict
-        Dictionary with the component input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
     Notes
     -----
@@ -103,7 +103,14 @@ class LogisticRegressionOutcome(MachineLearningComponent):
             locals(), remove_keys=('self', '__class__'))
 
     def to_dict(self):
-        """Serialize the component into a dictionary."""
+        """
+        Serialize the component into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the component's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
@@ -123,7 +130,7 @@ class LogisticRegressionOutcome(MachineLearningComponent):
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the component parameters.
+            Dictionary with the component's arguments.
 
         Returns
         -------

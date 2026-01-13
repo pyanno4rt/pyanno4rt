@@ -13,7 +13,7 @@ from tensorflow.keras.utils import disable_interactive_logging
 import pyanno4rt.learning._maps as maps
 from pyanno4rt.logging import get_logger
 
-# %% Configuration
+# %% Set package options
 
 disable_interactive_logging()
 
@@ -74,17 +74,12 @@ def permutation_importances(model, score='AUC', permutations=20):
         return nan_to_num(importance['importances'].T)
 
     def score_model(wrapper, features, true_labels):
-        """Score a model's prediction."""
+        """Score a model's predictions."""
 
         # Transform the labels
         _, true_labels = wrapper.model.preprocess(features, true_labels)
 
         return scorer(true_labels, atleast_1d(wrapper.predict(features)))
-
-    # Log a message about computing the full data permutation importance
-    get_logger().info(
-        "Computing full data permutation importances for '%s' with %s "
-        "permutations ...", model.label, permutations)
 
     # Check if a holdout dataset is available
     if model.dataset.holdout_set is not None:
@@ -106,6 +101,11 @@ def permutation_importances(model, score='AUC', permutations=20):
 
     # Wrap the model
     wrapped_model = ModelWrapper(model)
+
+    # Log a message about computing the full data permutation importance
+    get_logger().info(
+        "Computing full data permutation importances for '%s' with %s "
+        "permutations ...", model.label, permutations)
 
     # Compute the full data permutation importances
     full_importances = permutation_importance(

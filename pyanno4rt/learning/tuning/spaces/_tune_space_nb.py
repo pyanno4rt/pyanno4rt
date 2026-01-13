@@ -72,9 +72,16 @@ class TuneSpaceNB():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """
+        Serialize the tune space into a dictionary.
 
-        return vars(self)|{'name': 'Naive Bayes'}
+        Returns
+        -------
+        dict
+            Dictionary with the tune space's arguments.
+        """
+
+        return {'Naive Bayes': vars(self)}
 
     @classmethod
     def from_dict(
@@ -86,7 +93,7 @@ class TuneSpaceNB():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune space's arguments.
 
         Returns
         -------

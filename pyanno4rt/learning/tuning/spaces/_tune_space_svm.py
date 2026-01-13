@@ -104,9 +104,16 @@ class TuneSpaceSVM():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """
+        Serialize the tune space into a dictionary.
 
-        return vars(self)|{'name': 'Support Vector Machine'}
+        Returns
+        -------
+        dict
+            Dictionary with the tune space's arguments.
+        """
+
+        return {'Support Vector Machine': vars(self)}
 
     @classmethod
     def from_dict(
@@ -118,7 +125,7 @@ class TuneSpaceSVM():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune space's arguments.
 
         Returns
         -------

@@ -89,9 +89,16 @@ class TuneSpaceLR():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune space into a dictionary."""
+        """
+        Serialize the tune space into a dictionary.
 
-        return vars(self)|{'name': 'Logistic Regression'}
+        Returns
+        -------
+        dict
+            Dictionary with the tune space's arguments.
+        """
+
+        return {'Logistic Regression': vars(self)}
 
     @classmethod
     def from_dict(
@@ -103,7 +110,7 @@ class TuneSpaceLR():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune space parameters.
+            Dictionary with the tune space's arguments.
 
         Returns
         -------

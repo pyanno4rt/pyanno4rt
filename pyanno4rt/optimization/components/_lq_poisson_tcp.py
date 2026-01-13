@@ -63,7 +63,7 @@ class LQPoissonTCP(RadiobiologicalComponent):
     Attributes
     ----------
     arguments : dict
-        Dictionary with the component input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
     Notes
     -----
@@ -110,7 +110,14 @@ class LQPoissonTCP(RadiobiologicalComponent):
         self.bounds = [-self.reverse(bound) for bound in self.bounds]
 
     def to_dict(self):
-        """Serialize the component into a dictionary."""
+        """
+        Serialize the component into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the component's arguments.
+        """
 
         return {self.name: self.arguments}
 
@@ -124,7 +131,7 @@ class LQPoissonTCP(RadiobiologicalComponent):
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the component parameters.
+            Dictionary with the component's arguments.
 
         Returns
         -------

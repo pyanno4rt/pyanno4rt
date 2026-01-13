@@ -44,7 +44,7 @@ class DecisionTree(MachineLearningModel):
     tuner : None or object of class \
         :class:`~pyanno4rt.learning.tuning._bayes_hp_tuner.BayesHPTuner`\
         :class:`~pyanno4rt.learning.tuning._grid_hp_tuner.GridHPTuner`\
-        :class:`~pyanno4rt.learning.tuning._random_hp_tuner.RandomHPTuner`,\
+        :class:`~pyanno4rt.learning.tuning._randomized_hp_tuner.RandomizedHPTuner`,\
         default=None
         The object used to represent the hyperparameter tuner.
 
@@ -141,10 +141,10 @@ class DecisionTree(MachineLearningModel):
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray
-            Values of the input labels.
+            Label values.
         """
 
         # Initialize the predictor
@@ -157,17 +157,17 @@ class DecisionTree(MachineLearningModel):
             self,
             features):
         """
-        Predict the label values.
+        Predict the label value(s).
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         Returns
         -------
         float or ndarray
-            Value(s) of the predicted label(s).
+            Predicted label value(s).
         """
 
         # Check if the feature array has only a single row
@@ -188,7 +188,7 @@ class DecisionTree(MachineLearningModel):
         Parameters
         ----------
         preprocessed_features : ndarray
-            Values of the preprocessed input features.
+            Preprocessed feature values.
 
         Returns
         -------

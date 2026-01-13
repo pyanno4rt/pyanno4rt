@@ -225,7 +225,14 @@ class ConventionalComponent(metaclass=ABCMeta):
 
     @abstractmethod
     def to_dict(self):
-        """Serialize the component into a dictionary."""
+        """
+        Serialize the component into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the component's arguments.
+        """
 
     @classmethod
     @abstractmethod
@@ -238,7 +245,7 @@ class ConventionalComponent(metaclass=ABCMeta):
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the component parameters.
+            Dictionary with the component's arguments.
 
         Returns
         -------

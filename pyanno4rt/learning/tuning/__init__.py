@@ -11,7 +11,7 @@ hyperparameters.
 
 from ._bayes_hp_tuner import BayesHPTuner
 from ._grid_hp_tuner import GridHPTuner
-from ._random_hp_tuner import RandomHPTuner
+from ._randomized_hp_tuner import RandomizedHPTuner
 
 from .grids import (
     TuneGridDT, TuneGridKNN, TuneGridLR, TuneGridNB, TuneGridNN, TuneGridRF,
@@ -23,7 +23,7 @@ from .spaces import (
 __all__ = [
     'BayesHPTuner',
     'GridHPTuner',
-    'RandomHPTuner',
+    'RandomizedHPTuner',
     'TuneGridDT',
     'TuneGridKNN',
     'TuneGridLR',

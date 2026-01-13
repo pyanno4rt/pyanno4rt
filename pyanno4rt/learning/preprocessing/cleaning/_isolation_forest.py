@@ -4,7 +4,13 @@
 
 # %% External package import
 
+from functools import partial
 from sklearn.ensemble import IsolationForest as ScikitIsoForest
+
+# %% Internal package import
+
+from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import validate_item, validate_type
 
 # %% Class definition
 
@@ -13,13 +19,24 @@ class IsolationForest():
     """
     Isolation forest class.
 
-    This class provides methods to fit an isolation forest and transform the \
-    input features and labels.
+    This class provides methods to fit an isolation forest as well as \
+    transform input features and labels.
+
+    Parameters
+    ----------
+    n_estimators : int, default=100
+        Number of base estimators.
 
     Attributes
     ----------
-    _classifier : str
-        String indicating the preprocessing class.
+    _name : str
+        Name of the preprocessing algorithm.
+
+    _kind : str
+        Type of preprocessing algorithm.
+
+    arguments : dict
+        Dictionary with the input arguments (for serialization).
 
     hyperparameters : dict
         Dictionary with the model hyperparameters.
@@ -28,14 +45,25 @@ class IsolationForest():
         The object used to represent the isolation forest.
     """
 
-    def __init__(self):
+    # Set the algorithm name
+    _name = 'IsolationForest'
 
-        # Initialize the algorithm classifier
-        self._classifier = 'outlier_removal'
+    # Set the algorithm type
+    _kind = 'outlier_removal'
+
+    def __init__(
+            self,
+            n_estimators=100):
+
+        # Get the input arguments
+        self.arguments = filter_dict(vars(), remove_keys=('self',))
+
+        # Check the input arguments
+        self.validate(self.arguments)
 
         # Initialize the hyperparameters
         self.hyperparameters = {
-            'n_estimators': 100,
+            'n_estimators': n_estimators,
             'max_samples': 'auto',
             'contamination': 'auto',
             'max_features': 1.0,
@@ -48,6 +76,49 @@ class IsolationForest():
         # Initialize the isolation forest
         self.model = ScikitIsoForest(**self.hyperparameters)
 
+    @property
+    def name(self):
+        """Get the algorithm name."""
+        return self._name
+
+    @property
+    def kind(self):
+        """Get the algorithm type."""
+        return self._kind
+
+    def to_dict(self):
+        """
+        Serialize the isolation forest into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the forest's arguments.
+        """
+
+        return {self._name: self.arguments}
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the isolation forest from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the forest's arguments.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.preprocessing.cleaning._isolation_forest.IsolationForest`
+            The object used to represent the isolation forest.
+        """
+
+        return cls(**dictionary)
+
     def fit(
             self,
             features,
@@ -59,6 +130,12 @@ class IsolationForest():
         ----------
         features : ndarray
             Feature values.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.preprocessing.cleaning._isolation_forest.IsolationForest`
+            Reference to the instance (self).
         """
 
         # Fit the isolation forest
@@ -90,7 +167,7 @@ class IsolationForest():
             (Transformed) label values.
         """
 
-        # Get the inliers (= 1) and outliers (= -1)
+        # Get the inliers (=1) and outliers (=-1)
         predictions = self.model.predict(features)
 
         # Get the filter mask
@@ -132,3 +209,31 @@ class IsolationForest():
         """
 
         return self.fit(features, labels).transform(features, labels)
+
+    def validate(
+            self,
+            inputs):
+        """
+        Validate the input arguments.
+
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the mappings between argument names and values.
+        """
+
+        validation_map = {
+            'n_estimators': (
+                partial(validate_type, options=int),
+                partial(validate_item, reference=1, sign='>=')
+                )
+            }
+
+        # Loop over the dictionary items
+        for key, value in inputs.items():
+
+            # Loop over the validation functions
+            for function in validation_map[key]:
+
+                # Run the validation function
+                function(key, value)

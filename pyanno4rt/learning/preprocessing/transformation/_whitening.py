@@ -4,8 +4,14 @@
 
 # %% External package import
 
+from functools import partial
 from numpy import diag, mean
 from numpy.linalg import eig
+
+# %% Internal package import
+
+from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import validate_item_in_set, validate_type
 
 # %% Class definition
 
@@ -14,8 +20,8 @@ class Whitening():
     """
     Whitening class.
 
-    This class provides methods to fit a whitening matrix, transform and \
-    gradientize the input features.
+    This class provides methods to fit a whitening matrix as well as \
+    transform and gradientize input features.
 
     Parameters
     ----------
@@ -27,32 +33,89 @@ class Whitening():
 
     Attributes
     ----------
-    _classifier : str
-        String indicating the preprocessing class.
+    _name : str
+        Name of the preprocessing algorithm.
+
+    _kind : str
+        Type of preprocessing algorithm.
+
+    arguments : dict
+        Dictionary with the input arguments (for serialization).
 
     method : {'pca', 'zca'}
         See 'Parameters'.
 
-    means : ndarray
-        Mean values of the features.
+    means : None or ndarray
+        Mean feature values.
 
-    matrix : ndarray
+    matrix : None or ndarray
         Whitening matrix.
     """
 
-    # Initialize the algorithm classifier
-    _classifier = 'scaling'
+    # Set the algorithm name
+    _name = 'Whitening'
+
+    # Set the algorithm type
+    _kind = 'scaling'
 
     def __init__(
             self,
             method='zca'):
 
-        # Get the instance attributes from the arguments
+        # Get the input arguments
+        self.arguments = filter_dict(vars(), remove_keys=('self',))
+
+        # Check the input arguments
+        self.validate(self.arguments)
+
+        # Get the calculation method
         self.method = method
 
         # Initialize the means and the whitening matrix
-        self.means = None
-        self.matrix = None
+        self.means, self.matrix = None, None
+
+    @property
+    def name(self):
+        """Get the algorithm name."""
+        return self._name
+
+    @property
+    def kind(self):
+        """Get the algorithm type."""
+        return self._kind
+
+    def to_dict(self):
+        """
+        Serialize the whitening scaler into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the scaler's arguments.
+        """
+
+        return {self._name: self.arguments}
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the whitening scaler from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the scaler's arguments.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.preprocessing.transformation._whitening.Whitening`
+            The object used to represent the whitening scaler.
+        """
+
+        return cls(**dictionary)
 
     def fit(
             self,
@@ -65,6 +128,12 @@ class Whitening():
         ----------
         features : ndarray
             Feature values.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.preprocessing.transformation._whitening.Whitening`
+            Reference to the instance (self).
         """
 
         def compute_zca_matrix(inverse_diagonal, eigenvectors):
@@ -77,18 +146,18 @@ class Whitening():
 
             return eigenvectors @ inverse_diagonal @ eigenvectors.T
 
-        # Compute the means of the features
+        # Compute the mean features
         self.means = mean(features, axis=0)
 
-        # Center the feature values by the means
-        centered_features = features-self.means
+        # Center the feature values
+        centered_features = features - self.means
 
         # Compute the covariance matrix
         covariance_matrix = ((
             centered_features.T @ centered_features)
             / centered_features.shape[0])
 
-        # Compute the eigenvalues and eigenvectors of the covariance matrix
+        # Compute the eigenvalues and eigenvectors
         eigenvalues, eigenvectors = eig(covariance_matrix)
 
         # Get the diagonal of the eigenvalues
@@ -97,7 +166,7 @@ class Whitening():
         # Compute the inverse-rooted diagonal
         inverse_diagonal = diag(diag(diagonal)**(-0.5))
 
-        # Create a mapping between methods and computation functions
+        # Map the methods to the computation functions
         methods = {'zca': compute_zca_matrix, 'pca': compute_pca_matrix}
 
         # Compute the whitening matrix
@@ -170,3 +239,31 @@ class Whitening():
         """
 
         return diag(self.matrix.mean(axis=1))
+
+    def validate(
+            self,
+            inputs):
+        """
+        Validate the input arguments.
+
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the mappings between argument names and values.
+        """
+
+        validation_map = {
+            'method': (
+                partial(validate_type, options=str),
+                partial(validate_item_in_set, options=('pca', 'zca'))
+                )
+            }
+
+        # Loop over the dictionary items
+        for key, value in inputs.items():
+
+            # Loop over the validation functions
+            for function in validation_map[key]:
+
+                # Run the validation function
+                function(key, value)

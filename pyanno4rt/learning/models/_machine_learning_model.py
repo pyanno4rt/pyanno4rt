@@ -50,7 +50,7 @@ class MachineLearningModel(ABC):
     tuner : None or object of class \
         :class:`~pyanno4rt.learning.tuning._bayes_hp_tuner.BayesHPTuner`\
         :class:`~pyanno4rt.learning.tuning._grid_hp_tuner.GridHPTuner`\
-        :class:`~pyanno4rt.learning.tuning._random_hp_tuner.RandomHPTuner`,\
+        :class:`~pyanno4rt.learning.tuning._randomized_hp_tuner.RandomizedHPTuner`,\
         default=None
         The object used to represent the hyperparameter tuner.
 
@@ -70,7 +70,7 @@ class MachineLearningModel(ABC):
     Attributes
     ----------
     arguments : dict
-        Dictionary with the model input arguments (for serialization).
+        Dictionary with the input arguments (for serialization).
 
     label : str
         See 'Parameters'.
@@ -86,7 +86,7 @@ class MachineLearningModel(ABC):
     tuner : None or object of class \
         :class:`~pyanno4rt.learning.tuning._bayes_hp_tuner.BayesHPTuner`\
         :class:`~pyanno4rt.learning.tuning._grid_hp_tuner.GridHPTuner`\
-        :class:`~pyanno4rt.learning.tuning._random_hp_tuner.RandomHPTuner`
+        :class:`~pyanno4rt.learning.tuning._randomized_hp_tuner.RandomizedHPTuner`
         See 'Parameters'.
 
     inspector : None or object of class \
@@ -159,46 +159,83 @@ class MachineLearningModel(ABC):
 
     @property
     def reload_data(self):
+        """Get the value of the data reload indicator."""
         return self._reload_data
 
     @reload_data.setter
     def reload_data(self, value):
-        self._reload_data = value
+
+        # Check if the value is a boolean
+        if isinstance(value, bool):
+
+            # Update the indicator
+            self._reload_data = value
 
     @property
     def reset_calc(self):
+        """Get the value of the feature calculator reset indicator."""
         return self._reset_calc
 
     @reset_calc.setter
     def reset_calc(self, value):
-        self._reset_calc = value
+
+        # Check if the value is a boolean
+        if isinstance(value, bool):
+
+            # Update the indicator
+            self._reset_calc = value
 
     @property
     def refit(self):
+        """Get the value of the model refit indicator."""
         return self._refit
 
     @refit.setter
     def refit(self, value):
-        self._refit = value
+
+        # Check if the value is a boolean
+        if isinstance(value, bool):
+
+            # Update the indicator
+            self._refit = value
 
     @property
     def reinspect(self):
+        """Get the value of the model reinspection indicator."""
         return self._reinspect
 
     @reinspect.setter
     def reinspect(self, value):
-        self._reinspect = value
+
+        # Check if the value is a boolean
+        if isinstance(value, bool):
+
+            # Update the indicator
+            self._reinspect = value
 
     @property
     def reevaluate(self):
+        """Get the value of the model reevaluation indicator."""
         return self._reevaluate
 
     @reevaluate.setter
     def reevaluate(self, value):
-        self._reevaluate = value
+
+        # Check if the value is a boolean
+        if isinstance(value, bool):
+
+            # Update the indicator
+            self._reevaluate = value
 
     def to_dict(self):
-        """Serialize the model into a dictionary."""
+        """
+        Serialize the model into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the model's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(self.arguments)
@@ -225,7 +262,7 @@ class MachineLearningModel(ABC):
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the model parameters.
+            Dictionary with the model's arguments.
 
         Returns
         -------
@@ -247,10 +284,11 @@ class MachineLearningModel(ABC):
         # Check if a tuner dictionary has been passed
         if dictionary['tuner'] is not None:
 
+            # Get the key and value
+            key, value = next(iter(dictionary['tuner'].items()))
+
             # Deserialize the tuner
-            dictionary['tuner'] = (
-                TUNERS[dictionary['tuner'].pop('name')].from_dict(
-                    dictionary['tuner']))
+            dictionary['tuner'] = TUNERS[key].from_dict(value)
 
         # Check if an inspector dictionary has been passed
         if dictionary['inspector'] is not None:
@@ -300,17 +338,18 @@ class MachineLearningModel(ABC):
             get_logger().error(
                 "Please load the dataset before adding a feature calculator!")
 
-        else:
+            # Raise an error to indicate a non-loaded dataset
+            raise ValueError(
+                "Please load the dataset before adding a feature calculator!")
 
-            # Log a message about adding the feature calculator
-            get_logger().info(
-                "Adding feature calculator for '%s' ...", self.label)
+        # Log a message about adding the feature calculator
+        get_logger().info("Adding feature calculator for '%s' ...", self.label)
 
-            # Initialize the feature calculator
-            self.feature_calculator = calculator
+        # Initialize the feature calculator
+        self.feature_calculator = calculator
 
-            # Add the feature map
-            self.feature_calculator.set_mapping(self.dataset.feature_map)
+        # Add the feature map
+        self.feature_calculator.set_mapping(self.dataset.feature_map)
 
     def fit_preprocessor(
             self,
@@ -322,16 +361,16 @@ class MachineLearningModel(ABC):
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray, default=None
-            Values of the input labels.
+            Label values.
         """
 
         # Check if a preprocessor has been provided
         if self.preprocessor is not None:
 
-            # Fit the preprocessor and transform the data
+            # Fit the preprocessor
             self.preprocessor.fit(features, labels)
 
     def reduce_preprocessor(self):
@@ -353,10 +392,10 @@ class MachineLearningModel(ABC):
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray, default=None
-            Values of the input labels.
+            Label values.
         """
 
         # Check if a preprocessor has been provided
@@ -377,10 +416,10 @@ class MachineLearningModel(ABC):
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray
-            Values of the input labels.
+            Label values.
         """
 
         # Check if a tuner has been provided
@@ -394,22 +433,25 @@ class MachineLearningModel(ABC):
                     "Please load the dataset before tuning the \
                     hyperparameters!")
 
-            else:
+                # Raise an error to indicate a non-loaded dataset
+                raise ValueError(
+                    "Please load the dataset before tuning the \
+                    hyperparameters!")
 
-                # Log a message about tuning the hyperparameters
-                get_logger().info(
-                    "Tuning hyperparameters for '%s' ...", self.label)
+            # Log a message about tuning the hyperparameters
+            get_logger().info(
+                "Tuning hyperparameters for '%s' ...", self.label)
 
-                # Search the hyperparameter set
-                proposal = self.tuner.search(
-                    deepcopy(self), features, labels, self.dataset.folds)
+            # Search the hyperparameter set
+            proposal = self.tuner.search(
+                deepcopy(self), features, labels, self.dataset.folds)
 
-                # Log a message about fetching the hyperparameters
-                get_logger().info(
-                    "Fetching model hyperparameters from search proposal ... ")
+            # Log a message about fetching the hyperparameters
+            get_logger().info(
+                "Fetching model hyperparameters from search proposal ... ")
 
-                # Get the full hyperparameter set
-                self.update_hyperparameters(proposal)
+            # Fetch the hyperparameter set
+            self.update_hyperparameters(proposal)
 
     @abstractmethod
     def update_hyperparameters(
@@ -435,10 +477,10 @@ class MachineLearningModel(ABC):
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray
-            Values of the input labels.
+            Label values.
         """
 
     @abstractmethod
@@ -446,17 +488,17 @@ class MachineLearningModel(ABC):
             self,
             features):
         """
-        Predict the label values.
+        Predict the label value(s).
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         Returns
         -------
         float or ndarray
-            Value(s) of the predicted label(s).
+            Predicted label value(s).
         """
 
     def inspect(self):
@@ -488,7 +530,7 @@ class MachineLearningModel(ABC):
             dose,
             segment):
         """
-        Compute the model input feature vector.
+        Calculate the feature vector.
 
         Parameters
         ----------
@@ -504,6 +546,20 @@ class MachineLearningModel(ABC):
             Feature vector.
         """
 
+        # Check if no data folds are available
+        if self.feature_calculator is None:
+
+            # Log a message about the non-added feature calculator
+            get_logger().error(
+                "Please add a feature calculator before requesting the "
+                "calculation of a feature vector!")
+
+            # Raise an error to indicate a non-added feature calculator
+            raise ValueError(
+                "Please add a feature calculator before requesting the "
+                "calculation of a feature vector!")
+
+        # Return the feature vector
         return self.feature_calculator.featurize(dose, segment)
 
     def gradientize(
@@ -576,7 +632,7 @@ class MachineLearningModel(ABC):
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         Returns
         -------
@@ -601,7 +657,7 @@ class MachineLearningModel(ABC):
         Parameters
         ----------
         preprocessed_features : ndarray
-            Values of the preprocessed input features.
+            Preprocessed feature values.
 
         Returns
         -------

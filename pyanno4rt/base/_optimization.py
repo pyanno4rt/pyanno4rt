@@ -219,7 +219,14 @@ class Optimization():
         self.tolerance = tolerance
 
     def to_dict(self):
-        """Serialize the object into a dictionary."""
+        """
+        Serialize the optimization handler into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the optimization handler's arguments.
+        """
 
         # Get the parameter dictionary
         dictionary = deepcopy(vars(self))
@@ -235,12 +242,12 @@ class Optimization():
             cls,
             dictionary):
         """
-        Deserialize the object from a dictionary.
+        Deserialize the optimization handler from a dictionary.
 
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the optimization parameters.
+            Dictionary with the optimization handler's arguments.
 
         Returns
         -------

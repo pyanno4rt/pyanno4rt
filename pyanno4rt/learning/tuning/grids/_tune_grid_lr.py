@@ -88,9 +88,16 @@ class TuneGridLR():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune grid into a dictionary."""
+        """
+        Serialize the tune grid into a dictionary.
 
-        return vars(self)|{'name': 'Logistic Regression'}
+        Returns
+        -------
+        dict
+            Dictionary with the tune grid's arguments.
+        """
+
+        return {'Logistic Regression': vars(self)}
 
     @classmethod
     def from_dict(
@@ -102,7 +109,7 @@ class TuneGridLR():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune grid parameters.
+            Dictionary with the tune grid's arguments.
 
         Returns
         -------

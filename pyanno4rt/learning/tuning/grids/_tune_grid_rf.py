@@ -137,9 +137,16 @@ class TuneGridRF():
             setattr(self, *item)
 
     def to_dict(self):
-        """Serialize the tune grid into a dictionary."""
+        """
+        Serialize the tune grid into a dictionary.
 
-        return vars(self)|{'name': 'Random Forest'}
+        Returns
+        -------
+        dict
+            Dictionary with the tune grid's arguments.
+        """
+
+        return {'Random Forest': vars(self)}
 
     @classmethod
     def from_dict(
@@ -151,7 +158,7 @@ class TuneGridRF():
         Parameters
         ----------
         dictionary : dict
-            Dictionary with the tune grid parameters.
+            Dictionary with the tune grid's arguments.
 
         Returns
         -------

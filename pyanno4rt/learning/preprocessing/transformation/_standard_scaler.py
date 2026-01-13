@@ -4,7 +4,13 @@
 
 # %% External package import
 
+from functools import partial
 from numpy import array, diag, mean, ones, std, zeros
+
+# %% Internal package import
+
+from pyanno4rt.tools import filter_dict
+from pyanno4rt.validation import validate_type
 
 # %% Class definition
 
@@ -13,21 +19,27 @@ class StandardScaler():
     """
     Standard scaling class.
 
-    This class provides methods to fit a standard scaler, transform and \
-    gradientize the input features.
+    This class provides methods to fit a standard scaler as well as \
+    transform and gradientize input features.
 
     Parameters
     ----------
     center : bool, default=True
-        Indicator for the centering of the data by the mean values.
+        Indicator for the mean centering of the data.
 
     scale : bool, default=True
-        Indicator for the scaling of the data by the standard deviations.
+        Indicator for the variance scaling of the data.
 
     Attributes
     ----------
-    _classifier : str
-        String indicating the preprocessing class.
+    _name : str
+        Name of the preprocessing algorithm.
+
+    _kind : str
+        Type of preprocessing algorithm.
+
+    arguments : dict
+        Dictionary with the input arguments (for serialization).
 
     center : bool
         See 'Parameters'.
@@ -35,28 +47,79 @@ class StandardScaler():
     scale : bool
         See 'Parameters'.
 
-    means : ndarray
-        Mean values of the features (if center is false, set to zeros).
+    means : None or ndarray
+        Mean values of the features.
 
-    deviations : ndarray
-        Standard deviations of the features (if scale is false, set to ones).
+    deviations : None or ndarray
+        Standard deviations of the features.
     """
 
-    # Initialize the algorithm classifier
-    _classifier = 'scaling'
+    # Set the algorithm name
+    _name = 'StandardScaler'
+
+    # Set the algorithm type
+    _kind = 'scaling'
 
     def __init__(
             self,
             center=True,
             scale=True):
 
-        # Get the instance attributes from the arguments
+        # Get the input arguments
+        self.arguments = filter_dict(vars(), remove_keys=('self',))
+
+        # Check the input arguments
+        self.validate(self.arguments)
+
+        # Get the instance attributes
         self.center = center
         self.scale = scale
 
-        # Initialize the attributes for the means and standard deviations
-        self.means = None
-        self.deviations = None
+        # Initialize the means and standard deviations
+        self.means, self.deviations = None, None
+
+    @property
+    def name(self):
+        """Get the algorithm name."""
+        return self._name
+
+    @property
+    def kind(self):
+        """Get the algorithm type."""
+        return self._kind
+
+    def to_dict(self):
+        """
+        Serialize the standard scaler into a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary with the scaler's arguments.
+        """
+
+        return {self._name: self.arguments}
+
+    @classmethod
+    def from_dict(
+            cls,
+            dictionary):
+        """
+        Deserialize the standard scaler from a dictionary.
+
+        Parameters
+        ----------
+        dictionary : dict
+            Dictionary with the scaler's arguments.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.preprocessing.transformation._standard_scaler.StandardScaler`
+            The object used to represent the standard scaler.
+        """
+
+        return cls(**dictionary)
 
     def fit(
             self,
@@ -69,17 +132,23 @@ class StandardScaler():
         ----------
         features : ndarray
             Feature values.
+
+        Returns
+        -------
+        object of class \
+            :class:`~pyanno4rt.learning.preprocessing.transformation._standard_scaler.StandardScaler`
+            Reference to the instance (self).
         """
 
         # Check if the features should be centered
         if self.center:
 
-            # Compute the means of the features
+            # Compute the mean values of the features
             self.means = mean(features, axis=0)
 
         else:
 
-            # Set the means to zero (no centering)
+            # Set the means to the default
             self.means = zeros((features.shape[1],))
 
         # Check if the features should be scaled
@@ -90,7 +159,7 @@ class StandardScaler():
 
         else:
 
-            # Set the standard deviations to one (no scaling)
+            # Set the standard deviations to the default
             self.deviations = ones((features.shape[1],))
 
         return self
@@ -158,7 +227,7 @@ class StandardScaler():
         Parameters
         ----------
         features : ndarray
-            Input feature values.
+            Feature values.
 
         Returns
         -------
@@ -168,3 +237,33 @@ class StandardScaler():
 
         return diag(array(
             [1/self.deviations[index] for index in range(features.shape[1])]))
+
+    def validate(
+            self,
+            inputs):
+        """
+        Validate the input arguments.
+
+        Parameters
+        ----------
+        inputs : dict
+            Dictionary with the mappings between argument names and values.
+        """
+
+        validation_map = {
+            'center': (
+                partial(validate_type, options=bool),
+                ),
+            'scale': (
+                partial(validate_type, options=bool),
+                )
+            }
+
+        # Loop over the dictionary items
+        for key, value in inputs.items():
+
+            # Loop over the validation functions
+            for function in validation_map[key]:
+
+                # Run the validation function
+                function(key, value)

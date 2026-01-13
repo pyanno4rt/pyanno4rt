@@ -128,8 +128,9 @@ class DataModelHandler():
                     # Log a message about the preprocessing pipeline
                     get_logger().info(
                         "Building preprocessing pipeline 'Input -> %s -> "
-                        "Output' for model %s",
-                        ' → '.join(model.preprocessor.arguments['steps']),
+                        "Output' for model '%s' ...",
+                        ' → '.join(
+                            step.name for step in model.preprocessor.pipeline),
                         model.label)
 
                 # Fit the preprocessor

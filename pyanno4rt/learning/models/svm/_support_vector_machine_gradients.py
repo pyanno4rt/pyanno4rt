@@ -1,4 +1,4 @@
-"""Support vector machine model kernel-based gradients."""
+"""Support vector machine model kernel-based decision function gradients."""
 
 # Author: Tim Ortkamp
 
@@ -11,17 +11,17 @@ from numpy import cosh, dot, exp
 
 def linear_gradient(svm, _):
     """
-    Compute the gradient of the linear kernel SVM.
+    Compute the linear kernel SVM decision function gradient.
 
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the pre-fitted prediction model.
+        The object used to represent the prediction model.
 
     Returns
     -------
     ndarray
-        Gradient of the linear kernel SVM.
+        Linear kernel SVM decision function gradient.
     """
 
     return svm.coef_.reshape(-1)
@@ -29,24 +29,24 @@ def linear_gradient(svm, _):
 
 def rbf_gradient(svm, features):
     """
-    Compute the gradient of the radial basis function kernel SVM.
+    Compute the RBF kernel SVM decision function gradient.
 
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the pre-fitted prediction model.
+        The object used to represent the prediction model.
 
     features : ndarray
-        Values of the input features.
+        Feature values.
 
     Returns
     -------
     ndarray
-        Gradient of the radial basis function kernel SVM.
+        RBF kernel SVM decision function gradient.
     """
 
     def kernel_gradient(features, support_vectors, gamma):
-        """Compute the radial basis kernel gradient."""
+        """Compute the RBF kernel gradient."""
 
         return -2*gamma*(features-support_vectors)*exp(-gamma*(
             dot(features, features.T)-2*dot(features, support_vectors.T)
@@ -60,20 +60,20 @@ def rbf_gradient(svm, features):
 
 def poly_gradient(svm, features):
     """
-    Compute the gradient of the polynomial kernel SVM.
+    Compute the polynomial kernel SVM decision function gradient.
 
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the pre-fitted prediction model.
+        The object used to represent the prediction model.
 
     features : ndarray
-        Values of the input features.
+        Feature values.
 
     Returns
     -------
     ndarray
-        Gradient of the polynomial kernel SVM.
+        Polynomial kernel SVM decision function gradient.
     """
 
     def kernel_gradient(features, support_vectors, coef0, degree, gamma):
@@ -91,20 +91,20 @@ def poly_gradient(svm, features):
 
 def sigmoid_gradient(svm, features):
     """
-    Compute the gradient of the sigmoid kernel SVM.
+    Compute the sigmoid kernel SVM decision function gradient.
 
     Parameters
     ----------
     svm : object of class :class:`~sklearn.svm.SVC`
-        The object used to represent the pre-fitted prediction model.
+        The object used to represent the prediction model.
 
     features : ndarray
-        Values of the input features.
+        Feature values.
 
     Returns
     -------
     ndarray
-        Gradient of the sigmoid kernel SVM.
+        Sigmoid kernel SVM decision function gradient.
     """
 
     def kernel_gradient(features, support_vectors, coef0, gamma):

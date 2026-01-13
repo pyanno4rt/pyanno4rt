@@ -38,7 +38,6 @@ from ._segment_eigenmid import SegmentEigenmid
 from ._segment_eigenmax import SegmentEigenmax
 
 from ._columns import DynamicFeature, Label, StaticFeature
-
 from ._feature_calculator import FeatureCalculator
 
 __all__ = [
