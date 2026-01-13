@@ -140,7 +140,8 @@ class DataModelHandler():
                 model.tune_hyperparameters(features, labels)
 
                 # Fit the model
-                model.fit_predictor(*model.preprocess(features, labels))
+                model.fit_predictor(
+                    *model.preprocess(features, labels, mode='fit'))
 
             else:
 
@@ -180,23 +181,6 @@ class DataModelHandler():
 
             # Update the refreshing indicator
             model.reevaluate = False
-
-    def reduce_preprocessors(self):
-        """
-        Reduce the model preprocessors.
-
-        Notes
-        -----
-        This method removes all steps from each model's preprocessing \
-        pipeline which should not be neglected for plan optimization, e.g. \
-        outlier removal algorithms.
-        """
-
-        # Loop over the models
-        for model in (model for model in self.models):
-
-            # Reduce the preprocessor
-            model.reduce_preprocessor()
 
     def validate(
             self,

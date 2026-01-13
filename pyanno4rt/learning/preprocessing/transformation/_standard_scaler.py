@@ -35,8 +35,8 @@ class StandardScaler():
     _name : str
         Name of the preprocessing algorithm.
 
-    _kind : str
-        Type of preprocessing algorithm.
+    _train_only : bool
+        Indicator for skipping the algorithm during prediction.
 
     arguments : dict
         Dictionary with the input arguments (for serialization).
@@ -57,8 +57,8 @@ class StandardScaler():
     # Set the algorithm name
     _name = 'StandardScaler'
 
-    # Set the algorithm type
-    _kind = 'scaling'
+    # Set the skip indicator
+    _train_only = False
 
     def __init__(
             self,
@@ -84,9 +84,9 @@ class StandardScaler():
         return self._name
 
     @property
-    def kind(self):
-        """Get the algorithm type."""
-        return self._kind
+    def train_only(self):
+        """Get the skip indicator."""
+        return self._train_only
 
     def to_dict(self):
         """

@@ -61,7 +61,7 @@ def permutation_importances(model, score='AUC', permutations=20):
         model.fit_preprocessor(split[0], split[1])
 
         # Fit the predictor on the training split
-        model.fit_predictor(*model.preprocess(split[0], split[1]))
+        model.fit_predictor(*model.preprocess(split[0], split[1], 'fit'))
 
         # Wrap the model
         wrapper_model = ModelWrapper(model)
@@ -77,7 +77,7 @@ def permutation_importances(model, score='AUC', permutations=20):
         """Score a model's predictions."""
 
         # Transform the labels
-        _, true_labels = wrapper.model.preprocess(features, true_labels)
+        _, true_labels = wrapper.model.preprocess(features, true_labels, 'fit')
 
         return scorer(true_labels, atleast_1d(wrapper.predict(features)))
 
@@ -181,6 +181,6 @@ class ModelWrapper():
         """
 
         # Transform the features
-        preprocessed_features, _ = self.model.preprocess(features, None)
+        preprocessed_features, _ = self.model.preprocess(features, None, 'fit')
 
         return self.model.predict(preprocessed_features)

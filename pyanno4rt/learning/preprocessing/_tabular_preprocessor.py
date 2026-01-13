@@ -36,9 +36,9 @@ class TabularPreprocessor():
 
         - :class:`~pyanno4rt.learning.preprocessing.reduction._principal_component_analysis.PrincipalComponentAnalysis`
 
-        - :class:`~pyanno4rt.learning.preprocessing.cleaning._standard_scaler.StandardScaler`
+        - :class:`~pyanno4rt.learning.preprocessing.transformation._standard_scaler.StandardScaler`
 
-        - :class:`~pyanno4rt.learning.preprocessing.cleaning._whitening.Whitening`
+        - :class:`~pyanno4rt.learning.preprocessing.transformation._whitening.Whitening`
 
     Attributes
     ----------
@@ -136,7 +136,8 @@ class TabularPreprocessor():
     def transform(
             self,
             features,
-            labels=None):
+            labels=None,
+            mode='predict'):
         """
         Transform the features and labels.
 
@@ -148,6 +149,10 @@ class TabularPreprocessor():
         labels : ndarray, default=None
             Label values.
 
+        mode : {'fit', 'predict'}, default='predict'
+            Mode of preprocessing. If 'predict', train-only preprocessing \
+            steps are skipped, else all steps are traversed.
+
         Returns
         -------
         ndarray
@@ -158,7 +163,9 @@ class TabularPreprocessor():
         """
 
         # Loop over the preprocessing steps
-        for step in self.pipeline:
+        for step in (
+                step for step in self.pipeline
+                if not (mode == 'predict')*step.train_only):
 
             # Transform the features and labels
             features, labels = step.transform(features, labels)
@@ -224,16 +231,6 @@ class TabularPreprocessor():
             and callable(step.compute_gradient))
 
         return reduce(matmul, gradients)
-
-    def reduce_steps(self):
-        """Reduce the preprocessing steps."""
-
-        # Define the irrelevant classifiers
-        out_classes = ('outlier_removal',)
-
-        # Reduce the preprocessing steps
-        self.pipeline = [
-            step for step in self.pipeline if step.kind not in out_classes]
 
     def validate(
             self,

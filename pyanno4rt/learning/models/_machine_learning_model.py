@@ -373,19 +373,11 @@ class MachineLearningModel(ABC):
             # Fit the preprocessor
             self.preprocessor.fit(features, labels)
 
-    def reduce_preprocessor(self):
-        """Reduce the preprocessing pipeline."""
-
-        # Check if a preprocessor has been provided
-        if self.preprocessor is not None:
-
-            # Reduce the preprocessor
-            self.preprocessor.reduce_steps()
-
     def preprocess(
             self,
             features,
-            labels=None):
+            labels=None,
+            mode='predict'):
         """
         Preprocess the inputs.
 
@@ -396,13 +388,17 @@ class MachineLearningModel(ABC):
 
         labels : ndarray, default=None
             Label values.
+
+        mode : {'fit', 'predict'}, default='predict'
+            Mode of preprocessing. If 'predict', train-only preprocessing \
+            steps are skipped, else all steps are traversed.
         """
 
         # Check if a preprocessor has been provided
         if self.preprocessor is not None:
 
             # Transform the data
-            return self.preprocessor.transform(features, labels)
+            return self.preprocessor.transform(features, labels, mode)
 
         return features, labels
 

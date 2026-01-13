@@ -197,8 +197,8 @@ class BayesHPTuner():
 
                 # Transform both splits
                 split = [
-                    *model.preprocess(split[0], split[1]),
-                    *model.preprocess(split[2], split[3])]
+                    *model.preprocess(split[0], split[1], 'fit'),
+                    *model.preprocess(split[2], split[3], 'fit')]
 
                 # Fit the predictor on the training split
                 model.fit_predictor(split[0], split[1])

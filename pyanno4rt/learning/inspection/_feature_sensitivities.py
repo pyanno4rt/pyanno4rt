@@ -39,7 +39,7 @@ def feature_sensitivities(model):
         """Calculate the sensitivities for a feature vector."""
 
         # Preprocess the feature vector
-        preprocessed_features, _ = model.preprocess(features)
+        preprocessed_features, _ = model.preprocess(features, None)
 
         # Get the preprocessing gradient
         preprocessing_gradient = model._preprocessing_gradient(features)

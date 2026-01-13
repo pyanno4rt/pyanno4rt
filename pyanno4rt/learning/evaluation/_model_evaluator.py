@@ -167,9 +167,6 @@ class ModelEvaluator():
             labels = model.dataset.label_values
             folds = model.dataset.folds
 
-        # Reduce the preprocessor
-        model.reduce_preprocessor()
-
         # Log a message about the full data prediction
         get_logger().info(
             "Yielding full data predictions for '%s' ...", model.label)
