@@ -224,11 +224,20 @@ class TabularPreprocessor():
             Preprocessing gradient w.r.t the features.
         """
 
-        # Get the step-wise gradients
-        gradients = tuple(
-            step.compute_gradient(features) for step in self.pipeline
-            if hasattr(step, 'compute_gradient')
-            and callable(step.compute_gradient))
+        # Initialize the list of gradients
+        gradients = []
+
+        # Loop over the differentiable steps
+        for step in (
+                step for step in self.pipeline
+                if hasattr(step, 'compute_gradient')
+                and callable(step.compute_gradient)):
+
+            # Append the step gradient
+            gradients.append(step.compute_gradient(features))
+
+            # Transform the feature values
+            features, _ = step.transform(features, None)
 
         return reduce(matmul, gradients)
 

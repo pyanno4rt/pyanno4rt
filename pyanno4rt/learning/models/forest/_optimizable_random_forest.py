@@ -8,7 +8,7 @@ from numpy import array, mean
 
 # %% Internal package import
 
-from pyanno4rt.learning.models.tree import OptimizableDecisionTree
+from pyanno4rt.learning.models.tree import ProjectionTree
 
 # %% Class definition
 
@@ -53,10 +53,10 @@ class OptimizableRandomForest():
         for subtree in forest.estimators_:
 
             # Initialize the optimizable decision tree
-            optimizable_tree = OptimizableDecisionTree()
+            optimizable_tree = ProjectionTree()
 
             # Read the path information from the pre-fitted subtree
-            optimizable_tree.traverse(subtree)
+            optimizable_tree.parse(subtree)
 
             # Append the optimizable tree to the subtree list
             self.subtrees.append(optimizable_tree)

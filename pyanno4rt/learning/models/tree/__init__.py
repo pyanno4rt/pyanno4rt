@@ -9,12 +9,12 @@ modeling.
 
 # Author: Tim Ortkamp
 
-from ._optimizable_decision_tree import OptimizableDecisionTree
+from ._projection_tree import ProjectionTree
 from ._soft_decision_tree import SoftDecisionTree
 
 from ._decision_tree import DecisionTree
 
 __all__ = [
-    'OptimizableDecisionTree',
+    'ProjectionTree',
     'SoftDecisionTree',
     'DecisionTree']
