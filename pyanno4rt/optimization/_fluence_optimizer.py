@@ -564,7 +564,7 @@ class FluenceOptimizer():
             Path for storing the optimized fluence array.
         """
 
-        save(f'{path}/optimized_fluence.npy', self.optimized_fluence)
+        save(path, self.optimized_fluence)
 
     def load_dose(
             self,
@@ -592,7 +592,7 @@ class FluenceOptimizer():
             Path for storing the optimized dose array.
         """
 
-        save(f'{path}/optimized_dose.npy', self.optimized_dose)
+        save(path, self.optimized_dose)
 
     def log_outcome(self):
         """Log the outcome model-based component results."""

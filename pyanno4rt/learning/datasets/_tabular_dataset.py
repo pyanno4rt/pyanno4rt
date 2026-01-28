@@ -286,9 +286,25 @@ class TabularDataset():
                 name: index
                 for index, name in enumerate(self.dataframe.columns)}
 
+            # Get the invalid columns
+            invalid = tuple(
+                column for column in self.columns
+                if column.column not in self.dataframe.columns)
+
+            # Check if any invalid columns have been passed
+            if len(invalid) > 0:
+
+                # Log a message about the invalid columns
+                get_logger().warning(
+                    "User has passed column information that is not "
+                    "available in the dataset "
+                    f"({', '.join((column.column for column in invalid))}), "
+                    "removing corresponding elements ...")
+
             # Sort the column objects by their order in the dataframe
             self.columns = sorted(
-                self.columns, key=lambda x: order.get(x.column, inf))
+                list(set(self.columns)-set(invalid)),
+                key=lambda x: order.get(x.column, inf))
 
     def save(
             self,

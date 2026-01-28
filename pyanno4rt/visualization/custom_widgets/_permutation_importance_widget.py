@@ -293,7 +293,7 @@ class PermutationImportanceWidget(QWidget):
                     for feature, stats in zip(
                             importances[key]['feature_names'],
                             boxplot_stats(value[domain]))),
-                    reverse=True, key=lambda x: x[1][0])
+                    reverse=True, key=lambda x: x[1][1])
 
             # Add the number of features
             statistics[key]['number_of_features'] = len(

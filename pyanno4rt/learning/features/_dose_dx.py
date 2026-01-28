@@ -73,6 +73,7 @@ class DoseDx(DosiomicFeature):
 
     @staticmethod
     def compute(
+            level,
             dose,
             *args):
         """
@@ -80,12 +81,14 @@ class DoseDx(DosiomicFeature):
 
         Parameters
         ----------
+        level : int
+            Reference (relative) volume.
+
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Optional (non-keyworded) parameters. args[0] should be the \
-            reference (relative) volume.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -106,10 +109,11 @@ class DoseDx(DosiomicFeature):
             # Set 'value_is_jitted' to True
             DoseDx.value_is_jitted = True
 
-        return DoseDx.value_function(dose, args[0])
+        return DoseDx.value_function(dose, level)
 
     @staticmethod
     def differentiate(
+            level,
             dose,
             *args):
         """
@@ -117,12 +121,14 @@ class DoseDx(DosiomicFeature):
 
         Parameters
         ----------
+        level : int
+            Reference (relative) volume.
+
         dose : ndarray
             Dose array.
 
         *args : tuple
-            Optional (non-keyworded) parameters. args[0] should be the \
-            reference (relative) volume.
+            Optional (non-keyworded) parameters.
 
         Returns
         -------
@@ -144,4 +150,4 @@ class DoseDx(DosiomicFeature):
             # Set 'gradient_is_jitted' to True
             DoseDx.gradient_is_jitted = True
 
-        return DoseDx.gradient_function(dose, args[0])
+        return DoseDx.gradient_function(dose, level)

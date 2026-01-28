@@ -102,7 +102,7 @@ def snapshot(
         instance.configuration.dose_matrix_path = path
 
     # Check if the instance has already been modeled
-    if instance.state >= 2:
+    if instance.state >= 2 and instance.data_model_handler is not None:
 
         # Loop over the machine learning models
         for model in instance.data_model_handler.models:

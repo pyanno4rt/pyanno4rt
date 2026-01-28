@@ -20,7 +20,7 @@ disable_interactive_logging()
 # %% Function definition
 
 
-def permutation_importances(model, score='AUC', permutations=20):
+def permutation_importances(model, score='AUC', permutations=30):
     """
     Compute the permutation importances.
 
@@ -40,7 +40,7 @@ def permutation_importances(model, score='AUC', permutations=20):
         default='AUC'
         Permutation importance score.
 
-    permutations : int, default=20
+    permutations : int, default=30
         Number of permutations.
 
     Returns
@@ -77,9 +77,9 @@ def permutation_importances(model, score='AUC', permutations=20):
         """Score a model's predictions."""
 
         # Transform the labels
-        _, true_labels = wrapper.model.preprocess(features, true_labels, 'fit')
+        _, true_labels = wrapper.model.preprocess(features, true_labels)
 
-        return scorer(true_labels, atleast_1d(wrapper.predict(features)))
+        return -scorer(true_labels, atleast_1d(wrapper.predict(features)))
 
     # Check if a holdout dataset is available
     if model.dataset.holdout_set is not None:
@@ -181,6 +181,6 @@ class ModelWrapper():
         """
 
         # Transform the features
-        preprocessed_features, _ = self.model.preprocess(features, None, 'fit')
+        preprocessed_features, _ = self.model.preprocess(features, None)
 
         return self.model.predict(preprocessed_features)
