@@ -4,9 +4,10 @@
 
 # %% External package import
 
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from io import StringIO
 from logging import Formatter, getLogger, StreamHandler
+from pkg_resources import get_distribution
 from platform import python_version
 
 # %% Class definition
@@ -53,10 +54,27 @@ class Logging():
         self.logger = self.initialize(
             label=f'pyanno4rt - {label}', min_log_level=min_log_level)
 
+        try:
+
+            # Get the package version from importlib
+            __version__ = version("pyanno4rt")
+
+        except PackageNotFoundError:
+
+            try:
+
+                # Get the package version from pkg_resources
+                __version__ = get_distribution("pyanno4rt").version
+
+            except Exception:
+
+                # Get the default package version
+                __version__ = "1.x.x"
+
         # Log a message about the software versions used
         self.info(
             'Running pyanno4rt "Amadeus" v%s with Python %s ...',
-            version("pyanno4rt"), python_version())
+            __version__, python_version())
 
         # Log a message about the warranty clause
         self.warning(
