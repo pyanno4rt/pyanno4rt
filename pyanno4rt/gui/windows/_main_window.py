@@ -7,11 +7,12 @@
 from webbrowser import open as webopen
 
 from functools import partial, reduce
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from json import dumps, loads
 from logging import Handler
 from os.path import abspath, dirname
 from numpy import zeros
+from pkg_resources import get_distribution
 from PyQt5.QtCore import pyqtSignal, QEvent, QObject, Qt, QThread
 from PyQt5.QtGui import QCursor, QIcon, QMovie, QPixmap
 from PyQt5.QtWidgets import (
@@ -2683,8 +2684,25 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Add the logo to the label
         self.logo_label.setPixmap(logo)
 
+	try:
+
+            # Get the package version from importlib
+            __version__ = version("pyanno4rt")
+
+        except PackageNotFoundError:
+
+            try:
+
+                # Get the package version from pkg_resources
+                __version__ = get_distribution("pyanno4rt").version
+
+            except Exception:
+
+                # Get the default package version
+                __version__ = "1.x.x"
+           
         # Initialize the version label
-        self.version_label = QLabel(f'"Amadeus" v{version("pyanno4rt")}')
+        self.version_label = QLabel(f'"Amadeus" v{__version__}')
 
         # Loop over the link push buttons
         for key, value in {
