@@ -2684,7 +2684,7 @@ class MainWindow(QMainWindow, Ui_main_window):
         # Add the logo to the label
         self.logo_label.setPixmap(logo)
 
-	try:
+        try:
 
             # Get the package version from importlib
             __version__ = version("pyanno4rt")
@@ -2700,7 +2700,7 @@ class MainWindow(QMainWindow, Ui_main_window):
 
                 # Get the default package version
                 __version__ = "1.x.x"
-           
+
         # Initialize the version label
         self.version_label = QLabel(f'"Amadeus" v{__version__}')
 
