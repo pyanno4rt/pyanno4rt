@@ -6,7 +6,8 @@
 
 from time import sleep
 
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
+from pkg_resources import get_distribution
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QIcon
 from PyQt5.QtWidgets import (
@@ -40,8 +41,25 @@ class SplashScreenWindow(QMainWindow, Ui_splash_window):
         self.setWindowIcon(QIcon(
             ':/special_icons/icons_special/logo_white_icon.png'))
 
+        try:
+
+            # Get the package version from importlib
+            __version__ = version("pyanno4rt")
+
+        except PackageNotFoundError:
+
+            try:
+
+                # Get the package version from pkg_resources
+                __version__ = get_distribution("pyanno4rt").version
+
+            except Exception:
+
+                # Get the default package version
+                __version__ = "1.x.x"
+
         # Add the version label
-        self.version_label.setText(f'"Amadeus" v{version("pyanno4rt")}')
+        self.version_label.setText(f'"Amadeus" v{__version__}')
 
         # Set the window flags
         self.setWindowFlags(Qt.FramelessWindowHint)
