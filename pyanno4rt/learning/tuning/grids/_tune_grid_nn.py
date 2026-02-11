@@ -195,7 +195,7 @@ class TuneGridNN():
             'hidden_neuron_number': (
                 partial(validate_type, options=list),
                 partial(validate_subtype, options=int),
-                partial(validate_item, reference=0, sign='>')
+                partial(validate_item, reference=1, sign='>=')
                 ),
             'hidden_activation': (
                 partial(validate_type, options=list),

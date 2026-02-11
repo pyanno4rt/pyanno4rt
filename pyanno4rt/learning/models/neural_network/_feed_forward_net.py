@@ -140,76 +140,6 @@ class FeedForwardNet(MachineLearningModel):
         # Initialize the predictor
         self.predictor = None
 
-    def _make_predictor(
-            self,
-            number_of_inputs):
-        """
-        Make the predictor.
-
-        Parameters
-        ----------
-        number_of_inputs : int
-            Number of input channels.
-        """
-
-        # Check if label values are available
-        if self.dataset.label_values is not None:
-
-            # Compute the bias
-            bias = (
-                sum(self.dataset.label_values == 1)
-                / sum(self.dataset.label_values == 0))
-
-        else:
-
-            # Set the bias to the default
-            bias = 0
-
-        # Check if the "vanilla" architecture should be used
-        if self.architecture == 'FNN':
-
-            # Build the FNN
-            self.predictor = build_fnn(
-                number_of_inputs, 1, bias, self.hyperparameters)
-
-        # Else, check if the input-convex architecture should be used
-        elif self.architecture == 'ICNN':
-
-            # Build the ICNN
-            self.predictor = build_icnn(
-                number_of_inputs, 1, bias, self.hyperparameters)
-
-        # Compile the predictor
-        self.predictor.compile(
-            optimizer=NETWORK_OPTIMIZERS[self.hyperparameters['optimizer']](
-                learning_rate=self.hyperparameters['learning_rate']),
-            loss=NETWORK_LOSSES[self.hyperparameters['loss']]())
-
-    def fit_preprocessor(
-            self,
-            features,
-            labels=None):
-        """
-        Fit the preprocessor.
-
-        Parameters
-        ----------
-        features : ndarray
-            Feature values.
-
-        labels : ndarray, default=None
-            Label values.
-        """
-
-        # Check if a preprocessor has been provided
-        if self.preprocessor is not None:
-
-            # Fit the preprocessor and transform the data
-            self.preprocessor.fit(features, labels)
-
-        # Make the predictor
-        self._make_predictor(self.preprocess(features)[0].shape[1])
-
     def update_hyperparameters(
             self,
             proposal):
@@ -262,6 +192,9 @@ class FeedForwardNet(MachineLearningModel):
                 mode='min', baseline=None, restore_best_weights=True,
                 verbose=0)]
 
+        # Make the predictor
+        self._make_predictor(self.preprocess(features)[0].shape[1])
+
         # Fit the predictor
         self.predictor.fit(
             features, labels, batch_size=self.hyperparameters['batch_size'],
@@ -269,6 +202,38 @@ class FeedForwardNet(MachineLearningModel):
             callbacks=callbacks, class_weight={
                 0: (1/sum(labels == 0)*(2*len(labels))),
                 1: (1/sum(labels == 1)*(2*len(labels)))})
+
+    def _make_predictor(
+            self,
+            number_of_inputs):
+        """
+        Make the predictor.
+
+        Parameters
+        ----------
+        number_of_inputs : int
+            Number of input channels.
+        """
+
+        # Check if the "vanilla" architecture should be used
+        if self.architecture == 'FNN':
+
+            # Build the FNN
+            self.predictor = build_fnn(
+                number_of_inputs, 1, self.hyperparameters)
+
+        # Else, check if the input-convex architecture should be used
+        elif self.architecture == 'ICNN':
+
+            # Build the ICNN
+            self.predictor = build_icnn(
+                number_of_inputs, 1, self.hyperparameters)
+
+        # Compile the predictor
+        self.predictor.compile(
+            optimizer=NETWORK_OPTIMIZERS[self.hyperparameters['optimizer']](
+                learning_rate=float(self.hyperparameters['learning_rate'])),
+            loss=NETWORK_LOSSES[self.hyperparameters['loss']]())
 
     def predict(
             self,

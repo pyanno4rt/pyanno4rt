@@ -255,6 +255,10 @@ class FluenceOptimizer():
             # Compute the optimized dose
             self.optimized_dose = self.compute_dose_3d(self.optimized_fluence)
 
+        # Reevaluate the optimized fluence
+        self.problem.objective(self.optimized_fluence)
+        self.problem.constraint(self.optimized_fluence)
+
         # Stop the solver runtime recording
         self.solver_time = round(time()-start_time, 2)
 

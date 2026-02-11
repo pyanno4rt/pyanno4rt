@@ -4,11 +4,12 @@
 
 # %% External package import
 
-from numpy import log
 from tensorflow.keras import Input, Model
+from tensorflow.keras.backend import clear_session
 from tensorflow.keras.constraints import non_neg
-from tensorflow.keras.initializers import Constant
-from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
+from tensorflow.keras.layers import (
+    Activation, BatchNormalization, Dense, Dropout)
+from tensorflow.keras.regularizers import l2
 
 # %% Function definitions
 
@@ -16,7 +17,6 @@ from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
 def build_fnn(
         input_shape,
         output_shape,
-        bias,
         hyperparameters):
     """
     Build a standard neural network.
@@ -29,9 +29,6 @@ def build_fnn(
     output_shape : int
         Shape of the output labels.
 
-    bias : int or float
-        Initial network bias.
-
     hyperparameters : dict
         Dictionary with the values of the hyperparameters.
 
@@ -41,30 +38,38 @@ def build_fnn(
         The object used to represent the model architecture.
     """
 
-    # Initialize the network input
+    # Clear the session cache
+    clear_session()
+
+    # Initialize the input layer
     inputs = Input((input_shape,), name='input')
 
-    # Define the input layer
-    hidden = BatchNormalization()(inputs)
-    hidden = Dropout(hyperparameters['hidden_dropout_rate'][0])(hidden)
-    hidden = Dense(
-        units=hyperparameters['hidden_neuron_number'][0],
-        activation=hyperparameters['hidden_activation'][0])(hidden)
+    # Set the "anchor" variable
+    x = inputs
 
     # Loop over the number of hidden layers
-    for layer in range(1, hyperparameters['hidden_layer_number']):
+    for layer in range(hyperparameters['hidden_layer_number']):
 
         # Define the hidden layer
-        hidden = BatchNormalization()(hidden)
-        hidden = Dropout(hyperparameters['hidden_dropout_rate'][layer])(hidden)
-        hidden = Dense(
-            units=hyperparameters['hidden_neuron_number'][layer],
-            activation=hyperparameters['hidden_activation'][layer])(hidden)
+        x = Dense(
+            hyperparameters['hidden_neuron_number'][layer],
+            use_bias=False,
+            kernel_regularizer=l2(0.01),
+            name=f'dense_hidden_{layer}')(x)
+        x = BatchNormalization(name=f'batch_norm_hidden_{layer}')(x)
+        x = Activation(
+            hyperparameters['hidden_activation'][layer],
+            name=f'activation_hidden_{layer}')(x)
+        x = Dropout(
+            hyperparameters['hidden_dropout_rate'][layer],
+            name=f'dropout_hidden_{layer}')(x)
 
     # Define the output layer
     outputs = Dense(
-        units=output_shape, activation=hyperparameters['output_activation'],
-        bias_initializer=Constant(log(bias)))(hidden)
+        output_shape,
+        activation=hyperparameters['output_activation'],
+        kernel_regularizer=l2(0.01),
+        name='output')(x)
 
     return Model(inputs, outputs)
 
@@ -72,7 +77,6 @@ def build_fnn(
 def build_icnn(
         input_shape,
         output_shape,
-        bias,
         hyperparameters):
     """
     Build an input-convex neural network.
@@ -85,9 +89,6 @@ def build_icnn(
     output_shape : int
         Shape of the output labels.
 
-    bias : int or float
-        Initial network bias.
-
     hyperparameters : dict
         Dictionary with the values of the hyperparameters.
 
@@ -97,31 +98,38 @@ def build_icnn(
         The object used to represent the model architecture.
     """
 
-    # Initialize the network input
+    # Clear the session cache
+    clear_session()
+
+    # Initialize the input layer
     inputs = Input((input_shape,), name='input')
 
-    # Define the first hidden layer
-    hidden = BatchNormalization()(inputs)
-    hidden = Dropout(hyperparameters['hidden_dropout_rate'][0])(hidden)
-    hidden = Dense(
-        units=hyperparameters['hidden_neuron_number'][0],
-        activation=hyperparameters['hidden_activation'][0])(hidden)
+    # Set the "anchor" variable
+    x = inputs
 
-    # Loop over the number of additional hidden layers
-    for layer in range(1, hyperparameters['hidden_layer_number']):
+    # Loop over the number of hidden layers
+    for layer in range(hyperparameters['hidden_layer_number']):
 
         # Define the hidden layer
-        hidden = BatchNormalization()(hidden)
-        hidden = Dropout(hyperparameters['hidden_dropout_rate'][layer])(hidden)
-        hidden = Dense(
-            units=hyperparameters['hidden_neuron_number'][layer],
-            activation=hyperparameters['hidden_activation'][layer],
-            kernel_constraint=non_neg())(hidden)
+        x = Dense(
+            hyperparameters['hidden_neuron_number'][layer],
+            use_bias=False,
+            kernel_regularizer=l2(0.01),
+            kernel_constraint=non_neg(),
+            name=f'dense_hidden_{layer}')(x)
+        x = BatchNormalization(name=f'batch_norm_hidden_{layer}')(x)
+        x = Activation(
+            hyperparameters['hidden_activation'][layer],
+            name=f'activation_hidden_{layer}')(x)
+        x = Dropout(
+            hyperparameters['hidden_dropout_rate'][layer],
+            name=f'dropout_hidden_{layer}')(x)
 
     # Define the output layer
     outputs = Dense(
-        units=output_shape, activation=hyperparameters['output_activation'],
-        kernel_constraint=non_neg(), bias_initializer=Constant(log(bias))
-        )(hidden)
+        output_shape,
+        activation=hyperparameters['output_activation'],
+        kernel_constraint=non_neg(),
+        name='output')(x)
 
     return Model(inputs, outputs)
