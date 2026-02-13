@@ -124,7 +124,7 @@ class LRCMAES:
         self.svals = diag(self.svals)
 
         # Truncate to rank r
-        r = 1567
+        r = 1000
         self.left_svec = self.left_svec[:, :r]
         self.svals = self.svals[:r, :r]
 

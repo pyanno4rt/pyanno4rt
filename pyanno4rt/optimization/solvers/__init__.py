@@ -10,7 +10,7 @@ setting up the internal pyanno4rt implementations.
 
 # Author: Tim Ortkamp
 
-from . import custom
+from . import cmaes
 
 from ._ipyopt_solver import IpyoptSolver
 from ._pyanno4rt_solver import Pyanno4rtSolver
@@ -19,7 +19,7 @@ from ._pypop7_solver import PyPop7Solver
 from ._scipy_solver import SciPySolver
 
 __all__ = [
-    'custom',
+    'cmaes',
     'IpyoptSolver',
     'Pyanno4rtSolver',
     'PymooSolver',

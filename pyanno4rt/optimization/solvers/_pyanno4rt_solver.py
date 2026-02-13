@@ -9,7 +9,7 @@ from numpy import around, array, log
 # %% Internal package import
 
 from pyanno4rt.logging import get_logger
-from pyanno4rt.optimization.solvers.custom import CMAES, LRCMAES
+from pyanno4rt.optimization.solvers.cmaes import CMAES, LRCMAES
 
 # %% Class definition
 
