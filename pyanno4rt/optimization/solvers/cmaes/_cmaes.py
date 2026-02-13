@@ -84,7 +84,6 @@ class CMAES:
         self._singular_values = []
 
         # Initialize the fixed algorithm variables
-        self._zeros = zeros(self._number_of_variables)
         self._pop_size = (
             4 + int(3*log(self._number_of_variables))
             if number_of_individuals is None else number_of_individuals)
@@ -152,7 +151,7 @@ class CMAES:
         steps = zsamples@self._sq_cov
 
         # Sample the new population
-        population = self._mean + self._lr_mean*self._sigma*steps
+        population = self._mean + self._sigma*steps
 
         return (
             minimum(maximum(population, self.lower_bound), self.upper_bound),
@@ -224,7 +223,7 @@ class CMAES:
         elite_mean_step = self._weights@elite_steps
 
         # Update the mean vector
-        self._mean = self._mean + self._sigma*elite_mean_step
+        self._mean = self._mean + self._lr_mean*self._sigma*elite_mean_step
 
         # Update the step-size evolution path
         self._path_sigma = (
