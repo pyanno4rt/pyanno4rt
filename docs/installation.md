@@ -57,6 +57,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `matplotlib`                   | <font size="3"> >=3.10.8 </font>      |
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
+| `setuptools`                   | <font size="3"> <81.0.0 </font>       |
 
-Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.2** for development.
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.3** for development.
 \

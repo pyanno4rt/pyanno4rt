@@ -57,17 +57,17 @@ class Visualizer(QMainWindow, Ui_visualization_window):
             treatment_plan,
             parent=None):
 
-        # Run the constructor from the superclass
-        super().__init__()
-
-        # Build the UI main window
-        self.setupUi(self)
-
         # Initialize the application
         self.application = mkQApp("pyanno4rt")
 
         # Set the application style
         self.application.setStyle('Fusion')
+
+        # Run the constructor from the superclass
+        super().__init__()
+
+        # Build the UI main window
+        self.setupUi(self)
 
         # Initialize the base plan
         self.plan = treatment_plan
