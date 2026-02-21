@@ -193,7 +193,7 @@ class FeedForwardNet(MachineLearningModel):
                 verbose=0)]
 
         # Make the predictor
-        self._make_predictor(self.preprocess(features)[0].shape[1])
+        self._make_predictor(features.shape[1])
 
         # Fit the predictor
         self.predictor.fit(

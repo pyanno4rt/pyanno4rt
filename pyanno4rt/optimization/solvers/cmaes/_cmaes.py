@@ -9,11 +9,11 @@ from time import time
 from collections import deque
 from math import inf
 from numpy import (
-    arange, argmin, argpartition, array, diag, einsum, exp, eye, log, maximum,
-    median, minimum, sqrt, zeros)
+    arange, argmin, argsort, array, clip, copy, einsum, exp, eye, full, log,
+    maximum, median, ones, outer, sqrt, vstack, zeros)
 from numpy import sum as nsum
-from numpy.linalg import inv, norm, svd
-from numpy.random import seed, standard_normal
+from numpy.linalg import norm, svd
+from numpy.random import RandomState
 
 # %% Covariance matrix adaptation evolution algorithm
 
@@ -26,108 +26,172 @@ class CMAES:
 
     Parameters
     ----------
+    number_of_variables : int
+        Dimension of the search space (number of decision variables).
 
+    objective : Callable[[ndarray], float]
+        The objective function to be minimized. Must accept a 1D ``ndarray`` \
+        and return a scalar ``float``.
 
-    Attributes
-    ----------
+    gradient : Callable[[ndarray], ndarray], optional
+        Optional gradient function used for hybrid evolution steps.
 
+    lower_variable_bounds : ndarray, default=None
+        Lower bounds on the decision variables. Must be a 1D array of length \
+        `number_of_variables`. Defaults to -inf for all variables.
+
+    upper_variable_bounds : ndarray, default=None
+        Upper bounds on the decision variables. Must be a 1D array of length \
+        `number_of_variables`. Defaults to +inf for all variables.
+
+    initial_sigma : float, default=0.3
+        Initial step size (standard deviation).
+
+    maximum_iterations : int, default=1000
+        Maximum number of generations (iterations) to run before stopping.
+
+    maximum_wall_time : int or float, default=7200
+        Maximum allowed wall-clock time in seconds.
+
+    fitness_threshold : int or float, default=-inf
+        Target fitness value. If the objective value reaches this threshold, \
+        optimization stops (success criterion).
+
+    fitness_window_size : int, default=20
+        Number of past iterations to consider for the median fitness \
+        stagnation check.
+
+    tolerance : float, default=1e-3
+        Absolute and relative termination tolerance: stops if the change in \
+        median fitness over `fitness_window_size` is below this value.
+
+    sigma_threshold : float, default=1e-3
+        Minimum allowed step size. If the step size falls below this limit, \
+        optimization stops (convergence/collapse criterion).
+
+    store_singular_values : bool, default=False
+        Indicator for recording the history of singular values (eigenvalues) \
+        of the covariance matrix for later analysis.
+
+    svd_interval : int, default=1
+        Frequency of the SVD update (in generations). Larger values (e.g. 10) \
+        can significantly speed up the algorithm for high-dimensional problems.
+
+    rank : None or int, default=None
+        Rank of the covariance matrix approximation. If specified, a low-rank \
+        update is performed. Defaults to `number_of_variables`.
+
+    callback : Callable[[dict], None], default=None
+        Optional function called at the end of each iteration. Must accept a \
+        dictionary with the current results.
     """
-
-    # Set the random seed
-    seed(42)
 
     def __init__(
             self,
             number_of_variables,
             objective,
+            gradient=None,
             lower_variable_bounds=None,
             upper_variable_bounds=None,
-            gradient=None,
             number_of_individuals=None,
-            initial_sigma=None,
+            initial_sigma=0.3,
             maximum_iterations=1000,
             maximum_wall_time=7200,
-            fitness_threshold=None,
+            fitness_threshold=-inf,
             fitness_window_size=20,
-            sigma_threshold=1e-3,
             tolerance=1e-3,
+            sigma_threshold=1e-3,
+            store_singular_values=False,
+            svd_interval=1,
+            rank=None,
             callback=None):
+
+        # Set the random seed
+        self._rng = RandomState(42)
 
         # Initialize the optimization problem variables
         self._number_of_variables = number_of_variables
         self.objective = objective
         self.gradient = gradient
-        self.lower_bound = (
-            [-inf]*number_of_variables if lower_variable_bounds is None
-            else lower_variable_bounds)
-        self.upper_bound = (
-            [-inf]*number_of_variables if upper_variable_bounds is None
-            else upper_variable_bounds)
+        self.lower_variable_bounds = (
+            full(self._number_of_variables, -inf)
+            if lower_variable_bounds is None else lower_variable_bounds)
+        self.upper_variable_bounds = (
+            full(self._number_of_variables, inf)
+            if upper_variable_bounds is None else upper_variable_bounds)
+        self._rank = (
+            self._number_of_variables if rank is None
+            else min(self._number_of_variables, rank))
 
-        # Initialize the stopping criteria variables
-        self.maximum_iterations = maximum_iterations
-        self.maximum_wall_time = maximum_wall_time
-        self.fitness_threshold = (
-            -inf if fitness_threshold is None else fitness_threshold)
-        self.sigma_threshold = (
-            0 if sigma_threshold is None else sigma_threshold)
-        self.fitness_window_size = fitness_window_size
-        self.tolerance = tolerance
-
-        # Initialize the callback variable
-        self._callback = callback
-
-        # Initialize the fitness history
-        self._fitness_history = None
-
-        # Initialize the singular values list
+        # Initialize the SVD variables
+        self._store_singular_values = store_singular_values
         self._singular_values = []
+        self._svd_interval = svd_interval
 
-        # Initialize the fixed algorithm variables
+        # Initialize the population and elite sizes
         self._pop_size = (
             4 + int(3*log(self._number_of_variables))
             if number_of_individuals is None else number_of_individuals)
-        self._elite_size = int(self._pop_size/2)
-        self._weights = (
-            (log((self._elite_size+0.5)/arange(1, self._elite_size+1)))
-            / nsum(log((self._elite_size+0.5)/arange(1, self._elite_size+1))))
-        self._mu_eff = 1/nsum(self._weights**2)
-        self._lr_sigma = (
-            (self._mu_eff+2) / (self._number_of_variables+self._mu_eff+3))
-        self._lr_cov = 4/(self._number_of_variables+4)
-        self._lr_rank_1 = (
-            (2*min(1, self._pop_size/6))
-            / ((self._number_of_variables+1.3)**2+self._mu_eff))
-        self._lr_rank_mu = (
-            2*(self._mu_eff+1/self._mu_eff-2)
-            / ((self._number_of_variables+2)**2+self._mu_eff))
-        self._lr_mean = 1
-        self._damp_sigma = (
-            1+2*max(0, ((self._mu_eff-1)/self._number_of_variables)**0.5 - 1)
-            + self._lr_sigma)
-        self._expected_path_length = (
-            self._number_of_variables**0.5
-            * (1-1/(4*self._number_of_variables)
-               + 1/(21*self._number_of_variables**2)))
+        self._elite_size = self._pop_size // 2
 
-        # Initialize the adaptive algorithm variables
+        # Initialize the weights and variance effective selection mass
+        base_weights = (
+            log(self._elite_size + 0.5) - log(arange(1, self._elite_size + 1))
+            )
+        self._weights = base_weights / nsum(base_weights)
+        self._mu_eff = 1 / nsum(self._weights**2)
+
+        # Initialize the learning rates
+        self._lr_sigma = (self._mu_eff + 2) / (self._rank + self._mu_eff + 3)
+        self._lr_cov = 4 / (self._rank + 4)
+        self._lr_rank_1 = (
+            2 * min(1, self._pop_size/6) /
+            ((self._rank + 1.3)**2 + self._mu_eff))
+        self._lr_rank_mu = (
+            2*(self._mu_eff + 1/self._mu_eff - 2) /
+            ((self._rank + 2)**2 + self._mu_eff))
+        self._lr_mean = 1.0
+
+        # Initialize the damping coefficient
+        self._damp_sigma = (
+            1 + 2*max(0, sqrt((self._mu_eff - 1) / self._rank) - 1)
+            + self._lr_sigma)
+
+        # Initialize the expected path length
+        self._expected_path_length = (
+            sqrt(self._number_of_variables) * (
+                1
+                - 1/(4*self._number_of_variables)
+                + 1/(21*self._number_of_variables**2))
+            )
+
+        # Initialize the adaptive variables
         self._wall_start = None
         self._opt_iter = 0
-        self._sigma = 0.3 if initial_sigma is None else initial_sigma
+        self._sigma = initial_sigma
         self._path_sigma = zeros(self._number_of_variables)
         self._path_cov = zeros(self._number_of_variables)
         self._mean = zeros(self._number_of_variables)
         self._cov = eye(self._number_of_variables)
-        self._sq_cov = eye(self._number_of_variables)
+        self._left_svec = eye(self._number_of_variables)[:, :self._rank]
+        self._svals = ones(self._rank)
 
-        # Initialize the result dictionary
+        # Initialize the stopping criteria and tracking variables
+        self.maximum_iterations = maximum_iterations
+        self.maximum_wall_time = maximum_wall_time
+        self.fitness_threshold = fitness_threshold
+        self.sigma_threshold = (
+            0.0 if sigma_threshold is None else sigma_threshold)
+        self.tolerance = tolerance
+        self._fitness_history = deque(maxlen=fitness_window_size)
+        self._callback = callback
         self._result = {
             'optimal_point': None, 'optimal_value': inf, 'solver_info': None,
             'wall_time': None}
 
     def ask(self):
         """
-        Generate a new population.
+        Generate a new population in the current rank-subspace.
 
         Returns
         -------
@@ -139,29 +203,48 @@ class CMAES:
         """
 
         # Sample from the standard multivariate Gaussian
-        zsamples = standard_normal((self._pop_size, self._number_of_variables))
-
-        # Perform SVD on the covariance matrix
-        left_svec, svals, _ = svd(self._cov)
-
-        # Get the square root of the covariance matrix
-        self._sq_cov = left_svec@diag(sqrt(svals))
+        zsamples = self._rng.standard_normal((self._pop_size, self._rank))
 
         # Sample steps from the multivariate Gaussian
-        steps = zsamples@self._sq_cov
+        steps = (zsamples * sqrt(self._svals)) @ self._left_svec.T
 
         # Sample the new population
         population = self._mean + self._sigma*steps
 
-        return (
-            minimum(maximum(population, self.lower_bound), self.upper_bound),
-            steps)
+        # Check if a gradient has been provided
+        if self.gradient is not None:
+
+            # Compute the gradient
+            gradient = self.gradient(self._mean)
+
+            # Compute the unscaled natural gradient
+            natural_gradient = self._cov @ gradient
+
+            # Compute the rescaling factor
+            rescale = 1 / (sqrt(gradient @ natural_gradient) + 1e-15)
+
+            # Compute the natural gradient step
+            gradient_step = self._sigma * natural_gradient * rescale
+
+            # Extend the steps (with mirroring)
+            steps = vstack([steps, (-gradient_step, +gradient_step)])
+
+            # Extend the population (with mirroring)
+            population = vstack([
+                population,
+                (self._mean - gradient_step, self._mean + gradient_step)])
+
+        # Get the "feasible" population
+        feasible_population = clip(
+            population, self.lower_variable_bounds, self.upper_variable_bounds)
+
+        return feasible_population, steps
 
     def evaluate(
             self,
             population):
         """
-        Evaluate the fitness of the population.
+        Evaluate the fitness of the population and track the global optimum.
 
         Parameters
         ----------
@@ -179,20 +262,18 @@ class CMAES:
             self.objective(individual) for individual in population])
 
         # Get the best fitness
-        best_fitness = fitness.min()
+        best_index = argmin(fitness)
+        best_fitness = fitness[best_index]
 
         # Append the best fitness to the history
         self._fitness_history.append(best_fitness)
 
-        # Get the fitness improvement
-        fitness_improvement = self._result['optimal_value'] - best_fitness
-
         # Check if an improved solution has been found
-        if fitness_improvement > 0:
+        if self._result['optimal_value'] - best_fitness > 0:
 
             # Update the optimal value and point
             self._result['optimal_value'] = best_fitness
-            self._result['optimal_point'] = population[argmin(fitness)]
+            self._result['optimal_point'] = copy(population[best_index])
 
         return fitness
 
@@ -201,7 +282,7 @@ class CMAES:
             fitness,
             steps):
         """
-        Update the adaptive algorithm variables.
+        Update the adaptive variables.
 
         Parameters
         ----------
@@ -213,53 +294,107 @@ class CMAES:
         """
 
         # Get the indices of the elite fitness values
-        elite_indices = argpartition(
-            fitness, self._elite_size)[:self._elite_size]
+        elite_indices = argsort(fitness)[:self._elite_size]
 
         # Get the elite step vectors
-        elite_steps = steps[elite_indices, :]
+        elite_steps = steps[elite_indices]
 
         # Compute the mean of the elite step vectors
         elite_mean_step = self._weights@elite_steps
 
-        # Update the mean vector
-        self._mean = self._mean + self._lr_mean*self._sigma*elite_mean_step
+        # Calculate the inverse rooted singular values with epsilon correction
+        inv_root_svals = 1.0 / (sqrt(self._svals) + 1e-15)
+
+        # Transform the elite mean step
+        elite_mean_step_tr = (
+            self._left_svec
+            @ (inv_root_svals * (self._left_svec.T @ elite_mean_step))
+            )
 
         # Update the step-size evolution path
         self._path_sigma = (
-            (1-self._lr_sigma)*self._path_sigma
-            + (self._lr_sigma*(2-self._lr_sigma)*self._mu_eff)**0.5
-            * inv(self._sq_cov).T
-            * elite_mean_step)
+            (1-self._lr_sigma) * self._path_sigma
+            + sqrt(self._lr_sigma * (2-self._lr_sigma) * self._mu_eff)
+            * elite_mean_step_tr)
+
+        # Get the norm of the step-size evolution path
+        ps_norm = norm(self._path_sigma)
 
         # Compute the update switch for the covariance matrix
         update_switch = (
-            norm(self._path_sigma)
-            < (1-(1-self._lr_sigma)**(2*(self._opt_iter+1)))**0.5
-            * (1.4+2/(self._number_of_variables+1))*self._expected_path_length)
+            1.0
+            if ps_norm / sqrt(1 - (1-self._lr_sigma)**(2*(self._opt_iter + 1)))
+            < (1.4 + 2/(self._rank+1)) * self._expected_path_length
+            else 0.0)
 
         # Update the rank-1 evolution path
         self._path_cov = (
-            (1-self._lr_cov)*self._path_cov
+            (1-self._lr_cov) * self._path_cov
             + update_switch
-            * (self._lr_cov*(2-self._lr_cov)*self._mu_eff)**0.5
+            * sqrt(self._lr_cov * (2-self._lr_cov) * self._mu_eff)
             * elite_mean_step)
 
+        # Compute the CMA-ES mean step
+        self._mean += self._lr_mean * self._sigma * elite_mean_step
+
         # Update the step size
-        self._sigma = (
-            self._sigma*exp(
-                (self._lr_sigma/self._damp_sigma)
-                 * ((norm(self._path_sigma)/self._expected_path_length)-1)))
+        self._sigma *= clip(
+            exp((self._lr_sigma / self._damp_sigma)
+                * (ps_norm / self._expected_path_length - 1)),
+            a_min=1e-15, a_max=1)
+
+        # Precalculate covariance update terms
+        lr_rank_1_adj = (
+            (1-update_switch) * self._lr_rank_1 * self._lr_cov
+            * (2-self._lr_cov))
+        rank_mu_term = einsum(
+            'i,ij,ik->jk', self._weights, elite_steps, elite_steps,
+            optimize=True)
 
         # Update the covariance matrix
         self._cov = (
-            (1+(1-update_switch)*self._lr_rank_1*self._lr_cov*(2-self._lr_cov))
+            (1 - self._lr_rank_1 - self._lr_rank_mu + lr_rank_1_adj)
             * self._cov
-            + self._lr_rank_1*(self._path_cov@self._path_cov.T-self._cov)
-            + self._lr_rank_mu*(
-                einsum('a,ai,aj->ij', self._weights, elite_steps, elite_steps,
-                       optimize=True)
-                - nsum(self._weights)*self._cov))
+            + self._lr_rank_1 * outer(self._path_cov, self._path_cov)
+            + self._lr_rank_mu * rank_mu_term)
+
+        # Check if the SVD factors should be updated
+        if self._opt_iter % self._svd_interval == 0:
+
+            # Update the SVD factors
+            self._left_svec, self._svals, _ = svd(self._cov)
+
+            # Check if the selected rank is lower than the dimensionality
+            if self._rank < self._number_of_variables:
+
+                # Get the energy scaling
+                energy_scale = (
+                    nsum(self._svals) /
+                    (nsum(self._svals[:self._rank]) + 1e-15)
+                    )
+
+                # Rescale the truncated singular values
+                self._svals = self._svals[:self._rank] * energy_scale
+
+            else:
+
+                # Truncate the singular values only
+                self._svals = self._svals[:self._rank]
+
+            # Truncate the singular vectors
+            self._left_svec = self._left_svec[:, :self._rank]
+
+            # Clip the singular values
+            self._svals = maximum(self._svals, 1e-12)
+
+            # Check if singular values should be stored
+            if self._store_singular_values:
+
+                # Append the singular values
+                self._singular_values.append(self._svals)
+
+            # Symmetrize the covariance matrix for stability
+            self._cov = (self._left_svec * self._svals) @ self._left_svec.T
 
     def optimize(
             self,
@@ -283,9 +418,6 @@ class CMAES:
 
         # Select the mean value
         self._mean = self._mean if initial_mean is None else initial_mean
-
-        # Initialize the fitness history
-        self._fitness_history = deque(maxlen=self.fitness_window_size)
 
         # Continue until termination criteria are fulfilled
         while self.check_termination() is False:
@@ -340,18 +472,35 @@ class CMAES:
             return True
 
         # Check if the history is completely filled
-        if len(self._fitness_history) == self.fitness_window_size:
+        if len(self._fitness_history) == self._fitness_history.maxlen:
 
             # Converthe history to a list
-            fitness_history = list(self._fitness_history)
+            history = list(self._fitness_history)
 
-            # Check if the split median difference is below tolerance
-            if (median(fitness_history[:self.fitness_window_size//2])
-                - median(fitness_history[self.fitness_window_size//2:])
-                <= self.tolerance):
+            # Get the first and second half median
+            first_median = median(history[:len(history) // 2])
+            second_median = median(history[len(history) // 2:])
+
+            # Check if the absolute median difference is below tolerance
+            if abs(first_median - second_median) < self.tolerance:
 
                 # Add the solver info
-                self._result['solver_info'] = 'FITNESS_PLATEAU_REACHED'
+                self._result['solver_info'] = (
+                    'ABSOLUTE_FITNESS_PLATEAU_REACHED')
+
+                return True
+
+            # Get the relative median difference
+            diff = (
+                abs(first_median - second_median) /
+                (abs(second_median) + 1e-15))
+
+            # Check if the relative median difference is below tolerance
+            if diff < self.tolerance:
+
+                # Add the solver info
+                self._result['solver_info'] = (
+                    'RELATIVE_FITNESS_PLATEAU_REACHED')
 
                 return True
 

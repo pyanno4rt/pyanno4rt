@@ -117,17 +117,20 @@ class Pyanno4rtSolver():
             self.arguments = {
                 'number_of_variables': len(problem.initial_fluence),
                 'objective': problem.objective,
+                'gradient': problem.gradient,
                 'lower_variable_bounds': array(problem.variable_bounds[0]),
                 'upper_variable_bounds': array(problem.variable_bounds[1]),
-                'gradient': problem.gradient,
                 'number_of_individuals': None,
-                'initial_sigma': 0.1,
+                'initial_sigma': 0.2*max(problem.initial_fluence),
                 'maximum_iterations': self.maximum_iterations,
                 'maximum_wall_time': 7200,
-                'fitness_threshold': None,
-                'fitness_window_size': int(20*log(self.maximum_iterations)),
-                'sigma_threshold': 1e-3,
+                'fitness_threshold': -float('inf'),
+                'fitness_window_size': 20,
                 'tolerance': self.tolerance,
+                'sigma_threshold': 1e-3,
+                'store_singular_values': False,
+                'svd_interval': 100,
+                'rank': None,
                 'callback': self.callback}
 
         # Check if the algorithm is 'LRCMAES'

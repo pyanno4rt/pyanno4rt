@@ -166,22 +166,39 @@ class IpyoptSolver():
             'ipopt_options': {
                 'sb': 'yes',
                 'print_level': 0,
-                'tol': 1e-10,
+                'tol': 1e-8,
                 'dual_inf_tol': 1e-4,
                 'constr_viol_tol': 1e-4,
                 'compl_inf_tol': 1e-4,
                 'acceptable_iter': 5,
-                'acceptable_tol': 1e10,
+                'acceptable_tol': 1e2,
                 'acceptable_constr_viol_tol': 1e-2,
                 'acceptable_dual_inf_tol': 1e10,
                 'acceptable_compl_inf_tol': 1e10,
                 'acceptable_obj_change_tol': self.tolerance,
                 'max_iter': self.maximum_iterations,
                 'mu_strategy': 'adaptive',
+                'nlp_scaling_method': 'none',
                 'hessian_approximation': 'limited-memory',
                 'limited_memory_max_history': 50,
                 'limited_memory_initialization': 'scalar2',
                 'linear_solver': self.algorithm}}
+
+        # Check if constraints have been passed
+        if len(problem.constraints) > 0:
+
+            # Update the arguments
+            self.arguments['ipopt_options'] |= {
+                'mu_strategy': 'monotone',
+                'mu_init': 0.1,
+                'nlp_scaling_method': 'gradient-based',
+                'bound_relax_factor': 0.0,
+                'bound_mult_init_method': 'mu-based',
+                'honor_original_bounds': 'yes',
+                'required_infeasibility_reduction': 0.9,
+                'mumps_pivtol': 0.1,
+                'min_refinement_steps': 2,
+                'watchdog_shortened_iter_trigger': 10}
 
     def run(
             self,
