@@ -44,6 +44,9 @@ class CMAES:
         Upper bounds on the decision variables. Must be a 1D array of length \
         `number_of_variables`. Defaults to +inf for all variables.
 
+    number_of_individuals : int, default=None
+        Population size. Defaults to 4 + int(3*log(`number_of_variables`)).
+
     initial_sigma : float, default=0.3
         Initial step size (standard deviation).
 
