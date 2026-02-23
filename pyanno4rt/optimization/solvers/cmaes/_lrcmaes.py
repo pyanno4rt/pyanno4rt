@@ -9,12 +9,15 @@ from time import time
 from collections import deque
 from math import inf
 from numpy import (
-    arange, argmin, argsort, array, clip, copy, diag, exp, eye, full, log,
-    maximum, median, ones, outer, sqrt, vstack, zeros)
+    arange, argmin, argsort, array, clip, copy, exp, eye, full, log, maximum,
+    median, ones, outer, sqrt, vstack, zeros)
 from numpy import sum as nsum
 from numpy.linalg import norm
 from numpy.random import RandomState
-from ._integrators import LowRankIntegrators
+
+# %% Internal package import
+
+from ._low_rank_integrator import LowRankIntegrator
 
 # %% Low-rank covariance matrix adaptation evolution algorithm
 
@@ -55,10 +58,10 @@ class LRCMAES:
         Name of the low-rank integrator.
 
     low_rank_dimension : int, default=1000
-        Rank of the approximation.
+        Initial rank of the approximation.
 
     low_rank_tolerance : float, default=1e-1
-        Tolerance of the low-rank approximation.
+        Tolerance of the rank truncation.
 
     maximum_iterations : int, default=1000
         Maximum number of generations (iterations) to run before stopping.
@@ -90,38 +93,6 @@ class LRCMAES:
         Optional function called at the end of each iteration. Must accept a \
         dictionary with the current results.
     """
-
-    def K_step(self, US, V, step_size):
-        """
-        Perform the K-step.
-
-        Returns
-        -------
-        ...
-        """
-
-        return  US + step_size*(outer(self._path_cov, self._path_cov) @ V - US)
-
-    def L_step(self, U, VS, step_size):
-        """
-        Perform the L-step.
-
-        Returns
-        -------
-        ...
-        """
-        return  VS + step_size*(outer(self._path_cov, self._path_cov) @ U - VS)
-
-    def S_step(self, U, S, V, U1, S1, V1, step_size):
-        """
-        Perform the S-step.
-
-        Returns
-        -------
-        ...
-        """
-        return S + step_size*(
-            U.T @ outer(self._path_cov, self._path_cov) @ V - S)
 
     def __init__(
             self,
@@ -159,9 +130,17 @@ class LRCMAES:
             if upper_variable_bounds is None else upper_variable_bounds)
 
         # Initialize the dynamical low-rank integrator
-        self.integrator = LowRankIntegrators(
-            low_rank_dimension, low_rank_tolerance, 0, low_rank_integrator,
-            self.K_step, self.L_step, self.S_step)
+        self.integrator = LowRankIntegrator(
+            name=low_rank_integrator,
+            rank=low_rank_dimension,
+            truncation_tolerance=low_rank_tolerance,
+            N_conserved_basis=0,
+            K_step=lambda US, V, dt: (
+                US + dt*(outer(self._path_cov, self._path_cov) @ V - US)),
+            L_step=lambda U, VS, dt: (
+                VS + dt*(outer(self._path_cov, self._path_cov) @ U - VS)),
+            S_step=lambda U, S, V, U1, S1, V1, dt: (
+                S + dt*(U.T @ outer(self._path_cov, self._path_cov) @ V - S)))
 
         # Initialize the update interval
         self._update_interval = update_interval
@@ -244,12 +223,6 @@ class LRCMAES:
 
         # Sample steps from the multivariate Gaussian
         steps = (zsamples * sqrt(self._svals)) @ self._left_svec.T
-
-        # --------------------------------------------------#
-        # # Sample steps from the multivariate Gaussian
-        # steps = (self.left_svec @ self.svals @ zsamples.T[
-        #     :self.left_svec.shape[1], :]).T
-        # --------------------------------------------------#
 
         # Sample the new population
         population = self._mean + self._sigma*steps
@@ -392,11 +365,10 @@ class LRCMAES:
 
             # Update the SVD factors
             self._left_svec, self._svals,_ = self.integrator.update(
-                self._left_svec, diag(self._svals), self._left_svec,
-                self._lr_cov)
+                self._left_svec, self._svals, self._left_svec, self._lr_cov)
 
             # Clip the singular values
-            self._svals = maximum(diag(self._svals), 1e-12)
+            self._svals = maximum(self._svals, 1e-12)
 
     def optimize(
             self,

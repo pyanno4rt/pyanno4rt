@@ -143,7 +143,7 @@ class Pyanno4rtSolver():
             self.arguments = {
                 'number_of_variables': len(problem.initial_fluence),
                 'objective': problem.objective,
-                'gradient': problem.gradient,
+                # 'gradient': problem.gradient,
                 'lower_variable_bounds': array(problem.variable_bounds[0]),
                 'upper_variable_bounds': array(problem.variable_bounds[1]),
                 'number_of_individuals': None,
@@ -157,7 +157,7 @@ class Pyanno4rtSolver():
                 'fitness_window_size': 20,
                 'tolerance': self.tolerance,
                 'sigma_threshold': 1e-3,
-                'update_interval': 100,
+                'update_interval': 1,
                 'callback': self.callback}
 
     def run(

@@ -545,12 +545,68 @@ solver = CMAES(
     tolerance=1e-3,
     callback=None)
 
+# Optimize the variables
+result = solver.optimize(initial_x)
+
+# Get the iteration-wise eigenvalues
+sv = solver._singular_values
+
 # %% Plot covariance matrix over function
 
 import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
+
+def plot_iter_sv(svals, iteration, fname, k):
+    """Plot the singular values for a fixed iteration."""
+
+    # Plotting on a semi-log scale (y-axis is logarithmic)
+    plt.figure(figsize=(10, 6))
+
+    #
+    values = svals[iteration][:k]
+
+    # Plot the singular values
+    plt.semilogy(values, marker='o', linestyle='-', color='b')
+
+    plt.title(f'{fname} (iteration {iteration})', fontweight='bold')
+    plt.ylabel('Singular Value ($\sigma_i$) (log scale)')
+    plt.xlabel('Singular Value Index')
+    # plt.xticks([i for i in range(len(values))])
+    plt.grid(True, which="both", ls="--", color='0.7')
+    plt.savefig(f'/home/tim/Downloads/{fname}_{iteration}.pdf')
+    plt.show()
+
+plot_iter_sv(sv, 0, prob.name, 20)
+plot_iter_sv(sv, len(sv)//2, prob.name, 20)
+plot_iter_sv(sv, len(sv)-1, prob.name, 20)
+
+def plot_sv_paths(svals, fname, space):
+    """Plot the iteration-wise singular value paths."""
+
+    # Plotting on a semi-log scale (y-axis is logarithmic)
+    plt.figure(figsize=(10, 6))
+
+    # Plot the singular values
+    for values in zip(*svals):
+
+        #
+        subvalues = values[::space]
+
+        #
+        plt.semilogy(
+            array(range(len(subvalues)))*space, subvalues, marker='.',
+            linestyle='-', color='b')
+
+    plt.title(f'{fname}', fontweight='bold')
+    plt.ylabel('Singular Value ($\sigma_i$) (log scale)')
+    plt.xlabel('Optimization iteration')
+    plt.grid(True, which="both", ls="--", color='0.7')
+    plt.savefig(f'/home/tim/Downloads/{fname}.pdf')
+    plt.show()
+
+plot_sv_paths(sv, prob.name, 1)
 
 # Interactive plotting
 plt.ion()
@@ -618,11 +674,5 @@ def update_plot(iteration, mu_2d, cov_2d, svs):
     plt.pause(3)
     plt.show()
 
-# Optimize the variables
-result = solver.optimize(initial_x)
-
 plt.pause(10)
 plt.close()
-
-# Get the iteration-wise eigenvalues
-sv = solver._singular_values
