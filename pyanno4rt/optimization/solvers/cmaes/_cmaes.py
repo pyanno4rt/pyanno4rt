@@ -9,11 +9,11 @@ from time import time
 from collections import deque
 from math import inf
 from numpy import (
-    arange, argmin, argsort, array, clip, copy, einsum, exp, eye, full, log,
-    maximum, median, ones, outer, sqrt, vstack, zeros)
+    arange, argmin, argsort, array, clip, copy, exp, eye, full, log, maximum,
+    median, ones, sqrt, vstack, zeros)
 from numpy import sum as nsum
-from numpy.linalg import norm, svd
 from numpy.random import RandomState
+from scipy.linalg import eigh, norm
 
 # %% Covariance matrix adaptation evolution algorithm
 
@@ -173,11 +173,12 @@ class CMAES:
         self._opt_iter = 0
         self._sigma = initial_sigma
         self._path_sigma = zeros(self._number_of_variables)
-        self._path_cov = zeros(self._number_of_variables)
+        self._path_cov = zeros((self._number_of_variables, 1))
         self._mean = zeros(self._number_of_variables)
         self._cov = eye(self._number_of_variables)
         self._left_svec = eye(self._number_of_variables)[:, :self._rank]
         self._svals = ones(self._rank)
+        self._sampling_matrix = eye(self._number_of_variables)[:, :self._rank]
 
         # Initialize the stopping criteria and tracking variables
         self.maximum_iterations = maximum_iterations
@@ -194,7 +195,7 @@ class CMAES:
 
     def ask(self):
         """
-        Generate a new population in the current rank-subspace.
+        Generate a new population.
 
         Returns
         -------
@@ -209,7 +210,7 @@ class CMAES:
         zsamples = self._rng.standard_normal((self._pop_size, self._rank))
 
         # Sample steps from the multivariate Gaussian
-        steps = (zsamples * sqrt(self._svals)) @ self._left_svec.T
+        steps = zsamples @ self._sampling_matrix.T
 
         # Sample the new population
         population = self._mean + self._sigma*steps
@@ -238,10 +239,11 @@ class CMAES:
                 (self._mean - gradient_step, self._mean + gradient_step)])
 
         # Get the "feasible" population
-        feasible_population = clip(
-            population, self.lower_variable_bounds, self.upper_variable_bounds)
+        clip(
+            population, a_min=self.lower_variable_bounds,
+            a_max=self.upper_variable_bounds, out=population)
 
-        return feasible_population, steps
+        return population, steps
 
     def evaluate(
             self,
@@ -262,7 +264,8 @@ class CMAES:
 
         # Compute the fitness values
         fitness = array([
-            self.objective(individual) for individual in population])
+            self.objective(individual, track=False)
+            for individual in population])
 
         # Get the best fitness
         best_index = argmin(fitness)
@@ -277,6 +280,9 @@ class CMAES:
             # Update the optimal value and point
             self._result['optimal_value'] = best_fitness
             self._result['optimal_point'] = copy(population[best_index])
+
+        # Re-evaluate the current best individual for tracking
+        self.objective(self._result['optimal_point'])
 
         return fitness
 
@@ -303,7 +309,7 @@ class CMAES:
         elite_steps = steps[elite_indices]
 
         # Compute the mean of the elite step vectors
-        elite_mean_step = self._weights@elite_steps
+        elite_mean_step = self._weights @ elite_steps
 
         # Calculate the inverse rooted singular values with epsilon correction
         inv_root_svals = 1.0 / (sqrt(self._svals) + 1e-15)
@@ -315,9 +321,9 @@ class CMAES:
             )
 
         # Update the step-size evolution path
-        self._path_sigma = (
-            (1-self._lr_sigma) * self._path_sigma
-            + sqrt(self._lr_sigma * (2-self._lr_sigma) * self._mu_eff)
+        self._path_sigma *= (1 - self._lr_sigma)
+        self._path_sigma += (
+            sqrt(self._lr_sigma * (2-self._lr_sigma) * self._mu_eff)
             * elite_mean_step_tr)
 
         # Get the norm of the step-size evolution path
@@ -331,11 +337,11 @@ class CMAES:
             else 0.0)
 
         # Update the rank-1 evolution path
-        self._path_cov = (
-            (1-self._lr_cov) * self._path_cov
-            + update_switch
+        self._path_cov *= 1-self._lr_cov
+        self._path_cov += (
+            update_switch
             * sqrt(self._lr_cov * (2-self._lr_cov) * self._mu_eff)
-            * elite_mean_step)
+            * elite_mean_step[:, None])
 
         # Compute the CMA-ES mean step
         self._mean += self._lr_mean * self._sigma * elite_mean_step
@@ -350,22 +356,27 @@ class CMAES:
         lr_rank_1_adj = (
             (1-update_switch) * self._lr_rank_1 * self._lr_cov
             * (2-self._lr_cov))
-        rank_mu_term = einsum(
-            'i,ij,ik->jk', self._weights, elite_steps, elite_steps,
-            optimize=True)
+        weighted_steps = self._weights[:, None] * elite_steps
+        rank_mu_term = elite_steps.T @ weighted_steps
 
         # Update the covariance matrix
-        self._cov = (
-            (1 - self._lr_rank_1 - self._lr_rank_mu + lr_rank_1_adj)
-            * self._cov
-            + self._lr_rank_1 * outer(self._path_cov, self._path_cov)
-            + self._lr_rank_mu * rank_mu_term)
+        self._cov *= (1 - self._lr_rank_1 - self._lr_rank_mu + lr_rank_1_adj)
+        self._cov += self._lr_rank_1 * (self._path_cov @ self._path_cov.T)
+        self._cov += self._lr_rank_mu * rank_mu_term
 
         # Check if the SVD factors should be updated
         if self._opt_iter % self._svd_interval == 0:
 
             # Update the SVD factors
-            self._left_svec, self._svals, _ = svd(self._cov)
+            self._svals, self._left_svec = eigh(
+                self._cov, overwrite_a=True, check_finite=False)
+
+            # Get the reverse indices
+            idx = argsort(self._svals)[::-1]
+
+            # Sort the singular values and vectors in descending order
+            self._svals = self._svals[idx]
+            self._left_svec = self._left_svec[:, idx]
 
             # Check if the selected rank is lower than the dimensionality
             if self._rank < self._number_of_variables:
@@ -379,16 +390,11 @@ class CMAES:
                 # Rescale the truncated singular values
                 self._svals = self._svals[:self._rank] * energy_scale
 
-            else:
-
-                # Truncate the singular values only
-                self._svals = self._svals[:self._rank]
-
-            # Truncate the singular vectors
-            self._left_svec = self._left_svec[:, :self._rank]
+                # Truncate the singular vectors
+                self._left_svec = self._left_svec[:, :self._rank]
 
             # Clip the singular values
-            self._svals = maximum(self._svals, 1e-12)
+            maximum(self._svals, 1e-12, out=self._svals)
 
             # Check if singular values should be stored
             if self._store_singular_values:
@@ -398,6 +404,9 @@ class CMAES:
 
             # Symmetrize the covariance matrix for stability
             self._cov = (self._left_svec * self._svals) @ self._left_svec.T
+
+            # Update the sampling matrix
+            self._sampling_matrix = self._left_svec * sqrt(self._svals)
 
     def optimize(
             self,
