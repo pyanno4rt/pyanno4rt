@@ -135,7 +135,7 @@ class CMAES:
         self._pop_size = (
             4 + int(3*log(self._number_of_variables))
             if number_of_individuals is None else number_of_individuals)
-        self._elite_size = self._pop_size // 2
+        self._elite_size = self._pop_size // 2 + int(self.gradient is not None)
 
         # Initialize the weights and variance effective selection mass
         base_weights = (
@@ -178,7 +178,7 @@ class CMAES:
         self._cov = eye(self._number_of_variables)
         self._left_svec = eye(self._number_of_variables)[:, :self._rank]
         self._svals = ones(self._rank)
-        self._sampling_matrix = eye(self._number_of_variables)[:, :self._rank]
+        self._root_cov = eye(self._number_of_variables)[:, :self._rank]
 
         # Initialize the stopping criteria and tracking variables
         self.maximum_iterations = maximum_iterations
@@ -210,7 +210,7 @@ class CMAES:
         zsamples = self._rng.standard_normal((self._pop_size, self._rank))
 
         # Sample steps from the multivariate Gaussian
-        steps = zsamples @ self._sampling_matrix.T
+        steps = zsamples @ self._root_cov.T
 
         # Sample the new population
         population = self._mean + self._sigma*steps
@@ -406,7 +406,7 @@ class CMAES:
             self._cov = (self._left_svec * self._svals) @ self._left_svec.T
 
             # Update the sampling matrix
-            self._sampling_matrix = self._left_svec * sqrt(self._svals)
+            self._root_cov = self._left_svec * sqrt(self._svals)
 
     def optimize(
             self,

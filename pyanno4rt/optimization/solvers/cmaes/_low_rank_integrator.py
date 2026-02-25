@@ -40,6 +40,15 @@ class LowRankIntegrator:
         self.L_step = L_step
         self.S_step = S_step
 
+        # Get the update function
+        updates = {
+            'fixedrankBUG': self.fixedrankBUG_onestep,
+            'fixedranksymmetricBUG': self.fixedranksymmetricBUG_onestep,
+            'fixedaugBUG': self.fixedaugBUG_onestep,
+            'augBUG': self.augBUG_onestep,
+            'parBUG': self.parBUG_onestep}
+        self.update_func = updates.get(name, self.augBUG_onestep)
+
     def update(
             self,
             U,
@@ -58,40 +67,7 @@ class LowRankIntegrator:
         ...
         """
 
-        #
-        if self.name == "fixedrankBUG":
-
-            #
-            return self.fixedrankBUG_onestep(U, S, V, dt)
-
-        #
-        elif self.name == "fixedranksymmetricBUG":
-
-            #
-            return self.fixedranksymmetricBUG_onestep(U, S, V, dt)
-
-        #
-        elif self.name == "fixedaugBUG":
-
-            #
-            return self.fixedaugBUG_onestep(U, S, V, dt)
-
-        #
-        elif self.name == "augBUG":
-
-            #
-            return self.augBUG_onestep(U, S, V, dt)
-
-        #
-        elif self.name == "parBUG":
-
-            #
-            return self.parBUG_onestep(U, S, V, dt)
-
-        else:
-
-            #
-            raise ValueError("The integrator has not been implemented it yet")
+        return self.update_func(U, S, V, dt)
 
     def fixedrankBUG_onestep(
             self,
@@ -205,18 +181,26 @@ class LowRankIntegrator:
         ...
         """
 
+        #
         K = self.K_step(U * S, V, dt)
-        Uhat, _ = qr(hstack((K, U)))
-        M = Uhat @ U
+        Uhat = qr(hstack((K, U)), mode='economic')
 
+        #
         L = self.L_step(V * S.T, U, dt)
-        Vhat, _ = qr(hstack((L, V)))
-        N = Vhat @ V
+        Vhat = qr(hstack((L, V)), mode='economic')
 
-        U, V = Uhat, Vhat
+        #
+        M = Uhat.T @ U
+        N = Vhat.T @ V
 
-        Shat = self.S_step(U, M * S @ N.T, V, U, M * S @ N.T, V, dt)
+        #
+        ext_S = M * S @ N.T
 
+        #
+        Shat = self.S_step(Uhat, ext_S, Vhat, Uhat, ext_S, Vhat, dt)
+        Shat = 0.5*(Shat + Shat.T)
+
+        #
         U, S, V = self.truncate(Uhat, Shat, Vhat)
 
         return U, S, V
