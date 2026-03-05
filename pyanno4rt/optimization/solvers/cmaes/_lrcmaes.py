@@ -9,9 +9,10 @@ from time import time
 from collections import deque
 from math import inf
 from numpy import (
-    arange, argmin, argsort, array, clip, copy, diag, exp, eye, full, log,
-    maximum, median, ones, sqrt, vstack, zeros)
+    arange, argmin, argsort, array, clip, copy, exp, eye, full, log, maximum,
+    median, sqrt, vstack, zeros)
 from numpy import sum as nsum
+from numpy.linalg import inv
 from numpy.random import RandomState
 from scipy.linalg import norm
 
@@ -148,9 +149,6 @@ class LRCMAES:
             if number_of_individuals is None else number_of_individuals)
         self._elite_size = self._pop_size // 2 + int(self.gradient is not None)
 
-        # Initialize the elite steps
-        self._elite_steps = None
-
         # Initialize the weights and variance effective selection mass
         base_weights = (
             log(self._elite_size + 0.5) - log(arange(1, self._elite_size + 1))
@@ -160,13 +158,19 @@ class LRCMAES:
 
         # Initialize the learning rates
         self._lr_sigma = (
-            (self._mu_eff + 2) / (low_rank_dimension + self._mu_eff + 3))
-        self._lr_cov = 4 / (low_rank_dimension + 4)
+            (self._mu_eff + 2) / (self.integrator.rank + self._mu_eff + 3))
+        self._lr_cov = 4 / (self.integrator.rank + 4)
+        self._lr_rank_1 = (
+            2 * min(1, self._pop_size/6) /
+            ((self.integrator.rank + 1.3)**2 + self._mu_eff))
+        self._lr_rank_mu = (
+            2*(self._mu_eff + 1/self._mu_eff - 2) /
+            ((self.integrator.rank + 2)**2 + self._mu_eff))
         self._lr_mean = 1.0
 
         # Initialize the damping coefficient
         self._damp_sigma = (
-            1 + 2*max(0, sqrt((self._mu_eff - 1) / low_rank_dimension) - 1)
+            1 + 2*max(0, sqrt((self._mu_eff - 1) / self.integrator.rank) - 1)
             + self._lr_sigma)
 
         # Initialize the expected path length
@@ -182,11 +186,11 @@ class LRCMAES:
         self._opt_iter = 0
         self._sigma = initial_sigma
         self._path_sigma = zeros(self._number_of_variables)
+        self._path_cov = zeros((self._number_of_variables, 1))
         self._mean = zeros(self._number_of_variables)
-        self._left_svec = eye(self._number_of_variables)[
-            :, :low_rank_dimension]
-        self._svals = ones((low_rank_dimension, low_rank_dimension))
-        self._root_cov = eye(self._number_of_variables)[:, :low_rank_dimension]
+        self._left_svec = eye(self._number_of_variables, self.integrator.rank)
+        self._svals = eye(self.integrator.rank)
+        self._root_cov = eye(self._number_of_variables, self.integrator.rank)
 
         # Initialize the stopping criteria and tracking variables
         self.maximum_iterations = maximum_iterations
@@ -208,9 +212,14 @@ class LRCMAES:
             dt):
         """."""
 
-        return (
-            (1.0/self._elite_steps.shape[0])
-            * self._elite_steps.T@(self._elite_steps@V))
+        #
+        rank_1_term = self._lr_rank_1 * self._path_cov @ (self._path_cov.T @ V)
+
+        #
+        weighted_steps_tr = self._weights[:, None] * (self.elite_steps @ V)
+        rank_mu_term = self._lr_rank_mu * self.elite_steps.T @ weighted_steps_tr
+
+        return US + rank_1_term + rank_mu_term
 
     def L_step(
             self,
@@ -219,9 +228,14 @@ class LRCMAES:
             dt):
         """."""
 
-        return VS + (
-            (1.0/self._elite_steps.shape[0])
-            * self._elite_steps.T@(self._elite_steps@U) - VS)
+        #
+        rank_1_term = self._lr_rank_1 * self._path_cov @ (self._path_cov.T @ U)
+
+        #
+        weighted_steps_tr = self._weights[:, None] * (self.elite_steps @ U)
+        rank_mu_term = self._lr_rank_mu * self.elite_steps.T @ weighted_steps_tr
+
+        return VS + rank_1_term + rank_mu_term
 
     def S_step(
             self,
@@ -234,10 +248,18 @@ class LRCMAES:
             dt):
         """."""
 
-        return (
-            (1.0 - dt)*S + dt
-            * (1.0/self._elite_steps.shape[0])
-            * U.T@self._elite_steps.T@self._elite_steps@U)
+        #
+        path_cov_proj = U.T @ self._path_cov
+
+        #
+        elite_proj = self.elite_steps @ U
+
+        #
+        rank_1_term = self._lr_rank_1 * (path_cov_proj @ path_cov_proj.T)
+        rank_mu_term = self._lr_rank_mu * (
+            elite_proj.T @ (self._weights[:, None] * elite_proj))
+
+        return S + rank_1_term + rank_mu_term
 
     def ask(self):
         """
@@ -353,18 +375,18 @@ class LRCMAES:
         elite_indices = argsort(fitness)[:self._elite_size]
 
         # Get the elite step vectors
-        self._elite_steps = steps[elite_indices]
+        self.elite_steps = steps[elite_indices]
 
         # Compute the mean of the elite step vectors
-        elite_mean_step = self._weights @ self._elite_steps
+        elite_mean_step = self._weights @ self.elite_steps
 
         # Calculate the inverse rooted singular values with epsilon correction
-        inv_root_svals = 1.0 / (sqrt(self._svals) + 1e-15)
+        inv_root_svals = inv(sqrt(self._svals) + 1e-15)
 
         # Transform the elite mean step
         elite_mean_step_tr = (
             self._left_svec
-            @ (diag(inv_root_svals) * (self._left_svec.T @ elite_mean_step))
+            @ (inv_root_svals @ (self._left_svec.T @ elite_mean_step))
             )
 
         # Update the step-size evolution path
@@ -375,6 +397,20 @@ class LRCMAES:
 
         # Get the norm of the step-size evolution path
         ps_norm = norm(self._path_sigma)
+
+        # Compute the update switch for the covariance matrix
+        update_switch = (
+            1.0
+            if ps_norm / sqrt(1 - (1-self._lr_sigma)**(2*(self._opt_iter + 1)))
+            < (1.4 + 2/(self.integrator.rank+1)) * self._expected_path_length
+            else 0.0)
+
+        # Update the rank-1 evolution path
+        self._path_cov *= 1-self._lr_cov
+        self._path_cov += (
+            update_switch
+            * sqrt(self._lr_cov * (2-self._lr_cov) * self._mu_eff)
+            * elite_mean_step[:, None])
 
         # Compute the CMA-ES mean step
         self._mean += self._lr_mean * self._sigma * elite_mean_step
@@ -396,7 +432,7 @@ class LRCMAES:
             maximum(self._svals, 1e-12, out=self._svals)
 
             # Update the sampling matrix
-            self._root_cov = self._left_svec * sqrt(diag(self._svals))
+            self._root_cov = self._left_svec @ sqrt(self._svals)
 
     def optimize(
             self,

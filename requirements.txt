@@ -1318,9 +1318,9 @@ pygame==2.6.1 ; python_version >= "3.11" and python_version < "4.0" \
 pygments==2.19.2 ; python_version >= "3.11" and python_version < "4.0" \
     --hash=sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887 \
     --hash=sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b
-pymatreader==1.1.0 ; python_version >= "3.11" and python_version < "4.0" \
-    --hash=sha256:0daac669d2eeef3c89d7c9d810e6d8fb1362d7cbf67d1e32aaba2528eb89d205 \
-    --hash=sha256:d9fee72a8436557273a9ad669de3ed5582782467e2289a131396f575862638ff
+pymatreader==1.2.2 ; python_version >= "3.11" and python_version < "4.0" \
+    --hash=sha256:29a5224705fc5648e84c385b43a0fef2de80a99a8f7e7f7ef60631a94fcab403 \
+    --hash=sha256:7362e5180145e2462d7ceb74e88225a48490907298697e7d25726d9254098d79
 pymoo==0.6.1.6 ; python_version >= "3.11" and python_version < "4.0" \
     --hash=sha256:007bdabe638d5cc1ff98d1df096e7cea42f266ecc7b84fc0aac695a20b6f02f6 \
     --hash=sha256:01e848762e04d183e8dcc12e1cfb1e2cdd2c5efeda47961dbcf6c86c09751e30 \
@@ -1605,9 +1605,9 @@ termcolor==3.3.0 ; python_version >= "3.11" and python_version < "4.0" \
 threadpoolctl==3.6.0 ; python_version >= "3.11" and python_version < "4.0" \
     --hash=sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb \
     --hash=sha256:8ab8b4aa3491d812b623328249fab5302a68d2d71745c8a4c719a2fcaba9f44e
-tifffile==2026.2.24 ; python_version >= "3.11" and python_version < "4.0" \
-    --hash=sha256:38ef6258c2bd8dd3551c7480c6d75a36c041616262e6cd55a50dd16046b71863 \
-    --hash=sha256:d73cfa6d7a8f5775a1e3c9f3bfca77c992946639fb41a5bbe888878cb6964dc6
+tifffile==2026.3.3 ; python_version >= "3.11" and python_version < "4.0" \
+    --hash=sha256:d9a1266bed6f2ee1dd0abde2018a38b4f8b2935cb843df381d70ac4eac5458b7 \
+    --hash=sha256:e8be15c94273113d31ecb7aa3a39822189dd11c4967e3cc88c178f1ad2fd1170
 tqdm==4.67.3 ; python_version >= "3.11" and python_version < "4.0" \
     --hash=sha256:7d825f03f89244ef73f1d4ce193cb1774a8179fd96f31d7e1dcde62092b960bb \
     --hash=sha256:ee1e4c0e59148062281c49d80b25b67771a127c85fc9676d3be5f243206826bf
