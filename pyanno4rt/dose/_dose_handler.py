@@ -6,7 +6,7 @@
 
 from os.path import splitext
 
-from numpy import prod
+from numpy import float32, prod
 
 # %% Internal package import
 
@@ -87,7 +87,7 @@ class DoseHandler():
 
     def compute_dij(self):
         """."""
-        # A placeholder method for potential future inclusion
+        # A placeholder method for potential future dose calculation
 
     def load_dij(
             self,
@@ -176,6 +176,9 @@ class DoseHandler():
 
         # Get the dose-influence matrix
         self.dose_influence_matrix = self.load_dij(dose_matrix_path)
+
+        # Use single precision on the dose-influence matrix
+        self.dose_influence_matrix = self.dose_influence_matrix.astype(float32)
 
         # Validate the dose-influence matrix
         validate_dose_matrix(self.cube_dimensions, self.dose_influence_matrix)

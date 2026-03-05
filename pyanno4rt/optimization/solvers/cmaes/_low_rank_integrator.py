@@ -87,19 +87,26 @@ class LowRankIntegrator:
         ...
         """
 
+        #
         K = self.K_step(U @ S, V, dt)
-        Uhat,_ = qr(K)
-        M = Uhat @ U
+        Uhat, _ = qr(K)
 
+        #
         L = self.L_step(V @ S.T, U, dt)
-        Vhat,_ = qr(L)
-        N = Vhat @ V
+        Vhat, _ = qr(L)
 
-        U, V = Uhat, Vhat
+        #
+        M = Uhat.T @ U
+        N = Vhat.T @ V
 
-        S = self.S_step(U, M @ S @ N.T, V, U, M @ S @ N.T, V, dt)
+        #
+        ext_S = M @ S @ N.T
 
-        return U, S, V
+        #
+        Shat = self.S_step(Uhat, ext_S, Vhat, Uhat, ext_S, Vhat, dt)
+        Shat = 0.5*(Shat + Shat.T)
+
+        return Uhat, Shat, Vhat
 
     def fixedranksymmetricBUG_onestep(
             self,
@@ -183,11 +190,11 @@ class LowRankIntegrator:
 
         #
         K = self.K_step(U * S, V, dt)
-        Uhat = qr(hstack((K, U)), mode='economic')
+        Uhat, _ = qr(hstack((K, U)))
 
         #
         L = self.L_step(V * S.T, U, dt)
-        Vhat = qr(hstack((L, V)), mode='economic')
+        Vhat, _ = qr(hstack((L, V)))
 
         #
         M = Uhat.T @ U
@@ -301,6 +308,7 @@ class LowRankIntegrator:
                 rmax = max(rmax,rMinTotal)
                 # Updating the global rank to coincide with the updated rank
                 self.rank = rmax
+                print(self.rank)
 
                 return  U @ P[:, :rmax], D[:rmax], V @ Q[:, :rmax]
 

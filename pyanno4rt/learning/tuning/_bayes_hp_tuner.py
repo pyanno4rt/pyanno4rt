@@ -4,8 +4,6 @@
 
 # %% External package import
 
-from statistics import mean
-
 from copy import deepcopy
 from functools import partial
 from hyperopt import fmin, space_eval, STATUS_FAIL, STATUS_OK, Trials, tpe
@@ -237,7 +235,7 @@ class BayesHPTuner():
             model.update_hyperparameters(proposal)
 
             # Compute the objective function value (score) across all folds
-            repeat_scores = (mean(map(compute_fold_score, (
+            repeat_scores = (max(map(compute_fold_score, (
                 ((training_indices, validation_indices)
                  for training_indices, validation_indices in (
                          (where(folds[:, index] != number),
@@ -258,7 +256,7 @@ class BayesHPTuner():
             self._step += 1
 
             return {
-                'loss': mean(repeat_scores),
+                'loss': max(repeat_scores),
                 'params': model.hyperparameters,
                 'status': STATUS_OK}
 

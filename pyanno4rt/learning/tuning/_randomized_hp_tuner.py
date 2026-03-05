@@ -5,7 +5,6 @@
 # %% External package import
 
 from math import inf
-from statistics import mean
 from warnings import filterwarnings
 
 from copy import deepcopy
@@ -226,7 +225,7 @@ class RandomizedHPTuner():
             model.update_hyperparameters(proposal)
 
             # Compute the objective function value (score) across all folds
-            repeat_scores = (mean(map(compute_fold_score, (
+            repeat_scores = (max(map(compute_fold_score, (
                 ((training_indices, validation_indices)
                  for training_indices, validation_indices in (
                          (where(folds[:, index] != number),
@@ -238,7 +237,7 @@ class RandomizedHPTuner():
                 for index in range(folds.shape[1]))
 
             # Get the loss
-            loss = mean(repeat_scores)
+            loss = max(repeat_scores)
 
             # Update the current best loss
             self._current_best_loss = min(self._current_best_loss, loss)

@@ -6,7 +6,8 @@
 
 from numpy import prod
 from pandas import DataFrame
-from scipy.io import loadmat, savemat
+from pymatreader import read_mat
+from scipy.io import savemat
 
 # %% Internal package import
 
@@ -53,7 +54,7 @@ class MatHandler():
         """
 
         # Load the file
-        data = loadmat(path, simplify_cells=True)
+        data = read_mat(path, ['ct', 'cst'])
 
         return (
             self.generate_ct(data['ct']),
@@ -151,7 +152,7 @@ class MatHandler():
                 row[2], # type
                 row[3].astype(int)-1, # indices
                 {f'{parameter[0].lower()}{parameter[1:]}': # parameters
-                 value for parameter, value in row[4].__dict__.items()
+                 value for parameter, value in row[4].items()
                  if f'{parameter[0].lower()}{parameter[1:]}' in (
                          'priority', 'alphaX', 'betaX', 'visibleColor')}))
             for row in data if len(row[3]) > 0)

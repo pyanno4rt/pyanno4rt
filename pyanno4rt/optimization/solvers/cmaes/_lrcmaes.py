@@ -9,8 +9,8 @@ from time import time
 from collections import deque
 from math import inf
 from numpy import (
-    arange, argmin, argsort, array, clip, copy, exp, eye, full, log, maximum,
-    median, ones, sqrt, vstack, zeros)
+    arange, argmin, argsort, array, clip, copy, diag, exp, eye, full, log,
+    maximum, median, ones, sqrt, vstack, zeros)
 from numpy import sum as nsum
 from numpy.random import RandomState
 from scipy.linalg import norm
@@ -185,7 +185,7 @@ class LRCMAES:
         self._mean = zeros(self._number_of_variables)
         self._left_svec = eye(self._number_of_variables)[
             :, :low_rank_dimension]
-        self._svals = ones(low_rank_dimension)
+        self._svals = ones((low_rank_dimension, low_rank_dimension))
         self._root_cov = eye(self._number_of_variables)[:, :low_rank_dimension]
 
         # Initialize the stopping criteria and tracking variables
@@ -364,7 +364,7 @@ class LRCMAES:
         # Transform the elite mean step
         elite_mean_step_tr = (
             self._left_svec
-            @ (inv_root_svals * (self._left_svec.T @ elite_mean_step))
+            @ (diag(inv_root_svals) * (self._left_svec.T @ elite_mean_step))
             )
 
         # Update the step-size evolution path
@@ -396,7 +396,7 @@ class LRCMAES:
             maximum(self._svals, 1e-12, out=self._svals)
 
             # Update the sampling matrix
-            self._root_cov = self._left_svec * sqrt(self._svals)
+            self._root_cov = self._left_svec * sqrt(diag(self._svals))
 
     def optimize(
             self,

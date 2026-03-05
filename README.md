@@ -175,8 +175,8 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `scikit-image`                 | <font size="3"> >=0.26.0 </font>      |
 | `h5py`                         | <font size="3"> >=3.15.1 </font>      |
 | `pandas`                       | <font size="3"> >=3.0.1 </font>       |
-| `jax`                          | <font size="3"> >=0.9.0.1 </font>     |
-| `jaxlib`                       | <font size="3"> >=0.9.0.1 </font>     |
+| `jax`                          | <font size="3"> >=0.9.1 </font>       |
+| `jaxlib`                       | <font size="3"> >=0.9.1 </font>       |
 | `numba`                        | <font size="3"> >=0.64.0 </font>      |
 | `scikit-learn`                 | <font size="3"> >=1.8.0 </font>       |
 | `tensorflow`                   | <font size="3"> >=2.20.0 </font>      |
@@ -189,6 +189,7 @@ from pyanno4rt.gui import GraphicalUserInterface
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 | `setuptools`                   | <font size="3"> <81.0.0 </font>       |
+| `pymatreader`                  | <font size="3"> >=1.2.2 </font>       |
 
 Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.3** for development.
 

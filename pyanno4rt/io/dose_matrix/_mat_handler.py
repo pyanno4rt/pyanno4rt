@@ -4,8 +4,8 @@
 
 # %% External package import
 
-from h5py import File
-from scipy.io import loadmat, savemat
+from pymatreader import read_mat
+from scipy.io import savemat
 from scipy.sparse import csr_matrix
 
 # %% Class definition
@@ -40,40 +40,13 @@ class MatHandler():
             Dose-influence matrix.
         """
 
-        try:
+        # Load the data from version < 7.3
+        data = read_mat(path, ['Dij'])
 
-            # Load the data from version < 7.3
-            data = loadmat(path)
-
-            # Return the dose-influence matrix
-            return csr_matrix(data[next(
-                key for key in data if key not in (
-                    '__globals__', '__header__', '__version__'))])
-
-        except (NotImplementedError, ValueError) as error:
-
-            # Check if a NotImplementedError has been thrown
-            if isinstance(error, NotImplementedError):
-
-                # Open a file stream for version == 7.3
-                with File(path, 'r') as file:
-
-                    # Get the matrix key
-                    key = next(key for key in file if key != '#refs#')
-
-                    # Get the matrix data
-                    data = tuple(
-                        file[f'/{key}/{var}'] for var in ('data', 'ir', 'jc'))
-
-                    # Get the matrix shape
-                    shape = (
-                        len(file['/{key}/jc'])-1, len(file['/[key}/ir'])-1)
-
-                    # Get the dose-influence matrix
-                    return csr_matrix(data, shape).transpose()
-
-            # Raise the error
-            raise ValueError(error) from error
+        # Return the dose-influence matrix
+        return csr_matrix(data[next(
+            key for key in data if key not in (
+                '__globals__', '__header__', '__version__'))])
 
     def save(
             self,
