@@ -6,6 +6,8 @@
 
 from math import inf
 
+from json import dump, load
+
 # %% Internal package import
 
 from pyanno4rt.logging import get_logger
@@ -289,3 +291,39 @@ class ParetoProblem():
         return [
             compute_single_constraint(constraint)
             for constraint in self.constraints]
+
+    def load_tracker(
+            self,
+            path):
+        """
+        Load the component tracker from a path.
+
+        Parameters
+        ----------
+        path : str
+            Path for loading the component tracker.
+        """
+
+        # Open a file stream
+        with open(path, 'r', encoding='utf-8') as file:
+
+            # Load the tracker
+            self.tracker = load(file)
+
+    def save_tracker(
+            self,
+            path):
+        """
+        Save the component tracker to a json file.
+
+        Parameters
+        ----------
+        path : str
+            Path for storing the component tracker.
+        """
+
+        # Open a file stream
+        with open(path, 'w', encoding='utf-8') as file:
+
+            # Save the tracker
+            dump(self.tracker, file)

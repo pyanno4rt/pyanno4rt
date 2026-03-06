@@ -479,6 +479,7 @@ class TreatmentPlan():
             include_dose_matrix=False,
             include_model_data=False,
             include_optimum=False,
+            include_tracks=False,
             anonymize=False):
         """
         Save a treatment plan.
@@ -500,6 +501,9 @@ class TreatmentPlan():
 
         include_optimum : bool, default=False
             Indicator for the storage of the optimized fluence array.
+
+        include_tracks : bool, default=False
+            Indicator for the storage of the component tracker.
 
         anonymize : bool, default=False
             Indicator for the anonymization of the file paths.

@@ -129,7 +129,7 @@ class Pyanno4rtSolver():
                 'tolerance': self.tolerance,
                 'sigma_threshold': 1e-3,
                 'store_singular_values': False,
-                'svd_interval': 100,
+                'update_interval': 100,
                 'rank': None,
                 'callback': self.callback}
 
@@ -148,8 +148,8 @@ class Pyanno4rtSolver():
                 'upper_variable_bounds': array(problem.variable_bounds[1]),
                 'number_of_individuals': None,
                 'initial_sigma': 0.2*max(problem.initial_fluence),
-                'low_rank_integrator': 'fixedranksymmetricBUG',
-                'low_rank_dimension': 1567,
+                'low_rank_integrator': 'fixedsymmetricBUG',
+                'low_rank_dimension': len(problem.initial_fluence),
                 'low_rank_tolerance': 1e-1,
                 'maximum_iterations': self.maximum_iterations,
                 'maximum_wall_time': 7200,

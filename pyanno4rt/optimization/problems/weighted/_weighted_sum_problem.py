@@ -5,6 +5,8 @@
 # %% External package import
 
 from math import inf
+
+from json import dump, load
 from numpy import array, concatenate, vstack, zeros
 
 # %% Internal package import
@@ -370,3 +372,39 @@ class WeightedSumProblem():
         return vstack([
             self.backprojection.compute_fluence_gradient(row)
             for row in dose_jacobian])
+
+    def load_tracker(
+            self,
+            path):
+        """
+        Load the component tracker from a path.
+
+        Parameters
+        ----------
+        path : str
+            Path for loading the component tracker.
+        """
+
+        # Open a file stream
+        with open(path, 'r', encoding='utf-8') as file:
+
+            # Load the tracker
+            self.tracker = load(file)
+
+    def save_tracker(
+            self,
+            path):
+        """
+        Save the component tracker to a json file.
+
+        Parameters
+        ----------
+        path : str
+            Path for storing the component tracker.
+        """
+
+        # Open a file stream
+        with open(path, 'w', encoding='utf-8') as file:
+
+            # Save the tracker
+            dump(self.tracker, file)

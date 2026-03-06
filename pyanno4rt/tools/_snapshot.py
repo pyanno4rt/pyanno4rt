@@ -14,7 +14,8 @@ from json import dump
 
 def snapshot(
         instance, path, include_patient_data=False, include_dose_matrix=False,
-        include_model_data=False, include_fluence=False, anonymize=False):
+        include_model_data=False, include_optimum=False, include_tracks=False,
+        anonymize=False):
     """
     Take a snapshot of a treatment plan.
 
@@ -39,6 +40,9 @@ def snapshot(
 
     include_fluence : bool, default=False
         Indicator for the storage of the optimized fluence array.
+
+    include_tracks : bool, default=False
+        Indicator for the storage of the component tracker.
 
     anonymize : bool, default=False
         Indicator for the anonymization of the file paths.
@@ -144,11 +148,18 @@ def snapshot(
                 model.dataset.arguments['data_path'] = path
 
     # Check if the optimized fluence array should be included
-    if include_fluence and instance.state >= 3:
+    if include_optimum and instance.state >= 3:
 
         # Save the fluence array
         instance.fluence_optimizer.save_fluence(
             f'{snap_path}/optimized_fluence.npy')
+
+    # Check if the component tracker should be included
+    if include_tracks and instance.state >= 3:
+
+        # Save the component tracker
+        instance.fluence_optimizer.problem.save_tracks(
+            f'{snap_path}/tracks.json')
 
     # Open a file stream for the input parameters
     with open(f'{snap_path}/input.json', 'w', encoding='utf-8') as file:
