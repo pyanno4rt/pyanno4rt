@@ -7,12 +7,12 @@
 from pickle import dump, load
 from warnings import filterwarnings
 
-from numpy import zeros
 from sklearn.ensemble import RandomForestClassifier
 
 # %% Internal package import
 
 from pyanno4rt.learning.models import MachineLearningModel
+from pyanno4rt.learning.models.forest import ProjectionForest
 
 # %% Set package options
 
@@ -70,6 +70,10 @@ class RandomForest(MachineLearningModel):
         :class:`~sklearn.ensemble.RandomForestClassifier`
         The object used to represent the prediction model.
 
+    surrogate : object of class \
+        :class:`~pyanno4rt.learning.models.forest._projection_forest.ProjectionForest`\
+        The object used to represent the differentiable surrogate model.
+
     Notes
     -----
     See :class:`~pyanno4rt.learning.models._machine_learning_model.MachineLearningModel`\
@@ -120,6 +124,9 @@ class RandomForest(MachineLearningModel):
 
         # Initialize the predictor
         self.predictor = RandomForestClassifier(**self.hyperparameters)
+
+        # Initialize the projection forest
+        self.surrogate = ProjectionForest()
 
     def update_hyperparameters(
             self,
@@ -203,7 +210,8 @@ class RandomForest(MachineLearningModel):
             Predictor gradient w.r.t the preprocessed features.
         """
 
-        return zeros(preprocessed_features.shape[1])
+        # Return the approximate gradient
+        return self.surrogate.gradientize(preprocessed_features)
 
     def _load_predictor(self):
         """Load the predictor."""

@@ -7,14 +7,12 @@
 from pickle import dump, load
 from warnings import filterwarnings
 
-from numpy import zeros
 from sklearn.tree import DecisionTreeClassifier
 
 # %% Internal package import
 
 from pyanno4rt.learning.models import MachineLearningModel
 from pyanno4rt.learning.models.tree import ProjectionTree
-from pyanno4rt.validation import validate_item_in_set, validate_type
 
 # %% Set package options
 
@@ -33,17 +31,6 @@ class DecisionTree(MachineLearningModel):
     ----------
     label : str
         Label for the learning model.
-
-    diff_mode : {'project', 'soften'}
-        The strategy used to approximate gradients at discrete boundaries.
-
-        Currently available:
-
-            - 'project': approximates the gradient by projecting onto the \
-                nearest lower-value manifold.
-
-            - 'soften': approximates the gradient by learning a soft \
-                representation with sigmoidal transitions.
 
     dataset : object of class \
         :class:`~pyanno4rt.learning.datasets._tabular_dataset.TabularDataset`
@@ -76,9 +63,6 @@ class DecisionTree(MachineLearningModel):
 
     Attributes
     ----------
-    diff_mode : {'project', 'soften'}
-        See 'Parameters'.
-
     hyperparameters : dict
         Dictionary with the model hyperparameters.
 
@@ -87,7 +71,6 @@ class DecisionTree(MachineLearningModel):
 
     surrogate : object of class \
         :class:`~pyanno4rt.learning.models.tree._projection_tree.ProjectionTree`\
-        :class:`~pyanno4rt.learning.models.tree._soft_tree.SoftTree`
         The object used to represent the differentiable surrogate model.
 
     Notes
@@ -99,7 +82,6 @@ class DecisionTree(MachineLearningModel):
     def __init__(
             self,
             label,
-            diff_mode,
             dataset,
             preprocessor=None,
             tuner=None,
@@ -116,16 +98,6 @@ class DecisionTree(MachineLearningModel):
             inspector=inspector,
             evaluator=evaluator,
             model_path=model_path)
-
-        # Get the differentiation strategy
-        self.diff_mode = diff_mode
-
-        # Validate the differentiation strategy
-        validate_type('diff_mode', diff_mode, str)
-        validate_item_in_set('diff_mode', diff_mode, ('project', 'soften'))
-
-        # Extend the input arguments
-        self.arguments |= {'diff_mode': diff_mode}
 
         # Initialize the hyperparameters
         self.hyperparameters = {
@@ -146,17 +118,8 @@ class DecisionTree(MachineLearningModel):
         # Initialize the predictor
         self.predictor = DecisionTreeClassifier(**self.hyperparameters)
 
-        # Check if gradients should be approximated by projecting
-        if diff_mode == 'project':
-
-            # Initialize the projection tree
-            self.surrogate = ProjectionTree()
-
-        # Check if gradients should be approximated by softening
-        # elif diff_mode == 'soften':
-
-            # Initialize the soft tree
-            # self.surrogate = SoftTree()
+        # Initialize the projection tree
+        self.surrogate = ProjectionTree()
 
     def update_hyperparameters(
             self,
@@ -240,14 +203,8 @@ class DecisionTree(MachineLearningModel):
             Predictor gradient w.r.t the preprocessed features.
         """
 
-        # Check if the tree has been parsed to the surrogate
-        if self.surrogate.is_parsed:
-
-            # Return the approximate gradient
-            return self.surrogate.gradientize(preprocessed_features)
-
-        # Return a zero gradient
-        return zeros(preprocessed_features.shape[1])
+        # Return the approximate gradient
+        return self.surrogate.gradientize(preprocessed_features)
 
     def _load_predictor(self):
         """Load the predictor."""

@@ -9,9 +9,10 @@ modeling.
 
 # Author: Tim Ortkamp
 
-from ._optimizable_random_forest import OptimizableRandomForest
+from ._projection_forest import ProjectionForest
+
 from ._random_forest import RandomForest
 
 __all__ = [
-    'OptimizableRandomForest',
+    'ProjectionForest',
     'RandomForest']

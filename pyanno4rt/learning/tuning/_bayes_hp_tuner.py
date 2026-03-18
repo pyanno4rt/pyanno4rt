@@ -176,8 +176,9 @@ class BayesHPTuner():
 
             get_logger().info(
                 "Tuning hyperparameters (%s/%s) - best loss: %s ...",
-                self._step, self.evaluations,
-                round(min(filter(None, trials.losses())), 4))
+                self._step, self.evaluations, round(
+                    min(filter(lambda x: x is not None, trials.losses())), 4)
+                )
 
         def objective(proposal, trials, space):
             """Compute the objective function for a hyperparameter set."""
@@ -292,8 +293,9 @@ class BayesHPTuner():
         # Log a message about the tuning completion
         get_logger().info(
             "Completed hyperparameter tuning (%s/%s) - best loss: %s ... ",
-            self._step, self.evaluations,
-            round(min(filter(None, bayes_trials.losses())), 4))
+            self._step, self.evaluations, round(
+                min(filter(lambda x: x is not None, bayes_trials.losses())), 4)
+            )
 
         return hyperparameters
 

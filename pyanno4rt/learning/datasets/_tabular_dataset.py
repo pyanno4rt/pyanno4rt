@@ -219,9 +219,10 @@ class TabularDataset():
         # Check if column information is available
         if dictionary['columns'] is not None:
 
+            # Get the columns
+
             # Serialize the columns
-            dictionary['columns'] = [
-                item.to_dict() for item in dictionary['columns']]
+            dictionary['columns'] = [item.to_dict() for item in self.columns]
 
         return dictionary
 

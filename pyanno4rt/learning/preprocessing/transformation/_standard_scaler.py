@@ -156,6 +156,7 @@ class StandardScaler():
 
             # Compute the standard deviations of the features
             self.deviations = std(features, axis=0)
+            self.deviations[self.deviations == 0] = 1.0
 
         else:
 

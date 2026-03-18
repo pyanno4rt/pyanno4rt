@@ -151,6 +151,9 @@ class RandomForestOutcome(MachineLearningComponent):
             self.reverse(bound) for bound in self.convert_bounds(
                 self.arguments['bounds'], self.embedding))
 
+        # Parse the outcome model to the surrogate (for gradient approximation)
+        self.model.surrogate.parse(self.model.predictor)
+
     def translate(
             self,
             value):

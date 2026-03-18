@@ -329,7 +329,7 @@ class FeedForwardNet(MachineLearningModel):
             'batch_size': 16,
             'epochs': 100,
             'learning_rate': self.predictor.optimizer.learning_rate.numpy(),
-            'optimizer': self.predictor.optimizer.name,
+            'optimizer': self.predictor.optimizer.name.lower(),
             'loss': self.predictor.loss.name,
             'ReduceLROnPlateau_factor': 0.1,
             'ReduceLROnPlateau_patience': 5,

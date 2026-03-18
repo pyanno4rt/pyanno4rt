@@ -4,7 +4,9 @@
 
 # %% External package import
 
-from numpy import copyto, diag, float64, hstack, matmul, sqrt, zeros
+from numpy import (
+    copyto, diag, eye, float64, hstack, matmul, maximum, sqrt, zeros)
+from numpy import sum as nsum
 from numpy.linalg import norm, svd
 from scipy.linalg import qr
 
@@ -27,8 +29,11 @@ class LowRankIntegrator:
     rank : int
         Initial rank of the approximation.
 
-    truncation_tolerance : float
-        Tolerance of the rank truncation.
+    truncation_tolerance_rel : float
+        Relative tolerance of the rank truncation.
+
+    truncation_tolerance_abs : float
+        Absolute tolerance of the rank truncation.
 
     N_conserved_basis : int
         ...
@@ -47,7 +52,8 @@ class LowRankIntegrator:
         self,
         name,
         rank,
-        truncation_tolerance,
+        truncation_tolerance_rel,
+        truncation_tolerance_abs,
         N_conserved_basis,
         K_step,
         L_step,
@@ -56,7 +62,8 @@ class LowRankIntegrator:
         # Get the input attributes
         self.name = name
         self.rank = rank
-        self.truncation_tolerance = truncation_tolerance
+        self.truncation_tolerance_rel = truncation_tolerance_rel
+        self.truncation_tolerance_abs = truncation_tolerance_abs
         self.N_conserved_basis = N_conserved_basis
         self.K_step = K_step
         self.L_step = L_step
@@ -81,12 +88,17 @@ class LowRankIntegrator:
         self._M = None
         self._N = None
 
+        # Initialize the rank capacity
+        self._capacity = None
+
         # Initialize the rank history
         self.rank_history = [rank]
 
-    def initialize_buffers(
+    def set_buffers(
             self,
-            number_of_variables):
+            number_of_variables,
+            initial_rank,
+            capacity=None):
         """
         Initialize the low-rank factor buffers.
 
@@ -94,33 +106,56 @@ class LowRankIntegrator:
         ----------
         number_of_variables : int
             Dimension of the search space (number of decision variables).
+
+        capacity : int, default=None
+            The desired buffer capacity.
         """
 
-        # Determine the maximum rank
-        max_rank = 2*self.rank if 'aug' in self.name.lower() else self.rank
+        # Check if a desired capacity has been passed
+        if capacity is not None:
+
+            # Clip the capacity by the number of variables
+            self._capacity = min(2*number_of_variables, capacity)
+
+        else:
+
+            # Fall back to a default capacity
+            self._capacity = min(
+                2*number_of_variables, max(2*number_of_variables // 10, 100))
+
+        #
+        rank = min(initial_rank, self._capacity // 2)
 
         # Initialize K
         self._K = zeros(
-            (number_of_variables, max_rank), order='F', dtype=float64)
+            (number_of_variables, self._capacity), order='F', dtype=float64)
+        self._K[:rank, :rank] = eye(rank, dtype=float64)
 
         # Initialize Uhat
         self._Uhat = zeros(
-            (number_of_variables, max_rank), order='F', dtype=float64)
+            (number_of_variables, self._capacity), order='F', dtype=float64)
 
         # Check if a symmetric integrator is used
         if 'symmetric' not in self.name.lower():
 
             # Initialize L
             self._L = zeros(
-                (number_of_variables, max_rank), dtype=float64, order='F')
+                (number_of_variables, self._capacity),
+                dtype=float64, order='F')
+            self._L[:rank, :rank] = eye(rank, dtype=float64)
 
             # Initialize Vhat
             self._Vhat = zeros(
-                (number_of_variables, max_rank), dtype=float64, order='F')
+                (number_of_variables, self._capacity),
+                dtype=float64, order='F')
+
+            # Initialize N
+            self._N = zeros((self._capacity, self._capacity), dtype=float64)
+            self._N[:rank, :rank] = eye(rank, dtype=float64)
 
         # Initialize M and N
-        self._M = zeros((max_rank, max_rank), dtype=float64)
-        self._N = zeros((max_rank, max_rank), dtype=float64)
+        self._M = zeros((self._capacity, self._capacity), dtype=float64)
+        self._M[:rank, :rank] = eye(rank, dtype=float64)
 
     def update(
             self,
@@ -140,7 +175,10 @@ class LowRankIntegrator:
         ...
         """
 
-        return self.update_func(U, S, V, dt)
+        # Get the updated factors
+        U_new, S_new, V_new = self.update_func(U, S, V, dt)
+
+        return U_new, S_new, V_new
 
     def fixedBUG_step(
             self,
@@ -210,28 +248,36 @@ class LowRankIntegrator:
         """
 
         #
-        matmul(U, S, out=self._K)
+        rank = U.shape[1]
 
         #
-        K_updated = self.K_step(self._K, U, dt)
+        K_slice = self._K[:, :rank]
+        Uhat_slice = self._Uhat[:, :rank]
+
+        #
+        self._K[:, :rank] = U @ S[:rank, :rank]
+
+        #
+        K_updated = self.K_step(K_slice, U, dt)
 
         #
         Uhat, _ = qr(K_updated, mode='economic', check_finite=False)
-        copyto(self._Uhat, Uhat)
+        copyto(Uhat_slice, Uhat)
 
         #
-        matmul(self._Uhat.T, U, out=self._M)
+        M_proj = self._M[:rank, :rank]
+        matmul(Uhat_slice.T, U, out=M_proj)
 
         #
-        ext_S = self._M @ S @ self._M.T
+        ext_S = M_proj @ S[:rank, :rank] @ M_proj.T
         Shat = self.S_step(
-            self._Uhat, ext_S, self._Uhat, self._Uhat, None, None, dt)
+            Uhat_slice, ext_S, Uhat_slice, Uhat_slice, None, None, dt)
 
         #
         Shat += Shat.T
         Shat *= 0.5
 
-        return self._Uhat, Shat, self._Uhat
+        return Uhat_slice, Shat, Uhat_slice
 
     def fixedaugBUG_step(
             self,
@@ -387,7 +433,32 @@ class LowRankIntegrator:
 
         #
         rank = U.shape[1]
-        max_rank = 2*rank
+
+        #
+        rank_limit = self._capacity // 2
+
+        #
+        if rank > rank_limit:
+
+            #
+            max_rank = self._capacity
+
+            #
+            num_to_augment = max_rank - rank
+
+            #
+            U_to_copy = U[:, :num_to_augment]
+
+        else:
+
+            #
+            max_rank = 2*rank
+
+            #
+            num_to_augment = rank
+
+            #
+            U_to_copy = U
 
         #
         K_slice = self._K[:, :rank]
@@ -395,11 +466,16 @@ class LowRankIntegrator:
         Uhat_aug = self._Uhat[:, :max_rank]
 
         #
-        matmul(U, S, out=K_slice)
+        self._K[:, :rank] = U @ S[:rank, :rank]
 
         #
         self.K_step(K_slice, V, dt)
-        copyto(self._K[:, rank:max_rank], U)
+
+        #
+        if num_to_augment > 0:
+
+            #
+            copyto(self._K[:, rank:max_rank], U_to_copy)
 
         #
         Uhat, _ = qr(K_aug, mode='economic', check_finite=False)
@@ -410,7 +486,7 @@ class LowRankIntegrator:
         matmul(Uhat_aug.T, U, out=M_proj)
 
         #
-        ext_S = M_proj @ S @ M_proj.T
+        ext_S = M_proj @ S[:rank, :rank] @ M_proj.T
         Shat = self.S_step(
             Uhat_aug, ext_S, Uhat_aug, Uhat_aug, ext_S, Uhat_aug, dt)
 
@@ -497,35 +573,67 @@ class LowRankIntegrator:
 
         if self.N_conserved_basis == 0:
 
-            P, D, Q = svd(S)
+            #
+            P, D, Q = svd(S, full_matrices=False)
 
+            #
+            maximum(D, 1e-15, out=D)
+
+            #
+            rank_augmented = len(D)
+
+            #
             rmax = -1
 
-            # adaptIndex = 1;
+            #
+            total_norm = sqrt(nsum(D**2))
 
-            tmp = 0.0
-            tol = self.truncation_tolerance * norm(D)
+            #
+            tol = max(
+                self.truncation_tolerance_rel * total_norm,
+                self.truncation_tolerance_abs)
 
-            for j in range(2*self.rank):
-                tmp = sqrt(sum(D[j:2*self.rank]**2))
-                if tmp < tol:
-                    rmax = j + 1
+            #
+            for index in range(rank_augmented):
+
+                #
+                residual_energy = sqrt(sum(D[index:]**2))
+
+                #
+                if residual_energy < tol:
+
+                    #
+                    rmax = index
+
                     break
 
-            # if 2*r was actually not enough move to highest possible rank
+            #
             if rmax == -1:
+
+                #
                 rmax = rMaxTotal
 
-            rmax = min(rmax,rMaxTotal)
-            rmax = max(rmax,rMinTotal)
+            #
+            rank_limit = self._capacity // 2
 
-            # Updating the global rank to coincide with the updated rank
+            #
+            rmax = min(rmax, rMaxTotal)
+            rmax = min(rmax, rank_limit)
+            rmax = max(rmax, rMinTotal)
+
+            # Update the global rank
             self.rank = rmax
+            print('Rank: ', self.rank)
 
             #
             self.rank_history.append(self.rank)
 
-            return  U @ P[:, :rmax], diag(D[:rmax]), V @ Q[:, :rmax]
+            #
+            U_new = U[:, :rank_augmented] @ P[:, :rmax]
+            S_new = diag(D[:rmax])
+            V_new = V[:, :rank_augmented] @ Q[:rmax, :].T
+
+            return  U_new, S_new, V_new
 
         # Conservative truncation
         Khat = U @ S
@@ -543,7 +651,7 @@ class LowRankIntegrator:
         rmax = -1
         tmp = 0.0
 
-        tol = self.truncation_tolerance * norm(D)
+        tol = self.truncation_tolerance_rel * norm(D)
 
         # Truncating the rank
         for i in range(self.rank - self.N_conserved_basis):

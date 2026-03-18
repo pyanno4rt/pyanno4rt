@@ -10,11 +10,11 @@ modeling.
 # Author: Tim Ortkamp
 
 from ._projection_tree import ProjectionTree
-from ._soft_decision_tree import SoftDecisionTree
 
 from ._decision_tree import DecisionTree
+from ._soft_decision_tree import SoftDecisionTree
 
 __all__ = [
     'ProjectionTree',
-    'SoftDecisionTree',
-    'DecisionTree']
+    'DecisionTree',
+    'SoftDecisionTree']

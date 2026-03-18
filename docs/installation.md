@@ -37,18 +37,17 @@ from pyanno4rt.gui import GraphicalUserInterface
 | Name                           | Version                               |
 | -----------------------------: | :------------------------------------ |
 | `python`                       | <font size="3"> >=3.11, <4.0 </font>  |
-| `numpy`                        | <font size="3"> >=2.4.2 </font>       |
+| `numpy`                        | <font size="3"> >=2.4.3 </font>       |
 | `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
 | `absl-py`                      | <font size="3"> >=2.3.1 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.1 </font>       |
 | `scikit-image`                 | <font size="3"> >=0.26.0 </font>      |
-| `h5py`                         | <font size="3"> >=3.15.1 </font>      |
 | `pandas`                       | <font size="3"> >=3.0.1 </font>       |
 | `jax`                          | <font size="3"> >=0.9.1 </font>       |
 | `jaxlib`                       | <font size="3"> >=0.9.1 </font>       |
 | `numba`                        | <font size="3"> >=0.64.0 </font>      |
 | `scikit-learn`                 | <font size="3"> >=1.8.0 </font>       |
-| `tensorflow`                   | <font size="3"> >=2.20.0 </font>      |
+| `tensorflow`                   | <font size="3"> >=2.21.0 </font>      |
 | `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
 | `pymoo`                        | <font size="3"> >=0.6.1.6 </font>     |
 | `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |

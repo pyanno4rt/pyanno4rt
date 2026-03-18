@@ -30,9 +30,6 @@ class ProjectionTree():
 
     outcomes : None or dict
         Outcome value for each leaf.
-
-    _is_parsed : bool
-        Indicator for the parsing of the "hard", non-differentiable tree.
     """
 
     def __init__(self):
@@ -42,14 +39,6 @@ class ProjectionTree():
 
         # Initialize the leaf bounds and outcomes
         self.bounds, self.outcomes = None, None
-
-        # Initialize the parsing indicator
-        self._is_parsed = False
-
-    @property
-    def is_parsed(self):
-        """Get the value of the parsing indicator."""
-        return self._is_parsed
 
     def parse(
             self,
@@ -127,9 +116,6 @@ class ProjectionTree():
             index: tree.tree_.value[index, 0, 1]
             for index in range(tree.tree_.node_count)
             if tree.tree_.children_left[index] == -1}
-
-        # Update the parsing indicator
-        self._is_parsed = True
 
     def predict_proba(
             self,

@@ -13,7 +13,7 @@ from numpy import load as npload
 # %% Function definition
 
 
-def copycat(base_class, path, ignore_fluence=False):
+def copycat(base_class, path, ignore_optimum=False):
     """
     Create a copycat from a treatment plan snapshot.
 
@@ -25,7 +25,7 @@ def copycat(base_class, path, ignore_fluence=False):
     path : str
         Path to the snapshot.
 
-    ignore_fluence : bool
+    ignore_optimum : bool
         Indicator for ignoring the optimized fluence file (if available).
 
     Returns
@@ -61,7 +61,7 @@ def copycat(base_class, path, ignore_fluence=False):
         inputs['configuration']['dose_matrix_path'] = snap_dose_matrix[0]
 
     # Check if relevant optimized fluence data has been found
-    if len(snap_optimized_fluence) == 1 and not ignore_fluence:
+    if len(snap_optimized_fluence) == 1 and not ignore_optimum:
 
         # Update the initial fluence vector
         inputs['optimization']['initial_fluence'] = list(npload(
