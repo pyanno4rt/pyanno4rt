@@ -496,6 +496,226 @@ class LowRankIntegrator:
 
         return self.truncate(Uhat_aug, Shat, Uhat_aug)
 
+    def fixedSPDBUG_step(
+        self,
+        U,
+        S,
+        _,
+        psi,
+        dt):
+        """
+        Perform a single step of the fixed-rank SPD BUG integrator.
+        Parameters
+        ----------
+        ...
+        Returns
+        -------
+        ...
+        """
+
+        #
+        matmul(U, S, out=self._K)
+
+        U_proj = I - U @ U.T
+        U_proj_had = U_proj * U_proj
+        U_proj_had_pinv = np.linalg.pinv(U_proj_had)
+
+        d_psi = U_proj_had_pinv @ diag(U_proj @ F(Y_{0}) @ U_proj) # We need to appropriately compute the RHS here and replace F(Y_{0})
+
+        #
+        K_updated = self.K_step(self._K, U, dt)
+
+        K_updated -= dt * (d_psi @ U)
+
+        #
+        Uhat, _ = qr(K_updated, mode='economic', check_finite=False)
+        copyto(self._Uhat, Uhat)
+
+        #
+        matmul(self._Uhat.T, U, out=self._M)
+
+        #
+        ext_S = self._M @ S @ self._M.T
+        Shat = self.S_step(
+            self._Uhat, ext_S, self._Uhat, self._Uhat, None, None, dt)
+
+        Shat -= dt * (self._Uhat.T @ d_psi @ self._Uhat)
+        #
+        Shat += Shat.T
+        Shat *= 0.5
+
+        return self._Uhat, Shat, self._Uhat
+
+    def fixedSPDBUG_isot_step(
+            self,
+            U,
+            S,
+            _,
+            s,
+            dt):
+        """
+        Perform a single step of the fixed-rank SPD BUG integrator.
+        Parameters
+        ----------
+        ...
+        Returns
+        -------
+        ...
+        """
+
+        #
+
+        d,rank = shape(U)
+        # Evaluate F from the RHS
+        d_s = (np.linalg.trace(F) - np.linalg.trace(U.T @ F @ U)) / (d - rank)
+
+        matmul(U, S, out=self._K)
+
+        self._K -= s * U
+
+        s += dt * d_s
+
+        #
+        K_updated = self.K_step(self._K, U, dt)
+
+        K_updated -= dt * (d_s @ U)
+
+        #
+        Uhat, _ = qr(K_updated, mode='economic', check_finite=False)
+        copyto(self._Uhat, Uhat)
+
+        #
+        matmul(self._Uhat.T, U, out=self._M)
+
+        #
+        ext_S = self._M @ S @ self._M.T
+        Shat = self.S_step(
+            self._Uhat, ext_S, self._Uhat, self._Uhat, None, None, dt)
+
+
+        #
+        Shat += Shat.T
+        Shat *= 0.5
+
+        return self._Uhat, Shat, self._Uhat
+
+    def SPDaugBUG_step(
+        self,
+        U,
+        S,
+        V,
+        psi,
+        dt):
+        """
+        Perform a single step of the low-rank plus diagonal augmented BUG integrator.
+        Parameters
+        ----------
+        ...
+        Returns
+        -------
+        ...
+        """
+
+        #
+        rank = U.shape[1]
+        max_rank = 2*rank
+
+        #
+        K_slice = self._K[:, :rank]
+        K_aug = self._K[:, :max_rank]
+        Uhat_aug = self._Uhat[:, :max_rank]
+
+        #
+        matmul(U, S, out=K_slice)
+
+        U_proj = I - U @ U.T
+        U_proj_had = U_proj * U_proj
+        U_proj_had_pinv = np.linalg.pinv(U_proj_had)
+
+        d_psi = U_proj_had_pinv @ diag(U_proj @ F(Y_{0}) @ U_proj) # We need to appropriately compute the RHS here and replace F(Y_{0})
+
+        psi = diag(psi + dt * d_psi)
+        #
+        self.K_step(K_slice, V, dt)
+        K_slice -= dt * (d_psi @ U)
+        copyto(self._K[:, rank:max_rank], U)
+
+        #
+        Uhat, _ = qr(K_aug, mode='economic', check_finite=False) # K_aug is initialized at the beginning but never updated
+        copyto(self._Uhat[:, :Uhat.shape[1]], Uhat)
+
+        #
+        M_proj = self._M[:max_rank, :rank]
+        matmul(Uhat_aug.T, U, out=M_proj)
+
+        #
+        ext_S = M_proj @ S @ M_proj.T
+        Shat = self.S_step(
+            Uhat_aug, ext_S, Uhat_aug, Uhat_aug, ext_S, Uhat_aug, dt)
+
+        #
+        Shat -= dt * (Uhat_aug.T @ d_psi @ Uhat_aug)
+        Shat += Shat.T
+        Shat *= 0.5
+
+        return self.truncate(Uhat_aug, Shat, Uhat_aug)
+
+    def SPDaugBUG_isot_step(
+        self,
+        U,
+        S,
+        V,
+        s,
+        dt):
+        """
+        Perform a single step of the low-rank plus diagonal augmented BUG integrator.
+        Parameters
+        ----------
+        ...
+        Returns
+        -------
+        ...
+        """
+
+        #
+        d,rank = shape(U)
+        max_rank = 2*rank
+
+        #
+        K_slice = self._K[:, :rank]
+        K_aug = self._K[:, :max_rank]
+        Uhat_aug = self._Uhat[:, :max_rank]
+
+        #
+        matmul(U, S, out=K_slice)
+
+        d_s = U_proj_had_pinv @ diag(U_proj @ F(Y_{0}) @ U_proj) # We need to appropriately compute the RHS here and replace F(Y_{0})
+
+        s += dt * d_s
+        #
+        self.K_step(K_slice, V, dt)
+        K_slice -= dt * (d_s * U)
+        copyto(self._K[:, rank:max_rank], U)
+
+        #
+        Uhat, _ = qr(K_aug, mode='economic', check_finite=False) # K_aug is initialized at the beginning but never updated
+        copyto(self._Uhat[:, :Uhat.shape[1]], Uhat)
+
+        #
+        M_proj = self._M[:max_rank, :rank]
+        matmul(Uhat_aug.T, U, out=M_proj)
+
+        #
+        ext_S = M_proj @ S @ M_proj.T
+        Shat = self.S_step(
+            Uhat_aug, ext_S, Uhat_aug, Uhat_aug, ext_S, Uhat_aug, dt)
+
+        #
+        Shat += Shat.T
+        Shat *= 0.5
+
+        return self.truncate(Uhat_aug, Shat, Uhat_aug)
+
     def parBUG_step(
             self,
             U,
