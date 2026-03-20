@@ -148,7 +148,7 @@ class Pyanno4rtSolver():
                 'upper_variable_bounds': array(problem.variable_bounds[1]),
                 'number_of_individuals': None,
                 'initial_sigma': 0.2*max(problem.initial_fluence),
-                'low_rank_integrator': 'fixedsymmetricBUG',
+                'low_rank_integrator': 'fixedBUG',
                 'low_rank_dimension': len(problem.initial_fluence),
                 'low_rank_tolerance_rel': 1e-1,
                 'low_rank_tolerance_abs': 1e-8,

@@ -11,8 +11,8 @@ from math import inf
 from numba import njit
 from numpy import (
     add, arange, argmin, argsort, array, clip, copyto, empty, exp, eye,
-    float64, full, log, matmul, maximum, median, multiply, ones, sqrt, take,
-    zeros)
+    fill_diagonal, float64, full, log, matmul, maximum, median, multiply, ones,
+    sqrt, take, zeros)
 from numpy import sum as nsum
 from numpy.random import default_rng
 from scipy.linalg import eigh
@@ -574,6 +574,11 @@ class LRCMAES:
             matmul(
                 self._left_basis[:, :rank_new], eq * sqrt(ev),
                 out=self._root_cov[:, :rank_new])
+
+            #
+            diagonal_block = self._root_cov[:, rank_new:]
+            diagonal_block.fill(0.0)
+            fill_diagonal(diagonal_block, sqrt(self.integrator._psi))
 
     def _update_dynamics(self):
         """Update the dynamic parameters for the current rank."""
