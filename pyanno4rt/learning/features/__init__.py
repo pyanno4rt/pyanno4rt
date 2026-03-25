@@ -9,36 +9,36 @@ features, including feature definitions and the feature calculator.
 
 # Author: Tim Ortkamp
 
-from ._feature import DosiomicFeature, RadiomicFeature
+from pyanno4rt.learning.features._feature import DosiomicFeature, RadiomicFeature
 
-from ._dose_mean import DoseMean
-from ._dose_deviation import DoseDeviation
-from ._dose_maximum import DoseMaximum
-from ._dose_minimum import DoseMinimum
-from ._dose_skewness import DoseSkewness
-from ._dose_kurtosis import DoseKurtosis
-from ._dose_entropy import DoseEntropy
-from ._dose_energy import DoseEnergy
-from ._dose_nvoxels import DoseNVoxels
-from ._dose_dx import DoseDx
-from ._dose_vx import DoseVx
-from ._dose_subvolume import DoseSubvolume
-from ._dose_gradient import DoseGradient
-from ._dose_moment import DoseMoment
+from pyanno4rt.learning.features._dose_mean import DoseMean
+from pyanno4rt.learning.features._dose_deviation import DoseDeviation
+from pyanno4rt.learning.features._dose_maximum import DoseMaximum
+from pyanno4rt.learning.features._dose_minimum import DoseMinimum
+from pyanno4rt.learning.features._dose_skewness import DoseSkewness
+from pyanno4rt.learning.features._dose_kurtosis import DoseKurtosis
+from pyanno4rt.learning.features._dose_entropy import DoseEntropy
+from pyanno4rt.learning.features._dose_energy import DoseEnergy
+from pyanno4rt.learning.features._dose_nvoxels import DoseNVoxels
+from pyanno4rt.learning.features._dose_dx import DoseDx
+from pyanno4rt.learning.features._dose_vx import DoseVx
+from pyanno4rt.learning.features._dose_subvolume import DoseSubvolume
+from pyanno4rt.learning.features._dose_gradient import DoseGradient
+from pyanno4rt.learning.features._dose_moment import DoseMoment
 
-from ._segment_area import SegmentArea
-from ._segment_volume import SegmentVolume
-from ._segment_eigenvalues import SegmentEigenvalues
-from ._segment_eccentricity import SegmentEccentricity
-from ._segment_compactness import SegmentCompactness
-from ._segment_density import SegmentDensity
-from ._segment_sphericity import SegmentSphericity
-from ._segment_eigenmin import SegmentEigenmin
-from ._segment_eigenmid import SegmentEigenmid
-from ._segment_eigenmax import SegmentEigenmax
+from pyanno4rt.learning.features._segment_area import SegmentArea
+from pyanno4rt.learning.features._segment_volume import SegmentVolume
+from pyanno4rt.learning.features._segment_eigenvalues import SegmentEigenvalues
+from pyanno4rt.learning.features._segment_eccentricity import SegmentEccentricity
+from pyanno4rt.learning.features._segment_compactness import SegmentCompactness
+from pyanno4rt.learning.features._segment_density import SegmentDensity
+from pyanno4rt.learning.features._segment_sphericity import SegmentSphericity
+from pyanno4rt.learning.features._segment_eigenmin import SegmentEigenmin
+from pyanno4rt.learning.features._segment_eigenmid import SegmentEigenmid
+from pyanno4rt.learning.features._segment_eigenmax import SegmentEigenmax
 
-from ._columns import DynamicFeature, Label, StaticFeature
-from ._feature_calculator import FeatureCalculator
+from pyanno4rt.learning.features._columns import DynamicFeature, Label, StaticFeature
+from pyanno4rt.learning.features._feature_calculator import FeatureCalculator
 
 __all__ = [
     'DosiomicFeature',

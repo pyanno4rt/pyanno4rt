@@ -9,12 +9,14 @@ modeling.
 
 # Author: Tim Ortkamp
 
-from ._projection_tree import ProjectionTree
+from pyanno4rt.learning.models.tree._projection_tree import ProjectionTree
+from pyanno4rt.learning.models.tree._decision_tree import DecisionTree
 
-from ._decision_tree import DecisionTree
-from ._soft_decision_tree import SoftDecisionTree
+from pyanno4rt.learning.models.tree._soft_tree import SoftTree
+from pyanno4rt.learning.models.tree._soft_decision_tree import SoftDecisionTree
 
 __all__ = [
     'ProjectionTree',
     'DecisionTree',
+    'SoftTree',
     'SoftDecisionTree']

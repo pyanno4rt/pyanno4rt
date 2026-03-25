@@ -11,7 +11,7 @@ from functools import partial
 
 from pyanno4rt.learning.models import (
     DecisionTree, FeedForwardNet, KNearestNeighbors, LogisticRegression,
-    NaiveBayes, RandomForest, SupportVectorMachine)
+    NaiveBayes, RandomForest, SoftDecisionTree, SupportVectorMachine)
 from pyanno4rt.tools import filter_dict, wrap
 from pyanno4rt.validation import (
     validate_item, validate_item_in_set, validate_length, validate_subtype,
@@ -51,7 +51,8 @@ class MachineLearningComponent(metaclass=ABCMeta):
         :class:`~pyanno4rt.learning._models.neighbors._k_nearest_neighbors.KNearestNeighbors`\
         :class:`~pyanno4rt.learning._models.neural_network._feed_forward_net.FeedForwardNet`\
         :class:`~pyanno4rt.learning._models.svm._support_vector_machine.SupportVectorMachine`\
-        :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
+        :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`\
+        :class:`~pyanno4rt.learning._models.tree._soft_decision_tree.SoftDecisionTree`
         The object used to represent the outcome model.
 
     embedding : {'active', 'passive'}
@@ -104,7 +105,8 @@ class MachineLearningComponent(metaclass=ABCMeta):
         :class:`~pyanno4rt.learning._models.neighbors._k_nearest_neighbors.KNearestNeighbors`\
         :class:`~pyanno4rt.learning._models.neural_network._feed_forward_net.FeedForwardNet`\
         :class:`~pyanno4rt.learning._models.svm._support_vector_machine.SupportVectorMachine`\
-        :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`
+        :class:`~pyanno4rt.learning._models.tree._decision_tree.DecisionTree`\
+        :class:`~pyanno4rt.learning._models.tree._soft_decision_tree.SoftDecisionTree`
         See 'Parameters'.
 
     embedding : {'active', 'passive'}
@@ -412,7 +414,7 @@ class MachineLearningComponent(metaclass=ABCMeta):
                 partial(validate_type, options=(
                     DecisionTree, FeedForwardNet, KNearestNeighbors,
                     LogisticRegression, NaiveBayes, RandomForest,
-                    SupportVectorMachine)),
+                    SoftDecisionTree, SupportVectorMachine)),
                 ),
             'embedding': (
                 partial(validate_type, options=str),

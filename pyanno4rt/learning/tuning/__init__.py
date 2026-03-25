@@ -9,16 +9,16 @@ hyperparameters.
 
 # Author: Tim Ortkamp
 
-from ._bayes_hp_tuner import BayesHPTuner
-from ._grid_hp_tuner import GridHPTuner
-from ._randomized_hp_tuner import RandomizedHPTuner
+from pyanno4rt.learning.tuning._bayes_hp_tuner import BayesHPTuner
+from pyanno4rt.learning.tuning._grid_hp_tuner import GridHPTuner
+from pyanno4rt.learning.tuning._randomized_hp_tuner import RandomizedHPTuner
 
-from .grids import (
+from pyanno4rt.learning.tuning.grids import (
     TuneGridDT, TuneGridKNN, TuneGridLR, TuneGridNB, TuneGridNN, TuneGridRF,
-    TuneGridSVM)
-from .spaces import (
+    TuneGridSoftDT, TuneGridSVM)
+from pyanno4rt.learning.tuning.spaces import (
     TuneSpaceDT, TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB, TuneSpaceNN,
-    TuneSpaceRF, TuneSpaceSVM)
+    TuneSpaceRF, TuneSpaceSoftDT, TuneSpaceSVM)
 
 __all__ = [
     'BayesHPTuner',
@@ -30,6 +30,7 @@ __all__ = [
     'TuneGridNB',
     'TuneGridNN',
     'TuneGridRF',
+    'TuneGridSoftDT',
     'TuneGridSVM',
     'TuneSpaceDT',
     'TuneSpaceKNN',
@@ -37,4 +38,5 @@ __all__ = [
     'TuneSpaceNB',
     'TuneSpaceNN',
     'TuneSpaceRF',
+    'TuneSpaceSoftDT',
     'TuneSpaceSVM']

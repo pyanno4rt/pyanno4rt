@@ -25,9 +25,9 @@ from pyanno4rt.learning.preprocessing import (
     PrincipalComponentAnalysis, StandardScaler, Whitening)
 from pyanno4rt.learning.tuning import (
     BayesHPTuner, GridHPTuner, RandomizedHPTuner, TuneGridDT, TuneGridKNN,
-    TuneGridLR, TuneGridNB, TuneGridNN, TuneGridRF, TuneGridSVM, TuneSpaceDT,
-    TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB, TuneSpaceNN, TuneSpaceRF,
-    TuneSpaceSVM)
+    TuneGridLR, TuneGridNB, TuneGridNN, TuneGridRF, TuneGridSoftDT,
+    TuneGridSVM, TuneSpaceDT, TuneSpaceKNN, TuneSpaceLR, TuneSpaceNB,
+    TuneSpaceNN, TuneSpaceRF, TuneSpaceSoftDT, TuneSpaceSVM)
 
 # %% Map definitions
 
@@ -102,6 +102,7 @@ TUNE_GRIDS = {
     'Naive Bayes': TuneGridNB,
     'Neural Network': TuneGridNN,
     'Random Forest': TuneGridRF,
+    'Soft Decision Tree': TuneGridSoftDT,
     'Support Vector Machine': TuneGridSVM}
 
 TUNE_SPACES = {
@@ -111,4 +112,5 @@ TUNE_SPACES = {
     'Naive Bayes': TuneSpaceNB,
     'Neural Network': TuneSpaceNN,
     'Random Forest': TuneSpaceRF,
+    'Soft Decision Tree': TuneSpaceSoftDT,
     'Support Vector Machine': TuneSpaceSVM}

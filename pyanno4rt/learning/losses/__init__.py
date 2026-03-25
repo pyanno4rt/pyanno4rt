@@ -9,13 +9,13 @@ losses.
 
 # Author: Tim Ortkamp
 
-from ._auc_loss import auc_loss
-from ._brier_loss import brier_loss
-from ._dice_loss import dice_loss
-from ._focal_loss import focal_loss
-from ._hinge_loss import hinge_loss
-from ._kl_divergence_loss import kl_divergence_loss
-from ._log_loss import log_loss
+from pyanno4rt.learning.losses._auc_loss import auc_loss
+from pyanno4rt.learning.losses._brier_loss import brier_loss
+from pyanno4rt.learning.losses._dice_loss import dice_loss
+from pyanno4rt.learning.losses._focal_loss import focal_loss
+from pyanno4rt.learning.losses._hinge_loss import hinge_loss
+from pyanno4rt.learning.losses._kl_divergence_loss import kl_divergence_loss
+from pyanno4rt.learning.losses._log_loss import log_loss
 
 __all__ = [
     'auc_loss',

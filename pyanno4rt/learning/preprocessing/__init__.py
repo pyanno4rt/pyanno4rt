@@ -9,12 +9,12 @@ data cleaning, reduction, (re-)sampling and scaling.
 
 # Author: Tim Ortkamp
 
-from ._tabular_preprocessor import TabularPreprocessor
+from pyanno4rt.learning.preprocessing._tabular_preprocessor import TabularPreprocessor
 
-from .cleaning import (
+from pyanno4rt.learning.preprocessing.cleaning import (
     IsolationForest, LocalOutlierFactor, MinimumCovarianceDeterminant)
-from .reduction import PrincipalComponentAnalysis
-from .transformation import StandardScaler, Whitening
+from pyanno4rt.learning.preprocessing.reduction import PrincipalComponentAnalysis
+from pyanno4rt.learning.preprocessing.transformation import StandardScaler, Whitening
 
 __all__ = [
     'TabularPreprocessor',

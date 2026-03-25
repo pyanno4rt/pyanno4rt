@@ -10,13 +10,13 @@ setting up the internal pyanno4rt implementations.
 
 # Author: Tim Ortkamp
 
-from . import cmaes
+from pyanno4rt.optimization.solvers import cmaes
 
-from ._ipyopt_solver import IpyoptSolver
-from ._pyanno4rt_solver import Pyanno4rtSolver
-from ._pymoo_solver import PymooSolver
-from ._pypop7_solver import PyPop7Solver
-from ._scipy_solver import SciPySolver
+from pyanno4rt.optimization.solvers._ipyopt_solver import IpyoptSolver
+from pyanno4rt.optimization.solvers._pyanno4rt_solver import Pyanno4rtSolver
+from pyanno4rt.optimization.solvers._pymoo_solver import PymooSolver
+from pyanno4rt.optimization.solvers._pypop7_solver import PyPop7Solver
+from pyanno4rt.optimization.solvers._scipy_solver import SciPySolver
 
 __all__ = [
     'cmaes',

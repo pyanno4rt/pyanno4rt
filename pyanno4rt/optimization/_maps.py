@@ -9,8 +9,8 @@ from pyanno4rt.optimization.components import (
     KNeighborsOutcome, LogisticRegressionOutcome, LQPoissonTCP,
     LymanKutcherBurmanNTCP, MaximumDVH, MeanDose, MinimumDVH,
     NaiveBayesOutcome, NeuralNetworkOutcome, RandomForestOutcome,
-    SquaredDeviation, SquaredOverdosing, SquaredUnderdosing,
-    SupportVectorMachineOutcome)
+    SoftDecisionTreeOutcome, SquaredDeviation, SquaredOverdosing,
+    SquaredUnderdosing, SupportVectorMachineOutcome)
 from pyanno4rt.optimization.initializers import (
     DataMedoidInitializer, TargetCoverageInitializer, WarmStartInitializer)
 from pyanno4rt.optimization.problems.lexicographic import LexicographicProblem
@@ -38,6 +38,7 @@ COMPONENTS = {
     'Naive Bayes Outcome': NaiveBayesOutcome,
     'Neural Network Outcome': NeuralNetworkOutcome,
     'Random Forest Outcome': RandomForestOutcome,
+    'Soft Decision Tree Outcome': SoftDecisionTreeOutcome,
     'Squared Deviation': SquaredDeviation,
     'Squared Overdosing': SquaredOverdosing,
     'Squared Underdosing': SquaredUnderdosing,

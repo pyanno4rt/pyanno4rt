@@ -9,8 +9,8 @@ modeling.
 
 # Author: Tim Ortkamp
 
-from ._feed_forward_architectures import build_fnn, build_icnn
-from ._feed_forward_net import FeedForwardNet
+from pyanno4rt.learning.models.neural_network._feed_forward_architectures import build_fnn, build_icnn
+from pyanno4rt.learning.models.neural_network._feed_forward_net import FeedForwardNet
 
 __all__ = [
     'build_fnn',

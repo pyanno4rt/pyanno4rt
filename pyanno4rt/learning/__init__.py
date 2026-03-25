@@ -9,11 +9,11 @@ preprocessing, model fitting, inspection & evaluation.
 
 # Author: Tim Ortkamp
 
-from . import (
+from pyanno4rt.learning import (
     datasets, evaluation, features, inspection, losses, models, preprocessing,
     tuning)
 
-from ._data_model_handler import DataModelHandler
+from pyanno4rt.learning._data_model_handler import DataModelHandler
 
 __all__ = [
     'datasets',

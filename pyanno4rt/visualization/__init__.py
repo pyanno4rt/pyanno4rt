@@ -14,10 +14,10 @@ analysis, data-driven model review, and treatment plan evaluation.
 from pyanno4rt.visualization._visualizer import Visualizer
 
 # Import the submodules
-from . import custom_widgets, static
+from pyanno4rt.visualization import custom_widgets, static
 
 # Import the resources file
-from .assets import resources_rc
+from pyanno4rt.visualization.assets import resources_rc
 
 __all__ = [
     'Visualizer'

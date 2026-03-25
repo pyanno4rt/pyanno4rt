@@ -9,7 +9,7 @@ the outcome model data.
 
 # Author: Tim Ortkamp
 
-from ._csv_handler import CSVHandler
+from pyanno4rt.io.model_data._csv_handler import CSVHandler
 
 __all__ = [
     'CSVHandler']

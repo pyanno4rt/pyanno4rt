@@ -9,7 +9,7 @@ modeling.
 
 # Author: Tim Ortkamp
 
-from ._naive_bayes import NaiveBayes
+from pyanno4rt.learning.models.naive_bayes._naive_bayes import NaiveBayes
 
 __all__ = [
     'NaiveBayes']

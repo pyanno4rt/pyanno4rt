@@ -1,457 +1,232 @@
-"""Soft decision tree."""
+"""Soft decision tree model."""
 
 # Author: Tim Ortkamp
-# Inspired by Irsoy et al. (2012):
-# https://ieeexplore.ieee.org/document/6460506
 
 # %% External package import
 
-from numpy import array, mean
-from scipy.optimize import shgo
+from pickle import dump, load
+from warnings import filterwarnings
 
 # %% Internal package import
 
-from pyanno4rt.learning.losses import log_loss
-from pyanno4rt.tools import sigmoid
+from pyanno4rt.learning.models import MachineLearningModel
+from pyanno4rt.learning.models.tree import SoftTree
+
+# %% Set package options
+
+filterwarnings(action='ignore')
 
 # %% Class definition
 
 
-class Node():
+class SoftDecisionTree(MachineLearningModel):
     """
-    Soft decision tree node class.
+    Soft decision tree model class.
 
-    This class implements a decision node for the soft decision tree.
+    This class implements methods to handle soft decision tree models.
 
     Parameters
     ----------
-    left_child : object of class \
-        :class:`~pyanno4rt.learning.tree._soft_decision_tree.Node`
-        The object used to represent the left child.
+    label : str
+        Label for the learning model.
 
-    right_child : object of class \
-        :class:`~pyanno4rt.learning.tree._soft_decision_tree.Node`
-        The object used to represent the right child.
+    dataset : object of class \
+        :class:`~pyanno4rt.learning.datasets._tabular_dataset.TabularDataset`
+        The object used to represent the dataset.
 
-    parent : object of class \
-        :class:`~pyanno4rt.learning.tree._soft_decision_tree.Node`
-        The object used to represent the parent node.
+    preprocessor : None or object of class \
+        :class:`~pyanno4rt.learning.preprocessing._tabular_preprocessor.TabularPreprocessor`,\
+        default=None
+        The object used to represent the data preprocessor.
+
+    tuner : None or object of class \
+        :class:`~pyanno4rt.learning.tuning._bayes_hp_tuner.BayesHPTuner`\
+        :class:`~pyanno4rt.learning.tuning._grid_hp_tuner.GridHPTuner`\
+        :class:`~pyanno4rt.learning.tuning._randomized_hp_tuner.RandomizedHPTuner`,\
+        default=None
+        The object used to represent the hyperparameter tuner.
+
+    inspector : None or object of class \
+        :class:`~pyanno4rt.learning.inspection._model_inspector.ModelInspector`,\
+        default=None
+        The object used to represent the model inspector.
+
+    evaluator : None or object of class \
+        :class:`~pyanno4rt.learning.evaluation._model_evaluator.ModelEvaluator`,\
+        default=None
+        The object used to represent the model evaluator.
+
+    model_path : None or str, default=None
+        Path to an external model.
 
     Attributes
     ----------
-    left_child : object of class \
-        :class:`~pyanno4rt.learning.tree._soft_decision_tree.Node`
-        See 'Parameters'.
+    hyperparameters : dict
+        Dictionary with the model hyperparameters.
 
-    right_child : object of class \
-        :class:`~pyanno4rt.learning.tree._soft_decision_tree.Node`
-        See 'Parameters'.
+    predictor : object of class \
+        :class:`~pyanno4rt.learning.models.tree._soft_tree.SoftTree`
+        The object used to represent the prediction model.
 
-    parent : object of class \
-        :class:`~pyanno4rt.learning.tree._soft_decision_tree.Node`
-        See 'Parameters'.
-
-    weight : None, tuple, list or ndarray, default=None
-        Weight vector for the linear term in the sigmoid function.
-
-    outcome : None, int or float, default=None
-        Outcome value at the node.
+    Notes
+    -----
+    See :class:`~pyanno4rt.learning.models._machine_learning_model.MachineLearningModel`\
+    for details on the inherited attributes.
     """
 
     def __init__(
             self,
-            left_child=None,
-            right_child=None,
-            parent=None):
+            label,
+            dataset,
+            preprocessor=None,
+            tuner=None,
+            inspector=None,
+            evaluator=None,
+            model_path=None):
 
-        # Get the attributes from the arguments
-        self.left_child = left_child
-        self.right_child = right_child
-        self.parent = parent
+        # Call the superclass constructor
+        super().__init__(
+            label=label,
+            dataset=dataset,
+            preprocessor=preprocessor,
+            tuner=tuner,
+            inspector=inspector,
+            evaluator=evaluator,
+            model_path=model_path)
 
-        # Initialize the weight vector and outcome value
-        self.weight = None
-        self.outcome = None
+        # Initialize the hyperparameters
+        self.hyperparameters = {
+            'criterion': 'log_loss',
+            'max_depth': None,
+            'temperature': [0.01, 2.0],
+            'tolerance': 1e-3}
 
-    def has_children(self):
-        """
-        Check if the node has children.
+        # Initialize the predictor
+        self.predictor = SoftTree(**self.hyperparameters)
 
-        Returns
-        -------
-        bool
-            Indicator for the parenthood of the node.
-        """
-
-        return all(child is not None for child in (
-            self.left_child, self.right_child))
-
-    def set_weight(
+    def update_hyperparameters(
             self,
-            weight):
+            proposal):
         """
-        Set the weight vector for the linear term.
-
-        Parameter
-        ---------
-        weight : tuple, list or ndarray
-            Weight vector.
-        """
-
-        # Set the weight
-        self.weight = weight
-
-    def set_outcome(
-            self,
-            outcome):
-        """
-        Set the outcome for the node.
+        Update the hyperparameters from a search proposal.
 
         Parameters
         ----------
-        outcome : int or float
-            Outcome value at the node.
+        proposal : dict
+            Proposal for the tunable hyperparameters.
         """
 
-        # Set the outcome
-        self.outcome = outcome
+        # Update the hyperparameters
+        self.hyperparameters |= {
+            key: proposal[key]
+            for key in proposal.keys() & self.hyperparameters.keys()}
 
-    def get_probability(
-            self,
-            sample):
-        """
-        Get the sigmoid function value for the input sample.
-
-        Parameters
-        ----------
-        sample : ndarray
-            Input sample.
-
-        Returns
-        -------
-        float
-            Sigmoid function value.
-        """
-
-        # Check if the weight vector has the correct length
-        if self.weight is None or len(self.weight) != len(sample) + 1:
-
-            # Raise an error to indicate incorrect weight or sample values
-            raise ValueError(
-                "Invalid weight vector or input sample - please check values \
-                and/or size!")
-
-        # Return the sigmoid function value
-        return sigmoid(self.weight[1:]@sample, 1, self.weight[0])
-
-    def evaluate_subtree(
-            self,
-            sample):
-        """
-        Calculate the outcome of the subtree for the input sample.
-
-        Parameters
-        ----------
-        sample : ndarray
-            Input sample.
-
-        Returns
-        -------
-        float
-            Outcome value.
-        """
-
-        # Check if the node is a leaf
-        if not self.has_children():
-
-            # Return the outcome value
-            return self.outcome
-
-        else:
-
-            # Compute the test function
-            probability = self.get_probability(sample)
-
-            # Get the left and right subtree outcomes
-            left_outcome = self.left_child.evaluate_subtree(sample)
-            right_outcome = self.right_child.evaluate_subtree(sample)
-
-            # Update the outcome
-            return left_outcome*probability + right_outcome*(1-probability)
-
-    def evaluate_subtree_gradient(
-            self,
-            sample):
-        """
-        Calculate the gradient of the subtree for the input sample.
-
-        Parameters
-        ----------
-        sample : ndarray
-            Input sample.
-
-        Returns
-        -------
-        ndarray
-            Gradient vector.
-        """
-
-        # Check if the node is a leaf
-        if not self.has_children():
-
-            # Return the outcome value
-            return self.outcome
-
-        else:
-
-            # Compute the test function
-            probability = self.get_probability(sample)
-
-            # Get the left and right subtree gradients
-            left_gradient = self.left_child.evaluate_subtree_gradient(sample)
-            right_gradient = self.right_child.evaluate_subtree_gradient(sample)
-
-            # Update the gradient
-            return (
-                left_gradient*probability*(1-probability)*self.weight
-                - right_gradient*probability*(1-probability)*self.weight)
-
-
-class SoftDecisionTree():
-    """
-    Soft decision tree class.
-
-    This class implements a soft decision tree with sigmoid test functions, \
-    including methods to fit the model and make predictions.
-
-    Parameters
-    ----------
-    maximum_depth : int, default=None
-        Maximum depth of the tree.
-
-    tolerance : int or float, default=1e-3
-        Precision goal for the loss function value in each split.
-
-    Attributes
-    ------
-    maximum_depth : int
-        See 'Parameters'.
-
-    tolerance : int or float
-        See 'Parameters'.
-
-    root : object of class \
-        :class:`~pyanno4rt.learning.tree._soft_decision_tree.Node`
-        Root node of the soft decision tree.
-
-    depth : int
-        Depth of the soft decision tree.
-    """
-
-    def __init__(
-            self,
-            maximum_depth=None,
-            tolerance=1e-3):
-
-        # Get the attributes from the arguments
-        self.maximum_depth = (
-            2147483647 if maximum_depth is None else maximum_depth)
-        self.tolerance = tolerance
-
-        # Initialize the root node
-        self.root = Node()
-
-    def fit(
+    def fit_predictor(
             self,
             features,
             labels):
         """
-        Fit the soft decision tree classifier.
+        Fit the model.
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         labels : ndarray
-            Values of the input labels.
-
-        Returns
-        -------
-        self : object of class \
-            :class:`~pyanno4rt.learning.tree._soft_decision_tree.SoftDecisionTree`
-            The object used to represent the soft decision tree.
+            Label values.
         """
 
-        def learn_subtree(node, features):
-            """Learn the subtree rooted at a node."""
+        # Initialize the predictor
+        self.predictor = self.predictor.set_params(**self.hyperparameters)
 
-            def loss(parameters):
-                """Return the loss function value w.r.t the parameters."""
+        # Fit the predictor
+        self.predictor.fit(features, labels)
 
-                # Adapt the weight vector of the node
-                node.set_weight(parameters[:-2])
-
-                # Adapt the child outcomes of the node
-                node.left_child.set_outcome(parameters[-2])
-                node.right_child.set_outcome(parameters[-1])
-
-                # Return the metric
-                return log_loss(labels, self.predict_proba(features))
-
-            # Increment the current depth number
-            self.counter += 1
-
-            # Get the initial loss
-            initial_loss = log_loss(labels, self.predict_proba(features))
-
-            # Initialize left and right child
-            node.left_child = Node(parent=node)
-            node.right_child = Node(parent=node)
-
-            # Set the variable bounds
-            bounds = tuple(
-                (-5e0, 5e0) if i < features.shape[1]+1 else (0, 1)
-                for i in range(features.shape[1]+3))
-
-            # Optimize the weights and outcomes
-            result = shgo(
-                loss, bounds, n=100, iters=1, sampling_method='sobol')
-
-            # Update the node parameters
-            node.set_weight(result.x[:-2])
-            node.left_child.set_outcome(result.x[-2])
-            node.right_child.set_outcome(result.x[-1])
-
-            # Get the final loss
-            final_loss = log_loss(labels, self.predict_proba(features))
-
-            # Check if the loss has improved from adding the subtree
-            if (abs(final_loss - initial_loss) > self.tolerance
-                    and self.counter <= 2**(self.maximum_depth)-1):
-
-                # Learn the left and right subtree
-                learn_subtree(node.left_child, features)
-                learn_subtree(node.right_child, features)
-
-            else:
-
-                # Remove the child nodes
-                node.left_child = None
-                node.right_child = None
-
-        # Set the mean label value as the default
-        self.root.set_outcome(mean(labels))
-
-        # Initialize the current depth number
-        self.counter = 0
-
-        # Learn the subtree
-        learn_subtree(self.root, features)
-
-        return self
-
-    def predict_proba(
+    def predict(
             self,
             features):
         """
-        Predict the label values.
+        Predict the label value(s).
 
         Parameters
         ----------
         features : ndarray
-            Values of the input features.
+            Feature values.
 
         Returns
         -------
         float or ndarray
-            Value(s) of the predicted label(s).
+            Predicted label value(s).
         """
 
-        # Check if the feature array has only a single dimension
-        if features.ndim == 1:
+        # Check if the feature array has only a single row
+        if features.shape[0] == 1:
 
             # Return a single label prediction value
-            return self.root.evaluate_subtree(features)
+            return self.predictor.predict_proba(features)[0][1]
 
         # Else, return an array with label predictions
-        return array([
-            self.root.evaluate_subtree(sample) for sample in features])
+        return self.predictor.predict_proba(features)[:, 1]
 
-    def gradientize(
+    def _predictor_gradient(
             self,
-            features):
+            preprocessed_features):
         """
-        Calculate the input gradient of the input sample X.
+        Calculate the predictor gradient.
 
         Parameters
         ----------
-        features : ndarray
-            Values of the input features.
+        preprocessed_features : ndarray
+            Preprocessed feature values.
 
         Returns
         -------
         ndarray
-            Gradient vector.
+            Predictor gradient w.r.t the preprocessed features.
         """
 
-        # Check if the feature array has only a single dimension
-        if features.ndim == 1:
+        # Calculate the gradient
+        gradient = self.predictor.gradientize(preprocessed_features)
 
-            # Return a single label prediction value
-            return self.root.evaluate_subtree_gradient(features)[1:]
+        # Check if the return should be 1D
+        if gradient.shape[0] == 1:
 
-        # Else, return an array with label predictions
-        return [
-            self.root.evaluate_subtree_gradient(sample)[1:]
-            for sample in features]
+            # Return the 1D gradient
+            return gradient.reshape(-1)
 
-# %% Test
+        # Return the 2D gradient
+        return gradient
 
-# from pandas import DataFrame
-# from sklearn.datasets import load_iris
-# from sklearn.metrics import roc_auc_score
-# from sklearn.tree import DecisionTreeClassifier
+    def _load_predictor(self):
+        """Load the predictor."""
 
-# X, y = load_iris(return_X_y=True)
-# X = X[:, [1, 3]]
-# y = (y == 1).astype(int)
-# soft_tree = SoftDecisionTree(maximum_depth=3, tolerance=1e-3).fit(X, y)
-# hard_tree = DecisionTreeClassifier(max_depth=3).fit(X, y)
+        # Open a file stream for the predictor
+        with open(self.model_path+'/predictor.sav', 'rb') as file:
 
-# df = DataFrame(
-#     data=zip(
-#         (hard_tree.predict_proba(sample.reshape(1, -1))[0][1] for sample in X),
-#         soft_tree.predict_proba(X), y),
-#     columns=['Hard', 'Soft', 'Ground Truth'])
-# hard_auc = roc_auc_score(df['Ground Truth'], df['Hard'])
-# soft_auc = roc_auc_score(df['Ground Truth'], df['Soft'])
+            # Load the predictor
+            self.predictor = load(file)
 
-# %% Plot
+    def _load_hyperparameters(self):
+        """Load the hyperparameters from the predictor."""
 
-# from numpy import arange, meshgrid, array, ravel
-# import matplotlib.pyplot as plt
+        # Get the hyperparameters
+        self.hyperparameters = self.predictor.get_params()
 
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
+    def _save_predictor(
+            self,
+            path):
+        """
+        Save the predictor.
 
-# x = y = arange(
-#     min(min(X[:, 0]), min(X[:, 1])), max(max(X[:, 0]), max(X[:, 1])), 0.04)
-# x1, x2 = meshgrid(x, y)
+        Parameters
+        ----------
+        path : str
+            Path for storing the predictor.
+        """
 
-# zs1 = array([hard_tree.predict_proba(array([[a, b]]))[0][1]
-#              for a, b in zip(ravel(x1), ravel(x2))])
-# Z1 = zs1.reshape(x1.shape)
+        # Open a file stream for the predictor
+        with open(path+'/predictor.sav', 'wb') as file:
 
-# zs2 = array([soft_tree.predict_proba(array([[a, b]]))
-#              for a, b in zip(ravel(x1), ravel(x2))])
-# Z2 = zs2.reshape(x1.shape)
-
-# ax.plot_surface(x1, x2, Z1)
-# ax.plot_surface(x1, x2, Z2)
-
-# ax.set_xlabel('x1')
-# ax.set_ylabel('x2')
-# ax.set_zlabel('p')
-
-# plt.show()
+            # Dump the predictor
+            dump(self.predictor, file)

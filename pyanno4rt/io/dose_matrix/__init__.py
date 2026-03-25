@@ -9,9 +9,9 @@ the dose-influence matrix.
 
 # Author: Tim Ortkamp
 
-from ._mat_handler import MatHandler
-from ._np_binary_handler import NpBinHandler
-from ._sp_sparse_binary_handler import SpSparseBinHandler
+from pyanno4rt.io.dose_matrix._mat_handler import MatHandler
+from pyanno4rt.io.dose_matrix._np_binary_handler import NpBinHandler
+from pyanno4rt.io.dose_matrix._sp_sparse_binary_handler import SpSparseBinHandler
 
 __all__ = [
     'MatHandler',

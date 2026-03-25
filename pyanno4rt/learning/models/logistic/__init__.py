@@ -9,7 +9,7 @@ outcome modeling.
 
 # Author: Tim Ortkamp
 
-from ._logistic_regression import LogisticRegression
+from pyanno4rt.learning.models.logistic._logistic_regression import LogisticRegression
 
 __all__ = [
     'LogisticRegression']

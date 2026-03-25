@@ -13,7 +13,7 @@ from pyanno4rt.gui.windows import MainWindow
 # %% Class definition
 
 
-class GraphicalUserInterface():
+class GUI():
     """
     Graphical user interface class.
 

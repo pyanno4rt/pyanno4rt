@@ -9,9 +9,9 @@ outcome modeling.
 
 # Author: Tim Ortkamp
 
-from ._support_vector_machine_gradients import (
+from pyanno4rt.learning.models.svm._support_vector_machine_gradients import (
     linear_gradient, poly_gradient, rbf_gradient, sigmoid_gradient)
-from ._support_vector_machine import SupportVectorMachine
+from pyanno4rt.learning.models.svm._support_vector_machine import SupportVectorMachine
 
 __all__ = [
     'linear_gradient',

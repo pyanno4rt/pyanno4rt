@@ -9,9 +9,9 @@ modeling.
 
 # Author: Tim Ortkamp
 
-from ._projection_forest import ProjectionForest
+from pyanno4rt.learning.models.forest._projection_forest import ProjectionForest
 
-from ._random_forest import RandomForest
+from pyanno4rt.learning.models.forest._random_forest import RandomForest
 
 __all__ = [
     'ProjectionForest',

@@ -9,7 +9,7 @@ outcome model datasets.
 
 # Author: Tim Ortkamp
 
-from ._tabular_dataset import TabularDataset
+from pyanno4rt.learning.datasets._tabular_dataset import TabularDataset
 
 __all__ = [
     'TabularDataset']

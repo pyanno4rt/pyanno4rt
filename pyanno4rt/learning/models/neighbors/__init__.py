@@ -9,7 +9,7 @@ outcome modeling.
 
 # Author: Tim Ortkamp
 
-from ._k_nearest_neighbors import KNearestNeighbors
+from pyanno4rt.learning.models.neighbors._k_nearest_neighbors import KNearestNeighbors
 
 __all__ = [
     'KNearestNeighbors']

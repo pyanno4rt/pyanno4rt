@@ -71,13 +71,14 @@
 <summary><b>🔮 Data-driven outcome modeling</b></summary>
 <br>
 
-* 7 machine learning models with customizable building blocks for dataset handling, preprocessing, hyperparameter tuning, inspection & evaluation
+* 8 machine learning models with customizable building blocks for dataset handling, preprocessing, hyperparameter tuning, inspection & evaluation
     - Decision tree
     - K-nearest neighbors
     - Logistic regression
     - Naive Bayes
     - (Feed-forward) neural network
     - Random forest
+    - Soft decision tree
     - Support vector machine
 * Tabular dataset handler
     - Data loading, decomposition and engineering

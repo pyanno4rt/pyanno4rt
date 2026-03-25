@@ -9,9 +9,9 @@ the inverse planning problem.
 
 # Author: Tim Ortkamp
 
-from . import components, initializers, problems, projections, solvers
+from pyanno4rt.optimization import components, initializers, problems, projections, solvers
 
-from ._fluence_optimizer import FluenceOptimizer
+from pyanno4rt.optimization._fluence_optimizer import FluenceOptimizer
 
 __all__ = [
     'components',

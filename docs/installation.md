@@ -29,7 +29,7 @@ from pyanno4rt.base import TreatmentPlan
 ###### GUI import
 
 ```python
-from pyanno4rt.gui import GraphicalUserInterface
+from pyanno4rt.gui import GUI
 ```
 
 ### Dependencies

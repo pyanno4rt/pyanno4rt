@@ -9,7 +9,7 @@ streams, e.g. for CT/segmentation and dose data.
 
 # Author: Tim Ortkamp
 
-from . import dose_matrix, model_data, patient
+from pyanno4rt.io import dose_matrix, model_data, patient
 
 __all__ = [
     'dose_matrix',

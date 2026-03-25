@@ -9,8 +9,8 @@ pyanno4rt execution cycles.
 
 # Author: Tim Ortkamp
 
-from ._logging import Logging
-from ._logging_utils import get_logger, set_logger_name
+from pyanno4rt.logging._logging import Logging
+from pyanno4rt.logging._logging_utils import get_logger, set_logger_name
 
 __all__ = [
     'Logging',

@@ -9,13 +9,14 @@ grids for the grid-based hyperparameter tuner.
 
 # Author: Tim Ortkamp
 
-from ._tune_grid_dt import TuneGridDT
-from ._tune_grid_knn import TuneGridKNN
-from ._tune_grid_lr import TuneGridLR
-from ._tune_grid_nb import TuneGridNB
-from ._tune_grid_nn import TuneGridNN
-from ._tune_grid_rf import TuneGridRF
-from ._tune_grid_svm import TuneGridSVM
+from pyanno4rt.learning.tuning.grids._tune_grid_dt import TuneGridDT
+from pyanno4rt.learning.tuning.grids._tune_grid_knn import TuneGridKNN
+from pyanno4rt.learning.tuning.grids._tune_grid_lr import TuneGridLR
+from pyanno4rt.learning.tuning.grids._tune_grid_nb import TuneGridNB
+from pyanno4rt.learning.tuning.grids._tune_grid_nn import TuneGridNN
+from pyanno4rt.learning.tuning.grids._tune_grid_rf import TuneGridRF
+from pyanno4rt.learning.tuning.grids._tune_grid_soft_dt import TuneGridSoftDT
+from pyanno4rt.learning.tuning.grids._tune_grid_svm import TuneGridSVM
 
 __all__ = [
     'TuneGridDT',
@@ -24,4 +25,5 @@ __all__ = [
     'TuneGridNB',
     'TuneGridNN',
     'TuneGridRF',
+    'TuneGridSoftDT',
     'TuneGridSVM']

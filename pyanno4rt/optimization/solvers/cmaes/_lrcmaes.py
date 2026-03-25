@@ -57,12 +57,13 @@ class LRCMAES:
         Initial step size (standard deviation).
 
     low_rank_integrator : {'fixedBUG', 'fixedsymmetricBUG', 'fixedaugBUG', \
-                           'augBUG', 'symmetricaugBUG', 'parBUG'}, \
+                           'fixedSPDBUG', 'augBUG', 'symmetricaugBUG'}, \
         default='fixedsymmetricBUG'
         Name of the low-rank integrator.
 
-    low_rank_dimension : int, default=1000
-        Initial rank of the approximation.
+    low_rank_dimension : int, default=None
+        Initial rank of the approximation. Defaults to \
+        `number_of_variables` // 10.
 
     low_rank_tolerance_rel : float, default=1e-2
         Relative tolerance of the rank truncation.
@@ -112,7 +113,7 @@ class LRCMAES:
             number_of_individuals=None,
             initial_sigma=0.3,
             low_rank_integrator='fixedsymmetricBUG',
-            low_rank_dimension=1,
+            low_rank_dimension=None,
             low_rank_tolerance_rel=1e-2,
             low_rank_tolerance_abs=1e-8,
             maximum_iterations=1000,
@@ -139,7 +140,9 @@ class LRCMAES:
             if upper_variable_bounds is None else upper_variable_bounds)
 
         # Determine the integrator rank
-        rank = min(low_rank_dimension, number_of_variables)
+        rank = min(
+            low_rank_dimension or number_of_variables // 10,
+            number_of_variables)
 
         # Initialize the dynamical low-rank integrator
         self.integrator = LowRankIntegrator(
@@ -153,8 +156,7 @@ class LRCMAES:
             S_step=self.S_step)
 
         # Initialize the integrator buffers
-        capacity = 2*number_of_variables
-        self.integrator.set_buffers(number_of_variables, rank, capacity)
+        self.integrator.set_buffers(number_of_variables)
 
         # Initialize the update interval
         self._update_interval = update_interval
@@ -188,13 +190,15 @@ class LRCMAES:
         self._mean = zeros(number_of_variables, dtype=float64)
 
         self._left_basis = zeros(
-            (number_of_variables, capacity), order='F', dtype=float64)
+            (number_of_variables, number_of_variables), order='F',
+            dtype=float64)
         self._left_basis[:rank, :rank] = eye(rank)
         self._core_matrix = eye(rank, dtype=float64)
 
         self._core_eig_cache = (ones(rank), eye(rank))
         self._root_cov = zeros(
-            (number_of_variables, capacity), order='F', dtype=float64)
+            (number_of_variables, number_of_variables), order='F',
+            dtype=float64)
         self._root_cov[:rank, :rank] = eye(rank)
 
         # Initialize the buffer variables
@@ -205,16 +209,18 @@ class LRCMAES:
         self._population = zeros(
             (self._pop_size, number_of_variables), order='F', dtype=float64)
         self._left_basis_old = empty(
-            (number_of_variables, capacity), order='F', dtype=float64)
-        self._path_cov_padded = zeros((capacity, 1), order='F', dtype=float64)
+            (number_of_variables, number_of_variables), order='F',
+            dtype=float64)
+        self._path_cov_padded = zeros(
+            (number_of_variables, 1), order='F', dtype=float64)
         self._elite_projection = zeros(
-            (self._elite_size, capacity), order='F', dtype=float64)
+            (self._elite_size, number_of_variables), order='F', dtype=float64)
         self._path_full = empty(
             (number_of_variables, 1), order='F', dtype=float64)
         self._weighted_steps = empty(
             (self._elite_size, number_of_variables), order='F', dtype=float64)
         self._mu_projection = empty(
-            (self._elite_size, capacity), order='F', dtype=float64)
+            (self._elite_size, number_of_variables), order='F', dtype=float64)
 
         # Initialize the stopping criteria and tracking variables
         self.maximum_iterations = maximum_iterations
@@ -589,7 +595,7 @@ class LRCMAES:
         # Update the learning rates
         self._lr_sigma = (self._mu_eff + 2) / (rank + self._mu_eff + 3)
         self._lr_cov = 4 / (rank + 4)
-        self._lr_rank_1 = (
+        self._lr_rank_1 = 100*(
             2 * min(1, self._pop_size / 6) / ((rank + 1.3)**2 + self._mu_eff))
         self._lr_rank_mu = (
             2 * (self._mu_eff + 1/self._mu_eff - 2) /
