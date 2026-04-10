@@ -64,21 +64,21 @@ class Optimization():
         - 'weighted-sum' : parallel optimization based on a weighted-sum \
             scalarization of the objective function
 
-    solver : {'ipyopt', 'pyanno4rt', 'pymoo', 'pypop7', 'scipy'}, \
+    solver : {'ipyopt', 'pymoo', 'pypop7', 'scipy', 'seamaze'}, \
         default='scipy'
         Python package to be used for solving the optimization problem, see \
         the classes \
         :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
-        :class:`~pyanno4rt.optimization.solvers._pyanno4rt_solver.Pyanno4rtSolver`\
         :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
         :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
-        :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`.
+        :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`\
+        :class:`~pyanno4rt.optimization.solvers._seamaze_solver.SeaMazeSolver`.
 
         - 'ipyopt': interior-point algorithms provided by Ipyopt
-        - 'pyanno4rt': internal custom algorithms provided by the package
         - 'pymoo' : multi-objective algorithms provided by Pymoo
         - 'pypop7': population-based algorithms provided by PyPop7
         - 'scipy' : local algorithms provided by SciPy
+        - 'seamaze': (low-rank) evolutionary algorithms provided by SeaMaze
 
         .. note:: The 'lexicographic' method only works with 'ipyopt' and \
             'scipy', while the 'pareto' method only works with 'pymoo'.
@@ -89,11 +89,6 @@ class Optimization():
         - solver='ipyopt': {'mumps'}
 
             - 'mumps': multifrontal massively parallel sparse direct solver
-
-        - solver='pyanno4rt': {'CMAES', 'LRCMAES'}
-
-            - 'CMAES': covariance matrix adaptation evolution strategy
-            - 'LRCMAES': low-rank covariance matrix adaptation evolution strategy
 
         - solver='pymoo' : {'NSGA3'}
 
@@ -110,6 +105,11 @@ class Optimization():
                 Broyden-Fletcher-Goldfarb-Shanno method
             - 'TNC' : truncated Newton method
             - 'trust-constr' : trust-region constrained method
+
+        - solver='seamaze': {'CMAES', 'DLRCMAES'}
+
+            - 'CMAES': covariance matrix adaptation evolution strategy
+            - 'DLRCMAES': dynamical low-rank CMA-ES
 
         .. note:: Constraints are currently only supported by 'mumps', \
             'NSGA3' and 'trust-constr'.
@@ -165,7 +165,7 @@ class Optimization():
     method : {'lexicographic', 'pareto', 'weighted-sum'}
         See 'Parameters'.
 
-    solver : {'ipyopt', 'pyanno4rt', 'pymoo', 'pypop7', 'scipy'}
+    solver : {'ipyopt', 'pymoo', 'pypop7', 'scipy', 'seamaze'}
         See 'Parameters'.
 
     algorithm : str
@@ -308,7 +308,7 @@ class Optimization():
                     'lexicographic': ('ipyopt', 'scipy'),
                     'pareto': ('pymoo',),
                     'weighted-sum': (
-                        'ipyopt', 'pyanno4rt', 'pypop7', 'scipy')},
+                        'ipyopt', 'pypop7', 'scipy', 'seamaze')},
                     condition=conditions['method'])
                 ),
             'algorithm': (
@@ -316,11 +316,11 @@ class Optimization():
                 partial(validate_item_in_set, options={
                     'lexicographic/ipyopt': ('mumps',),
                     'weighted-sum/ipyopt': ('mumps',),
-                    'weighted-sum/pyanno4rt': ('CMAES', 'LRCMAES'),
                     'pareto/pymoo': ('NSGA3',),
                     'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),
                     'lexicographic/scipy': ('trust-constr',),
-                    'weighted-sum/scipy': ('L-BFGS-B', 'TNC', 'trust-constr')},
+                    'weighted-sum/scipy': ('L-BFGS-B', 'TNC', 'trust-constr'),
+                    'weighted-sum/seamaze': ('CMAES', 'DLRCMAES')},
                     condition=(
                         f"{conditions['method']}/"
                         f"{conditions['solver']}"))

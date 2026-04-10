@@ -19,7 +19,7 @@ from pyanno4rt.optimization.problems.weighted import WeightedSumProblem
 from pyanno4rt.optimization.projections import (
     ConstantRBEProjection, DoseProjection)
 from pyanno4rt.optimization.solvers import (
-    IpyoptSolver, Pyanno4rtSolver, PymooSolver, PyPop7Solver, SciPySolver)
+    IpyoptSolver, PymooSolver, PyPop7Solver, SciPySolver, SeaMazeSolver)
 
 # %% Map definitions
 
@@ -60,7 +60,7 @@ PROJECTIONS = {
 
 SOLVERS = {
     'ipyopt': IpyoptSolver,
-    'pyanno4rt': Pyanno4rtSolver,
     'pymoo': PymooSolver,
     'pypop7': PyPop7Solver,
-    'scipy': SciPySolver}
+    'scipy': SciPySolver,
+    'seamaze': SeaMazeSolver}

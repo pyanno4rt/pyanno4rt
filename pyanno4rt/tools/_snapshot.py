@@ -48,18 +48,15 @@ def snapshot(
         Indicator for the anonymization of the file paths.
     """
 
-    # Set the snapshot path
-    snap_path = f'{path}/{instance.configuration.label}'
-
     # Check if the path does not yet exist
-    if not exists(snap_path):
+    if not exists(path):
 
         # Create a new folder
-        mkdir(snap_path)
+        mkdir(path)
 
     # Open a file stream for the logging output
     with open(
-            f'{snap_path}/{instance.configuration.label}.log', 'w',
+            f'{path}/{instance.configuration.label}.log', 'w',
             encoding='utf-8') as file:
 
         # Get the logging stream value
@@ -68,13 +65,6 @@ def snapshot(
         # Print the stream value to the file
         print(stream_value, file=file)
 
-    # Check if the imaging and dose matrix data paths should be anonymized
-    if anonymize:
-
-        # Set the patient data paths to None
-        instance.configuration.imaging_path = None
-        instance.configuration.dose_matrix_path = None
-
     # Check if the patient data should be included
     if include_patient_data and instance.state >= 1:
 
@@ -82,13 +72,13 @@ def snapshot(
         _, extension = splitext(instance.configuration.imaging_path)
 
         # Set the file path
-        path = f'{snap_path}/patient_data{extension}'
+        pat_path = f'{path}/patient_data{extension}'
 
         # Save the patient data
-        instance.patient_handler.save(path)
+        instance.patient_handler.save(pat_path)
 
         # Update the imaging path
-        instance.configuration.imaging_path = path
+        instance.configuration.imaging_path = pat_path
 
     # Check if the dose influence matrix data should be included
     if include_dose_matrix and instance.state >= 1:
@@ -97,13 +87,20 @@ def snapshot(
         _, extension = splitext(instance.configuration.dose_matrix_path)
 
         # Set the file path
-        path = f'{snap_path}/dose_influence_matrix{extension}'
+        dij_path = f'{path}/dose_influence_matrix{extension}'
 
         # Save the dose-influence matrix
-        instance.dose_handler.save_dij(path)
+        instance.dose_handler.save_dij(dij_path)
 
         # Update the dose-influence matrix path
-        instance.configuration.dose_matrix_path = path
+        instance.configuration.dose_matrix_path = dij_path
+
+    # Check if imaging and dose matrix path should be anonymized
+    if anonymize:
+
+        # Set the paths to None
+        instance.configuration.imaging_path = None
+        instance.configuration.dose_matrix_path = None
 
     # Check if the instance has already been modeled
     if instance.state >= 2 and instance.data_model_handler is not None:
@@ -112,19 +109,19 @@ def snapshot(
         for model in instance.data_model_handler.models:
 
             # Set the model path
-            path = f'{snap_path}/{model.label}'
+            model_path = f'{path}/{model.label}'
 
             # Check if the path does not yet exist
-            if not exists(path):
+            if not exists(model_path):
 
                 # Create a new folder
-                mkdir(path)
+                mkdir(model_path)
 
             # Save the model
-            model.save(path)
+            model.save(model_path)
 
             # Update the model path
-            model.arguments['model_path'] = path
+            model.arguments['model_path'] = model_path
 
             # Check if the model data path should be anonymized
             if anonymize:
@@ -139,30 +136,30 @@ def snapshot(
                 _, extension = splitext(model.dataset.path)
 
                 # Set the file path
-                path = f'{path}/dataset{extension}'
+                data_path = f'{path}/dataset{extension}'
 
                 # Save the dataset
-                model.dataset.save(path)
+                model.dataset.save(data_path)
 
                 # Update the model data path
-                model.dataset.arguments['data_path'] = path
+                model.dataset.arguments['data_path'] = data_path
 
     # Check if the optimized fluence array should be included
     if include_optimum and instance.state >= 3:
 
         # Save the fluence array
         instance.fluence_optimizer.save_fluence(
-            f'{snap_path}/optimized_fluence.npy')
+            f'{path}/optimized_fluence.npy')
 
     # Check if the component tracker should be included
     if include_tracks and instance.state >= 3:
 
         # Save the component tracker
-        instance.fluence_optimizer.problem.save_tracks(
-            f'{snap_path}/tracks.json')
+        instance.fluence_optimizer.problem.save_tracker(
+            f'{path}/tracker.json')
 
     # Open a file stream for the input parameters
-    with open(f'{snap_path}/input.json', 'w', encoding='utf-8') as file:
+    with open(f'{path}/input.json', 'w', encoding='utf-8') as file:
 
         # Get the input dictionaries
         input_dictionaries = {

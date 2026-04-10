@@ -9,6 +9,7 @@ from warnings import filterwarnings
 from numpy import array
 from tensorflow import cast, clip_by_value, float64, GradientTape, transpose
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.layers import Activation, Dense
 from tensorflow.keras.models import load_model
 
 # %% Internal package import
@@ -314,14 +315,20 @@ class FeedForwardNet(MachineLearningModel):
         # Get the dense layers
         dense_layers = [
             layer for layer in self.predictor.layers[:-1]
-            if hasattr(layer, 'units') or hasattr(layer, 'filters')]
+            if isinstance(layer, Dense)]
+
+        # Get the activation layers
+        activation_layers = [
+            layer for layer in self.predictor.layers[:-1]
+            if isinstance(layer, Activation)]
 
         # Get the hyperparameters
         self.hyperparameters = {
             'hidden_layer_number': len(dense_layers),
             'hidden_neuron_number': [layer.units for layer in dense_layers],
             'hidden_activation': [
-                layer.activation.__name__ for layer in dense_layers],
+                layer.activation.__name__ for layer in (
+                    activation_layers if activation_layers else dense_layers)],
             'hidden_dropout_rate': [
                 layer.rate for layer in self.predictor.layers[:-1]
                 if hasattr(layer, 'rate')],

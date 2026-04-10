@@ -516,7 +516,7 @@ class TreatmentPlan():
         # Take a snapshot
         snapshot(
             deepcopy(self), path, include_patient_data, include_dose_matrix,
-            include_model_data, include_optimum, anonymize)
+            include_model_data, include_optimum, include_tracks, anonymize)
 
     @staticmethod
     def load(

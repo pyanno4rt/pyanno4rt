@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: pyanno4rt: "python-based advanced numerical nonlinear optimization for radiotherapy"
+title: "pyanno4rt: python-based advanced numerical nonlinear optimization for radiotherapy"
 message: "If you use pyanno4rt in your work, let us now and cite this repository as below."
 version: 1.0.0
 type: software
@@ -17,13 +17,13 @@ authors:
     orcid: "https://orcid.org/0000-0002-1451-223X"
 abstract: "pyanno4rt is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-objective (un)constrained optimization problems in radiotherapy treatment planning."
 keywords:
-  - Python
-  - Data Science
-  - Machine Learning
-  - Optimization
-  - Outcome Prediction
-  - Radiotherapy Treatment Planning
+  - python
+  - data-science
+  - machine-learning
+  - optimization
+  - outcome-prediction
+  - radiotherapy-treatment-planning
 license: GPL-3.0
-date-released: 2026-01-01
+date-released: 2026-08-01
 repository-code: "http://github.com/pyanno4rt/pyanno4rt"
 url: "http://github.com/pyanno4rt/pyanno4rt"

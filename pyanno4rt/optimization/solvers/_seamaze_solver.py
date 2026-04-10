@@ -1,26 +1,27 @@
-"""Pyanno4rt custom solver wrapper."""
+"""SeaMaze wrapper."""
 
 # Author: Tim Ortkamp
 
 # %% External package import
 
 from numpy import around, array
+from seamaze.optimizers.evolutionary import CMAES
+from seamaze.optimizers.low_rank import DLRCMAES
 
 # %% Internal package import
 
 from pyanno4rt.logging import get_logger
-from pyanno4rt.optimization.solvers.cmaes import CMAES, LRCMAES
 
 # %% Class definition
 
 
-class Pyanno4rtSolver():
+class SeaMazeSolver():
     """
-    Pyanno4rt custom solver wrapper class.
+    SeaMaze wrapper class.
 
-    This class serves as a wrapper for the internal custom optimization \
-    algorithms from pyanno4rt. It takes the problem structure, configures the \
-    selected algorithm, and defines the method to run the solver.
+    This class serves as a wrapper for the (low-rank) evolutionary algorithms \
+    from SeaMaze. It takes the problem structure, configures the selected \
+    algorithm, and defines the method to run the solver.
 
     Parameters
     ----------
@@ -62,7 +63,7 @@ class Pyanno4rtSolver():
 
         # Log a message about the initialization of the class
         get_logger().info(
-            "Initializing pyanno4rt solver with %s algorithm ...", algorithm)
+            "Initializing SeaMaze solver with %s algorithm ...", algorithm)
 
         # Get the input attributes
         self.algorithm = algorithm
@@ -96,9 +97,9 @@ class Pyanno4rtSolver():
             self,
             problem):
         """
-        Configure the pyanno4rt solver.
+        Configure the SeaMaze solver.
 
-        Supported algorithms: CMAES.
+        Supported algorithms: CMAES, DLRCMAES.
 
         Parameters
         ----------
@@ -133,11 +134,11 @@ class Pyanno4rtSolver():
                 'rank': None,
                 'callback': self.callback}
 
-        # Check if the algorithm is 'LRCMAES'
-        elif self.algorithm == 'LRCMAES':
+        # Check if the algorithm is 'DLRCMAES'
+        elif self.algorithm == 'DLRCMAES':
 
             # Set the optimization function
-            self.instance = LRCMAES
+            self.instance = DLRCMAES
 
             # Initialize the arguments dictionary
             self.arguments = {
@@ -165,7 +166,7 @@ class Pyanno4rtSolver():
             self,
             initial_fluence):
         """
-        Run the Pyanno4rt solver.
+        Run the SeaMaze solver.
 
         Parameters
         ----------

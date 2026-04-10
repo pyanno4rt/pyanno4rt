@@ -407,4 +407,4 @@ class WeightedSumProblem():
         with open(path, 'w', encoding='utf-8') as file:
 
             # Save the tracker
-            dump(self.tracker, file)
+            dump(self.tracker, file, indent=4)

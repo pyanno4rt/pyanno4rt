@@ -54,10 +54,10 @@ class FluenceOptimizer():
 
     solver : None or object of class \
         :class:`~pyanno4rt.optimization.solvers._ipyopt_solver.IpyoptSolver`\
-        :class:`~pyanno4rt.optimization.solvers._pyanno4rt_solver.Pyanno4rtSolver`\
         :class:`~pyanno4rt.optimization.solvers._pymoo_solver.PymooSolver`\
         :class:`~pyanno4rt.optimization.solvers._pypop7_solver.PyPop7Solver`\
-        :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`
+        :class:`~pyanno4rt.optimization.solvers._scipy_solver.SciPySolver`\
+        :class:`~pyanno4rt.optimization.solvers._seamaze_solver.SeaMazeSolver`
         The object used to represent the solver.
 
     solver_time : float
@@ -184,7 +184,7 @@ class FluenceOptimizer():
 
         Parameters
         ----------
-        solver : {'ipyopt', 'pyanno4rt', 'pymoo', 'pypop7', 'scipy'}, \
+        solver : {'ipyopt', 'pymoo', 'pypop7', 'scipy', 'seamaze'}, \
             default='scipy'
             Python package to be used for solving the optimization problem.
 

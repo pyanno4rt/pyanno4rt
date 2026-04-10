@@ -169,15 +169,15 @@ from pyanno4rt.gui import GUI
 | Name                           | Version                               |
 | -----------------------------: | :------------------------------------ |
 | `python`                       | <font size="3"> >=3.11, <4.0 </font>  |
-| `numpy`                        | <font size="3"> >=2.4.3 </font>       |
+| `numpy`                        | <font size="3"> >=2.4.4 </font>       |
 | `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
 | `absl-py`                      | <font size="3"> >=2.3.1 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.2 </font>       |
 | `scikit-image`                 | <font size="3"> >=0.26.0 </font>      |
-| `pandas`                       | <font size="3"> >=3.0.1 </font>       |
+| `pandas`                       | <font size="3"> >=3.0.2 </font>       |
 | `jax`                          | <font size="3"> >=0.9.2 </font>       |
 | `jaxlib`                       | <font size="3"> >=0.9.2 </font>       |
-| `numba`                        | <font size="3"> >=0.64.0 </font>      |
+| `numba`                        | <font size="3"> >=0.65.0 </font>      |
 | `scikit-learn`                 | <font size="3"> >=1.8.0 </font>       |
 | `tensorflow`                   | <font size="3"> >=2.21.0 </font>      |
 | `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
@@ -191,7 +191,7 @@ from pyanno4rt.gui import GUI
 | `setuptools`                   | <font size="3"> <81.0.0 </font>       |
 | `pymatreader`                  | <font size="3"> >=1.2.2 </font>       |
 
-Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.3** for development.
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.4** for development.
 
 # Development :rocket:
 
@@ -238,7 +238,8 @@ To cite *pyanno4rt*, either use the link in the right sidebar of the Github land
   version = {1.0.0},
   license = {GPL-3.0},
   year = {2026},
-  howpublished = {\url{http://github.com/pyanno4rt/pyanno4rt}}
+  publisher = {GitHub},
+  url = {https://github.com/pyanno4rt/seamaze}
 }
 ```
 

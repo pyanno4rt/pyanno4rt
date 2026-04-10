@@ -8,6 +8,7 @@ on:
 
   push:
     branches: [ master ]
+    tags: [ 'v*' ]
 
   pull_request:
     branches: [ master ]
@@ -20,39 +21,41 @@ jobs:
     # Set the operating system matrix strategy
     strategy:
       matrix:
-        python-version: [ '3.10', '3.11' ]
+        python-version: [ '3.11', '3.12', '3.13', '3.14', '3.15' ]
         os: [ ubuntu-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     
     # Define the workflow steps
     steps:
 
-    # Configure Python version
-    - name: Configure Python version
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11.10
-
     # Check out the pyanno4rt repository
     - name: Check out the pyanno4rt repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
+  
+    # Configure Python version
+    - name: Configure Python version
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
     
     # Install poetry
     - name: Install poetry
-      uses: abatilo/actions-poetry@v2.1.0
+      uses: abatilo/actions-poetry@v3
       with:
         poetry-version: 1.5.1
     
     # Install the package dependencies with poetry
-    - name: Install the package dependencies with poetry
+    - name: Install the package dependencies
       run: poetry install
 
   test-deploy-module:
   
     # Set the job dependencies
     needs: check-os-install
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
     
     # Set the operating system
     runs-on: ubuntu-latest
@@ -67,24 +70,24 @@ jobs:
     
     # Configure Python version
     - name: Configure Python version
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.11.10
+        python-version: 3.11.11
 
     # Check out the pyanno4rt repository
     - name: Check out the pyanno4rt repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     
     # Install poetry
     - name: Install poetry
-      uses: abatilo/actions-poetry@v2.1.0
+      uses: abatilo/actions-poetry@v3
       with:
         poetry-version: 1.5.1
     
     # Install the package dependencies with poetry
-    - name: Install the package dependencies with poetry
+    - name: Install the package dependencies
       run: poetry install
     
     # Run the test scripts with pytest
@@ -93,7 +96,8 @@ jobs:
     
     # Publish the coverage report to coveralls.io
     - name: Publish the coverage report to coveralls.io
-      uses: coverallsapp/github-action@master
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: ./coverage.lcov
