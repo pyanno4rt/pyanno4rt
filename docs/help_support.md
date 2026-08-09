@@ -18,7 +18,7 @@ To cite *pyanno4rt*, either use the link in the right sidebar of the Github land
 
 ```tex
 @software{pyanno4rt,
-  title = {{pyanno4rt}: python-based advanced numerical nonlinear optimization for radiotherapy},
+  title = {{pyanno4rt}: Python-based advanced numerical nonlinear optimization for radiotherapy},
   author = {Ortkamp, Tim and Jäkel, Oliver and Frank, Martin and Wahl, Niklas},
   version = {1.0.0},
   license = {GPL-3.0},

@@ -4,9 +4,10 @@
 
 # %% External package import
 
-from numpy import around, array
-from seamaze.optimizers.evolutionary import CMAES
-from seamaze.optimizers.low_rank import DLRCMAES
+from numpy import around, array, median
+from seamaze.optimizers import CMAES
+from seamaze.optimizers import DLRCMAES
+from seamaze.optimizers import LMMAES
 
 # %% Internal package import
 
@@ -73,9 +74,12 @@ class SeaMazeSolver():
         # Initialize the algorithm instance, arguments, and iteration counter
         self.instance, self.arguments, self.counter = None, None, None
 
+        	# Initialize the rank memory
+        self.ranks = []
+
     def callback(
             self,
-            intermediate_result):
+            solver):
         """
         Log the intermediate results after each iteration.
 
@@ -85,10 +89,24 @@ class SeaMazeSolver():
             Dictionary with the intermediate results of the current iteration.
         """
 
-        # Log a message about the intermediate result
-        get_logger().info(
-            "At iterate %s: f=%s",
-            self.counter, around(intermediate_result['optimal_value'], 4))
+        # Check if the DLR-CMA-ES algorithm has been selected
+        if self.algorithm == 'DLRCMAES':
+
+            # Append the current rank
+            self.ranks.append(solver.rank)
+
+            # Log a message about the intermediate result and the rank
+            get_logger().info(
+                "At iterate %s: f=%s (r=%s)",
+                self.counter, around(solver._result['optimal_value'], 4),
+                solver.rank)
+
+        else:
+
+            # Log a message about the intermediate result
+            get_logger().info(
+                "At iterate %s: f=%s",
+                self.counter, around(solver._result['optimal_value'], 4))
 
         # Increment the iteration counter
         self.counter += 1
@@ -99,7 +117,7 @@ class SeaMazeSolver():
         """
         Configure the SeaMaze solver.
 
-        Supported algorithms: CMAES, DLRCMAES.
+        Supported algorithms: CMAES, DLRCMAES, LMMAES.
 
         Parameters
         ----------
@@ -118,21 +136,21 @@ class SeaMazeSolver():
             self.arguments = {
                 'number_of_variables': len(problem.initial_fluence),
                 'objective': problem.objective,
-                'gradient': problem.gradient,
+                # 'gradient': problem.gradient,
                 'lower_variable_bounds': array(problem.variable_bounds[0]),
                 'upper_variable_bounds': array(problem.variable_bounds[1]),
                 'number_of_individuals': None,
-                'initial_sigma': 0.2*max(problem.initial_fluence),
+                'initial_sigma': 0.3*median(problem.initial_fluence),
                 'maximum_iterations': self.maximum_iterations,
-                'maximum_wall_time': 7200,
-                'fitness_threshold': -float('inf'),
+                'maximum_wall_time': 43200,
+                'fitness_threshold': None,
                 'fitness_window_size': 20,
                 'tolerance': self.tolerance,
-                'sigma_threshold': 1e-3,
-                'store_singular_values': True,
-                'update_interval': 1,
-                'rank': None,
-                'callback': self.callback}
+                'sigma_threshold': 1e-6,
+                'update_interval': None,
+                'min_log_level': 'critical',
+                'callback': self.callback,
+                'random_state': 42}
 
         # Check if the algorithm is 'DLRCMAES'
         elif self.algorithm == 'DLRCMAES':
@@ -144,23 +162,51 @@ class SeaMazeSolver():
             self.arguments = {
                 'number_of_variables': len(problem.initial_fluence),
                 'objective': problem.objective,
-                'gradient': problem.gradient,
+                # 'gradient': problem.gradient,
                 'lower_variable_bounds': array(problem.variable_bounds[0]),
                 'upper_variable_bounds': array(problem.variable_bounds[1]),
                 'number_of_individuals': None,
-                'initial_sigma': 0.2*max(problem.initial_fluence),
-                'low_rank_integrator': 'symmetricaugBUG',
-                'low_rank_dimension': len(problem.initial_fluence),
-                'low_rank_tolerance_rel': 1e-2,
-                'low_rank_tolerance_abs': 1e-8,
+                'initial_sigma': 0.3*median(problem.initial_fluence),
+                'low_rank_init_dimension': None,
+                'low_rank_max_dimension': 50,
+                'low_rank_is_adaptive': True,
+                'low_rank_energy_tolerance': 1e-4,
                 'maximum_iterations': self.maximum_iterations,
-                'maximum_wall_time': 7200,
-                'fitness_threshold': -float('inf'),
+                'maximum_wall_time': 43200,
+                'fitness_threshold': None,
                 'fitness_window_size': 20,
                 'tolerance': self.tolerance,
-                'sigma_threshold': 1e-3,
-                'update_interval': 1,
-                'callback': self.callback}
+                'sigma_threshold': 1e-6,
+                'update_interval': None,
+                'min_log_level': 'critical',
+                'callback': self.callback,
+                'random_state': 42}
+
+      	# Check if the algorithm is 'LMMAES'
+        elif self.algorithm == 'LMMAES':
+
+            # Set the optimization function
+            self.instance = LMMAES
+
+            # Initialize the arguments dictionary
+            self.arguments = {
+                'number_of_variables': len(problem.initial_fluence),
+                'objective': problem.objective,
+                # 'gradient': problem.gradient,
+                # 'lower_variable_bounds': array(problem.variable_bounds[0]),
+                # 'upper_variable_bounds': array(problem.variable_bounds[1]),
+                'number_of_individuals': None,
+                'initial_sigma': 0.3*median(problem.initial_fluence),
+                'memory_size': None,
+                'maximum_iterations': self.maximum_iterations,
+                'maximum_wall_time': 43200,
+                'fitness_threshold': None,
+                'fitness_window_size': 20,
+                'tolerance': self.tolerance,
+                'sigma_threshold': 1e-6,
+                'min_log_level': 'critical',
+                'callback': self.callback,
+                'random_state': 42}
 
     def run(
             self,

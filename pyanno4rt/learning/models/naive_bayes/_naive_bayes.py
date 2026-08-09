@@ -210,21 +210,18 @@ class NaiveBayes(MachineLearningModel):
             for i in range(number_of_classes)]
 
         # Calculate the log evidence gradient
-        log_evidence_gradient = (
-            nsum(
-                joint_log_likelihood_gradient[i]
-                * exp(joint_log_likelihood[i])
-                for i in range(number_of_classes))
-            / nsum(
-                exp(joint_log_likelihood[i])
-                for i in range(number_of_classes)))
+        exp_terms = exp(joint_log_likelihood)
+        log_evidence_gradient = nsum([
+            joint_log_likelihood_gradient[i] * (
+                exp_terms[i] / nsum(exp_terms, 0))[:, None]
+            for i in range(number_of_classes)], 0)
 
         # Calculate the model prediction
         prediction = exp(
-            joint_log_likelihood[1][0] - logsumexp(joint_log_likelihood))
+            joint_log_likelihood[1] - logsumexp(joint_log_likelihood, 0))
 
         # Calculate the input feature gradient
-        gradient = prediction * (
+        gradient = prediction[:, None] * (
             joint_log_likelihood_gradient[1] - log_evidence_gradient)
 
         return gradient.reshape(-1)

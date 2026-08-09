@@ -168,11 +168,12 @@ class ProjectionTree():
             """Get the projection on a bound set."""
 
             # Calculate the projection shift
-            shift = features - clip(
-                features, bounds[:, 0]+epsilon, bounds[:, 1]-epsilon)
+            shift = (
+                clip(features, bounds[:, 0]+epsilon, bounds[:, 1]-epsilon)
+                - features)
 
             # Get the prediction value for the shifted features
-            value = self.predict_proba(features-shift)
+            value = self.predict_proba(features + shift)
 
             return shift.reshape(-1), npnorm(shift), value
 
@@ -182,7 +183,7 @@ class ProjectionTree():
         # Get all leafs with lower prediction value
         targets = {
             key: self.bounds[key] for key, value in self.outcomes.items()
-            if value < prediction}
+            if value <= prediction}
 
         # Check if any "better" leafs have been found
         if len(targets) > 0:
@@ -194,7 +195,7 @@ class ProjectionTree():
             shift, norm, value = min(projections, key=lambda x: x[1])
 
             # Return the gradient
-            return -shift*(value-prediction)/norm**2
+            return shift*(value-prediction)/(norm**2 + 1e-12)
 
         # Else, return the zero gradient
         return zeros(features.shape[1])

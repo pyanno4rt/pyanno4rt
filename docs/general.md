@@ -19,7 +19,7 @@
 
 # General :earth_americas:
 
-*pyanno4rt* is a Python package for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-criteria (un)constrained optimization problems in radiotherapy treatment planning.
+*pyanno4rt* is a Python library for conventional and outcome prediction model-based inverse photon and proton treatment plan optimization, including radiobiological and machine learning (ML) models for normal tissue complication probability (NTCP) and tumor control probability (TCP). It leverages state-of-the-art local and global solution methods to handle both single- and multi-criteria (un)constrained optimization problems in radiotherapy treatment planning.
 
 # Highlight Features :telescope:
 
@@ -60,10 +60,9 @@
 * 17-type dose-volume & outcome model-based optimization component catalogue
 * Local & global solvers
     - Interior-point algorithms provided by [ipyopt](https://pypi.org/project/ipyopt/)
-    - Internal custom algorithms provided by [pyanno4rt](https://github.com/pyanno4rt/pyanno4rt)
     - Multi-objective algorithms provided by [pymoo](https://pypi.org/project/pymoo/)
-    - Population-based algorithms provided by [pypop7](https://pypi.org/project/pypop7/)
     - Local algorithms provided by [scipy](https://pypi.org/project/scipy/)
+    - Population-based algorithms provided by [seamaze](https://github.com/pyanno4rt/seamaze)
 <br>
 </details>
 

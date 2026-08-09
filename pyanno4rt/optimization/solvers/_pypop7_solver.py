@@ -107,10 +107,11 @@ class PyPop7Solver():
                     'lower_boundary': array(problem.variable_bounds[0]),
                     'upper_boundary': array(problem.variable_bounds[1])},
                 'options': {
+                    'fitness_threshold': -float('inf'),
                     'max_function_evaluations': (
                         number_of_individuals*self.maximum_iterations),
                     'early_stopping_threshold': self.tolerance,
-                    'early_stopping_evaluations': number_of_individuals*50,
+                    'early_stopping_evaluations': number_of_individuals*10,
                     'seed_rng': 42,
                     'sigma': 0.3,
                     'm': number_of_individuals,

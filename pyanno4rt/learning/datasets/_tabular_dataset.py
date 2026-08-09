@@ -10,7 +10,7 @@ from os.path import abspath, splitext
 from copy import deepcopy
 from functools import partial
 from itertools import compress, tee
-from numpy import arange, array, logical_and, seterr, vstack, where, zeros
+from numpy import arange, array, logical_and, vstack, where, zeros
 from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import RepeatedStratifiedKFold, train_test_split
 
@@ -23,10 +23,6 @@ from pyanno4rt.tools import custom_round, deduplicate, filter_dict, replace_nan
 from pyanno4rt.validation import (
     validate_file, validate_item, validate_length, validate_subtype,
     validate_type)
-
-# %% Set package options
-
-seterr(divide='ignore', invalid='ignore')
 
 # %% Class definition
 
@@ -568,8 +564,8 @@ class TabularDataset():
 
         # Get the training and holdout indices
         train_indices, holdout_indices = train_test_split(
-            arange(len(self.dataframe)), test_size=holdout,
-            stratify=self.dataframe[self.label_name], random_state=42)
+            arange(len(self.feature_values)), test_size=holdout,
+            stratify=self.label_values, random_state=42)
 
         # Get the holdout set
         self.holdout_set = {

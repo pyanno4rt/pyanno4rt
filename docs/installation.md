@@ -37,27 +37,28 @@ from pyanno4rt.gui import GUI
 | Name                           | Version                               |
 | -----------------------------: | :------------------------------------ |
 | `python`                       | <font size="3"> >=3.11, <4.0 </font>  |
-| `numpy`                        | <font size="3"> >=2.4.4 </font>       |
+| `numpy`                        | <font size="3"> >=2.4.6 </font>       |
 | `ipyopt`                       | <font size="3"> >=0.12.10 </font>     |
-| `absl-py`                      | <font size="3"> >=2.3.1 </font>       |
+| `absl-py`                      | <font size="3"> >=2.5.0 </font>       |
 | `pydicom`                      | <font size="3"> >=3.0.2 </font>       |
 | `scikit-image`                 | <font size="3"> >=0.26.0 </font>      |
-| `pandas`                       | <font size="3"> >=3.0.2 </font>       |
-| `jax`                          | <font size="3"> >=0.9.2 </font>       |
-| `jaxlib`                       | <font size="3"> >=0.9.2 </font>       |
-| `numba`                        | <font size="3"> >=0.65.0 </font>      |
-| `scikit-learn`                 | <font size="3"> >=1.8.0 </font>       |
+| `pandas`                       | <font size="3"> >=3.0.5 </font>       |
+| `jax`                          | <font size="3"> >=0.10.2 </font>      |
+| `jaxlib`                       | <font size="3"> >=0.10.2 </font>      |
+| `numba`                        | <font size="3"> >=0.66.0 </font>      |
+| `scikit-learn`                 | <font size="3"> >=1.9.0 </font>       |
 | `tensorflow`                   | <font size="3"> >=2.21.0 </font>      |
-| `hyperopt`                     | <font size="3"> >=0.2.7 </font>       |
-| `pymoo`                        | <font size="3"> >=0.6.1.6 </font>     |
+| `hyperopt`                     | <font size="3"> >=0.3.0 </font>       |
+| `pymoo`                        | <font size="3"> >=0.6.2 </font>       |
 | `pyqt5-qt5`                    | <font size="3"> ==5.15.2 </font>      |
 | `pyqt5`                        | <font size="3"> ==5.15.10 </font>     |
 | `pyqtgraph`                    | <font size="3"> >=0.14.0 </font>      |
-| `matplotlib`                   | <font size="3"> >=3.10.8 </font>      |
+| `matplotlib`                   | <font size="3"> >=3.11.1 </font>      |
 | `seaborn`                      | <font size="3"> >=0.13.2 </font>      |
 | `pypop7`                       | <font size="3"> >=0.0.82 </font>      |
 | `setuptools`                   | <font size="3"> <81.0.0 </font>       |
 | `pymatreader`                  | <font size="3"> >=1.2.2 </font>       |
+| `seamaze`                      | <font size="3"> >=0.0.10 </font>       |
 
-Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.4** for development.
+Moreover, we are using **Python v3.11.11** and **Spyder IDE v6.1.6** for development.
 \

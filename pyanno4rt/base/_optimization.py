@@ -106,10 +106,12 @@ class Optimization():
             - 'TNC' : truncated Newton method
             - 'trust-constr' : trust-region constrained method
 
-        - solver='seamaze': {'CMAES', 'DLRCMAES'}
+        - solver='seamaze': {'CMAES', 'DLRCMAES', 'LMMAES'}
 
             - 'CMAES': covariance matrix adaptation evolution strategy
-            - 'DLRCMAES': dynamical low-rank CMA-ES
+            - 'DLRCMAES': dynamical low-rank covariance matrix adaptation \
+                evolution strategy
+            - 'LMMAES': limited-memory matrix adaptation evolution strategy
 
         .. note:: Constraints are currently only supported by 'mumps', \
             'NSGA3' and 'trust-constr'.
@@ -320,7 +322,7 @@ class Optimization():
                     'weighted-sum/pypop7': ('LMCMA', 'LMMAES'),
                     'lexicographic/scipy': ('trust-constr',),
                     'weighted-sum/scipy': ('L-BFGS-B', 'TNC', 'trust-constr'),
-                    'weighted-sum/seamaze': ('CMAES', 'DLRCMAES')},
+                    'weighted-sum/seamaze': ('CMAES', 'DLRCMAES', 'LMMAES')},
                     condition=(
                         f"{conditions['method']}/"
                         f"{conditions['solver']}"))
